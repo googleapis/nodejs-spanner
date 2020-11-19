@@ -16,6 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
+/* global window */
 import * as gax from 'google-gax';
 import {
   Callback,
@@ -30,6 +31,11 @@ import * as path from 'path';
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+/**
+ * Client JSON configuration object, loaded from
+ * `src/v1/spanner_client_config.json`.
+ * This file defines retry strategy and timeouts for all API methods in this library.
+ */
 import * as gapicConfig from './spanner_client_config.json';
 
 const version = require('../../../package.json').version;
@@ -86,9 +92,9 @@ export class SpannerClient {
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
-   * @param {gax.ClientConfig} [options.clientConfig] - client configuration override.
-   *     TODO(@alexander-fenster): link to gax documentation.
-   * @param {boolean} fallback - Use HTTP fallback mode.
+   * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
+   *     Follows the structure of {@link gapicConfig}.
+   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
    *     In fallback mode, a special browser-compatible transport implementation is used
    *     instead of gRPC transport. In browser context (if the `window` object is defined)
    *     the fallback mode is enabled automatically; set `options.fallback` to `false`
@@ -101,7 +107,9 @@ export class SpannerClient {
       opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback = opts?.fallback ?? typeof window !== 'undefined';
+    const fallback =
+      opts?.fallback ??
+      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -341,7 +349,7 @@ export class SpannerClient {
   // -------------------
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -351,7 +359,7 @@ export class SpannerClient {
   >;
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
@@ -406,7 +414,7 @@ export class SpannerClient {
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.ISession,
           protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
@@ -425,12 +433,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -445,7 +453,7 @@ export class SpannerClient {
   }
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -455,7 +463,7 @@ export class SpannerClient {
   >;
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
@@ -501,7 +509,7 @@ export class SpannerClient {
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IBatchCreateSessionsResponse,
           | protos.google.spanner.v1.IBatchCreateSessionsRequest
@@ -522,12 +530,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -542,7 +550,7 @@ export class SpannerClient {
   }
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -552,7 +560,7 @@ export class SpannerClient {
   >;
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
@@ -589,7 +597,7 @@ export class SpannerClient {
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.ISession,
           protos.google.spanner.v1.IGetSessionRequest | null | undefined,
@@ -608,12 +616,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -628,7 +636,7 @@ export class SpannerClient {
   }
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -638,7 +646,7 @@ export class SpannerClient {
   >;
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
@@ -675,7 +683,7 @@ export class SpannerClient {
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
@@ -694,12 +702,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -714,7 +722,7 @@ export class SpannerClient {
   }
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -724,7 +732,7 @@ export class SpannerClient {
   >;
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
@@ -833,7 +841,7 @@ export class SpannerClient {
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IResultSet,
           protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
@@ -852,12 +860,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -872,7 +880,7 @@ export class SpannerClient {
   }
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -882,7 +890,7 @@ export class SpannerClient {
   >;
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
@@ -949,7 +957,7 @@ export class SpannerClient {
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IExecuteBatchDmlResponse,
           protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
@@ -968,12 +976,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -988,7 +996,7 @@ export class SpannerClient {
   }
   read(
     request: protos.google.spanner.v1.IReadRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -998,7 +1006,7 @@ export class SpannerClient {
   >;
   read(
     request: protos.google.spanner.v1.IReadRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
@@ -1086,7 +1094,7 @@ export class SpannerClient {
   read(
     request: protos.google.spanner.v1.IReadRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IResultSet,
           protos.google.spanner.v1.IReadRequest | null | undefined,
@@ -1105,12 +1113,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1125,7 +1133,7 @@ export class SpannerClient {
   }
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1135,7 +1143,7 @@ export class SpannerClient {
   >;
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
@@ -1175,7 +1183,7 @@ export class SpannerClient {
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.ITransaction,
           protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
@@ -1194,12 +1202,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1214,7 +1222,7 @@ export class SpannerClient {
   }
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1224,7 +1232,7 @@ export class SpannerClient {
   >;
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
@@ -1282,7 +1290,7 @@ export class SpannerClient {
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.ICommitResponse,
           protos.google.spanner.v1.ICommitRequest | null | undefined,
@@ -1301,12 +1309,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1321,7 +1329,7 @@ export class SpannerClient {
   }
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1331,7 +1339,7 @@ export class SpannerClient {
   >;
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
@@ -1375,7 +1383,7 @@ export class SpannerClient {
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           protos.google.spanner.v1.IRollbackRequest | null | undefined,
@@ -1394,12 +1402,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1414,7 +1422,7 @@ export class SpannerClient {
   }
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1424,7 +1432,7 @@ export class SpannerClient {
   >;
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
@@ -1507,7 +1515,7 @@ export class SpannerClient {
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IPartitionResponse,
           protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
@@ -1526,12 +1534,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1546,7 +1554,7 @@ export class SpannerClient {
   }
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1556,7 +1564,7 @@ export class SpannerClient {
   >;
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
@@ -1625,7 +1633,7 @@ export class SpannerClient {
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.v1.IPartitionResponse,
           protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
@@ -1644,12 +1652,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1752,7 +1760,7 @@ export class SpannerClient {
    */
   executeStreamingSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -1833,7 +1841,7 @@ export class SpannerClient {
    */
   streamingRead(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -1850,7 +1858,7 @@ export class SpannerClient {
 
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -1860,7 +1868,7 @@ export class SpannerClient {
   >;
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
@@ -1916,7 +1924,7 @@ export class SpannerClient {
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.v1.IListSessionsRequest,
           protos.google.spanner.v1.IListSessionsResponse | null | undefined,
@@ -1935,12 +1943,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1992,7 +2000,7 @@ export class SpannerClient {
    */
   listSessionsStream(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2056,7 +2064,7 @@ export class SpannerClient {
    */
   listSessionsAsync(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.v1.ISession> {
     request = request || {};
     options = options || {};
