@@ -9,14 +9,6 @@
     },
     {
       "git": {
-        "name": "googleapis",
-        "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "4c5071b615d96ef9dfd6a63d8429090f1f2872bb",
-        "internalRef": "327369997"
-      }
-    },
-    {
-      "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
         "sha": "ba9918cd22874245b55734f57470c719b577e591"
@@ -105,6 +97,7 @@
     "README.md",
     "api-extractor.json",
     "linkinator.config.json",
+    "package-lock.json.2151674011",
     "protos/google/spanner/admin/database/v1/backup.proto",
     "protos/google/spanner/admin/database/v1/common.proto",
     "protos/google/spanner/admin/database/v1/spanner_database_admin.proto",
@@ -121,6 +114,7 @@
     "protos/protos.json",
     "renovate.json",
     "samples/README.md",
+    "samples/package-lock.json.2424150423",
     "src/v1/database_admin_client.ts",
     "src/v1/database_admin_client_config.json",
     "src/v1/database_admin_proto_list.json",
