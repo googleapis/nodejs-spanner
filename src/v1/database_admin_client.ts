@@ -16,6 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
+/* global window */
 import * as gax from 'google-gax';
 import {
   Callback,
@@ -31,6 +32,11 @@ import * as path from 'path';
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+/**
+ * Client JSON configuration object, loaded from
+ * `src/v1/database_admin_client_config.json`.
+ * This file defines retry strategy and timeouts for all API methods in this library.
+ */
 import * as gapicConfig from './database_admin_client_config.json';
 import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
@@ -90,9 +96,9 @@ export class DatabaseAdminClient {
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
-   * @param {gax.ClientConfig} [options.clientConfig] - client configuration override.
-   *     TODO(@alexander-fenster): link to gax documentation.
-   * @param {boolean} fallback - Use HTTP fallback mode.
+   * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
+   *     Follows the structure of {@link gapicConfig}.
+   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
    *     In fallback mode, a special browser-compatible transport implementation is used
    *     instead of gRPC transport. In browser context (if the `window` object is defined)
    *     the fallback mode is enabled automatically; set `options.fallback` to `false`
@@ -105,7 +111,9 @@ export class DatabaseAdminClient {
       opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback = opts?.fallback ?? typeof window !== 'undefined';
+    const fallback =
+      opts?.fallback ??
+      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -418,7 +426,7 @@ export class DatabaseAdminClient {
   // -------------------
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase,
@@ -428,7 +436,7 @@ export class DatabaseAdminClient {
   >;
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IDatabase,
       | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
@@ -468,7 +476,7 @@ export class DatabaseAdminClient {
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IDatabase,
           | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
@@ -491,12 +499,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -511,7 +519,7 @@ export class DatabaseAdminClient {
   }
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -521,7 +529,7 @@ export class DatabaseAdminClient {
   >;
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
@@ -562,7 +570,7 @@ export class DatabaseAdminClient {
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
@@ -585,12 +593,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -605,7 +613,7 @@ export class DatabaseAdminClient {
   }
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
@@ -618,7 +626,7 @@ export class DatabaseAdminClient {
   >;
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
       | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
@@ -659,7 +667,7 @@ export class DatabaseAdminClient {
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
           | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
@@ -685,12 +693,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -705,7 +713,7 @@ export class DatabaseAdminClient {
   }
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -715,7 +723,7 @@ export class DatabaseAdminClient {
   >;
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -762,7 +770,7 @@ export class DatabaseAdminClient {
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -781,12 +789,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -801,7 +809,7 @@ export class DatabaseAdminClient {
   }
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -811,7 +819,7 @@ export class DatabaseAdminClient {
   >;
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -857,7 +865,7 @@ export class DatabaseAdminClient {
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -876,12 +884,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -896,7 +904,7 @@ export class DatabaseAdminClient {
   }
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -906,7 +914,7 @@ export class DatabaseAdminClient {
   >;
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -956,7 +964,7 @@ export class DatabaseAdminClient {
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.ITestIamPermissionsResponse,
           protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -975,12 +983,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -995,7 +1003,7 @@ export class DatabaseAdminClient {
   }
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1005,7 +1013,7 @@ export class DatabaseAdminClient {
   >;
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IBackup,
       | protos.google.spanner.admin.database.v1.IGetBackupRequest
@@ -1046,7 +1054,7 @@ export class DatabaseAdminClient {
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IBackup,
           | protos.google.spanner.admin.database.v1.IGetBackupRequest
@@ -1069,12 +1077,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1089,7 +1097,7 @@ export class DatabaseAdminClient {
   }
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1099,7 +1107,7 @@ export class DatabaseAdminClient {
   >;
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IBackup,
       | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
@@ -1147,7 +1155,7 @@ export class DatabaseAdminClient {
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IBackup,
           | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
@@ -1170,12 +1178,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1190,7 +1198,7 @@ export class DatabaseAdminClient {
   }
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1200,7 +1208,7 @@ export class DatabaseAdminClient {
   >;
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
@@ -1241,7 +1249,7 @@ export class DatabaseAdminClient {
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
@@ -1264,12 +1272,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1285,7 +1293,7 @@ export class DatabaseAdminClient {
 
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1298,7 +1306,7 @@ export class DatabaseAdminClient {
   >;
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IDatabase,
@@ -1361,7 +1369,7 @@ export class DatabaseAdminClient {
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IDatabase,
@@ -1389,12 +1397,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1446,7 +1454,7 @@ export class DatabaseAdminClient {
   }
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1459,7 +1467,7 @@ export class DatabaseAdminClient {
   >;
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.protobuf.IEmpty,
@@ -1531,7 +1539,7 @@ export class DatabaseAdminClient {
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.protobuf.IEmpty,
@@ -1559,12 +1567,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1616,7 +1624,7 @@ export class DatabaseAdminClient {
   }
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1629,7 +1637,7 @@ export class DatabaseAdminClient {
   >;
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IBackup,
@@ -1695,7 +1703,7 @@ export class DatabaseAdminClient {
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IBackup,
@@ -1723,12 +1731,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1780,7 +1788,7 @@ export class DatabaseAdminClient {
   }
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1793,7 +1801,7 @@ export class DatabaseAdminClient {
   >;
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IDatabase,
@@ -1865,7 +1873,7 @@ export class DatabaseAdminClient {
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IDatabase,
@@ -1893,12 +1901,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1950,7 +1958,7 @@ export class DatabaseAdminClient {
   }
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
@@ -1960,7 +1968,7 @@ export class DatabaseAdminClient {
   >;
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabasesRequest,
       | protos.google.spanner.admin.database.v1.IListDatabasesResponse
@@ -2010,7 +2018,7 @@ export class DatabaseAdminClient {
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListDatabasesRequest,
           | protos.google.spanner.admin.database.v1.IListDatabasesResponse
@@ -2033,12 +2041,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2080,7 +2088,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2134,7 +2142,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase> {
     request = request || {};
     options = options || {};
@@ -2156,7 +2164,7 @@ export class DatabaseAdminClient {
   }
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup[],
@@ -2166,7 +2174,7 @@ export class DatabaseAdminClient {
   >;
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupsRequest,
       | protos.google.spanner.admin.database.v1.IListBackupsResponse
@@ -2254,7 +2262,7 @@ export class DatabaseAdminClient {
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListBackupsRequest,
           | protos.google.spanner.admin.database.v1.IListBackupsResponse
@@ -2277,12 +2285,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2360,7 +2368,7 @@ export class DatabaseAdminClient {
    */
   listBackupsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2450,7 +2458,7 @@ export class DatabaseAdminClient {
    */
   listBackupsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackup> {
     request = request || {};
     options = options || {};
@@ -2472,7 +2480,7 @@ export class DatabaseAdminClient {
   }
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -2482,7 +2490,7 @@ export class DatabaseAdminClient {
   >;
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
       | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
@@ -2581,7 +2589,7 @@ export class DatabaseAdminClient {
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
           | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
@@ -2604,12 +2612,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2697,7 +2705,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2793,7 +2801,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -2815,7 +2823,7 @@ export class DatabaseAdminClient {
   }
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -2825,7 +2833,7 @@ export class DatabaseAdminClient {
   >;
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
       | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
@@ -2924,7 +2932,7 @@ export class DatabaseAdminClient {
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
           | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
@@ -2947,12 +2955,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -3034,7 +3042,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3128,7 +3136,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};

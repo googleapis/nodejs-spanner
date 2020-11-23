@@ -16,6 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
+/* global window */
 import * as gax from 'google-gax';
 import {
   Callback,
@@ -31,6 +32,11 @@ import * as path from 'path';
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+/**
+ * Client JSON configuration object, loaded from
+ * `src/v1/instance_admin_client_config.json`.
+ * This file defines retry strategy and timeouts for all API methods in this library.
+ */
 import * as gapicConfig from './instance_admin_client_config.json';
 import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
@@ -105,9 +111,9 @@ export class InstanceAdminClient {
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
-   * @param {gax.ClientConfig} [options.clientConfig] - client configuration override.
-   *     TODO(@alexander-fenster): link to gax documentation.
-   * @param {boolean} fallback - Use HTTP fallback mode.
+   * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
+   *     Follows the structure of {@link gapicConfig}.
+   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
    *     In fallback mode, a special browser-compatible transport implementation is used
    *     instead of gRPC transport. In browser context (if the `window` object is defined)
    *     the fallback mode is enabled automatically; set `options.fallback` to `false`
@@ -120,7 +126,9 @@ export class InstanceAdminClient {
       opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback = opts?.fallback ?? typeof window !== 'undefined';
+    const fallback =
+      opts?.fallback ??
+      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -394,7 +402,7 @@ export class InstanceAdminClient {
   // -------------------
   getInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig,
@@ -407,7 +415,7 @@ export class InstanceAdminClient {
   >;
   getInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.instance.v1.IInstanceConfig,
       | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
@@ -447,7 +455,7 @@ export class InstanceAdminClient {
   getInstanceConfig(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.instance.v1.IInstanceConfig,
           | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
@@ -473,12 +481,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -493,7 +501,7 @@ export class InstanceAdminClient {
   }
   getInstance(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance,
@@ -503,7 +511,7 @@ export class InstanceAdminClient {
   >;
   getInstance(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.instance.v1.IInstance,
       | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
@@ -547,7 +555,7 @@ export class InstanceAdminClient {
   getInstance(
     request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.instance.v1.IInstance,
           | protos.google.spanner.admin.instance.v1.IGetInstanceRequest
@@ -570,12 +578,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -590,7 +598,7 @@ export class InstanceAdminClient {
   }
   deleteInstance(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -603,7 +611,7 @@ export class InstanceAdminClient {
   >;
   deleteInstance(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
@@ -653,7 +661,7 @@ export class InstanceAdminClient {
   deleteInstance(
     request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
@@ -679,12 +687,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -699,7 +707,7 @@ export class InstanceAdminClient {
   }
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -709,7 +717,7 @@ export class InstanceAdminClient {
   >;
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -754,7 +762,7 @@ export class InstanceAdminClient {
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -773,12 +781,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -793,7 +801,7 @@ export class InstanceAdminClient {
   }
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -803,7 +811,7 @@ export class InstanceAdminClient {
   >;
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -846,7 +854,7 @@ export class InstanceAdminClient {
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -865,12 +873,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -885,7 +893,7 @@ export class InstanceAdminClient {
   }
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -895,7 +903,7 @@ export class InstanceAdminClient {
   >;
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -941,7 +949,7 @@ export class InstanceAdminClient {
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.ITestIamPermissionsResponse,
           protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -960,12 +968,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -981,7 +989,7 @@ export class InstanceAdminClient {
 
   createInstance(
     request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -994,7 +1002,7 @@ export class InstanceAdminClient {
   >;
   createInstance(
     request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.instance.v1.IInstance,
@@ -1079,7 +1087,7 @@ export class InstanceAdminClient {
   createInstance(
     request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.instance.v1.IInstance,
@@ -1107,12 +1115,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1164,7 +1172,7 @@ export class InstanceAdminClient {
   }
   updateInstance(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1177,7 +1185,7 @@ export class InstanceAdminClient {
   >;
   updateInstance(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.instance.v1.IInstance,
@@ -1266,7 +1274,7 @@ export class InstanceAdminClient {
   updateInstance(
     request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.instance.v1.IInstance,
@@ -1294,12 +1302,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1351,7 +1359,7 @@ export class InstanceAdminClient {
   }
   listInstanceConfigs(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig[],
@@ -1361,7 +1369,7 @@ export class InstanceAdminClient {
   >;
   listInstanceConfigs(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
       | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
@@ -1412,7 +1420,7 @@ export class InstanceAdminClient {
   listInstanceConfigs(
     request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
           | protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
@@ -1435,12 +1443,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1483,7 +1491,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -1538,7 +1546,7 @@ export class InstanceAdminClient {
    */
   listInstanceConfigsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig> {
     request = request || {};
     options = options || {};
@@ -1560,7 +1568,7 @@ export class InstanceAdminClient {
   }
   listInstances(
     request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.instance.v1.IInstance[],
@@ -1570,7 +1578,7 @@ export class InstanceAdminClient {
   >;
   listInstances(
     request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.instance.v1.IListInstancesRequest,
       | protos.google.spanner.admin.instance.v1.IListInstancesResponse
@@ -1640,7 +1648,7 @@ export class InstanceAdminClient {
   listInstances(
     request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.instance.v1.IListInstancesRequest,
           | protos.google.spanner.admin.instance.v1.IListInstancesResponse
@@ -1663,12 +1671,12 @@ export class InstanceAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1730,7 +1738,7 @@ export class InstanceAdminClient {
    */
   listInstancesStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -1804,7 +1812,7 @@ export class InstanceAdminClient {
    */
   listInstancesAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance> {
     request = request || {};
     options = options || {};
