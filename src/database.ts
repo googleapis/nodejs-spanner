@@ -204,9 +204,7 @@ export type BatchCreateSessionsCallback = ResourceCallback<
 >;
 
 export type DatabaseDeleteResponse = [databaseAdmin.protobuf.IEmpty];
-export type DatabaseDeleteCallback = NormalCallback<
-  databaseAdmin.protobuf.IEmpty
->;
+export type DatabaseDeleteCallback = NormalCallback<databaseAdmin.protobuf.IEmpty>;
 
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
@@ -1287,9 +1285,7 @@ class Database extends common.GrpcServiceObject {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
-    this.request<
-      databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
-    >(
+    this.request<databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse>(
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',

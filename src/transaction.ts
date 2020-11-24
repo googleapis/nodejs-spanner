@@ -104,9 +104,7 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback = NormalCallback<
-  spannerClient.spanner.v1.ITransaction
->;
+export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -135,9 +133,7 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<
-  spannerClient.spanner.v1.ICommitResponse
->;
+export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
 /**
  * @typedef {object} TimestampBounds
