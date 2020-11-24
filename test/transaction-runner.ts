@@ -87,7 +87,9 @@ describe('TransactionRunner', () => {
     beforeEach(() => {
       runFn = sandbox.stub();
 
-      ExtendedRunner = class ExtendedRunner extends Runner {
+      ExtendedRunner = class ExtendedRunner extends (
+        Runner
+      ) {
         protected async _run(transaction): Promise<void> {
           return runFn(transaction);
         }
