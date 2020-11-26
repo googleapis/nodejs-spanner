@@ -28,6 +28,8 @@ import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {google} from '../protos/protos';
+import EncryptionType = google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
 
 let promisified = false;
 // let callbackified = false;
@@ -201,6 +203,27 @@ describe('Backup', () => {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
           gaxOptions,
+        },
+        assert.ifError
+      );
+    });
+
+    it('should accept an encryption config', done => {
+      const encryptionConfig = {
+        encryptionType: EncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
+        kmsKeyName: 'some/key/path',
+      };
+
+      backup.request = config => {
+        assert.strictEqual(config.reqOpts.encryptionConfig, encryptionConfig);
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+          encryptionConfig,
         },
         assert.ifError
       );
