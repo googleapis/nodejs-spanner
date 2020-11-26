@@ -232,6 +232,12 @@ interface DatabaseRequest {
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
 }
+
+export interface RestoreOptions {
+  encryptionConfig?: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig;
+  gaxOptions?: CallOptions;
+}
+
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -1834,14 +1840,24 @@ class Database extends common.GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(
     backupPath: string,
-    options?: CallOptions
+    options?: RestoreOptions
   ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   restore(
     backupPath: string,
-    options: CallOptions,
+    options: RestoreOptions,
     callback: RestoreDatabaseCallback
   ): void;
+  /**
+   * @typedef {object} RestoreOptions
+   * @property {databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig}
+   *     encryptionConfig An encryption configuration describing
+   *     the encryption type and key resources in Cloud KMS used to
+   *     encrypt/decrypt the database to restore to.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   */
   /**
    * @typedef {array} RestoreDatabaseResponse
    * @property {Database} 0 The new {@link Database}.
@@ -1880,28 +1896,34 @@ class Database extends common.GrpcServiceObject {
    */
   restore(
     backupName: string,
-    optionsOrCallback?: CallOptions | RestoreDatabaseCallback,
+    optionsOrCallback?: RestoreOptions | RestoreDatabaseCallback,
     cb?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
     const callback =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as RestoreDatabaseCallback)
         : cb;
-    const gaxOpts =
+    const options =
       typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
-        : {};
+        ? optionsOrCallback
+        : ({} as RestoreOptions);
+
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
       parent: this.instance.formattedName_,
       databaseId: this.id,
       backup: Backup.formatName_(this.instance.formattedName_, backupName),
     };
+
+    if (options.encryptionConfig) {
+      reqOpts.encryptionConfig = options.encryptionConfig;
+    }
+
     return this.request(
       {
         client: 'DatabaseAdminClient',
         method: 'restoreDatabase',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions || {},
         headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
