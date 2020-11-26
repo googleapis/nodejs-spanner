@@ -15,6 +15,7 @@
 'use strict';
 
 const {Spanner} = require('@google-cloud/spanner');
+const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
 const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
@@ -45,8 +46,12 @@ const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
+const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
+const LOCATION_ID = 'eur5'; // TODO: Revert to regional-us-central1.
+const KEY_RING_ID = 'test-key-ring-node';
+const KEY_ID = 'test-key';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -119,6 +124,65 @@ async function deleteInstance(instance) {
   return instance.delete(GAX_OPTIONS);
 }
 
+async function getCryptoKey() {
+  const NOT_FOUND = 5;
+
+  // Instantiates a client.
+  const client = new KeyManagementServiceClient();
+
+  // Build the parent key ring name.
+  const keyRingName = client.keyRingPath(PROJECT_ID, LOCATION_ID, KEY_RING_ID);
+
+  // Get key ring.
+  try {
+    await client.getKeyRing({name: keyRingName});
+  } catch (err) {
+    // Create key ring if it doesn't exist.
+    if (err.code === NOT_FOUND) {
+      // Build the parent location name.
+      const locationName = client.locationPath(PROJECT_ID, LOCATION_ID);
+      await client.createKeyRing({
+        parent: locationName,
+        keyRingId: KEY_RING_ID,
+      });
+    } else {
+      throw err;
+    }
+  }
+
+  // Get key.
+  try {
+    // Build the key name
+    const keyName = client.cryptoKeyPath(
+      PROJECT_ID,
+      LOCATION_ID,
+      KEY_RING_ID,
+      KEY_ID
+    );
+    const [key] = await client.getCryptoKey({
+      name: keyName,
+    });
+    return key;
+  } catch (err) {
+    // Create key if it doesn't exist.
+    if (err.code === NOT_FOUND) {
+      const [key] = await client.createCryptoKey({
+        parent: keyRingName,
+        cryptoKeyId: KEY_ID,
+        cryptoKey: {
+          purpose: 'ENCRYPT_DECRYPT',
+          versionTemplate: {
+            algorithm: 'GOOGLE_SYMMETRIC_ENCRYPTION',
+          },
+        },
+      });
+      return key;
+    } else {
+      throw err;
+    }
+  }
+}
+
 describe('Spanner', () => {
   const instance = spanner.instance(INSTANCE_ID);
 
@@ -127,7 +191,7 @@ describe('Spanner', () => {
 
     if (!INSTANCE_ALREADY_EXISTS) {
       const [, operation] = await instance.create({
-        config: 'regional-us-central1',
+        config: LOCATION_ID,
         nodes: 1,
         labels: {
           [LABEL]: 'true',
@@ -211,6 +275,39 @@ describe('Spanner', () => {
       output,
       new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
     );
+  });
+
+  describe('encrypted database', () => {
+    after(async () => {
+      const instance = spanner.instance(INSTANCE_ID);
+      const encrypted_database = instance.database(ENCRYPTED_DATABASE_ID);
+      await encrypted_database.delete();
+    });
+
+    // create_database_with_encryption_key
+    it('should create a database with an encryption key', async () => {
+      const key = await getCryptoKey();
+
+      const output = execSync(
+        `${schemaCmd} createDatabaseWithEncryptionKey "${INSTANCE_ID}" "${ENCRYPTED_DATABASE_ID}" ${PROJECT_ID} "${key.name}"`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${ENCRYPTED_DATABASE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${ENCRYPTED_DATABASE_ID} on instance ${INSTANCE_ID}.`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Database encrypted with key ${key.name}.`)
+      );
+    });
   });
 
   describe('quickstart', () => {
