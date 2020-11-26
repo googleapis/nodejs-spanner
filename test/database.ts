@@ -2728,12 +2728,10 @@ describe('Database', () => {
     });
 
     it('should accept gaxOpts', done => {
-      const options = {
-        timeout: 1000,
-      };
+      const options = {gaxOptions: {timeout: 1000}};
 
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options);
+        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
         done();
       };
 
