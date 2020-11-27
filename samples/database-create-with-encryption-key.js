@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ async function createDatabaseWithEncryptionKey(
   console.log(
     `Database encrypted with key ${data.metadata.encryptionConfig.kmsKeyName}.`
   );
-  // [END spanner_create_database]
+  // [END spanner_create_database_with_encryption_key]
 }
 
 module.exports.createDatabaseWithEncryptionKey = createDatabaseWithEncryptionKey;
