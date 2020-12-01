@@ -2017,6 +2017,13 @@
                               "rule": "repeated",
                               "type": "google.protobuf.Timestamp",
                               "id": 3
+                            },
+                            "throttled": {
+                              "type": "bool",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           }
                         },

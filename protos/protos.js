@@ -18676,6 +18676,7 @@
                              * @property {string|null} [database] UpdateDatabaseDdlMetadata database
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlMetadata statements
                              * @property {Array.<google.protobuf.ITimestamp>|null} [commitTimestamps] UpdateDatabaseDdlMetadata commitTimestamps
+                             * @property {boolean|null} [throttled] UpdateDatabaseDdlMetadata throttled
                              */
     
                             /**
@@ -18720,6 +18721,14 @@
                             UpdateDatabaseDdlMetadata.prototype.commitTimestamps = $util.emptyArray;
     
                             /**
+                             * UpdateDatabaseDdlMetadata throttled.
+                             * @member {boolean} throttled
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseDdlMetadata.prototype.throttled = false;
+    
+                            /**
                              * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
@@ -18751,6 +18760,8 @@
                                 if (message.commitTimestamps != null && message.commitTimestamps.length)
                                     for (var i = 0; i < message.commitTimestamps.length; ++i)
                                         $root.google.protobuf.Timestamp.encode(message.commitTimestamps[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.throttled != null && Object.hasOwnProperty.call(message, "throttled"))
+                                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.throttled);
                                 return writer;
                             };
     
@@ -18797,6 +18808,9 @@
                                         if (!(message.commitTimestamps && message.commitTimestamps.length))
                                             message.commitTimestamps = [];
                                         message.commitTimestamps.push($root.google.protobuf.Timestamp.decode(reader, reader.uint32()));
+                                        break;
+                                    case 4:
+                                        message.throttled = reader.bool();
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -18852,6 +18866,9 @@
                                             return "commitTimestamps." + error;
                                     }
                                 }
+                                if (message.throttled != null && message.hasOwnProperty("throttled"))
+                                    if (typeof message.throttled !== "boolean")
+                                        return "throttled: boolean expected";
                                 return null;
                             };
     
@@ -18886,6 +18903,8 @@
                                         message.commitTimestamps[i] = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamps[i]);
                                     }
                                 }
+                                if (object.throttled != null)
+                                    message.throttled = Boolean(object.throttled);
                                 return message;
                             };
     
@@ -18906,8 +18925,10 @@
                                     object.statements = [];
                                     object.commitTimestamps = [];
                                 }
-                                if (options.defaults)
+                                if (options.defaults) {
                                     object.database = "";
+                                    object.throttled = false;
+                                }
                                 if (message.database != null && message.hasOwnProperty("database"))
                                     object.database = message.database;
                                 if (message.statements && message.statements.length) {
@@ -18920,6 +18941,8 @@
                                     for (var j = 0; j < message.commitTimestamps.length; ++j)
                                         object.commitTimestamps[j] = $root.google.protobuf.Timestamp.toObject(message.commitTimestamps[j], options);
                                 }
+                                if (message.throttled != null && message.hasOwnProperty("throttled"))
+                                    object.throttled = message.throttled;
                                 return object;
                             };
     
