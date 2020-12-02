@@ -4,6 +4,23 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.4.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.3.0...v5.4.0) (2020-12-02)
+
+
+### Features
+
+* support callbacks with database getRestoreInfo(), getState(), getOperations() ([#1230](https://www.github.com/googleapis/nodejs-spanner/issues/1230)) ([b56758b](https://www.github.com/googleapis/nodejs-spanner/commit/b56758b0e832c6471d14bd88b4580d21d5696fdd))
+
+
+### Bug Fixes
+
+* **browser:** check for fetch on window ([32ac608](https://www.github.com/googleapis/nodejs-spanner/commit/32ac6082383d5265f5022d97f23173e8786f4a82))
+* do not modify options object, use defaultScopes ([#1264](https://www.github.com/googleapis/nodejs-spanner/issues/1264)) ([6628c6a](https://www.github.com/googleapis/nodejs-spanner/commit/6628c6a81d427b8bb8bb1a42ae63f991b1cf73c9))
+* **deps:** update dependency big.js to v6 ([#1244](https://www.github.com/googleapis/nodejs-spanner/issues/1244)) ([259a51e](https://www.github.com/googleapis/nodejs-spanner/commit/259a51ee0726aa8f0b7717acd5253ecb77b16038))
+* do not create sessions after getDatabases call ([#1228](https://www.github.com/googleapis/nodejs-spanner/issues/1228)) ([53d5f37](https://www.github.com/googleapis/nodejs-spanner/commit/53d5f371d54c64dd095ac9ec721d05adf2c7d064))
+* **deps:** update dependency @google-cloud/precise-date to v2 ([#1240](https://www.github.com/googleapis/nodejs-spanner/issues/1240)) ([38dfec2](https://www.github.com/googleapis/nodejs-spanner/commit/38dfec22dd00f4d69750fc20e66c2395a9c6d3b3))
+* **deps:** update dependency yargs to v16 ([#1233](https://www.github.com/googleapis/nodejs-spanner/issues/1233)) ([75fd09a](https://www.github.com/googleapis/nodejs-spanner/commit/75fd09acb5a9a728a8b6403f44351e4b9b44b723))
+
 ## [5.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.1...v5.3.0) (2020-09-04)
 
 
