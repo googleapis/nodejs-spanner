@@ -41,8 +41,6 @@ async function createDatabaseWithEncryptionKey(
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
-  // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
-  // must be converted to strings before being inserted as INT64s
   const request = {
     encryptionConfig: {
       kmsKeyName: keyName,
