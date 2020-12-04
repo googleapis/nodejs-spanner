@@ -1459,17 +1459,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/databases",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*/instances/*}/databases"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             },
                             "CreateDatabase": {
                               "requestType": "CreateDatabaseRequest",
@@ -1480,24 +1470,7 @@
                                 "(google.api.method_signature)": "parent,create_statement",
                                 "(google.longrunning.operation_info).response_type": "google.spanner.admin.database.v1.Database",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.CreateDatabaseMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{parent=projects/*/instances/*}/databases",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent,create_statement"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.spanner.admin.database.v1.Database",
-                                    "metadata_type": "google.spanner.admin.database.v1.CreateDatabaseMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "GetDatabase": {
                               "requestType": "GetDatabaseRequest",
@@ -1505,17 +1478,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{name=projects/*/instances/*/databases/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{name=projects/*/instances/*/databases/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "UpdateDatabaseDdl": {
                               "requestType": "UpdateDatabaseDdlRequest",
@@ -1526,24 +1489,7 @@
                                 "(google.api.method_signature)": "database,statements",
                                 "(google.longrunning.operation_info).response_type": "google.protobuf.Empty",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "patch": "/v1/{database=projects/*/instances/*/databases/*}/ddl",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "database,statements"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.protobuf.Empty",
-                                    "metadata_type": "google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "DropDatabase": {
                               "requestType": "DropDatabaseRequest",
@@ -1551,17 +1497,7 @@
                               "options": {
                                 "(google.api.http).delete": "/v1/{database=projects/*/instances/*/databases/*}",
                                 "(google.api.method_signature)": "database"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "delete": "/v1/{database=projects/*/instances/*/databases/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "database"
-                                }
-                              ]
+                              }
                             },
                             "GetDatabaseDdl": {
                               "requestType": "GetDatabaseDdlRequest",
@@ -1569,17 +1505,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{database=projects/*/instances/*/databases/*}/ddl",
                                 "(google.api.method_signature)": "database"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{database=projects/*/instances/*/databases/*}/ddl"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "database"
-                                }
-                              ]
+                              }
                             },
                             "SetIamPolicy": {
                               "requestType": "google.iam.v1.SetIamPolicyRequest",
@@ -1590,22 +1516,7 @@
                                 "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource,policy"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*/databases/*}:setIamPolicy",
-                                    "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:setIamPolicy",
-                                      "body": "*"
-                                    }
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource,policy"
-                                }
-                              ]
+                              }
                             },
                             "GetIamPolicy": {
                               "requestType": "google.iam.v1.GetIamPolicyRequest",
@@ -1616,22 +1527,7 @@
                                 "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*/databases/*}:getIamPolicy",
-                                    "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:getIamPolicy",
-                                      "body": "*"
-                                    }
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource"
-                                }
-                              ]
+                              }
                             },
                             "TestIamPermissions": {
                               "requestType": "google.iam.v1.TestIamPermissionsRequest",
@@ -1642,22 +1538,7 @@
                                 "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource,permissions"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions",
-                                    "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
-                                      "body": "*"
-                                    }
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource,permissions"
-                                }
-                              ]
+                              }
                             },
                             "CreateBackup": {
                               "requestType": "CreateBackupRequest",
@@ -1668,24 +1549,7 @@
                                 "(google.api.method_signature)": "parent,backup,backup_id",
                                 "(google.longrunning.operation_info).response_type": "google.spanner.admin.database.v1.Backup",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.CreateBackupMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{parent=projects/*/instances/*}/backups",
-                                    "body": "backup"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent,backup,backup_id"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.spanner.admin.database.v1.Backup",
-                                    "metadata_type": "google.spanner.admin.database.v1.CreateBackupMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "GetBackup": {
                               "requestType": "GetBackupRequest",
@@ -1693,17 +1557,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{name=projects/*/instances/*/backups/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{name=projects/*/instances/*/backups/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "UpdateBackup": {
                               "requestType": "UpdateBackupRequest",
@@ -1712,18 +1566,7 @@
                                 "(google.api.http).patch": "/v1/{backup.name=projects/*/instances/*/backups/*}",
                                 "(google.api.http).body": "backup",
                                 "(google.api.method_signature)": "backup,update_mask"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "patch": "/v1/{backup.name=projects/*/instances/*/backups/*}",
-                                    "body": "backup"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "backup,update_mask"
-                                }
-                              ]
+                              }
                             },
                             "DeleteBackup": {
                               "requestType": "DeleteBackupRequest",
@@ -1731,17 +1574,7 @@
                               "options": {
                                 "(google.api.http).delete": "/v1/{name=projects/*/instances/*/backups/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "delete": "/v1/{name=projects/*/instances/*/backups/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "ListBackups": {
                               "requestType": "ListBackupsRequest",
@@ -1749,17 +1582,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/backups",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*/instances/*}/backups"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             },
                             "RestoreDatabase": {
                               "requestType": "RestoreDatabaseRequest",
@@ -1770,24 +1593,7 @@
                                 "(google.api.method_signature)": "parent,database_id,backup",
                                 "(google.longrunning.operation_info).response_type": "google.spanner.admin.database.v1.Database",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.RestoreDatabaseMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{parent=projects/*/instances/*}/databases:restore",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent,database_id,backup"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.spanner.admin.database.v1.Database",
-                                    "metadata_type": "google.spanner.admin.database.v1.RestoreDatabaseMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "ListDatabaseOperations": {
                               "requestType": "ListDatabaseOperationsRequest",
@@ -1795,17 +1601,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/databaseOperations",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*/instances/*}/databaseOperations"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             },
                             "ListBackupOperations": {
                               "requestType": "ListBackupOperationsRequest",
@@ -1813,17 +1609,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/backupOperations",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*/instances/*}/backupOperations"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             }
                           }
                         },
@@ -2017,13 +1803,6 @@
                               "rule": "repeated",
                               "type": "google.protobuf.Timestamp",
                               "id": 3
-                            },
-                            "throttled": {
-                              "type": "bool",
-                              "id": 4,
-                              "options": {
-                                "(google.api.field_behavior)": "OUTPUT_ONLY"
-                              }
                             }
                           }
                         },
@@ -2212,17 +1991,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*}/instanceConfigs",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*}/instanceConfigs"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             },
                             "GetInstanceConfig": {
                               "requestType": "GetInstanceConfigRequest",
@@ -2230,17 +1999,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{name=projects/*/instanceConfigs/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{name=projects/*/instanceConfigs/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "ListInstances": {
                               "requestType": "ListInstancesRequest",
@@ -2248,17 +2007,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{parent=projects/*}/instances",
                                 "(google.api.method_signature)": "parent"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{parent=projects/*}/instances"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent"
-                                }
-                              ]
+                              }
                             },
                             "GetInstance": {
                               "requestType": "GetInstanceRequest",
@@ -2266,17 +2015,7 @@
                               "options": {
                                 "(google.api.http).get": "/v1/{name=projects/*/instances/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "get": "/v1/{name=projects/*/instances/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "CreateInstance": {
                               "requestType": "CreateInstanceRequest",
@@ -2287,24 +2026,7 @@
                                 "(google.api.method_signature)": "parent,instance_id,instance",
                                 "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.Instance",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.CreateInstanceMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{parent=projects/*}/instances",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "parent,instance_id,instance"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.spanner.admin.instance.v1.Instance",
-                                    "metadata_type": "google.spanner.admin.instance.v1.CreateInstanceMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "UpdateInstance": {
                               "requestType": "UpdateInstanceRequest",
@@ -2315,24 +2037,7 @@
                                 "(google.api.method_signature)": "instance,field_mask",
                                 "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.Instance",
                                 "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.UpdateInstanceMetadata"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "patch": "/v1/{instance.name=projects/*/instances/*}",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "instance,field_mask"
-                                },
-                                {
-                                  "(google.longrunning.operation_info)": {
-                                    "response_type": "google.spanner.admin.instance.v1.Instance",
-                                    "metadata_type": "google.spanner.admin.instance.v1.UpdateInstanceMetadata"
-                                  }
-                                }
-                              ]
+                              }
                             },
                             "DeleteInstance": {
                               "requestType": "DeleteInstanceRequest",
@@ -2340,17 +2045,7 @@
                               "options": {
                                 "(google.api.http).delete": "/v1/{name=projects/*/instances/*}",
                                 "(google.api.method_signature)": "name"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "delete": "/v1/{name=projects/*/instances/*}"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "name"
-                                }
-                              ]
+                              }
                             },
                             "SetIamPolicy": {
                               "requestType": "google.iam.v1.SetIamPolicyRequest",
@@ -2359,18 +2054,7 @@
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*}:setIamPolicy",
                                 "(google.api.http).body": "*",
                                 "(google.api.method_signature)": "resource,policy"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*}:setIamPolicy",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource,policy"
-                                }
-                              ]
+                              }
                             },
                             "GetIamPolicy": {
                               "requestType": "google.iam.v1.GetIamPolicyRequest",
@@ -2379,18 +2063,7 @@
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*}:getIamPolicy",
                                 "(google.api.http).body": "*",
                                 "(google.api.method_signature)": "resource"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*}:getIamPolicy",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource"
-                                }
-                              ]
+                              }
                             },
                             "TestIamPermissions": {
                               "requestType": "google.iam.v1.TestIamPermissionsRequest",
@@ -2399,18 +2072,7 @@
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*}:testIamPermissions",
                                 "(google.api.http).body": "*",
                                 "(google.api.method_signature)": "resource,permissions"
-                              },
-                              "parsedOptions": [
-                                {
-                                  "(google.api.http)": {
-                                    "post": "/v1/{resource=projects/*/instances/*}:testIamPermissions",
-                                    "body": "*"
-                                  }
-                                },
-                                {
-                                  "(google.api.method_signature)": "resource,permissions"
-                                }
-                              ]
+                              }
                             }
                           }
                         },
@@ -3185,18 +2847,7 @@
                         "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}/sessions",
                         "(google.api.http).body": "*",
                         "(google.api.method_signature)": "database"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{database=projects/*/instances/*/databases/*}/sessions",
-                            "body": "*"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "database"
-                        }
-                      ]
+                      }
                     },
                     "BatchCreateSessions": {
                       "requestType": "BatchCreateSessionsRequest",
@@ -3205,18 +2856,7 @@
                         "(google.api.http).post": "/v1/{database=projects/*/instances/*/databases/*}/sessions:batchCreate",
                         "(google.api.http).body": "*",
                         "(google.api.method_signature)": "database,session_count"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{database=projects/*/instances/*/databases/*}/sessions:batchCreate",
-                            "body": "*"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "database,session_count"
-                        }
-                      ]
+                      }
                     },
                     "GetSession": {
                       "requestType": "GetSessionRequest",
@@ -3224,17 +2864,7 @@
                       "options": {
                         "(google.api.http).get": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}",
                         "(google.api.method_signature)": "name"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "get": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "name"
-                        }
-                      ]
+                      }
                     },
                     "ListSessions": {
                       "requestType": "ListSessionsRequest",
@@ -3242,17 +2872,7 @@
                       "options": {
                         "(google.api.http).get": "/v1/{database=projects/*/instances/*/databases/*}/sessions",
                         "(google.api.method_signature)": "database"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "get": "/v1/{database=projects/*/instances/*/databases/*}/sessions"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "database"
-                        }
-                      ]
+                      }
                     },
                     "DeleteSession": {
                       "requestType": "DeleteSessionRequest",
@@ -3260,17 +2880,7 @@
                       "options": {
                         "(google.api.http).delete": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}",
                         "(google.api.method_signature)": "name"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "delete": "/v1/{name=projects/*/instances/*/databases/*/sessions/*}"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "name"
-                        }
-                      ]
+                      }
                     },
                     "ExecuteSql": {
                       "requestType": "ExecuteSqlRequest",
@@ -3278,15 +2888,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeSql",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeSql",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "ExecuteStreamingSql": {
                       "requestType": "ExecuteSqlRequest",
@@ -3295,15 +2897,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeStreamingSql",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeStreamingSql",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "ExecuteBatchDml": {
                       "requestType": "ExecuteBatchDmlRequest",
@@ -3311,15 +2905,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeBatchDml",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:executeBatchDml",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "Read": {
                       "requestType": "ReadRequest",
@@ -3327,15 +2913,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:read",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:read",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "StreamingRead": {
                       "requestType": "ReadRequest",
@@ -3344,15 +2922,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:streamingRead",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:streamingRead",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "BeginTransaction": {
                       "requestType": "BeginTransactionRequest",
@@ -3361,18 +2931,7 @@
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:beginTransaction",
                         "(google.api.http).body": "*",
                         "(google.api.method_signature)": "session,options"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:beginTransaction",
-                            "body": "*"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "session,options"
-                        }
-                      ]
+                      }
                     },
                     "Commit": {
                       "requestType": "CommitRequest",
@@ -3381,21 +2940,7 @@
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:commit",
                         "(google.api.http).body": "*",
                         "(google.api.method_signature)": "session,single_use_transaction,mutations"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:commit",
-                            "body": "*"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "session,transaction_id,mutations"
-                        },
-                        {
-                          "(google.api.method_signature)": "session,single_use_transaction,mutations"
-                        }
-                      ]
+                      }
                     },
                     "Rollback": {
                       "requestType": "RollbackRequest",
@@ -3404,18 +2949,7 @@
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:rollback",
                         "(google.api.http).body": "*",
                         "(google.api.method_signature)": "session,transaction_id"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:rollback",
-                            "body": "*"
-                          }
-                        },
-                        {
-                          "(google.api.method_signature)": "session,transaction_id"
-                        }
-                      ]
+                      }
                     },
                     "PartitionQuery": {
                       "requestType": "PartitionQueryRequest",
@@ -3423,15 +2957,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionQuery",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionQuery",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "PartitionRead": {
                       "requestType": "PartitionReadRequest",
@@ -3439,15 +2965,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionRead",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:partitionRead",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     }
                   }
                 },
@@ -3585,6 +3103,24 @@
                     }
                   }
                 },
+                "RequestOptions": {
+                  "fields": {
+                    "priority": {
+                      "type": "Priority",
+                      "id": 1
+                    }
+                  },
+                  "nested": {
+                    "Priority": {
+                      "values": {
+                        "PRIORITY_UNSPECIFIED": 0,
+                        "PRIORITY_LOW": 1,
+                        "PRIORITY_MEDIUM": 2,
+                        "PRIORITY_HIGH": 3
+                      }
+                    }
+                  }
+                },
                 "ExecuteSqlRequest": {
                   "fields": {
                     "session": {
@@ -3634,6 +3170,10 @@
                     "queryOptions": {
                       "type": "QueryOptions",
                       "id": 10
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 11
                     }
                   },
                   "nested": {
@@ -3685,6 +3225,10 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 5
                     }
                   },
                   "nested": {
@@ -3883,6 +3427,10 @@
                     "partitionToken": {
                       "type": "bytes",
                       "id": 10
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 11
                     }
                   }
                 },
@@ -3902,6 +3450,10 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 3
                     }
                   }
                 },
@@ -3935,6 +3487,10 @@
                       "rule": "repeated",
                       "type": "Mutation",
                       "id": 4
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 6
                     }
                   }
                 },
@@ -4193,17 +3749,7 @@
                   "options": {
                     "(google.api.http).get": "/v1/{name=operations}",
                     "(google.api.method_signature)": "name,filter"
-                  },
-                  "parsedOptions": [
-                    {
-                      "(google.api.http)": {
-                        "get": "/v1/{name=operations}"
-                      }
-                    },
-                    {
-                      "(google.api.method_signature)": "name,filter"
-                    }
-                  ]
+                  }
                 },
                 "GetOperation": {
                   "requestType": "GetOperationRequest",
@@ -4211,17 +3757,7 @@
                   "options": {
                     "(google.api.http).get": "/v1/{name=operations/**}",
                     "(google.api.method_signature)": "name"
-                  },
-                  "parsedOptions": [
-                    {
-                      "(google.api.http)": {
-                        "get": "/v1/{name=operations/**}"
-                      }
-                    },
-                    {
-                      "(google.api.method_signature)": "name"
-                    }
-                  ]
+                  }
                 },
                 "DeleteOperation": {
                   "requestType": "DeleteOperationRequest",
@@ -4229,17 +3765,7 @@
                   "options": {
                     "(google.api.http).delete": "/v1/{name=operations/**}",
                     "(google.api.method_signature)": "name"
-                  },
-                  "parsedOptions": [
-                    {
-                      "(google.api.http)": {
-                        "delete": "/v1/{name=operations/**}"
-                      }
-                    },
-                    {
-                      "(google.api.method_signature)": "name"
-                    }
-                  ]
+                  }
                 },
                 "CancelOperation": {
                   "requestType": "CancelOperationRequest",
@@ -4248,18 +3774,7 @@
                     "(google.api.http).post": "/v1/{name=operations/**}:cancel",
                     "(google.api.http).body": "*",
                     "(google.api.method_signature)": "name"
-                  },
-                  "parsedOptions": [
-                    {
-                      "(google.api.http)": {
-                        "post": "/v1/{name=operations/**}:cancel",
-                        "body": "*"
-                      }
-                    },
-                    {
-                      "(google.api.method_signature)": "name"
-                    }
-                  ]
+                  }
                 },
                 "WaitOperation": {
                   "requestType": "WaitOperationRequest",
@@ -4406,15 +3921,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{resource=**}:setIamPolicy",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{resource=**}:setIamPolicy",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "GetIamPolicy": {
                       "requestType": "GetIamPolicyRequest",
@@ -4422,15 +3929,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{resource=**}:getIamPolicy",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{resource=**}:getIamPolicy",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     },
                     "TestIamPermissions": {
                       "requestType": "TestIamPermissionsRequest",
@@ -4438,15 +3937,7 @@
                       "options": {
                         "(google.api.http).post": "/v1/{resource=**}:testIamPermissions",
                         "(google.api.http).body": "*"
-                      },
-                      "parsedOptions": [
-                        {
-                          "(google.api.http)": {
-                            "post": "/v1/{resource=**}:testIamPermissions",
-                            "body": "*"
-                          }
-                        }
-                      ]
+                      }
                     }
                   }
                 },

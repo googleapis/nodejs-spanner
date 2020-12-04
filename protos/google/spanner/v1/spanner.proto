@@ -419,6 +419,28 @@ message DeleteSessionRequest {
   ];
 }
 
+// Common request options for various APIs.
+message RequestOptions {
+  // The relative priority for requests. Note that priority is not applicable
+  // for BeginTransaction.
+  enum Priority {
+    // PRIORITY_UNSPECIFIED is equivalent to PRIORITY_HIGH.
+    PRIORITY_UNSPECIFIED = 0;
+
+    // This specifies that the request is low priority.
+    PRIORITY_LOW = 1;
+
+    // This specifies that the request is medium priority.
+    PRIORITY_MEDIUM = 2;
+
+    // This specifies that the request is high priority.
+    PRIORITY_HIGH = 3;
+  }
+
+  // Priority for the request.
+  Priority priority = 1;
+}
+
 // The request for [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
 // [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql].
 message ExecuteSqlRequest {
@@ -537,6 +559,9 @@ message ExecuteSqlRequest {
 
   // Query optimizer configuration to use for the given query.
   QueryOptions query_options = 10;
+
+  // Common options for this request.
+  RequestOptions request_options = 11;
 }
 
 // The request for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml].
@@ -603,6 +628,9 @@ message ExecuteBatchDmlRequest {
   // sequence number, the transaction may be aborted. Replays of previously
   // handled requests will yield the same response as the first execution.
   int64 seqno = 4 [(google.api.field_behavior) = REQUIRED];
+
+  // Common options for this request.
+  RequestOptions request_options = 5;
 }
 
 // The response for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml]. Contains a list
@@ -837,6 +865,9 @@ message ReadRequest {
   // match for the values of fields common to this message and the
   // PartitionReadRequest message used to create this partition_token.
   bytes partition_token = 10;
+
+  // Common options for this request.
+  RequestOptions request_options = 11;
 }
 
 // The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
@@ -851,6 +882,13 @@ message BeginTransactionRequest {
 
   // Required. Options for the new transaction.
   TransactionOptions options = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Common options for this request.
+  // Priority is ignored for this request. Setting the priority in this
+  // request_options struct will not do anything. To set the priority for a
+  // transaction, set it on the reads and writes that are part of this
+  // transaction instead.
+  RequestOptions request_options = 3;
 }
 
 // The request for [Commit][google.spanner.v1.Spanner.Commit].
@@ -884,6 +922,9 @@ message CommitRequest {
   // mutations are applied atomically, in the order they appear in
   // this list.
   repeated Mutation mutations = 4;
+
+  // Common options for this request.
+  RequestOptions request_options = 6;
 }
 
 // The response for [Commit][google.spanner.v1.Spanner.Commit].

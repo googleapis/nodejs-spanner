@@ -18676,7 +18676,6 @@
                              * @property {string|null} [database] UpdateDatabaseDdlMetadata database
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlMetadata statements
                              * @property {Array.<google.protobuf.ITimestamp>|null} [commitTimestamps] UpdateDatabaseDdlMetadata commitTimestamps
-                             * @property {boolean|null} [throttled] UpdateDatabaseDdlMetadata throttled
                              */
     
                             /**
@@ -18721,14 +18720,6 @@
                             UpdateDatabaseDdlMetadata.prototype.commitTimestamps = $util.emptyArray;
     
                             /**
-                             * UpdateDatabaseDdlMetadata throttled.
-                             * @member {boolean} throttled
-                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
-                             * @instance
-                             */
-                            UpdateDatabaseDdlMetadata.prototype.throttled = false;
-    
-                            /**
                              * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
@@ -18760,8 +18751,6 @@
                                 if (message.commitTimestamps != null && message.commitTimestamps.length)
                                     for (var i = 0; i < message.commitTimestamps.length; ++i)
                                         $root.google.protobuf.Timestamp.encode(message.commitTimestamps[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                                if (message.throttled != null && Object.hasOwnProperty.call(message, "throttled"))
-                                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.throttled);
                                 return writer;
                             };
     
@@ -18808,9 +18797,6 @@
                                         if (!(message.commitTimestamps && message.commitTimestamps.length))
                                             message.commitTimestamps = [];
                                         message.commitTimestamps.push($root.google.protobuf.Timestamp.decode(reader, reader.uint32()));
-                                        break;
-                                    case 4:
-                                        message.throttled = reader.bool();
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -18866,9 +18852,6 @@
                                             return "commitTimestamps." + error;
                                     }
                                 }
-                                if (message.throttled != null && message.hasOwnProperty("throttled"))
-                                    if (typeof message.throttled !== "boolean")
-                                        return "throttled: boolean expected";
                                 return null;
                             };
     
@@ -18903,8 +18886,6 @@
                                         message.commitTimestamps[i] = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamps[i]);
                                     }
                                 }
-                                if (object.throttled != null)
-                                    message.throttled = Boolean(object.throttled);
                                 return message;
                             };
     
@@ -18925,10 +18906,8 @@
                                     object.statements = [];
                                     object.commitTimestamps = [];
                                 }
-                                if (options.defaults) {
+                                if (options.defaults)
                                     object.database = "";
-                                    object.throttled = false;
-                                }
                                 if (message.database != null && message.hasOwnProperty("database"))
                                     object.database = message.database;
                                 if (message.statements && message.statements.length) {
@@ -18941,8 +18920,6 @@
                                     for (var j = 0; j < message.commitTimestamps.length; ++j)
                                         object.commitTimestamps[j] = $root.google.protobuf.Timestamp.toObject(message.commitTimestamps[j], options);
                                 }
-                                if (message.throttled != null && message.hasOwnProperty("throttled"))
-                                    object.throttled = message.throttled;
                                 return object;
                             };
     
@@ -32913,6 +32890,234 @@
                     return DeleteSessionRequest;
                 })();
     
+                v1.RequestOptions = (function() {
+    
+                    /**
+                     * Properties of a RequestOptions.
+                     * @memberof google.spanner.v1
+                     * @interface IRequestOptions
+                     * @property {google.spanner.v1.RequestOptions.Priority|null} [priority] RequestOptions priority
+                     */
+    
+                    /**
+                     * Constructs a new RequestOptions.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a RequestOptions.
+                     * @implements IRequestOptions
+                     * @constructor
+                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
+                     */
+                    function RequestOptions(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * RequestOptions priority.
+                     * @member {google.spanner.v1.RequestOptions.Priority} priority
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     */
+                    RequestOptions.prototype.priority = 0;
+    
+                    /**
+                     * Creates a new RequestOptions instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions instance
+                     */
+                    RequestOptions.create = function create(properties) {
+                        return new RequestOptions(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified RequestOptions message. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    RequestOptions.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.priority != null && Object.hasOwnProperty.call(message, "priority"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.priority);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified RequestOptions message, length delimited. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    RequestOptions.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a RequestOptions message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    RequestOptions.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.RequestOptions();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.priority = reader.int32();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a RequestOptions message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    RequestOptions.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a RequestOptions message.
+                     * @function verify
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    RequestOptions.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.priority != null && message.hasOwnProperty("priority"))
+                            switch (message.priority) {
+                            default:
+                                return "priority: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                                break;
+                            }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a RequestOptions message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     */
+                    RequestOptions.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.RequestOptions)
+                            return object;
+                        var message = new $root.google.spanner.v1.RequestOptions();
+                        switch (object.priority) {
+                        case "PRIORITY_UNSPECIFIED":
+                        case 0:
+                            message.priority = 0;
+                            break;
+                        case "PRIORITY_LOW":
+                        case 1:
+                            message.priority = 1;
+                            break;
+                        case "PRIORITY_MEDIUM":
+                        case 2:
+                            message.priority = 2;
+                            break;
+                        case "PRIORITY_HIGH":
+                        case 3:
+                            message.priority = 3;
+                            break;
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a RequestOptions message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.RequestOptions} message RequestOptions
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    RequestOptions.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.priority = options.enums === String ? "PRIORITY_UNSPECIFIED" : 0;
+                        if (message.priority != null && message.hasOwnProperty("priority"))
+                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this RequestOptions to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    RequestOptions.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Priority enum.
+                     * @name google.spanner.v1.RequestOptions.Priority
+                     * @enum {number}
+                     * @property {number} PRIORITY_UNSPECIFIED=0 PRIORITY_UNSPECIFIED value
+                     * @property {number} PRIORITY_LOW=1 PRIORITY_LOW value
+                     * @property {number} PRIORITY_MEDIUM=2 PRIORITY_MEDIUM value
+                     * @property {number} PRIORITY_HIGH=3 PRIORITY_HIGH value
+                     */
+                    RequestOptions.Priority = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "PRIORITY_UNSPECIFIED"] = 0;
+                        values[valuesById[1] = "PRIORITY_LOW"] = 1;
+                        values[valuesById[2] = "PRIORITY_MEDIUM"] = 2;
+                        values[valuesById[3] = "PRIORITY_HIGH"] = 3;
+                        return values;
+                    })();
+    
+                    return RequestOptions;
+                })();
+    
                 v1.ExecuteSqlRequest = (function() {
     
                     /**
@@ -32929,6 +33134,7 @@
                      * @property {Uint8Array|null} [partitionToken] ExecuteSqlRequest partitionToken
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
                      * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteSqlRequest requestOptions
                      */
     
                     /**
@@ -33028,6 +33234,14 @@
                     ExecuteSqlRequest.prototype.queryOptions = null;
     
                     /**
+                     * ExecuteSqlRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ExecuteSqlRequest
+                     * @instance
+                     */
+                    ExecuteSqlRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -33074,6 +33288,8 @@
                             writer.uint32(/* id 9, wireType 0 =*/72).int64(message.seqno);
                         if (message.queryOptions != null && Object.hasOwnProperty.call(message, "queryOptions"))
                             $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
     
@@ -33156,6 +33372,9 @@
                                 break;
                             case 10:
                                 message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
+                                break;
+                            case 11:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -33241,6 +33460,11 @@
                             if (error)
                                 return "queryOptions." + error;
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -33318,6 +33542,11 @@
                                 throw TypeError(".google.spanner.v1.ExecuteSqlRequest.queryOptions: object expected");
                             message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.fromObject(object.queryOptions);
                         }
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteSqlRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -33362,6 +33591,7 @@
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
                             object.queryOptions = null;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -33390,6 +33620,8 @@
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
                         if (message.queryOptions != null && message.hasOwnProperty("queryOptions"))
                             object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -33620,6 +33852,7 @@
                      * @property {google.spanner.v1.ITransactionSelector|null} [transaction] ExecuteBatchDmlRequest transaction
                      * @property {Array.<google.spanner.v1.ExecuteBatchDmlRequest.IStatement>|null} [statements] ExecuteBatchDmlRequest statements
                      * @property {number|Long|null} [seqno] ExecuteBatchDmlRequest seqno
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteBatchDmlRequest requestOptions
                      */
     
                     /**
@@ -33671,6 +33904,14 @@
                     ExecuteBatchDmlRequest.prototype.seqno = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
     
                     /**
+                     * ExecuteBatchDmlRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ExecuteBatchDmlRequest
+                     * @instance
+                     */
+                    ExecuteBatchDmlRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteBatchDmlRequest
@@ -33703,6 +33944,8 @@
                                 $root.google.spanner.v1.ExecuteBatchDmlRequest.Statement.encode(message.statements[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.seqno != null && Object.hasOwnProperty.call(message, "seqno"))
                             writer.uint32(/* id 4, wireType 0 =*/32).int64(message.seqno);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                         return writer;
                     };
     
@@ -33750,6 +33993,9 @@
                                 break;
                             case 4:
                                 message.seqno = reader.int64();
+                                break;
+                            case 5:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -33806,6 +34052,11 @@
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
                             if (!$util.isInteger(message.seqno) && !(message.seqno && $util.isInteger(message.seqno.low) && $util.isInteger(message.seqno.high)))
                                 return "seqno: integer|Long expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -33847,6 +34098,11 @@
                                 message.seqno = object.seqno;
                             else if (typeof object.seqno === "object")
                                 message.seqno = new $util.LongBits(object.seqno.low >>> 0, object.seqno.high >>> 0).toNumber();
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteBatchDmlRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -33873,6 +34129,7 @@
                                 object.seqno = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -33888,6 +34145,8 @@
                                 object.seqno = options.longs === String ? String(message.seqno) : message.seqno;
                             else
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -35814,6 +36073,7 @@
                      * @property {number|Long|null} [limit] ReadRequest limit
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
                      */
     
                     /**
@@ -35905,6 +36165,14 @@
                     ReadRequest.prototype.partitionToken = $util.newBuffer([]);
     
                     /**
+                     * ReadRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ReadRequest
+                     * @instance
+                     */
+                    ReadRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ReadRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ReadRequest
@@ -35947,6 +36215,8 @@
                             writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.resumeToken);
                         if (message.partitionToken != null && Object.hasOwnProperty.call(message, "partitionToken"))
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
     
@@ -36009,6 +36279,9 @@
                                 break;
                             case 10:
                                 message.partitionToken = reader.bytes();
+                                break;
+                            case 11:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -36080,6 +36353,11 @@
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             if (!(message.partitionToken && typeof message.partitionToken.length === "number" || $util.isString(message.partitionToken)))
                                 return "partitionToken: buffer expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -36137,6 +36415,11 @@
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
                             else if (object.partitionToken.length)
                                 message.partitionToken = object.partitionToken;
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -36180,6 +36463,7 @@
                                 if (options.bytes !== Array)
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -36205,6 +36489,8 @@
                             object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -36230,6 +36516,7 @@
                      * @interface IBeginTransactionRequest
                      * @property {string|null} [session] BeginTransactionRequest session
                      * @property {google.spanner.v1.ITransactionOptions|null} [options] BeginTransactionRequest options
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] BeginTransactionRequest requestOptions
                      */
     
                     /**
@@ -36264,6 +36551,14 @@
                     BeginTransactionRequest.prototype.options = null;
     
                     /**
+                     * BeginTransactionRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.BeginTransactionRequest
+                     * @instance
+                     */
+                    BeginTransactionRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new BeginTransactionRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.BeginTransactionRequest
@@ -36291,6 +36586,8 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.session);
                         if (message.options != null && Object.hasOwnProperty.call(message, "options"))
                             $root.google.spanner.v1.TransactionOptions.encode(message.options, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -36330,6 +36627,9 @@
                                 break;
                             case 2:
                                 message.options = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -36374,6 +36674,11 @@
                             if (error)
                                 return "options." + error;
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -36396,6 +36701,11 @@
                                 throw TypeError(".google.spanner.v1.BeginTransactionRequest.options: object expected");
                             message.options = $root.google.spanner.v1.TransactionOptions.fromObject(object.options);
                         }
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.BeginTransactionRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -36415,11 +36725,14 @@
                         if (options.defaults) {
                             object.session = "";
                             object.options = null;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
                         if (message.options != null && message.hasOwnProperty("options"))
                             object.options = $root.google.spanner.v1.TransactionOptions.toObject(message.options, options);
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -36447,6 +36760,7 @@
                      * @property {Uint8Array|null} [transactionId] CommitRequest transactionId
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] CommitRequest requestOptions
                      */
     
                     /**
@@ -36497,6 +36811,14 @@
                      */
                     CommitRequest.prototype.mutations = $util.emptyArray;
     
+                    /**
+                     * CommitRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    CommitRequest.prototype.requestOptions = null;
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
     
@@ -36544,6 +36866,8 @@
                         if (message.mutations != null && message.mutations.length)
                             for (var i = 0; i < message.mutations.length; ++i)
                                 $root.google.spanner.v1.Mutation.encode(message.mutations[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                         return writer;
                     };
     
@@ -36591,6 +36915,9 @@
                                 if (!(message.mutations && message.mutations.length))
                                     message.mutations = [];
                                 message.mutations.push($root.google.spanner.v1.Mutation.decode(reader, reader.uint32()));
+                                break;
+                            case 6:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -36655,6 +36982,11 @@
                                     return "mutations." + error;
                             }
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -36692,6 +37024,11 @@
                                 message.mutations[i] = $root.google.spanner.v1.Mutation.fromObject(object.mutations[i]);
                             }
                         }
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.CommitRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -36710,8 +37047,10 @@
                         var object = {};
                         if (options.arrays || options.defaults)
                             object.mutations = [];
-                        if (options.defaults)
+                        if (options.defaults) {
                             object.session = "";
+                            object.requestOptions = null;
+                        }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
                         if (message.transactionId != null && message.hasOwnProperty("transactionId")) {
@@ -36729,6 +37068,8 @@
                             for (var j = 0; j < message.mutations.length; ++j)
                                 object.mutations[j] = $root.google.spanner.v1.Mutation.toObject(message.mutations[j], options);
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     

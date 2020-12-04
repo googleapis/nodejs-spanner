@@ -16,7 +16,6 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-/* global window */
 import * as gax from 'google-gax';
 import {
   Callback,
@@ -31,11 +30,6 @@ import * as path from 'path';
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
-/**
- * Client JSON configuration object, loaded from
- * `src/v1/spanner_client_config.json`.
- * This file defines retry strategy and timeouts for all API methods in this library.
- */
 import * as gapicConfig from './spanner_client_config.json';
 
 const version = require('../../../package.json').version;
@@ -69,10 +63,8 @@ export class SpannerClient {
   /**
    * Construct an instance of SpannerClient.
    *
-   * @param {object} [options] - The configuration object.
-   * The options accepted by the constructor are described in detail
-   * in [this document](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#creating-the-client-instance).
-   * The common options are:
+   * @param {object} [options] - The configuration object. See the subsequent
+   *   parameters for more details.
    * @param {object} [options.credentials] - Credentials object.
    * @param {string} [options.credentials.client_email]
    * @param {string} [options.credentials.private_key]
@@ -92,35 +84,42 @@ export class SpannerClient {
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
-   * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
-   *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
-   *     In fallback mode, a special browser-compatible transport implementation is used
-   *     instead of gRPC transport. In browser context (if the `window` object is defined)
-   *     the fallback mode is enabled automatically; set `options.fallback` to `false`
-   *     if you need to override this behavior.
    */
+
   constructor(opts?: ClientOptions) {
-    // Ensure that options include all the required fields.
+    // Ensure that options include the service address and port.
     const staticMembers = this.constructor as typeof SpannerClient;
     const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
-    const port = opts?.port || staticMembers.port;
-    const clientConfig = opts?.clientConfig ?? {};
-    const fallback =
-      opts?.fallback ??
-      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
-    opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
+      opts && opts.servicePath
+        ? opts.servicePath
+        : opts && opts.apiEndpoint
+        ? opts.apiEndpoint
+        : staticMembers.servicePath;
+    const port = opts && opts.port ? opts.port : staticMembers.port;
 
-    // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
-    if (servicePath !== staticMembers.servicePath && !('scopes' in opts)) {
-      opts['scopes'] = staticMembers.scopes;
+    if (!opts) {
+      opts = {servicePath, port};
     }
+    opts.servicePath = opts.servicePath || servicePath;
+    opts.port = opts.port || port;
 
-    // Choose either gRPC or proto-over-HTTP implementation of google-gax.
+    // users can override the config from client side, like retry codes name.
+    // The detailed structure of the clientConfig can be found here: https://github.com/googleapis/gax-nodejs/blob/master/src/gax.ts#L546
+    // The way to override client config for Showcase API:
+    //
+    // const customConfig = {"interfaces": {"google.showcase.v1beta1.Echo": {"methods": {"Echo": {"retry_codes_name": "idempotent", "retry_params_name": "default"}}}}}
+    // const showcaseClient = new showcaseClient({ projectId, customConfig });
+    opts.clientConfig = opts.clientConfig || {};
+
+    // If we're running in browser, it's OK to omit `fallback` since
+    // google-gax has `browser` field in its `package.json`.
+    // For Electron (which does not respect `browser` field),
+    // pass `{fallback: true}` to the SpannerClient constructor.
     this._gaxModule = opts.fallback ? gax.fallback : gax;
 
-    // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.
+    // Create a `gaxGrpc` object, with any grpc-specific options
+    // sent to the client.
+    opts.scopes = (this.constructor as typeof SpannerClient).scopes;
     this._gaxGrpc = new this._gaxModule.GrpcClient(opts);
 
     // Save options to use in initialize() method.
@@ -128,11 +127,6 @@ export class SpannerClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = this._gaxGrpc.auth as gax.GoogleAuth;
-
-    // Set the default scopes in auth client if needed.
-    if (servicePath === staticMembers.servicePath) {
-      this.auth.defaultScopes = staticMembers.scopes;
-    }
 
     // Determine the client header string.
     const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
@@ -293,7 +287,6 @@ export class SpannerClient {
 
   /**
    * The DNS address for this API service.
-   * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
     return 'spanner.googleapis.com';
@@ -302,7 +295,6 @@ export class SpannerClient {
   /**
    * The DNS address for this API service - same as servicePath(),
    * exists for compatibility reasons.
-   * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
     return 'spanner.googleapis.com';
@@ -310,7 +302,6 @@ export class SpannerClient {
 
   /**
    * The port for this API service.
-   * @returns {number} The default port for this service.
    */
   static get port() {
     return 443;
@@ -319,7 +310,6 @@ export class SpannerClient {
   /**
    * The scopes needed to make gRPC calls for every method defined
    * in this service.
-   * @returns {string[]} List of default scopes.
    */
   static get scopes() {
     return [
@@ -332,7 +322,8 @@ export class SpannerClient {
   getProjectId(callback: Callback<string, undefined, undefined>): void;
   /**
    * Return the project ID used by this class.
-   * @returns {Promise} A promise that resolves to string containing the project ID.
+   * @param {function(Error, string)} callback - the callback to
+   *   be called with the current project Id.
    */
   getProjectId(
     callback?: Callback<string, undefined, undefined>
@@ -349,7 +340,7 @@ export class SpannerClient {
   // -------------------
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -359,7 +350,7 @@ export class SpannerClient {
   >;
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
@@ -405,16 +396,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.createSession(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   createSession(
     request: protos.google.spanner.v1.ICreateSessionRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.ISession,
           protos.google.spanner.v1.ICreateSessionRequest | null | undefined,
@@ -433,12 +420,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -453,7 +440,7 @@ export class SpannerClient {
   }
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
@@ -463,7 +450,7 @@ export class SpannerClient {
   >;
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IBatchCreateSessionsResponse,
       protos.google.spanner.v1.IBatchCreateSessionsRequest | null | undefined,
@@ -500,16 +487,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.batchCreateSessions(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   batchCreateSessions(
     request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IBatchCreateSessionsResponse,
           | protos.google.spanner.v1.IBatchCreateSessionsRequest
@@ -530,12 +513,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -550,7 +533,7 @@ export class SpannerClient {
   }
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession,
@@ -560,7 +543,7 @@ export class SpannerClient {
   >;
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ISession,
       protos.google.spanner.v1.IGetSessionRequest | null | undefined,
@@ -588,16 +571,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.getSession(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getSession(
     request: protos.google.spanner.v1.IGetSessionRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.ISession,
           protos.google.spanner.v1.IGetSessionRequest | null | undefined,
@@ -616,12 +595,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -636,7 +615,7 @@ export class SpannerClient {
   }
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -646,7 +625,7 @@ export class SpannerClient {
   >;
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
@@ -674,16 +653,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.deleteSession(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   deleteSession(
     request: protos.google.spanner.v1.IDeleteSessionRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           protos.google.spanner.v1.IDeleteSessionRequest | null | undefined,
@@ -702,12 +677,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -722,7 +697,7 @@ export class SpannerClient {
   }
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -732,7 +707,7 @@ export class SpannerClient {
   >;
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
@@ -828,20 +803,18 @@ export class SpannerClient {
    *   Required for DML statements. Ignored for queries.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
    *   Query optimizer configuration to use for the given query.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.executeSql(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   executeSql(
     request: protos.google.spanner.v1.IExecuteSqlRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IResultSet,
           protos.google.spanner.v1.IExecuteSqlRequest | null | undefined,
@@ -860,12 +833,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -880,7 +853,7 @@ export class SpannerClient {
   }
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
@@ -890,7 +863,7 @@ export class SpannerClient {
   >;
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IExecuteBatchDmlResponse,
       protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
@@ -944,20 +917,18 @@ export class SpannerClient {
    *   transaction. If a request arrives for the first time with an out-of-order
    *   sequence number, the transaction may be aborted. Replays of previously
    *   handled requests will yield the same response as the first execution.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.executeBatchDml(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   executeBatchDml(
     request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IExecuteBatchDmlResponse,
           protos.google.spanner.v1.IExecuteBatchDmlRequest | null | undefined,
@@ -976,12 +947,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -996,7 +967,7 @@ export class SpannerClient {
   }
   read(
     request: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IResultSet,
@@ -1006,7 +977,7 @@ export class SpannerClient {
   >;
   read(
     request: protos.google.spanner.v1.IReadRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IResultSet,
       protos.google.spanner.v1.IReadRequest | null | undefined,
@@ -1081,20 +1052,18 @@ export class SpannerClient {
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionReadRequest message used to create this partition_token.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.read(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   read(
     request: protos.google.spanner.v1.IReadRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IResultSet,
           protos.google.spanner.v1.IReadRequest | null | undefined,
@@ -1113,12 +1082,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1133,7 +1102,7 @@ export class SpannerClient {
   }
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ITransaction,
@@ -1143,7 +1112,7 @@ export class SpannerClient {
   >;
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ITransaction,
       protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
@@ -1170,20 +1139,22 @@ export class SpannerClient {
    *   Required. The session in which the transaction runs.
    * @param {google.spanner.v1.TransactionOptions} request.options
    *   Required. Options for the new transaction.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
+   *   Priority is ignored for this request. Setting the priority in this
+   *   request_options struct will not do anything. To set the priority for a
+   *   transaction, set it on the reads and writes that are part of this
+   *   transaction instead.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Transaction]{@link google.spanner.v1.Transaction}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.beginTransaction(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   beginTransaction(
     request: protos.google.spanner.v1.IBeginTransactionRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.ITransaction,
           protos.google.spanner.v1.IBeginTransactionRequest | null | undefined,
@@ -1202,12 +1173,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1222,7 +1193,7 @@ export class SpannerClient {
   }
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ICommitResponse,
@@ -1232,7 +1203,7 @@ export class SpannerClient {
   >;
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.ICommitResponse,
       protos.google.spanner.v1.ICommitRequest | null | undefined,
@@ -1277,20 +1248,18 @@ export class SpannerClient {
    *   The mutations to be executed when this transaction commits. All
    *   mutations are applied atomically, in the order they appear in
    *   this list.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [CommitResponse]{@link google.spanner.v1.CommitResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.commit(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   commit(
     request: protos.google.spanner.v1.ICommitRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.ICommitResponse,
           protos.google.spanner.v1.ICommitRequest | null | undefined,
@@ -1309,12 +1278,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1329,7 +1298,7 @@ export class SpannerClient {
   }
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1339,7 +1308,7 @@ export class SpannerClient {
   >;
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       protos.google.spanner.v1.IRollbackRequest | null | undefined,
@@ -1374,16 +1343,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.rollback(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   rollback(
     request: protos.google.spanner.v1.IRollbackRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           protos.google.spanner.v1.IRollbackRequest | null | undefined,
@@ -1402,12 +1367,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1422,7 +1387,7 @@ export class SpannerClient {
   }
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1432,7 +1397,7 @@ export class SpannerClient {
   >;
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
@@ -1506,16 +1471,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.partitionQuery(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   partitionQuery(
     request: protos.google.spanner.v1.IPartitionQueryRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IPartitionResponse,
           protos.google.spanner.v1.IPartitionQueryRequest | null | undefined,
@@ -1534,12 +1495,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1554,7 +1515,7 @@ export class SpannerClient {
   }
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.IPartitionResponse,
@@ -1564,7 +1525,7 @@ export class SpannerClient {
   >;
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: Callback<
       protos.google.spanner.v1.IPartitionResponse,
       protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
@@ -1624,16 +1585,12 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.partitionRead(request);
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   partitionRead(
     request: protos.google.spanner.v1.IPartitionReadRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | Callback<
           protos.google.spanner.v1.IPartitionResponse,
           protos.google.spanner.v1.IPartitionReadRequest | null | undefined,
@@ -1652,12 +1609,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1746,21 +1703,16 @@ export class SpannerClient {
    *   Required for DML statements. Ignored for queries.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
    *   Query optimizer configuration to use for the given query.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
    *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
-   *   for more details and examples.
-   * @example
-   * const stream = client.executeStreamingSql(request);
-   * stream.on('data', (response) => { ... });
-   * stream.on('end', () => { ... });
    */
   executeStreamingSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -1827,21 +1779,16 @@ export class SpannerClient {
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionReadRequest message used to create this partition_token.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
    *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
-   *   for more details and examples.
-   * @example
-   * const stream = client.streamingRead(request);
-   * stream.on('data', (response) => { ... });
-   * stream.on('end', () => { ... });
    */
   streamingRead(
     request?: protos.google.spanner.v1.IReadRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): gax.CancellableStream {
     request = request || {};
     options = options || {};
@@ -1858,7 +1805,7 @@ export class SpannerClient {
 
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Promise<
     [
       protos.google.spanner.v1.ISession[],
@@ -1868,7 +1815,7 @@ export class SpannerClient {
   >;
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
-    options: CallOptions,
+    options: gax.CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.v1.IListSessionsRequest,
       protos.google.spanner.v1.IListSessionsResponse | null | undefined,
@@ -1912,19 +1859,24 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is Array of [Session]{@link google.spanner.v1.Session}.
-   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   The client library support auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
-   *   Note that it can affect your quota.
-   *   We recommend using `listSessionsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
+   *
+   *   When autoPaginate: false is specified through options, the array has three elements.
+   *   The first element is Array of [Session]{@link google.spanner.v1.Session} that corresponds to
+   *   the one page received from the API server.
+   *   If the second element is not null it contains the request object of type [ListSessionsRequest]{@link google.spanner.v1.ListSessionsRequest}
+   *   that can be used to obtain the next page of the results.
+   *   If it is null, the next page does not exist.
+   *   The third element contains the raw response received from the API server. Its type is
+   *   [ListSessionsResponse]{@link google.spanner.v1.ListSessionsResponse}.
+   *
+   *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   listSessions(
     request: protos.google.spanner.v1.IListSessionsRequest,
     optionsOrCallback?:
-      | CallOptions
+      | gax.CallOptions
       | PaginationCallback<
           protos.google.spanner.v1.IListSessionsRequest,
           protos.google.spanner.v1.IListSessionsResponse | null | undefined,
@@ -1943,12 +1895,12 @@ export class SpannerClient {
     ]
   > | void {
     request = request || {};
-    let options: CallOptions;
+    let options: gax.CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as CallOptions;
+      options = optionsOrCallback as gax.CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1963,7 +1915,18 @@ export class SpannerClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * Equivalent to {@link listSessions}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listSessions} continuously
+   * and invokes the callback registered for 'data' event for each element in the
+   * responses.
+   *
+   * The returned object has 'end' method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.database
@@ -1990,17 +1953,10 @@ export class SpannerClient {
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
    *   An object stream which emits an object representing [Session]{@link google.spanner.v1.Session} on 'data' event.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed. Note that it can affect your quota.
-   *   We recommend using `listSessionsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
    */
   listSessionsStream(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2021,9 +1977,10 @@ export class SpannerClient {
   }
 
   /**
-   * Equivalent to `listSessions`, but returns an iterable object.
+   * Equivalent to {@link listSessions}, but returns an iterable object.
    *
-   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.database
@@ -2049,22 +2006,11 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
-   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
-   *   When you iterate the returned iterable, each element will be an object representing
-   *   [Session]{@link google.spanner.v1.Session}. The API will be called under the hood as needed, once per the page,
-   *   so you can stop the iteration when you don't need more results.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   * @example
-   * const iterable = client.listSessionsAsync(request);
-   * for await (const response of iterable) {
-   *   // process response
-   * }
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
    */
   listSessionsAsync(
     request?: protos.google.spanner.v1.IListSessionsRequest,
-    options?: CallOptions
+    options?: gax.CallOptions
   ): AsyncIterable<protos.google.spanner.v1.ISession> {
     request = request || {};
     options = options || {};
@@ -2205,10 +2151,9 @@ export class SpannerClient {
   }
 
   /**
-   * Terminate the gRPC channel and close the client.
+   * Terminate the GRPC channel and close the client.
    *
    * The client will no longer be usable and all future behavior is undefined.
-   * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
     this.initialize();
