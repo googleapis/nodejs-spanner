@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Done, describe, before, after, beforeEach, it} from 'mocha';
+import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
@@ -41,13 +41,14 @@ import {
   SessionPoolOptions,
 } from '../src/session-pool';
 import {Json} from '../src/codec';
+import * as stream from 'stream';
+import * as util from 'util';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import * as stream from 'stream';
-import * as util from 'util';
+import RequestOptions = google.spanner.v1.RequestOptions;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -171,6 +172,48 @@ describe('Spanner with mock server', () => {
       } finally {
         await database.close();
       }
+    });
+
+    it('should execute query with requestOptions', async () => {
+      const priority = RequestOptions.Priority.PRIORITY_HIGH;
+      const database = newTestDatabase();
+      try {
+        const [rows] = await database.run({
+          sql: selectSql,
+          requestOptions: {priority: priority},
+        });
+        assert.strictEqual(rows.length, 3);
+      } finally {
+        await database.close();
+      }
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on ExecuteSqlRequest'
+      );
+      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_HIGH');
+    });
+
+    it('should execute batchUpdate with requestOptions', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(tx => {
+        return tx!.batchUpdate([insertSql, insertSql], {
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
+        });
+      });
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteBatchDmlRequest).statements;
+      }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(request, 'no ExecuteBatchDmlRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on ExecuteBatchDmlRequest'
+      );
+      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_MEDIUM');
     });
 
     it('should return an array of json objects', async () => {
@@ -2421,6 +2464,30 @@ describe('Spanner with mock server', () => {
           await database.close();
         }
       });
+    });
+  });
+
+  describe('table', () => {
+    it('should use requestOptions for mutations', async () => {
+      const database = newTestDatabase();
+      await database
+        .table('foo')
+        .upsert(
+          {id: 1, name: 'bar'},
+          {requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM}}
+        );
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.ok(request, 'no CommitRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on CommitRequest'
+      );
+      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_MEDIUM');
+
+      await database.close();
     });
   });
 

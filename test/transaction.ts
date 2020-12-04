@@ -25,6 +25,7 @@ import * as sinon from 'sinon';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import RequestOptions = google.spanner.v1.RequestOptions;
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -1077,12 +1078,26 @@ describe('Transaction', () => {
       ];
 
       it('should accept gaxOptions', done => {
-        const gaxOptions = {};
+        const options = {gaxOptions: {}};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, options.gaxOptions);
           done();
         };
-        transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
+        transaction.batchUpdate(STRING_STATEMENTS, options, assert.ifError);
+      });
+
+      it('should accept requestOptions', done => {
+        const options = {
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
+        };
+        transaction.request = config => {
+          assert.strictEqual(
+            config.reqOpts.requestOptions,
+            options.requestOptions
+          );
+          done();
+        };
+        transaction.batchUpdate(STRING_STATEMENTS, options, assert.ifError);
       });
 
       it('should return an error if statements are missing', done => {
@@ -1282,12 +1297,26 @@ describe('Transaction', () => {
       });
 
       it('should accept gaxOptions', done => {
-        const gaxOptions = {};
+        const options = {gaxOptions: {}};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, gaxOptions);
+          assert.strictEqual(config.gaxOpts, options.gaxOptions);
           done();
         };
-        transaction.commit(gaxOptions, assert.ifError);
+        transaction.commit(options, assert.ifError);
+      });
+
+      it('should accept requestOptions', done => {
+        const options = {
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
+        };
+        transaction.request = config => {
+          assert.strictEqual(
+            config.reqOpts.requestOptions,
+            options.requestOptions
+          );
+          done();
+        };
+        transaction.commit(options, assert.ifError);
       });
 
       it('should use the transaction `id` when set', () => {

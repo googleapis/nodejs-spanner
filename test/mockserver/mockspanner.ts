@@ -668,6 +668,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
         if (call.request!.transaction && call.request!.transaction.id) {
@@ -818,6 +819,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CommitRequest, protobuf.CommitResponse>,
     callback: protobuf.Spanner.CommitCallback
   ) {
+    this.requests.push(call.request!);
     this.simulateExecutionTime(this.commit.name)
       .then(() => {
         if (call.request!.transactionId) {

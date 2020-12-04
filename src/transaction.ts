@@ -37,6 +37,7 @@ import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
 
 export type Rows = Array<Row | Json>;
@@ -59,6 +60,11 @@ export interface RequestOptions {
   maxResumeRetries?: number;
 }
 
+export interface CommitOptions {
+  requestOptions?: IRequestOptions;
+  gaxOptions?: CallOptions;
+}
+
 export interface Statement {
   sql: string;
   params?: {[param: string]: Value};
@@ -71,6 +77,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   partitionToken?: Uint8Array | string;
   seqno?: number;
   queryOptions?: IQueryOptions;
+  requestOptions?: IRequestOptions;
 }
 
 export interface KeyRange {
@@ -118,6 +125,7 @@ export interface BatchUpdateCallback {
     response?: spannerClient.spanner.v1.ExecuteBatchDmlResponse
   ): void;
 }
+export type BatchUpdateOptions = CommitOptions;
 
 export type ReadCallback = NormalCallback<Rows>;
 
@@ -1253,7 +1261,7 @@ export class Transaction extends Dml {
 
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptions?: CallOptions
+    options?: BatchUpdateOptions
   ): Promise<BatchUpdateResponse>;
   batchUpdate(
     queries: Array<string | Statement>,
@@ -1261,7 +1269,7 @@ export class Transaction extends Dml {
   ): void;
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptions: CallOptions,
+    options: BatchUpdateOptions,
     callback: BatchUpdateCallback
   ): void;
   /**
@@ -1293,8 +1301,7 @@ export class Transaction extends Dml {
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {BatchUpdateOptions} [options] Options for configuring the request.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    *
@@ -1321,13 +1328,13 @@ export class Transaction extends Dml {
    */
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptionsOrCallback?: CallOptions | BatchUpdateCallback,
+    optionsOrCallback?: BatchUpdateOptions | BatchUpdateCallback,
     cb?: BatchUpdateCallback
   ): Promise<BatchUpdateResponse> | void {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
@@ -1355,9 +1362,11 @@ export class Transaction extends Dml {
       session: this.session.formattedName_!,
       transaction: {id: this.id!},
       seqno: this._seqno++,
+      requestOptions: options.requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
+    const gaxOpts = options.gaxOptions;
     this.request(
       {
         client: 'SpannerClient',
@@ -1421,9 +1430,17 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(gaxOptions?: CallOptions): Promise<CommitResponse>;
+  commit(options?: CommitOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
-  commit(gaxOptions: CallOptions, callback: CommitCallback): void;
+  commit(options: CommitOptions, callback: CommitCallback): void;
+  /**
+   * @typedef {object} CommitOptions
+   * @property {IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   */
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
@@ -1446,8 +1463,7 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#commit}
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {CommitOptions} [options] Options for configuring the request.
    * @param {CommitCallback} [callback] Callback function.
    * @returns {Promise<CommitPromiseResponse>}
    *
@@ -1473,17 +1489,20 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    gaxOptionsOrCallback?: CallOptions | CommitCallback,
+    optionsOrCallback?: CommitOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as CommitOptions);
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const reqOpts: CommitRequest = {mutations, session};
+    const requestOptions = options.requestOptions;
+    const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;
@@ -1496,7 +1515,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
-        gaxOpts,
+        gaxOpts: options.gaxOptions,
         headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {

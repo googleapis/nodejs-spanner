@@ -32,6 +32,8 @@ import {Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {google} from '../protos/protos';
+import RequestOptions = google.spanner.v1.RequestOptions;
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -2394,6 +2396,28 @@ describe('Database', () => {
       fakePartitionedDml.emit('end');
 
       assert.strictEqual(releaseStub.callCount, 1);
+    });
+
+    it('should accept requestOptions', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.runPartitionedUpdate(
+        {
+          sql: QUERY.sql,
+          params: QUERY.params,
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        sql: QUERY.sql,
+        params: QUERY.params,
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+      });
+      assert.ok(fakeCallback.calledOnce);
     });
   });
 

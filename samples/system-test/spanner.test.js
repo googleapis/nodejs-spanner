@@ -384,6 +384,17 @@ describe('Spanner', () => {
     );
   });
 
+  // query with RPC priority
+  it('should use request options', async () => {
+    const output = execSync(
+      `${queryOptionsCmd} queryWithRpcPriority ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
+    );
+  });
+
   // read_only_transaction
   it('should read an example table using transactions', async () => {
     const output = execSync(
