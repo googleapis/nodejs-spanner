@@ -2731,7 +2731,7 @@ describe('Database', () => {
       const options = {gaxOptions: {timeout: 1000}};
 
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.strictEqual(config.gaxOpts, options.gaxOptions);
         done();
       };
 
