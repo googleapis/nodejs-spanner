@@ -50,13 +50,6 @@ async function getCommitStats(instanceId, databaseId, projectId) {
     console.log(
       `Updated data with ${response.commitStats.mutationCount} mutations.`
     );
-
-    if (response.commitStats.overloadDelay) {
-      console.log(
-        `Commit was delayed by ${response.commitStats.overloadDelay} ` +
-          'due to overloaded servers.'
-      );
-    }
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
