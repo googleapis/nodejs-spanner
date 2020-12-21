@@ -48,6 +48,7 @@ import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
 import * as stream from 'stream';
 import * as util from 'util';
+import BeginTransactionRequest = google.spanner.v1.BeginTransactionRequest;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -2470,6 +2471,27 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    it('should retry on aborted', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      let attempt = 0;
+      await database.runTransactionAsync(async tx => {
+        attempt++;
+        await tx.run(selectSql);
+        if (attempt === 1) {
+          spannerMock.abortTransaction(tx);
+        }
+        await tx.commit();
+      });
+      assertInlinedBeginRetry(spannerMock, 2);
+      assert.strictEqual(attempt, 2);
+      await database.close();
+    });
+
     it('should include begin transaction with the first read', async () => {
       const database = newTestDatabase({
         min: 0,
@@ -2488,7 +2510,7 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
-    it('should use the transaction id that was returned by the first statement', async () => {
+    it('query should use the transaction id that was returned by the first statement', async () => {
       const database = newTestDatabase({
         min: 0,
         incStep: 1,
@@ -2502,7 +2524,24 @@ describe('Spanner with mock server', () => {
         await tx.run(selectSql);
         await tx.commit();
       });
-      assertInlinedBegin(spannerMock);
+      assertSecondRequestUsesTransactionId(spannerMock);
+      await database.close();
+    });
+
+    it('update should use the transaction id that was returned by the first statement', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // This will begin a transaction.
+        await tx.runUpdate(updateSql);
+        // This statement should use the statement from the previous statement.
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
       assertSecondRequestUsesTransactionId(spannerMock);
       await database.close();
     });
@@ -2515,9 +2554,8 @@ describe('Spanner with mock server', () => {
         inlineBeginTx: true,
       });
       await database.runTransactionAsync(async tx => {
-        // Execute two queries in parallel.
-        // The first statement should begin a transaction, the second should
-        // wait until the first has finished.
+        // Execute two queries in parallel. The first statement should begin a transaction, the
+        // second should wait until the first has finished.
         const response1 = tx.run(selectSql);
         const response2 = tx.run(selectSql);
         await Promise.all([response1, response2]);
@@ -2527,6 +2565,121 @@ describe('Spanner with mock server', () => {
       assertSecondRequestUsesTransactionId(spannerMock);
       await database.close();
     });
+
+    it('should use explicit BeginTransaction if the first statement fails', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // The first statement should normally return a transaction id. That does
+        // not happen if the statement returns an error. That will force a
+        // transaction retry that will not use inline BeginTransaction.
+        try {
+          await tx.runUpdate(invalidSql);
+          assert.fail('missing expected exception');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
+        await tx.run(selectSql);
+        await tx.commit();
+      });
+      assertInlinedBeginRetry(spannerMock, 3);
+      await database.close();
+    });
+
+    function assertInlinedBegin(mock: MockSpanner) {
+      const request = mock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql ||
+          ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
+          (val as v1.ExecuteBatchDmlRequest).statements
+        );
+      }) as v1.ExecuteSqlRequest | v1.ReadRequest | v1.ExecuteBatchDmlRequest;
+      assert.ok(
+        request,
+        'no ExecuteSqlRequest | ReadRequest | ExecuteBatchDmlRequest found'
+      );
+      assert.ok(
+        request.transaction,
+        'no Transaction included with first request'
+      );
+      assert.ok(
+        request.transaction.begin,
+        'no Begin included with first request'
+      );
+      assert.ok(
+        request.transaction.begin.readWrite,
+        'Begin option is not read/write'
+      );
+      assert.ok(
+        !mock.getRequests().find(val => {
+          return (val as BeginTransactionRequest).options;
+        }),
+        'BeginTransaction request found on server'
+      );
+    }
+
+    function assertSecondRequestUsesTransactionId(mock: MockSpanner) {
+      const requests = mock.getRequests().filter(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql ||
+          ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
+          (val as v1.ExecuteBatchDmlRequest).statements
+        );
+      }) as (
+        | v1.ExecuteSqlRequest
+        | v1.ReadRequest
+        | v1.ExecuteBatchDmlRequest
+      )[];
+      assert.strictEqual(requests.length, 2);
+      assert.ok(
+        requests[0].transaction?.begin?.readWrite,
+        'Begin is not included on first request'
+      );
+      assert.ok(
+        requests[1].transaction!.id,
+        'no Transaction id found in second request'
+      );
+    }
+
+    function assertInlinedBeginRetry(
+      mock: MockSpanner,
+      expectedRequests: number
+    ) {
+      const requests = mock.getRequests().filter(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql ||
+          ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
+          (val as v1.ExecuteBatchDmlRequest).statements
+        );
+      }) as (
+        | v1.ExecuteSqlRequest
+        | v1.ReadRequest
+        | v1.ExecuteBatchDmlRequest
+      )[];
+      assert.strictEqual(requests.length, expectedRequests);
+      assert.ok(
+        requests[0].transaction?.begin?.readWrite,
+        'Begin is not included on first request'
+      );
+      // The retry should not use inlined BeginTransaction.
+      assert.ok(
+        !requests[1].transaction?.begin?.readWrite,
+        'Begin is included on second request'
+      );
+      assert.strictEqual(
+        mock.getRequests().filter(val => {
+          return (val as BeginTransactionRequest).options;
+        })!.length,
+        1
+      );
+    }
   });
 
   describe('instanceAdmin', () => {
@@ -2779,38 +2932,4 @@ function getRowCountFromStreamingSql(
 
 function sleep(ms): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function assertInlinedBegin(mock: MockSpanner) {
-  const request = mock.getRequests().find(val => {
-    return (
-      (val as v1.ExecuteSqlRequest).sql ||
-      ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
-      (val as v1.ExecuteBatchDmlRequest).statements
-    );
-  }) as v1.ExecuteSqlRequest | v1.ReadRequest | v1.ExecuteBatchDmlRequest;
-  assert.ok(request, 'no ExecuteSqlRequest found');
-  assert.ok(
-    request.transaction,
-    'no Transaction included with ExecuteSqlRequest'
-  );
-  assert.ok(
-    request.transaction.begin,
-    'no Begin included with ExecuteSqlRequest'
-  );
-  assert.ok(
-    request.transaction.begin.readWrite,
-    'Begin option is not read/write'
-  );
-}
-
-function assertSecondRequestUsesTransactionId(mock: MockSpanner) {
-  const requests = mock.getRequests().filter(val => {
-    return (val as v1.ExecuteSqlRequest).sql;
-  }) as v1.ExecuteSqlRequest[];
-  assert.strictEqual(requests.length, 2);
-  assert.ok(
-    requests[1].transaction!.id,
-    'no Transaction id found in second request'
-  );
 }

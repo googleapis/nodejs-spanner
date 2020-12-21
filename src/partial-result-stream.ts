@@ -26,7 +26,6 @@ import {grpc} from 'google-gax';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
-import TransactionSelector = google.spanner.v1.TransactionSelector;
 import ITransactionSelector = google.spanner.v1.ITransactionSelector;
 
 export type ResumeToken = string | Uint8Array;
@@ -414,14 +413,14 @@ export class PartialResultStream extends Transform implements ResultEvents {
  * @param {RequestFunction} requestFn The function that makes an API request. It
  *     will receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
- * @param {Promise<ITransactionSelector>} transaction The transaction selector that
- *     will be used to execute the stream.
+ * @param {Promise<ITransactionSelector | Error>} transaction The transaction
+ *     selector that will be used to execute the stream.
  * @param {RowOptions} [options] Options for formatting rows.
  * @returns {PartialResultStream}
  */
 export function partialResultStream(
   requestFn: RequestFunction,
-  transaction: Promise<ITransactionSelector>,
+  transaction: Promise<ITransactionSelector | Error>,
   options?: RowOptions
 ): PartialResultStream {
   const retryableCodes = [grpc.status.UNAVAILABLE];
@@ -452,8 +451,14 @@ export function partialResultStream(
     if (lastRequestStream) {
       lastRequestStream.removeListener('end', endListener);
     }
-    transaction.then(transactionSelector => {
-      lastRequestStream = requestFn(transactionSelector, lastResumeToken);
+    transaction.then(transactionSelectorOrError => {
+      if ((transactionSelectorOrError as Error).message) {
+        lastRequestStream = new Readable();
+        lastRequestStream.destroy(transactionSelectorOrError as Error);
+      } else {
+        const transactionSelector = transactionSelectorOrError as ITransactionSelector;
+        lastRequestStream = requestFn(transactionSelector, lastResumeToken);
+      }
       lastRequestStream.on('end', endListener);
       requestsStream.add(lastRequestStream);
     });

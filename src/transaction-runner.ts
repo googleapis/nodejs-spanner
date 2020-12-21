@@ -214,6 +214,10 @@ export abstract class Runner<T> {
     // The transaction runner should always execute at least one attempt before
     // timing out.
     while (this.attempts === 0 || Date.now() - start < timeout) {
+      if (this.attempts > 0) {
+        // Do not inline BeginTransaction during retries.
+        this.options.inlineBeginTx = false;
+      }
       const transaction = await this.getTransaction();
 
       try {

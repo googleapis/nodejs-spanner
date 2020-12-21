@@ -39,8 +39,7 @@ import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import {Database} from '.';
 import ITransactionSelector = google.spanner.v1.ITransactionSelector;
-import validate = WebAssembly.validate;
-import TransactionSelector = google.spanner.v1.TransactionSelector;
+import RetryInfo = google.rpc.RetryInfo;
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -107,7 +106,9 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
+export type BeginTransactionCallback = NormalCallback<
+  spannerClient.spanner.v1.ITransaction
+>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -136,7 +137,34 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
+export type CommitCallback = NormalCallback<
+  spannerClient.spanner.v1.ICommitResponse
+>;
+
+function createMinimalRetryDelayMetadata(): grpc.Metadata {
+  const metadata = new grpc.Metadata();
+  const retry = RetryInfo.encode({
+    retryDelay: {
+      seconds: 0,
+      nanos: 1,
+    },
+  });
+  metadata.add(RETRY_INFO_BIN, Buffer.from(retry.finish()));
+  return metadata;
+}
+
+/**
+ * noTransactionReturnedError is thrown by statements that are executed on transactions that failed
+ * to start because the first statement that included a BeginTransaction option did not return a
+ * transaction id.
+ */
+const noTransactionReturnedError = Object.assign(
+  new Error('The first statement did not return a transaction'),
+  {
+    code: grpc.status.ABORTED,
+    metadata: createMinimalRetryDelayMetadata(),
+  }
+) as grpc.ServiceError;
 
 /**
  * @typedef {object} TimestampBounds
@@ -365,17 +393,24 @@ export class Snapshot extends EventEmitter {
 
   private addTransactionListener(prs: PartialResultStream) {
     if (prs) {
-      prs.once('response', (prs: google.spanner.v1.PartialResultSet) => {
-        if (
-          this.idResolve &&
-          prs.metadata &&
-          prs.metadata.transaction &&
-          prs.metadata.transaction.id
-        ) {
-          this.id = prs.metadata.transaction.id;
-          this.idResolve(prs.metadata.transaction.id);
-        }
-      });
+      prs
+        .once('response', (prs: google.spanner.v1.PartialResultSet) => {
+          if (
+            this.idResolve &&
+            prs.metadata &&
+            prs.metadata.transaction &&
+            prs.metadata.transaction.id
+          ) {
+            this.id = prs.metadata.transaction.id;
+            this.idResolve(prs.metadata.transaction.id);
+            this.idReject = undefined;
+          }
+        })
+        .once('error', _ => {
+          if (this.idReject) {
+            this.idReject(noTransactionReturnedError);
+          }
+        });
     }
   }
 
@@ -941,11 +976,15 @@ export class Snapshot extends EventEmitter {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
     let reqOpts;
 
-    let transaction: Promise<ITransactionSelector>;
+    let transaction: Promise<ITransactionSelector | Error>;
     if (this.idPromise) {
-      transaction = this.idPromise.then(id => {
-        return {id} as ITransactionSelector;
-      });
+      transaction = this.idPromise
+        .then(id => {
+          return {id} as ITransactionSelector;
+        })
+        .catch(err => {
+          return err;
+        });
     } else if (this.inlineBegin) {
       this.idPromise = new Promise((resolve, reject) => {
         this.idResolve = id => {
@@ -1408,6 +1447,7 @@ export class Transaction extends Dml {
       }
     );
     let transaction;
+    let requestedTransaction = false;
     if (this.idPromise) {
       transaction = this.idPromise.then(id => {
         return {id} as ITransactionSelector;
@@ -1420,6 +1460,7 @@ export class Transaction extends Dml {
         };
         this.idReject = reject;
       });
+      requestedTransaction = true;
       transaction = Promise.resolve({begin: this._options});
     } else {
       transaction = Promise.resolve({singleUse: this._options});
@@ -1447,6 +1488,9 @@ export class Transaction extends Dml {
           let batchUpdateError: BatchUpdateError;
 
           if (err) {
+            if (requestedTransaction && this.idReject) {
+              this.idReject(noTransactionReturnedError);
+            }
             const rowCounts: number[] = [];
             batchUpdateError = Object.assign(err, {rowCounts});
             callback!(batchUpdateError, rowCounts, resp);
@@ -1462,6 +1506,7 @@ export class Transaction extends Dml {
             resultSets[0].metadata.transaction.id
           ) {
             this.idResolve(resultSets[0].metadata.transaction.id);
+            this.idReject = undefined;
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {
             return (
