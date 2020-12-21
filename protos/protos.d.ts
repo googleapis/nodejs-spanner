@@ -7517,6 +7517,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata commitTimestamps */
                         commitTimestamps?: (google.protobuf.ITimestamp[]|null);
+
+                        /** UpdateDatabaseDdlMetadata throttled */
+                        throttled?: (boolean|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlMetadata. */
@@ -7536,6 +7539,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata commitTimestamps. */
                         public commitTimestamps: google.protobuf.ITimestamp[];
+
+                        /** UpdateDatabaseDdlMetadata throttled. */
+                        public throttled: boolean;
 
                         /**
                          * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.

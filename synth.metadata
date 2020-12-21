@@ -4,22 +4,22 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "53d5f371d54c64dd095ac9ec721d05adf2c7d064"
+        "sha": "0e51c459b6c60f2434f642d9bb255a5f5082225e"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "4c5071b615d96ef9dfd6a63d8429090f1f2872bb",
-        "internalRef": "327369997"
+        "sha": "d189e871205fea665a9648f7c4676f027495ccaf",
+        "internalRef": "345596855"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "0c868d49b8e05bc1f299bc773df9eb4ef9ed96e9"
+        "sha": "15013eff642a7e7e855aed5a29e6e83c39beba2a"
       }
     }
   ],
@@ -51,88 +51,5 @@
         "generator": "bazel"
       }
     }
-  ],
-  "generatedFiles": [
-    ".eslintignore",
-    ".eslintrc.json",
-    ".gitattributes",
-    ".github/ISSUE_TEMPLATE/bug_report.md",
-    ".github/ISSUE_TEMPLATE/feature_request.md",
-    ".github/ISSUE_TEMPLATE/support_request.md",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/release-please.yml",
-    ".github/workflows/ci.yaml",
-    ".gitignore",
-    ".jsdoc.js",
-    ".kokoro/.gitattributes",
-    ".kokoro/common.cfg",
-    ".kokoro/continuous/node10/common.cfg",
-    ".kokoro/continuous/node10/docs.cfg",
-    ".kokoro/continuous/node10/test.cfg",
-    ".kokoro/continuous/node12/common.cfg",
-    ".kokoro/continuous/node12/lint.cfg",
-    ".kokoro/continuous/node12/samples-test.cfg",
-    ".kokoro/continuous/node12/system-test.cfg",
-    ".kokoro/continuous/node12/test.cfg",
-    ".kokoro/docs.sh",
-    ".kokoro/lint.sh",
-    ".kokoro/populate-secrets.sh",
-    ".kokoro/presubmit/node10/common.cfg",
-    ".kokoro/presubmit/node12/common.cfg",
-    ".kokoro/presubmit/node12/samples-test.cfg",
-    ".kokoro/presubmit/node12/system-test.cfg",
-    ".kokoro/presubmit/node12/test.cfg",
-    ".kokoro/publish.sh",
-    ".kokoro/release/docs-devsite.cfg",
-    ".kokoro/release/docs-devsite.sh",
-    ".kokoro/release/docs.cfg",
-    ".kokoro/release/docs.sh",
-    ".kokoro/release/publish.cfg",
-    ".kokoro/samples-test.sh",
-    ".kokoro/system-test.sh",
-    ".kokoro/test.bat",
-    ".kokoro/test.sh",
-    ".kokoro/trampoline.sh",
-    ".kokoro/trampoline_v2.sh",
-    ".mocharc.js",
-    ".nycrc",
-    ".prettierignore",
-    ".prettierrc.js",
-    ".trampolinerc",
-    "CODE_OF_CONDUCT.md",
-    "CONTRIBUTING.md",
-    "LICENSE",
-    "README.md",
-    "api-extractor.json",
-    "linkinator.config.json",
-    "protos/google/spanner/admin/database/v1/backup.proto",
-    "protos/google/spanner/admin/database/v1/common.proto",
-    "protos/google/spanner/admin/database/v1/spanner_database_admin.proto",
-    "protos/google/spanner/admin/instance/v1/spanner_instance_admin.proto",
-    "protos/google/spanner/v1/keys.proto",
-    "protos/google/spanner/v1/mutation.proto",
-    "protos/google/spanner/v1/query_plan.proto",
-    "protos/google/spanner/v1/result_set.proto",
-    "protos/google/spanner/v1/spanner.proto",
-    "protos/google/spanner/v1/transaction.proto",
-    "protos/google/spanner/v1/type.proto",
-    "protos/protos.d.ts",
-    "protos/protos.js",
-    "protos/protos.json",
-    "renovate.json",
-    "samples/README.md",
-    "src/v1/database_admin_client.ts",
-    "src/v1/database_admin_client_config.json",
-    "src/v1/database_admin_proto_list.json",
-    "src/v1/instance_admin_client.ts",
-    "src/v1/instance_admin_client_config.json",
-    "src/v1/instance_admin_proto_list.json",
-    "src/v1/spanner_client.ts",
-    "src/v1/spanner_client_config.json",
-    "src/v1/spanner_proto_list.json",
-    "test/gapic_database_admin_v1.ts",
-    "test/gapic_instance_admin_v1.ts",
-    "test/gapic_spanner_v1.ts",
-    "webpack.config.js"
   ]
 }

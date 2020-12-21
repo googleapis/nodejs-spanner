@@ -219,10 +219,10 @@ describe('Spanner with mock server', () => {
                 // Simulate a slow flush.
                 setTimeout(() => {
                   paused = paused || rs.isPaused();
-                  callback(null, chunk);
+                  callback(undefined, chunk);
                 }, 50);
               } else {
-                callback(null, chunk);
+                callback(undefined, chunk);
               }
             },
           }),
@@ -263,7 +263,7 @@ describe('Spanner with mock server', () => {
             transform(chunk, encoding, callback) {
               // Simulate a slow flush.
               setTimeout(() => {
-                callback(null, chunk);
+                callback(undefined, chunk);
               }, 50);
             },
           }),
