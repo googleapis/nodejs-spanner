@@ -2441,8 +2441,11 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrRunFn === 'object' && optionsOrRunFn
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
+    if (this.inlineBeginTx_) {
+      options.inlineBeginTx = true;
+    }
 
-    this.pool_.getWriteSession((err, session?, transaction?) => {
+    const callback = (err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
@@ -2469,7 +2472,13 @@ class Database extends common.GrpcServiceObject {
           release();
         }
       });
-    });
+    };
+
+    if (options.inlineBeginTx) {
+      this.pool_.getReadSession(callback);
+    } else {
+      this.pool_.getWriteSession(callback);
+    }
   }
 
   runTransactionAsync<T = {}>(

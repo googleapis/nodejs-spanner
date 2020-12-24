@@ -406,7 +406,7 @@ export class Snapshot extends EventEmitter {
             this.idReject = undefined;
           }
         })
-        .once('error', _ => {
+        .once('error', () => {
           if (this.idReject) {
             this.idReject(noTransactionReturnedError);
           }
@@ -560,24 +560,10 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    let transaction;
-    if (this.idPromise) {
-      transaction = this.idPromise.then(id => {
-        return {id} as ITransactionSelector;
-      });
-    } else if (this.inlineBegin) {
-      this.idPromise = new Promise((resolve, reject) => {
-        this.idResolve = id => {
-          this.id = id;
-          resolve(id);
-        };
-        this.idReject = reject;
-      });
-      transaction = Promise.resolve({begin: this._options});
-    } else {
-      transaction = Promise.resolve({singleUse: this._options});
-    }
-
+    const [
+      selector,
+      requestingTransaction,
+    ] = this.createTransactionSelectorPromise();
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -606,12 +592,14 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const prs = partialResultStream(makeRequest, transaction, {
+    const prs = partialResultStream(makeRequest, selector, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
-    this.addTransactionListener(prs);
+    if (requestingTransaction) {
+      this.addTransactionListener(prs);
+    }
     return prs;
   }
 
@@ -662,6 +650,9 @@ export class Snapshot extends EventEmitter {
     }
 
     this.ended = true;
+    this.idPromise = undefined;
+    this.idResolve = undefined;
+    this.idReject = undefined;
     process.nextTick(() => this.emit('end'));
   }
 
@@ -974,29 +965,11 @@ export class Snapshot extends EventEmitter {
     );
 
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
+    const [
+      selector,
+      requestingTransaction,
+    ] = this.createTransactionSelectorPromise();
     let reqOpts;
-
-    let transaction: Promise<ITransactionSelector | Error>;
-    if (this.idPromise) {
-      transaction = this.idPromise
-        .then(id => {
-          return {id} as ITransactionSelector;
-        })
-        .catch(err => {
-          return err;
-        });
-    } else if (this.inlineBegin) {
-      this.idPromise = new Promise((resolve, reject) => {
-        this.idResolve = id => {
-          this.id = id;
-          resolve(id);
-        };
-        this.idReject = reject;
-      });
-      transaction = Promise.resolve({begin: this._options});
-    } else {
-      transaction = Promise.resolve({singleUse: this._options});
-    }
 
     const sanitizeRequest = (transaction: ITransactionSelector) => {
       query = query as ExecuteSqlRequest;
@@ -1038,14 +1011,47 @@ export class Snapshot extends EventEmitter {
         headers: this.resourceHeader_,
       });
     };
-
-    const prs = partialResultStream(makeRequest, transaction, {
+    const prs = partialResultStream(makeRequest, selector, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
-    this.addTransactionListener(prs);
+    if (requestingTransaction) {
+      this.addTransactionListener(prs);
+    }
     return prs;
+  }
+
+  protected createTransactionSelectorPromise(): [
+    Promise<ITransactionSelector>,
+    boolean
+  ] {
+    if (this.idPromise) {
+      return [
+        this.idPromise
+          .then(id => {
+            return {id} as ITransactionSelector;
+          })
+          .catch(err => {
+            return err;
+          }),
+        false,
+      ];
+    } else if (this.inlineBegin) {
+      this.idPromise = new Promise((resolve, reject) => {
+        this.idResolve = id => {
+          this.id = id;
+          resolve(id);
+        };
+        this.idReject = reject;
+      });
+      // Add a no-op error handler to prevent UnhandledPromiseRejectionWarnings.
+      this.idPromise.catch(() => {});
+      return [Promise.resolve({begin: this._options}), true];
+    } else {
+      const selector = Promise.resolve({singleUse: this._options});
+      return [selector, false];
+    }
   }
 
   /**
@@ -1177,7 +1183,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end'],
+  exclude: ['end', 'createTransactionSelectorPromise'],
 });
 
 /**
@@ -1446,27 +1452,12 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       }
     );
-    let transaction;
-    let requestedTransaction = false;
-    if (this.idPromise) {
-      transaction = this.idPromise.then(id => {
-        return {id} as ITransactionSelector;
-      });
-    } else if (this.inlineBegin) {
-      this.idPromise = new Promise((resolve, reject) => {
-        this.idResolve = id => {
-          this.id = id;
-          resolve(id);
-        };
-        this.idReject = reject;
-      });
-      requestedTransaction = true;
-      transaction = Promise.resolve({begin: this._options});
-    } else {
-      transaction = Promise.resolve({singleUse: this._options});
-    }
+    const [
+      selector,
+      requestingTransaction,
+    ] = this.createTransactionSelectorPromise();
 
-    transaction.then(transaction => {
+    selector.then(transaction => {
       const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
         session: this.session.formattedName_!,
         transaction,
@@ -1488,7 +1479,7 @@ export class Transaction extends Dml {
           let batchUpdateError: BatchUpdateError;
 
           if (err) {
-            if (requestedTransaction && this.idReject) {
+            if (requestingTransaction && this.idReject) {
               this.idReject(noTransactionReturnedError);
             }
             const rowCounts: number[] = [];
@@ -1499,14 +1490,15 @@ export class Transaction extends Dml {
 
           const {resultSets, status} = resp;
           if (
+            requestingTransaction &&
             this.idResolve &&
             resultSets[0] &&
             resultSets[0].metadata &&
             resultSets[0].metadata.transaction &&
             resultSets[0].metadata.transaction.id
           ) {
+            this.id = resultSets[0].metadata.transaction.id;
             this.idResolve(resultSets[0].metadata.transaction.id);
-            this.idReject = undefined;
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {
             return (
@@ -1613,13 +1605,12 @@ export class Transaction extends Dml {
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
     const reqOpts: CommitRequest = {mutations, session};
+
     let transaction;
     if (this.idPromise) {
       transaction = this.idPromise.then(id => {
         return {id} as ITransactionSelector;
       });
-    } else if (this.inlineBegin) {
-      throw new Error('Nothing to commit');
     } else {
       transaction = Promise.resolve({singleUse: this._options});
     }

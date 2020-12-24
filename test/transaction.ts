@@ -25,6 +25,7 @@ import * as sinon from 'sinon';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import ITransactionSelector = google.spanner.v1.ITransactionSelector;
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -81,7 +82,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: ['end'],
+          exclude: ['end', 'createTransactionSelectorPromise'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
@@ -173,8 +174,10 @@ describe('Transaction', () => {
 
         snapshot.begin(err => {
           assert.ifError(err);
-          assert.strictEqual(snapshot.id, BEGIN_RESPONSE.id);
-          done();
+          snapshot.idPromise.then(id => {
+            assert.strictEqual(id, BEGIN_RESPONSE.id);
+            done();
+          });
         });
       });
 
@@ -218,7 +221,12 @@ describe('Transaction', () => {
       const TABLE = 'my-table-123';
 
       beforeEach(() => {
-        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transactionPromise) =>
+          // This is not completely equal to the actual implementation, as the
+          // real partial-result-stream will call the request with the resolved
+          // transaction selector instead of the promise.
+          makeRequest(transactionPromise)
+        );
       });
 
       it('should send the correct request', () => {
@@ -231,16 +239,19 @@ describe('Transaction', () => {
         assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
-      it('should use the transaction id if present', () => {
+      it('should use the transaction id if present', done => {
         const id = 'transaction-id-123';
         const expectedTransaction = {id};
 
-        snapshot.id = id;
+        snapshot.idPromise = Promise.resolve(id);
         snapshot.createReadStream(TABLE);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-
-        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+        const transactionFuture = PARTIAL_RESULT_STREAM.lastCall
+          .args[1] as Promise<ITransactionSelector>;
+        transactionFuture.then(selector => {
+          assert.deepStrictEqual(selector, expectedTransaction);
+          done();
+        });
       });
 
       it('should configure `singleUse` if id is absent', () => {
@@ -250,13 +261,15 @@ describe('Transaction', () => {
 
         snapshot.createReadStream(TABLE);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-
-        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+        const transactionFuture = PARTIAL_RESULT_STREAM.lastCall
+          .args[1] as Promise<ITransactionSelector>;
+        transactionFuture.then(selector => {
+          assert.deepStrictEqual(selector, expectedTransaction);
+        });
       });
 
       it('should send the correct `reqOpts`', () => {
-        const id = 'transaction-id-123';
+        const id = Promise.resolve('transaction-id-123');
         const fakeKeySet = {all: true};
 
         const fakeRequest = {
@@ -267,8 +280,8 @@ describe('Transaction', () => {
 
         const expectedRequest = {
           session: SESSION_NAME,
-          transaction: {id},
           table: TABLE,
+          transaction: id,
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
@@ -279,11 +292,13 @@ describe('Transaction', () => {
           .withArgs(fakeRequest)
           .returns(fakeKeySet);
 
-        snapshot.id = id;
+        snapshot.idPromise = id;
         snapshot.createReadStream(TABLE, fakeRequest);
 
+        const transactionSelector = PARTIAL_RESULT_STREAM.lastCall.args[1];
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
+        assert.deepStrictEqual(transactionSelector, snapshot.idPromise);
         assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
@@ -313,7 +328,9 @@ describe('Transaction', () => {
       it('should update the `resumeToken` for subsequent requests', () => {
         const fakeToken = 'fake-token-123';
 
-        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest(fakeToken));
+        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transaction) =>
+          makeRequest(transaction, fakeToken)
+        );
         snapshot.createReadStream(TABLE);
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
@@ -346,7 +363,7 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.jsonOptions, undefined);
         assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
-        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+        const options = PARTIAL_RESULT_STREAM.lastCall.args[2];
 
         assert.deepStrictEqual(options, fakeOptions);
       });
@@ -486,7 +503,9 @@ describe('Transaction', () => {
       };
 
       beforeEach(() => {
-        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transaction) =>
+          makeRequest(transaction)
+        );
       });
 
       it('should send the correct request', () => {
@@ -499,19 +518,21 @@ describe('Transaction', () => {
         assert.deepStrictEqual(headers, snapshot.resourceHeader_);
       });
 
-      it('should use the transaction id if present', () => {
+      it('should use the transaction id if present', done => {
         const id = 'transaction-id-123';
         const expectedTransaction = {id};
 
-        snapshot.id = id;
+        snapshot.idPromise = Promise.resolve(id);
         snapshot.runStream(QUERY);
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-
-        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+        reqOpts.transaction.then(selector => {
+          assert.deepStrictEqual(selector, expectedTransaction);
+          done();
+        });
       });
 
-      it('should configure `singleUse` if id is absent', () => {
+      it('should configure `singleUse` if id is absent', done => {
         const expectedTransaction = {
           singleUse: {readOnly: OPTIONS},
         };
@@ -520,10 +541,13 @@ describe('Transaction', () => {
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+        reqOpts.transaction.then(selector => {
+          assert.deepStrictEqual(selector, expectedTransaction);
+          done();
+        });
       });
 
-      it('should send the correct `reqOpts`', () => {
+      it('should send the correct `reqOpts`', done => {
         const id = 'transaction-id-123';
         const fakeParams = {b: 'a'};
         const fakeParamTypes = {b: 'number'};
@@ -551,12 +575,16 @@ describe('Transaction', () => {
           paramTypes: fakeParamTypes,
         });
 
-        snapshot.id = id;
+        snapshot.idPromise = Promise.resolve(id);
         snapshot.runStream(fakeQuery);
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(reqOpts, expectedRequest);
+        reqOpts.transaction.then(selector => {
+          reqOpts.transaction = selector;
+          assert.deepStrictEqual(reqOpts, expectedRequest);
+          done();
+        });
       });
 
       it('should accept just a sql string', () => {
@@ -613,12 +641,13 @@ describe('Transaction', () => {
 
       it('should update the `resumeToken` for subsequent requests', () => {
         const fakeToken = 'fake-token-123';
+        const id = 'fake-transaction-123';
 
         snapshot.runStream(QUERY);
 
         const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
 
-        makeRequest(fakeToken);
+        makeRequest({id}, fakeToken);
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
@@ -642,7 +671,7 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.jsonOptions, undefined);
         assert.strictEqual(reqOpts.maxResumeRetries, undefined);
 
-        const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
+        const options = PARTIAL_RESULT_STREAM.lastCall.args[2];
 
         assert.deepStrictEqual(options, expectedOptions);
       });
@@ -1109,45 +1138,59 @@ describe('Transaction', () => {
         });
       });
 
-      it('should make the correct request', () => {
+      it('should make the correct request', done => {
         const stub = sandbox.stub(transaction, 'request');
         const fakeId = 'transaction-id-123';
 
-        transaction.id = fakeId;
-        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
+        stub.callsFake(request => {
+          const {client, method, reqOpts, headers} = request;
 
-        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'executeBatchDml');
+          assert.strictEqual(reqOpts.session, SESSION_NAME);
+          assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
+          assert.strictEqual(reqOpts.seqno, 1);
+          assert.deepStrictEqual(headers, transaction.resourceHeader_);
+          done();
+        });
 
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'executeBatchDml');
-        assert.strictEqual(reqOpts.session, SESSION_NAME);
-        assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
-        assert.strictEqual(reqOpts.seqno, 1);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        transaction.idPromise = Promise.resolve(fakeId);
+        transaction.batchUpdate(STRING_STATEMENTS);
       });
 
-      it('should encode sql string statements', () => {
+      it('should encode sql string statements', done => {
         const stub = sandbox.stub(transaction, 'request');
         const expectedStatements = STRING_STATEMENTS.map(sql => ({sql}));
 
-        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
+        stub.callsFake(request => {
+          const {reqOpts} = request;
+          assert.deepStrictEqual(reqOpts.statements, expectedStatements);
+          done();
+        });
 
-        const {reqOpts} = stub.lastCall.args[0];
-        assert.deepStrictEqual(reqOpts.statements, expectedStatements);
+        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
       });
 
-      it('should encode DML object statements', () => {
+      it('should encode DML object statements', done => {
         const stub = sandbox.stub(transaction, 'request');
-        transaction.batchUpdate(OBJ_STATEMENTS, assert.ifError);
 
-        const {reqOpts} = stub.lastCall.args[0];
-        assert.deepStrictEqual(reqOpts.statements, FORMATTED_STATEMENTS);
+        stub.callsFake(request => {
+          const {reqOpts} = request;
+          assert.deepStrictEqual(reqOpts.statements, FORMATTED_STATEMENTS);
+          done();
+        });
+
+        transaction.batchUpdate(OBJ_STATEMENTS, assert.ifError);
       });
 
       it('should wrap and return any request errors', done => {
         const stub = sandbox.stub(transaction, 'request');
         const fakeError = new Error('err');
         const fakeResponse = {};
+
+        stub.callsFake((_, requestCallback) => {
+          setImmediate(requestCallback, fakeError, fakeResponse);
+        });
 
         transaction.batchUpdate(
           OBJ_STATEMENTS,
@@ -1160,9 +1203,7 @@ describe('Transaction', () => {
             done();
           }
         );
-
-        const requestCallback = stub.lastCall.args[1];
-        setImmediate(requestCallback, fakeError, fakeResponse);
+        transaction.end();
       });
 
       it('should return a list of row counts upon success', done => {
@@ -1175,6 +1216,10 @@ describe('Transaction', () => {
           ],
         };
 
+        stub.callsFake((_, requestCallback) => {
+          setImmediate(requestCallback, null, fakeResponse);
+        });
+
         transaction.batchUpdate(
           OBJ_STATEMENTS,
           (err, rowCounts, apiResponse) => {
@@ -1184,9 +1229,6 @@ describe('Transaction', () => {
             done();
           }
         );
-
-        const requestCallback = stub.lastCall.args[1];
-        setImmediate(requestCallback, null, fakeResponse);
       });
 
       it('should return list of 0s for row counts when stats or rowCount value is empty', done => {
@@ -1196,6 +1238,10 @@ describe('Transaction', () => {
           resultSets: [{stats: {rowCount: 'a'}}, {stats: undefined}],
         };
 
+        stub.callsFake((_, requestCallback) => {
+          setImmediate(requestCallback, null, fakeResponse);
+        });
+
         transaction.batchUpdate(
           OBJ_STATEMENTS,
           (err, rowCounts, apiResponse) => {
@@ -1205,9 +1251,6 @@ describe('Transaction', () => {
             done();
           }
         );
-
-        const requestCallback = stub.lastCall.args[1];
-        setImmediate(requestCallback, null, fakeResponse);
       });
 
       it('should return both error and row counts for partial failures', done => {
@@ -1220,6 +1263,10 @@ describe('Transaction', () => {
           ],
           status: {code: 3, message: 'Err'},
         };
+
+        stub.callsFake((_, requestCallback) => {
+          setImmediate(requestCallback, null, fakeResponse);
+        });
 
         transaction.batchUpdate(
           OBJ_STATEMENTS,
@@ -1235,9 +1282,6 @@ describe('Transaction', () => {
             done();
           }
         );
-
-        const requestCallback = stub.lastCall.args[1];
-        setImmediate(requestCallback, null, fakeResponse);
       });
     });
 
@@ -1267,18 +1311,20 @@ describe('Transaction', () => {
     });
 
     describe('commit', () => {
-      it('should make the correct request', () => {
+      it('should make the correct request', done => {
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {client, method, reqOpts, headers} = config;
+
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'commit');
+          assert.strictEqual(reqOpts.session, SESSION_NAME);
+          assert.deepStrictEqual(reqOpts.mutations, []);
+          assert.deepStrictEqual(headers, transaction.resourceHeader_);
+          done();
+        });
         transaction.commit();
-
-        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
-
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'commit');
-        assert.strictEqual(reqOpts.session, SESSION_NAME);
-        assert.deepStrictEqual(reqOpts.mutations, []);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1290,74 +1336,87 @@ describe('Transaction', () => {
         transaction.commit(gaxOptions, assert.ifError);
       });
 
-      it('should use the transaction `id` when set', () => {
+      it('should use the transaction `id` when set', done => {
         const id = 'transaction-id-123';
         const stub = sandbox.stub(transaction, 'request');
 
-        transaction.id = id;
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          assert.strictEqual(reqOpts.transactionId, id);
+          done();
+        });
+
+        transaction.idPromise = Promise.resolve(id);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-
-        assert.strictEqual(reqOpts.transactionId, id);
       });
 
-      it('should set `singleUseTransaction` when `id` is not set', () => {
+      it('should set `singleUseTransaction` when `id` is not set', done => {
         const expectedOptions = {readWrite: {}};
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          assert.deepStrictEqual(reqOpts.singleUseTransaction, expectedOptions);
+          done();
+        });
+
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-
-        assert.deepStrictEqual(reqOpts.singleUseTransaction, expectedOptions);
       });
 
-      it('should call `end` once complete', () => {
+      it('should call `end` once complete', done => {
         const endStub = sandbox.stub(transaction, 'end');
         const requestStub = sandbox.stub(transaction, 'request');
 
+        requestStub.callsFake((_, requestCallback) => {
+          requestCallback();
+
+          assert.strictEqual(endStub.callCount, 1);
+          done();
+        });
+
         transaction.commit(() => {});
-
-        const requestCallback = requestStub.lastCall.args[1];
-        requestCallback();
-
-        assert.strictEqual(endStub.callCount, 1);
       });
 
-      it('should set the `commitTimestamp` if in response', () => {
+      it('should set the `commitTimestamp` if in response', done => {
         const requestStub = sandbox.stub(transaction, 'request');
 
         const expectedTimestamp = new PreciseDate(0);
         const fakeTimestamp = {seconds: 0, nanos: 0};
 
+        requestStub.callsFake((_, requestCallback) => {
+          requestCallback(null, {commitTimestamp: fakeTimestamp});
+
+          assert.deepStrictEqual(
+            transaction.commitTimestamp,
+            expectedTimestamp
+          );
+          assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
+          done();
+        });
+
         transaction.commit(() => {});
-
-        const requestCallback = requestStub.lastCall.args[1];
-        requestCallback(null, {commitTimestamp: fakeTimestamp});
-
-        assert.deepStrictEqual(transaction.commitTimestamp, expectedTimestamp);
-        assert.strictEqual(transaction.commitTimestampProto, fakeTimestamp);
       });
 
-      it('should return any errors and the response', () => {
+      it('should return any errors and the response', done => {
         const requestStub = sandbox.stub(transaction, 'request');
 
         const fakeError = new Error('err');
         const fakeResponse = {};
         const callback = sandbox.stub().withArgs(fakeError, fakeResponse);
 
+        requestStub.callsFake((_, requestCallback) => {
+          requestCallback(fakeError, fakeResponse);
+
+          assert.strictEqual(callback.callCount, 1);
+          done();
+        });
+
         transaction.commit(callback);
-
-        const requestCallback = requestStub.lastCall.args[1];
-        requestCallback(fakeError, fakeResponse);
-
-        assert.strictEqual(callback.callCount, 1);
       });
     });
 
     describe('deleteRows', () => {
-      it('should queue a "delete" mutation', () => {
+      it('should queue a "delete" mutation', done => {
         const fakeTable = 'my-table-123';
         const fakeKeys = ['a', 'b'];
 
@@ -1371,19 +1430,22 @@ describe('Transaction', () => {
 
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {table, keySet} = reqOpts.mutations[0].delete;
+
+          assert.strictEqual(table, fakeTable);
+          assert.deepStrictEqual(keySet, expectedKeySet);
+          done();
+        });
+
         transaction.deleteRows(fakeTable, fakeKeys);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {table, keySet} = reqOpts.mutations[0].delete;
-
-        assert.strictEqual(table, fakeTable);
-        assert.deepStrictEqual(keySet, expectedKeySet);
       });
     });
 
     describe('insert', () => {
-      it('should queue an "insert" mutation', () => {
+      it('should queue an "insert" mutation', done => {
         const fakeTable = 'my-table-123';
         const fakeKeyVals = {
           name: 'Joe West',
@@ -1401,20 +1463,23 @@ describe('Transaction', () => {
 
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {table, columns, values} = reqOpts.mutations[0].insert;
+
+          assert.strictEqual(table, fakeTable);
+          assert.deepStrictEqual(columns, expectedColumns);
+          assert.deepStrictEqual(values, expectedValues);
+          done();
+        });
+
         transaction.insert(fakeTable, fakeKeyVals);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {table, columns, values} = reqOpts.mutations[0].insert;
-
-        assert.strictEqual(table, fakeTable);
-        assert.deepStrictEqual(columns, expectedColumns);
-        assert.deepStrictEqual(values, expectedValues);
       });
     });
 
     describe('replace', () => {
-      it('should queue a "replace" mutation', () => {
+      it('should queue a "replace" mutation', done => {
         const fakeTable = 'my-table-123';
         const fakeKeyVals = {
           name: 'Joe West',
@@ -1432,15 +1497,18 @@ describe('Transaction', () => {
 
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {table, columns, values} = reqOpts.mutations[0].replace;
+
+          assert.strictEqual(table, fakeTable);
+          assert.deepStrictEqual(columns, expectedColumns);
+          assert.deepStrictEqual(values, expectedValues);
+          done();
+        });
+
         transaction.replace(fakeTable, fakeKeyVals);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {table, columns, values} = reqOpts.mutations[0].replace;
-
-        assert.strictEqual(table, fakeTable);
-        assert.deepStrictEqual(columns, expectedColumns);
-        assert.deepStrictEqual(values, expectedValues);
       });
     });
 
@@ -1448,7 +1516,7 @@ describe('Transaction', () => {
       const ID = 'transaction-id-123';
 
       beforeEach(() => {
-        transaction.id = ID;
+        transaction.idPromise = Promise.resolve(ID);
       });
 
       it('should return an error if the `id` is not set', done => {
@@ -1456,7 +1524,7 @@ describe('Transaction', () => {
           'Transaction ID is unknown, nothing to rollback.'
         );
 
-        delete transaction.id;
+        delete transaction.idPromise;
 
         transaction.rollback(err => {
           assert.deepStrictEqual(err, expectedError);
@@ -1464,21 +1532,24 @@ describe('Transaction', () => {
         });
       });
 
-      it('should make the correct request', () => {
+      it('should make the correct request', done => {
         const stub = sandbox.stub(transaction, 'request');
         const expectedReqOpts = {
           session: SESSION_NAME,
           transactionId: ID,
         };
 
+        stub.callsFake(config => {
+          const {client, method, reqOpts, headers} = config;
+
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'rollback');
+          assert.deepStrictEqual(reqOpts, expectedReqOpts);
+          assert.deepStrictEqual(headers, transaction.resourceHeader_);
+          done();
+        });
+
         transaction.rollback();
-
-        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
-
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'rollback');
-        assert.deepStrictEqual(reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
       it('should accept gaxOptions', done => {
@@ -1490,34 +1561,38 @@ describe('Transaction', () => {
         transaction.rollback(gaxOptions, assert.ifError);
       });
 
-      it('should call through to `end`', () => {
+      it('should call through to `end`', done => {
         const endStub = sandbox.stub(transaction, 'end');
         const requestStub = sandbox.stub(transaction, 'request');
 
+        requestStub.callsFake((_, requestCallback) => {
+          requestCallback(null);
+
+          assert.strictEqual(endStub.callCount, 1);
+          done();
+        });
+
         transaction.rollback(() => {});
-
-        const requestCallback = requestStub.lastCall.args[1];
-        requestCallback(null);
-
-        assert.strictEqual(endStub.callCount, 1);
       });
 
-      it('should return any request errors', () => {
+      it('should return any request errors', done => {
         const fakeError = new Error('err');
         const callback = sandbox.stub().withArgs(fakeError);
         const requestStub = sandbox.stub(transaction, 'request');
 
+        requestStub.callsFake((_, requestCallback) => {
+          requestCallback(fakeError);
+
+          assert.strictEqual(callback.callCount, 1);
+          done();
+        });
+
         transaction.rollback(callback);
-
-        const requestCallback = requestStub.lastCall.args[1];
-        requestCallback(fakeError);
-
-        assert.strictEqual(callback.callCount, 1);
       });
     });
 
     describe('update', () => {
-      it('should queue an "update" mutation', () => {
+      it('should queue an "update" mutation', done => {
         const fakeTable = 'my-table-123';
         const fakeKeyVals = {
           name: 'Joe West',
@@ -1535,20 +1610,23 @@ describe('Transaction', () => {
 
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {table, columns, values} = reqOpts.mutations[0].update;
+
+          assert.strictEqual(table, fakeTable);
+          assert.deepStrictEqual(columns, expectedColumns);
+          assert.deepStrictEqual(values, expectedValues);
+          done();
+        });
+
         transaction.update(fakeTable, fakeKeyVals);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {table, columns, values} = reqOpts.mutations[0].update;
-
-        assert.strictEqual(table, fakeTable);
-        assert.deepStrictEqual(columns, expectedColumns);
-        assert.deepStrictEqual(values, expectedValues);
       });
     });
 
     describe('upsert', () => {
-      it('should queue an "insertOrUpdate" mutation', () => {
+      it('should queue an "insertOrUpdate" mutation', done => {
         const fakeTable = 'my-table-123';
         const fakeKeyVals = {
           name: 'Joe West',
@@ -1566,20 +1644,23 @@ describe('Transaction', () => {
 
         const stub = sandbox.stub(transaction, 'request');
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {table, columns, values} = reqOpts.mutations[0].insertOrUpdate;
+
+          assert.strictEqual(table, fakeTable);
+          assert.deepStrictEqual(columns, expectedColumns);
+          assert.deepStrictEqual(values, expectedValues);
+          done();
+        });
+
         transaction.upsert(fakeTable, fakeKeyVals);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {table, columns, values} = reqOpts.mutations[0].insertOrUpdate;
-
-        assert.strictEqual(table, fakeTable);
-        assert.deepStrictEqual(columns, expectedColumns);
-        assert.deepStrictEqual(values, expectedValues);
       });
     });
 
     describe('mutations', () => {
-      it('should accept an array of rows', () => {
+      it('should accept an array of rows', done => {
         const stub = sandbox.stub(transaction, 'request');
 
         const fakeTable = 'my-table-123';
@@ -1597,14 +1678,17 @@ describe('Transaction', () => {
           };
         });
 
+        stub.callsFake(config => {
+          const {reqOpts} = config;
+          const {columns, values} = reqOpts.mutations[0].insert;
+
+          assert.deepStrictEqual(columns, expectedColumns);
+          assert.deepStrictEqual(values, expectedValues);
+          done();
+        });
+
         transaction.insert(fakeTable, rows);
         transaction.commit();
-
-        const {reqOpts} = stub.lastCall.args[0];
-        const {columns, values} = reqOpts.mutations[0].insert;
-
-        assert.deepStrictEqual(columns, expectedColumns);
-        assert.deepStrictEqual(values, expectedValues);
       });
 
       it('should throw an error if missing columns', () => {

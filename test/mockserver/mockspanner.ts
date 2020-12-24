@@ -225,6 +225,7 @@ export class MockSpanner {
     string,
     protobuf.ITransactionOptions | null | undefined
   > = new Map<string, protobuf.ITransactionOptions | null | undefined>();
+  private shouldAbortNextTransaction = false;
   private abortedTransactions: Set<string> = new Set<string>();
   private statementResults: Map<string, StatementResult> = new Map<
     string,
@@ -295,7 +296,14 @@ export class MockSpanner {
   }
 
   abortTransaction(transaction: Transaction): void {
+    if (!transaction.id) {
+      throw new Error('This transaction has not been started');
+    }
     const formattedId = `${transaction.session.formattedName_}/transactions/${transaction.id}`;
+    this.abortTransactionId(formattedId);
+  }
+
+  private abortTransactionId(formattedId: string): void {
     if (this.transactions.has(formattedId)) {
       this.transactions.delete(formattedId);
       this.transactionOptions.delete(formattedId);
@@ -303,6 +311,10 @@ export class MockSpanner {
     } else {
       throw new Error(`Transaction ${formattedId} does not exist`);
     }
+  }
+
+  abortNextTransaction(): void {
+    this.shouldAbortNextTransaction = true;
   }
 
   freeze() {
@@ -530,16 +542,9 @@ export class MockSpanner {
           return;
         }
         let transaction;
+        let fullTransactionId;
         if (request.transaction && request.transaction.id) {
-          const fullTransactionId = `${request.session}/transactions/${request.transaction.id}`;
-          if (this.abortedTransactions.has(fullTransactionId)) {
-            call.emit(
-              'error',
-              MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
-            );
-            call.end();
-            return;
-          }
+          fullTransactionId = `${request.session}/transactions/${request.transaction.id}`;
         } else if (
           request.transaction &&
           request.transaction.begin &&
@@ -547,6 +552,15 @@ export class MockSpanner {
         ) {
           // Begin a new transaction.
           transaction = this.createTransaction(session);
+          fullTransactionId = `${request.session}/transactions/${transaction.id}`;
+        }
+        if (this.abortedTransactions.has(fullTransactionId)) {
+          call.emit(
+            'error',
+            MockSpanner.createTransactionAbortedError(`${fullTransactionId}`)
+          );
+          call.end();
+          return;
         }
         const res = this.statementResults.get(sql);
         if (res) {
@@ -889,6 +903,12 @@ export class MockSpanner {
     });
     this.transactions.set(fullTransactionId, transaction);
     this.transactionOptions.set(fullTransactionId, options);
+
+    if (this.shouldAbortNextTransaction) {
+      this.abortTransactionId(fullTransactionId);
+      this.shouldAbortNextTransaction = false;
+    }
+
     return transaction;
   }
 

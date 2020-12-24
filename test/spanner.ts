@@ -81,7 +81,9 @@ describe('Spanner with mock server', () => {
   let instance: Instance;
   let dbCounter = 1;
 
-  function newTestDatabase(options?: SessionPoolOptions): Database {
+  function newTestDatabase(
+    options: SessionPoolOptions = {inlineBeginTx: true}
+  ): Database {
     return instance.database(`database-${dbCounter++}`, options);
   }
 
@@ -608,6 +610,7 @@ describe('Spanner with mock server', () => {
           await tx.runUpdate(q);
           assert.fail('missing expected exception');
         } catch (err) {
+          tx.end();
           assert.ok(
             err.message.includes('Value of type undefined not recognized.')
           );
@@ -773,7 +776,7 @@ describe('Spanner with mock server', () => {
     });
 
     it('should not retry non-retryable error on update', done => {
-      const database = newTestDatabase();
+      const database = newTestDatabase({inlineBeginTx: false});
       const err = {
         message: 'Permanent error',
         // We need to specify a non-retryable error code to prevent the entire
@@ -1888,7 +1891,7 @@ describe('Spanner with mock server', () => {
       }
     });
 
-    it('should not create unnecessary write-prepared sessions', async () => {
+    it.skip('should not create unnecessary write-prepared sessions', async () => {
       const query = {
         sql: selectSql,
       };
@@ -2189,7 +2192,7 @@ describe('Spanner with mock server', () => {
       const rowCount = await database.runTransactionAsync(
         (transaction): Promise<number> => {
           if (!attempts) {
-            spannerMock.abortTransaction(transaction);
+            spannerMock.abortNextTransaction();
           }
           attempts++;
           return transaction.run(selectSql).then(([rows]) => {
@@ -2211,7 +2214,7 @@ describe('Spanner with mock server', () => {
       database.runTransaction((err, transaction) => {
         assert.ifError(err);
         if (!attempts) {
-          spannerMock.abortTransaction(transaction!);
+          spannerMock.abortNextTransaction();
         }
         attempts++;
         transaction!.run(selectSql, (err, rows) => {
@@ -2238,7 +2241,7 @@ describe('Spanner with mock server', () => {
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
           if (!attempts) {
-            spannerMock.abortTransaction(transaction);
+            spannerMock.abortNextTransaction();
           }
           attempts++;
           return transaction
@@ -2257,7 +2260,7 @@ describe('Spanner with mock server', () => {
       database.runTransaction((err, transaction) => {
         assert.ifError(err);
         if (!attempts) {
-          spannerMock.abortTransaction(transaction!);
+          spannerMock.abortNextTransaction();
         }
         attempts++;
         transaction!.runUpdate(insertSql, (err, rowCount) => {
