@@ -2613,11 +2613,11 @@ describe('Spanner with mock server', () => {
         'no Transaction included with first request'
       );
       assert.ok(
-        request.transaction.begin,
+        request.transaction?.begin,
         'no Begin included with first request'
       );
       assert.ok(
-        request.transaction.begin.readWrite,
+        request.transaction?.begin?.readWrite,
         'Begin option is not read/write'
       );
       assert.ok(
