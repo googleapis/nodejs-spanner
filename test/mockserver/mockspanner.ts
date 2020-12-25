@@ -518,7 +518,10 @@ export class MockSpanner {
     >
   ) {
     this.requests.push(call.request!);
-    this.executeSelect(this.executeStreamingSql.name, call.request!.sql, call);
+    if (call.request?.sql) {
+      const sql = call.request.sql;
+      this.executeSelect(this.executeStreamingSql.name, sql, call);
+    }
   }
 
   private executeSelect(

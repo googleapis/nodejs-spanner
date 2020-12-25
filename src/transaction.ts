@@ -106,7 +106,9 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
+export type BeginTransactionCallback = NormalCallback<
+  spannerClient.spanner.v1.ITransaction
+>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -135,7 +137,9 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
+export type CommitCallback = NormalCallback<
+  spannerClient.spanner.v1.ICommitResponse
+>;
 
 function createMinimalRetryDelayMetadata(): grpc.Metadata {
   const metadata = new grpc.Metadata();
@@ -387,6 +391,13 @@ export class Snapshot extends EventEmitter {
     );
   }
 
+  /**
+   * Adds a listener to a stream that will set the transaction id that should be
+   * returned in the first response to the stream. This listener should only be
+   * added to streams that requested a transaction, as it will reject the
+   * idPromise if it does not return a transaction in its first response.
+   * @param prs The stream to attach the listener to.
+   */
   private addTransactionListener(prs: PartialResultStream) {
     if (prs) {
       prs
@@ -399,7 +410,8 @@ export class Snapshot extends EventEmitter {
           ) {
             this.id = prs.metadata.transaction.id;
             this.idResolve(prs.metadata.transaction.id);
-            this.idReject = undefined;
+          } else if (this.idReject) {
+            this.idReject(noTransactionReturnedError);
           }
         })
         .once('error', () => {
@@ -1611,34 +1623,39 @@ export class Transaction extends Dml {
       transaction = Promise.resolve({singleUse: this._options});
     }
 
-    transaction.then(transaction => {
-      if (transaction.id) {
-        reqOpts.transactionId = transaction.id;
-      } else if (transaction.singleUse) {
-        reqOpts.singleUseTransaction = transaction.singleUse;
-      }
-      this.request(
-        {
-          client: 'SpannerClient',
-          method: 'commit',
-          reqOpts,
-          gaxOpts,
-          headers: this.resourceHeader_,
-        },
-        (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
-          this.end();
-
-          if (resp && resp.commitTimestamp) {
-            this.commitTimestampProto = resp.commitTimestamp;
-            this.commitTimestamp = new PreciseDate(
-              resp.commitTimestamp as DateStruct
-            );
-          }
-
-          callback!(err as ServiceError | null, resp);
+    transaction
+      .then(transaction => {
+        if (transaction.id) {
+          reqOpts.transactionId = transaction.id;
+        } else if (transaction.singleUse) {
+          reqOpts.singleUseTransaction = transaction.singleUse;
         }
-      );
-    });
+        this.request(
+          {
+            client: 'SpannerClient',
+            method: 'commit',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          },
+          (
+            err: null | Error,
+            resp: spannerClient.spanner.v1.ICommitResponse
+          ) => {
+            this.end();
+
+            if (resp && resp.commitTimestamp) {
+              this.commitTimestampProto = resp.commitTimestamp;
+              this.commitTimestamp = new PreciseDate(
+                resp.commitTimestamp as DateStruct
+              );
+            }
+
+            callback!(err as ServiceError | null, resp);
+          }
+        );
+      })
+      .catch(callback);
   }
 
   /**
@@ -1848,26 +1865,28 @@ export class Transaction extends Dml {
     }
 
     const session = this.session.formattedName_!;
-    this.idPromise.then(transactionId => {
-      const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
-        session,
-        transactionId,
-      };
+    this.idPromise
+      .then(transactionId => {
+        const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
+          session,
+          transactionId,
+        };
 
-      this.request(
-        {
-          client: 'SpannerClient',
-          method: 'rollback',
-          reqOpts,
-          gaxOpts,
-          headers: this.resourceHeader_,
-        },
-        (err: null | ServiceError) => {
-          this.end();
-          callback!(err);
-        }
-      );
-    });
+        this.request(
+          {
+            client: 'SpannerClient',
+            method: 'rollback',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          },
+          (err: null | ServiceError) => {
+            this.end();
+            callback!(err);
+          }
+        );
+      })
+      .catch(callback);
   }
 
   /**

@@ -2321,6 +2321,23 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    it('should be able to commit after failed query', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async transaction => {
+        try {
+          await transaction.run(invalidSql);
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
+        await transaction.commit();
+      });
+      await database.close();
+    });
+
     it('should throw DeadlineError', async () => {
       let attempts = 0;
       const database = newTestDatabase();
@@ -2576,24 +2593,27 @@ describe('Spanner with mock server', () => {
         writes: 0.0,
         inlineBeginTx: true,
       });
-      await database.runTransactionAsync(async tx => {
-        // The first statement should normally return a transaction id. That does
-        // not happen if the statement returns an error. That will force a
-        // transaction retry that will not use inline BeginTransaction.
-        try {
-          await tx.runUpdate(invalidSql);
-          assert.fail('missing expected exception');
-        } catch (e) {
-          assert.strictEqual(
-            e.message,
-            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
-          );
-        }
-        await tx.run(selectSql);
-        await tx.commit();
-      });
-      assertInlinedBeginRetry(spannerMock, 3);
-      await database.close();
+      try {
+        await database.runTransactionAsync(async tx => {
+          // The first statement should normally return a transaction id. That does
+          // not happen if the statement returns an error. That will force a
+          // transaction retry that will not use inline BeginTransaction.
+          try {
+            await tx.runUpdate(invalidSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              e.message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.run(selectSql);
+          await tx.commit();
+        });
+        assertInlinedBeginRetry(spannerMock, 3);
+      } finally {
+        await database.close();
+      }
     });
 
     function assertInlinedBegin(mock: MockSpanner) {

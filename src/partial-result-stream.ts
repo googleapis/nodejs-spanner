@@ -20,7 +20,7 @@ import * as eventsIntercept from 'events-intercept';
 import * as is from 'is';
 import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
-import {Readable, Transform} from 'stream';
+import {PassThrough, Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 import {grpc} from 'google-gax';
 
@@ -451,17 +451,22 @@ export function partialResultStream(
     if (lastRequestStream) {
       lastRequestStream.removeListener('end', endListener);
     }
-    transaction.then(transactionSelectorOrError => {
-      if ((transactionSelectorOrError as Error).message) {
-        lastRequestStream = new Readable();
-        lastRequestStream.destroy(transactionSelectorOrError as Error);
-      } else {
-        const transactionSelector = transactionSelectorOrError as ITransactionSelector;
-        lastRequestStream = requestFn(transactionSelector, lastResumeToken);
-      }
-      lastRequestStream.on('end', endListener);
-      requestsStream.add(lastRequestStream);
-    });
+    transaction
+      .then(transactionSelectorOrError => {
+        if ((transactionSelectorOrError as Error).message) {
+          lastRequestStream = new PassThrough();
+          lastRequestStream.destroy(transactionSelectorOrError as Error);
+        } else {
+          const transactionSelector = transactionSelectorOrError as ITransactionSelector;
+          lastRequestStream = requestFn(transactionSelector, lastResumeToken);
+        }
+        lastRequestStream.on('end', endListener);
+        requestsStream.add(lastRequestStream);
+      })
+      .catch(err => {
+        lastRequestStream = new PassThrough();
+        lastRequestStream.destroy(err);
+      });
   };
 
   const retry = (err: grpc.ServiceError): void => {
