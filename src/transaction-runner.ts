@@ -190,7 +190,8 @@ export abstract class Runner<T> {
     }
 
     const transaction = this.session.transaction(
-      (this.session.parent as Database).queryOptions_
+      (this.session.parent as Database).queryOptions_,
+      this.options.inlineBeginTx
     );
     if (!this.options.inlineBeginTx) {
       await transaction.begin();

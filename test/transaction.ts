@@ -17,6 +17,8 @@
 import {PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
+import {PassThrough} from 'stream';
+import mergeStream = require('merge-stream');
 import {EventEmitter} from 'events';
 import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
@@ -25,7 +27,6 @@ import * as sinon from 'sinon';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
-import ITransactionSelector = google.spanner.v1.ITransactionSelector;
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -44,6 +45,27 @@ describe('Transaction', () => {
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
+
+  function initializeFakeRequestStream(): Promise<unknown> {
+    let resolveRequestStream: () => void;
+    const res = new Promise(resolve => {
+      resolveRequestStream = resolve;
+    });
+
+    PARTIAL_RESULT_STREAM.callsFake((makeRequest, snapshot) => {
+      const fakePartialResultStream = mergeStream();
+      const transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+      transactionSelectorPromise.then(tx => {
+        const requestStream = makeRequest(tx);
+        if (requestStream) {
+          fakePartialResultStream.add(requestStream);
+        }
+        resolveRequestStream();
+      });
+      return fakePartialResultStream;
+    });
+    return res;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
@@ -82,7 +104,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: ['end', 'createTransactionSelectorPromise'],
+          exclude: ['end', 'getOrCreateTransactionSelectorPromise'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
@@ -219,24 +241,23 @@ describe('Transaction', () => {
 
     describe('createReadStream', () => {
       const TABLE = 'my-table-123';
+      let REQUEST_STREAM_STARTED: Promise<unknown>;
 
       beforeEach(() => {
-        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transactionPromise) =>
-          // This is not completely equal to the actual implementation, as the
-          // real partial-result-stream will call the request with the resolved
-          // transaction selector instead of the promise.
-          makeRequest(transactionPromise)
-        );
+        REQUEST_STREAM_STARTED = initializeFakeRequestStream();
       });
 
-      it('should send the correct request', () => {
+      it('should send the correct request', done => {
         snapshot.createReadStream(TABLE);
 
-        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'streamingRead');
-        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'streamingRead');
+          assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+          done();
+        });
       });
 
       it('should use the transaction id if present', done => {
@@ -246,30 +267,29 @@ describe('Transaction', () => {
         snapshot.idPromise = Promise.resolve(id);
         snapshot.createReadStream(TABLE);
 
-        const transactionFuture = PARTIAL_RESULT_STREAM.lastCall
-          .args[1] as Promise<ITransactionSelector>;
-        transactionFuture.then(selector => {
-          assert.deepStrictEqual(selector, expectedTransaction);
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
           done();
         });
       });
 
-      it('should configure `singleUse` if id is absent', () => {
+      it('should configure `singleUse` if id is absent', done => {
         const expectedTransaction = {
           singleUse: {readOnly: OPTIONS},
         };
 
         snapshot.createReadStream(TABLE);
 
-        const transactionFuture = PARTIAL_RESULT_STREAM.lastCall
-          .args[1] as Promise<ITransactionSelector>;
-        transactionFuture.then(selector => {
-          assert.deepStrictEqual(selector, expectedTransaction);
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+          done();
         });
       });
 
-      it('should send the correct `reqOpts`', () => {
-        const id = Promise.resolve('transaction-id-123');
+      it('should send the correct `reqOpts`', done => {
+        const id = 'transaction-id-123';
         const fakeKeySet = {all: true};
 
         const fakeRequest = {
@@ -281,7 +301,7 @@ describe('Transaction', () => {
         const expectedRequest = {
           session: SESSION_NAME,
           table: TABLE,
-          transaction: id,
+          transaction: {id},
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
@@ -292,50 +312,61 @@ describe('Transaction', () => {
           .withArgs(fakeRequest)
           .returns(fakeKeySet);
 
-        snapshot.idPromise = id;
+        snapshot.idPromise = Promise.resolve(id);
         snapshot.createReadStream(TABLE, fakeRequest);
 
-        const transactionSelector = PARTIAL_RESULT_STREAM.lastCall.args[1];
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-
-        assert.deepStrictEqual(transactionSelector, snapshot.idPromise);
-        assert.deepStrictEqual(reqOpts, expectedRequest);
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts, expectedRequest);
+          done();
+        });
       });
 
-      it('should pass along `gaxOpts`', () => {
+      it('should pass along `gaxOpts`', done => {
         const fakeOptions = {};
 
         snapshot.createReadStream(TABLE, {gaxOptions: fakeOptions});
 
-        const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.strictEqual(gaxOpts, fakeOptions);
-        assert.strictEqual(reqOpts.gaxOptions, undefined);
+          assert.strictEqual(gaxOpts, fakeOptions);
+          assert.strictEqual(reqOpts.gaxOptions, undefined);
+          done();
+        });
       });
 
-      it('should pass a stream to `PartialResultStream`', () => {
-        const fakeStream = new EventEmitter();
+      it('should pass a stream to `PartialResultStream`', done => {
+        const fakeStream = new PassThrough();
 
         REQUEST_STREAM.returns(fakeStream);
         snapshot.createReadStream(TABLE);
 
-        const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
-        const stream = makeRequest();
+        REQUEST_STREAM_STARTED.then(() => {
+          const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
+          const stream = makeRequest();
 
-        assert.strictEqual(stream, fakeStream);
+          assert.strictEqual(stream, fakeStream);
+          done();
+        });
       });
 
-      it('should update the `resumeToken` for subsequent requests', () => {
+      it('should update the `resumeToken` for subsequent requests', done => {
         const fakeToken = 'fake-token-123';
 
-        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transaction) =>
-          makeRequest(transaction, fakeToken)
-        );
+        PARTIAL_RESULT_STREAM.callsFake((makeRequest, snapshot) => {
+          const transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+          transactionSelectorPromise.then(tx => {
+            makeRequest(tx, fakeToken);
+
+            const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+            assert.strictEqual(reqOpts.resumeToken, fakeToken);
+            done();
+          });
+        });
+
         snapshot.createReadStream(TABLE);
-
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-
-        assert.strictEqual(reqOpts.resumeToken, fakeToken);
       });
 
       it('should return a `PartialResultStream`', () => {
@@ -501,21 +532,23 @@ describe('Transaction', () => {
       const QUERY = {
         sql: 'SELECT * FROM `MyTable`',
       };
+      let REQUEST_STREAM_STARTED: Promise<unknown>;
 
       beforeEach(() => {
-        PARTIAL_RESULT_STREAM.callsFake((makeRequest, transaction) =>
-          makeRequest(transaction)
-        );
+        REQUEST_STREAM_STARTED = initializeFakeRequestStream();
       });
 
-      it('should send the correct request', () => {
+      it('should send the correct request', done => {
         snapshot.runStream(QUERY);
 
-        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.strictEqual(client, 'SpannerClient');
-        assert.strictEqual(method, 'executeStreamingSql');
-        assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+          assert.strictEqual(client, 'SpannerClient');
+          assert.strictEqual(method, 'executeStreamingSql');
+          assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+          done();
+        });
       });
 
       it('should use the transaction id if present', done => {
@@ -525,9 +558,10 @@ describe('Transaction', () => {
         snapshot.idPromise = Promise.resolve(id);
         snapshot.runStream(QUERY);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-        reqOpts.transaction.then(selector => {
-          assert.deepStrictEqual(selector, expectedTransaction);
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
           done();
         });
       });
@@ -539,10 +573,10 @@ describe('Transaction', () => {
 
         snapshot.runStream(QUERY);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        reqOpts.transaction.then(selector => {
-          assert.deepStrictEqual(selector, expectedTransaction);
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
           done();
         });
       });
@@ -578,10 +612,9 @@ describe('Transaction', () => {
         snapshot.idPromise = Promise.resolve(id);
         snapshot.runStream(fakeQuery);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        reqOpts.transaction.then(selector => {
-          reqOpts.transaction = selector;
           assert.deepStrictEqual(reqOpts, expectedRequest);
           done();
         });
@@ -595,38 +628,51 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.sql, QUERY.sql);
       });
 
-      it('should pass along `gaxOpts`', () => {
+      it('should pass along `gaxOpts`', done => {
         const fakeQuery = Object.assign({gaxOptions: {}}, QUERY);
 
         snapshot.runStream(fakeQuery);
 
-        const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const {gaxOpts, reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.strictEqual(reqOpts.gaxOptions, undefined);
-        assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
+          assert.strictEqual(reqOpts.gaxOptions, undefined);
+          assert.strictEqual(gaxOpts, fakeQuery.gaxOptions);
+          done();
+        });
       });
 
-      it('should update the `seqno` for each call', () => {
+      it('should update the `seqno` for each call', done => {
         snapshot.runStream(QUERY);
-        const call1 = REQUEST_STREAM.lastCall.args[0];
+        REQUEST_STREAM_STARTED.then(() => {
+          const call1 = REQUEST_STREAM.lastCall.args[0];
+          assert.strictEqual(call1.reqOpts.seqno, 1);
 
-        snapshot.runStream(QUERY);
-        const call2 = REQUEST_STREAM.lastCall.args[0];
+          // Re-initialize request stream fake.
+          REQUEST_STREAM_STARTED = initializeFakeRequestStream();
 
-        assert.strictEqual(call1.reqOpts.seqno, 1);
-        assert.strictEqual(call2.reqOpts.seqno, 2);
+          snapshot.runStream(QUERY);
+          REQUEST_STREAM_STARTED.then(() => {
+            const call2 = REQUEST_STREAM.lastCall.args[0];
+            assert.strictEqual(call2.reqOpts.seqno, 2);
+            done();
+          });
+        });
       });
 
-      it('should pass a stream to `PartialResultStream`', () => {
-        const fakeStream = new EventEmitter();
+      it('should pass a stream to `PartialResultStream`', done => {
+        const fakeStream = new PassThrough();
 
         REQUEST_STREAM.returns(fakeStream);
         snapshot.runStream(QUERY);
 
-        const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
-        const stream = makeRequest();
+        REQUEST_STREAM_STARTED.then(() => {
+          const makeRequest = PARTIAL_RESULT_STREAM.lastCall.args[0];
+          const stream = makeRequest();
 
-        assert.strictEqual(stream, fakeStream);
+          assert.strictEqual(stream, fakeStream);
+          done();
+        });
       });
 
       it('should return a `PartialResultStream`', () => {
@@ -676,7 +722,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(options, expectedOptions);
       });
 
-      it('should use valid parameters', () => {
+      it('should use valid parameters', done => {
         const fakeQuery = Object.assign({}, QUERY, {
           params: {
             a: 'a',
@@ -694,8 +740,11 @@ describe('Transaction', () => {
 
         snapshot.runStream(fakeQuery);
 
-        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
-        assert.deepStrictEqual(reqOpts.params, expectedParams);
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts.params, expectedParams);
+          done();
+        });
       });
 
       it('should return an error stream for invalid parameters', done => {
@@ -711,9 +760,11 @@ describe('Transaction', () => {
             error.message,
             'Value of type undefined not recognized.'
           );
-          done();
+          REQUEST_STREAM_STARTED.then(() => {
+            assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+            done();
+          });
         });
-        assert.ok(!REQUEST_STREAM.called, 'No request should be made');
       });
     });
 

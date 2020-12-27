@@ -210,12 +210,17 @@ describe('PartialResultStream', () => {
       resumeToken: '...',
     });
 
+    const SNAPSHOT = Object.assign(
+      {},
+      {
+        getOrCreateTransactionSelectorPromise: () =>
+          Promise.resolve({singleUse: {}}),
+      }
+    );
+
     beforeEach(() => {
       fakeRequestStream = through.obj();
-      stream = partialResultStream(
-        () => fakeRequestStream,
-        Promise.resolve({id: 'fake-transaction-123'})
-      );
+      stream = partialResultStream(() => fakeRequestStream, SNAPSHOT);
     });
 
     it('should only push rows when there is a token', done => {
@@ -304,10 +309,7 @@ describe('PartialResultStream', () => {
         return secondFakeRequestStream;
       });
 
-      partialResultStream(
-        requestFnStub,
-        Promise.resolve({id: 'fake-transaction-123'})
-      )
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('error', done)
         .pipe(
           concat(rows => {
@@ -367,10 +369,7 @@ describe('PartialResultStream', () => {
         return secondFakeRequestStream;
       });
 
-      partialResultStream(
-        requestFnStub,
-        Promise.resolve({id: 'fake-transaction-123'})
-      )
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('error', done)
         .pipe(
           concat(rows => {
@@ -408,10 +407,7 @@ describe('PartialResultStream', () => {
       });
 
       const receivedRows: Row[] = [];
-      partialResultStream(
-        requestFnStub,
-        Promise.resolve({id: 'fake-transaction-123'})
-      )
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('data', row => {
           receivedRows.push(row);
         })
@@ -441,10 +437,7 @@ describe('PartialResultStream', () => {
         return fakeRequestStream;
       });
 
-      const stream = partialResultStream(
-        requestFnStub,
-        Promise.resolve({id: 'fake-transaction-123'})
-      );
+      const stream = partialResultStream(requestFnStub, SNAPSHOT);
 
       stream.on('data', dataStub).on('error', err => {
         assert.strictEqual(err, error);

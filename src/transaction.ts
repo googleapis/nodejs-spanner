@@ -398,7 +398,7 @@ export class Snapshot extends EventEmitter {
    * idPromise if it does not return a transaction in its first response.
    * @param prs The stream to attach the listener to.
    */
-  private addTransactionListener(prs: PartialResultStream) {
+  addTransactionListener(prs: PartialResultStream) {
     if (prs) {
       prs
         .once('response', (prs: google.spanner.v1.PartialResultSet) => {
@@ -568,10 +568,7 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    const [
-      selector,
-      requestingTransaction,
-    ] = this.createTransactionSelectorPromise();
+    // const selector = this.createTransactionSelectorPromise();
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -600,15 +597,11 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const prs = partialResultStream(makeRequest, selector, {
+    return partialResultStream(makeRequest, this, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
-    if (requestingTransaction) {
-      this.addTransactionListener(prs);
-    }
-    return prs;
   }
 
   /**
@@ -973,13 +966,10 @@ export class Snapshot extends EventEmitter {
     );
 
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
-    const [
-      selector,
-      requestingTransaction,
-    ] = this.createTransactionSelectorPromise();
+    // const selector = this.createTransactionSelectorPromise();
     let reqOpts;
 
-    const sanitizeRequest = (transaction: ITransactionSelector) => {
+    const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
 
@@ -990,7 +980,6 @@ export class Snapshot extends EventEmitter {
       delete query.types;
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
-        transaction,
         seqno: this._seqno++,
         params,
         paramTypes,
@@ -998,12 +987,12 @@ export class Snapshot extends EventEmitter {
     };
 
     const makeRequest = (
-      transactionSelector: ITransactionSelector,
+      transaction: ITransactionSelector,
       resumeToken?: ResumeToken
     ): Readable => {
       if (!reqOpts) {
         try {
-          sanitizeRequest(transactionSelector);
+          sanitizeRequest();
         } catch (e) {
           const errorStream = new PassThrough();
           setImmediate(() => errorStream.destroy(e));
@@ -1014,37 +1003,27 @@ export class Snapshot extends EventEmitter {
       return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
-        reqOpts: Object.assign({}, reqOpts, {resumeToken}),
+        reqOpts: Object.assign({}, reqOpts, {resumeToken}, {transaction}),
         gaxOpts: gaxOptions,
         headers: this.resourceHeader_,
       });
     };
-    const prs = partialResultStream(makeRequest, selector, {
+    return partialResultStream(makeRequest, this, {
       json,
       jsonOptions,
       maxResumeRetries,
     });
-    if (requestingTransaction) {
-      this.addTransactionListener(prs);
-    }
-    return prs;
   }
 
-  protected createTransactionSelectorPromise(): [
-    Promise<ITransactionSelector>,
-    boolean
-  ] {
+  getOrCreateTransactionSelectorPromise(): Promise<ITransactionSelector> {
     if (this.idPromise) {
-      return [
-        this.idPromise
-          .then(id => {
-            return {id} as ITransactionSelector;
-          })
-          .catch(err => {
-            return err;
-          }),
-        false,
-      ];
+      return this.idPromise
+        .then(id => {
+          return {id} as ITransactionSelector;
+        })
+        .catch(err => {
+          return err;
+        });
     } else if (this.inlineBegin) {
       this.idPromise = new Promise((resolve, reject) => {
         this.idResolve = id => {
@@ -1055,10 +1034,9 @@ export class Snapshot extends EventEmitter {
       });
       // Add a no-op error handler to prevent UnhandledPromiseRejectionWarnings.
       this.idPromise.catch(() => {});
-      return [Promise.resolve({begin: this._options}), true];
+      return Promise.resolve({begin: this._options});
     } else {
-      const selector = Promise.resolve({singleUse: this._options});
-      return [selector, false];
+      return Promise.resolve({singleUse: this._options});
     }
   }
 
@@ -1191,7 +1169,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end', 'createTransactionSelectorPromise'],
+  exclude: ['end', 'getOrCreateTransactionSelectorPromise'],
 });
 
 /**
@@ -1352,13 +1330,14 @@ export class Transaction extends Dml {
   constructor(
     session: Session,
     options = {} as spannerClient.spanner.v1.TransactionOptions.ReadWrite,
-    queryOptions?: IQueryOptions
+    queryOptions?: IQueryOptions,
+    inlineBegin?: boolean
   ) {
     super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
-    this.inlineBegin = true;
+    this.inlineBegin = inlineBegin;
   }
 
   batchUpdate(
@@ -1460,10 +1439,7 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       }
     );
-    const [
-      selector,
-      requestingTransaction,
-    ] = this.createTransactionSelectorPromise();
+    const selector = this.getOrCreateTransactionSelectorPromise();
 
     selector.then(transaction => {
       const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
@@ -1487,7 +1463,7 @@ export class Transaction extends Dml {
           let batchUpdateError: BatchUpdateError;
 
           if (err) {
-            if (requestingTransaction && this.idReject) {
+            if (transaction.begin && this.idReject) {
               this.idReject(noTransactionReturnedError);
             }
             const rowCounts: number[] = [];
@@ -1498,7 +1474,7 @@ export class Transaction extends Dml {
 
           const {resultSets, status} = resp;
           if (
-            requestingTransaction &&
+            transaction.begin &&
             this.idResolve &&
             resultSets[0] &&
             resultSets[0].metadata &&
@@ -1507,6 +1483,8 @@ export class Transaction extends Dml {
           ) {
             this.id = resultSets[0].metadata.transaction.id;
             this.idResolve(resultSets[0].metadata.transaction.id);
+          } else if (transaction.begin && this.idReject) {
+            this.idReject(noTransactionReturnedError);
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {
             return (
@@ -1618,6 +1596,11 @@ export class Transaction extends Dml {
     if (this.idPromise) {
       transaction = this.idPromise.then(id => {
         return {id} as ITransactionSelector;
+      });
+    } else if (this.inlineBegin) {
+      // Initiate a transaction that will be used for this commit.
+      transaction = this.begin(gaxOpts).then(tx => {
+        return {id: tx[0].id} as ITransactionSelector;
       });
     } else {
       transaction = Promise.resolve({singleUse: this._options});

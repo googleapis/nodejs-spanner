@@ -49,6 +49,7 @@ import ResultSetStats = google.spanner.v1.ResultSetStats;
 import * as stream from 'stream';
 import * as util from 'util';
 import BeginTransactionRequest = google.spanner.v1.BeginTransactionRequest;
+import CommitRequest = google.spanner.v1.CommitRequest;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -2586,7 +2587,7 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
-    it('should use explicit BeginTransaction if the first statement fails', async () => {
+    it('should retry and use explicit BeginTransaction if the first statement fails', async () => {
       const database = newTestDatabase({
         min: 0,
         incStep: 1,
@@ -2610,10 +2611,269 @@ describe('Spanner with mock server', () => {
           await tx.run(selectSql);
           await tx.commit();
         });
-        assertInlinedBeginRetry(spannerMock, 3);
+        // Both sql requests will be executed twice.
+        assertInlinedBeginRetry(spannerMock, 4);
       } finally {
         await database.close();
       }
+    });
+
+    it('should fail if BeginTransaction fails during retry', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError({
+          code: grpc.status.INTERNAL,
+          message: 'Generic internal error',
+        } as MockError)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          try {
+            await tx.run(invalidSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              e.message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.commit();
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          `${grpc.status.INTERNAL} INTERNAL: Generic internal error`
+        );
+        const requests = spannerMock.getRequests().filter(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest[];
+        assert.strictEqual(requests.length, 1);
+        assert.ok(
+          requests[0].transaction?.begin?.readWrite,
+          'Begin is not included on first request'
+        );
+        assert.strictEqual(
+          spannerMock.getRequests().filter(val => {
+            return (val as BeginTransactionRequest).options;
+          })!.length,
+          1
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should fail if first statement fails', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      try {
+        await database.runTransactionAsync(async tx => {
+          try {
+            await tx.run(invalidSql);
+          } finally {
+            tx.end();
+          }
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+        );
+        assertInlinedBegin(spannerMock);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should fail if second statement fails', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      try {
+        await database.runTransactionAsync(async tx => {
+          try {
+            await tx.run(selectSql);
+            await tx.run(invalidSql);
+          } finally {
+            tx.end();
+          }
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+        );
+        assertSecondRequestUsesTransactionId(spannerMock);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should retry if batch update returns error for first statement', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      try {
+        await database.runTransactionAsync(async tx => {
+          try {
+            await tx.batchUpdate([invalidSql, insertSql]);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.ok(e.message.includes(fooNotFoundErr.message));
+          }
+          await tx.commit();
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assertInlinedBeginRetry(spannerMock, 2);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should only include BeginTransaction on first call to executeStreamingSql', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      const errors: MockError[] = [];
+      for (const index of [0, 1, 1, 2, 2]) {
+        errors.push({
+          message: 'Temporary unavailable',
+          code: grpc.status.UNAVAILABLE,
+          streamIndex: index,
+        } as MockError);
+      }
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofErrors(errors)
+      );
+      await database.runTransactionAsync(async tx => {
+        const [rows] = await tx.run(selectSql);
+        assert.strictEqual(rows.length, 3);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      const allRequests = spannerMock.getRequests().filter(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest[];
+      // Expect: Initial + 5 retries.
+      assert.strictEqual(allRequests.length, 6);
+      // The first two requests should include a BeginTransaction option.
+      assert.ok(
+        allRequests[0].transaction?.begin?.readWrite,
+        'first request should include BeginTransaction'
+      );
+      assert.ok(
+        allRequests[1].transaction?.begin?.readWrite,
+        'second request should include BeginTransaction'
+      );
+      for (let i = 2; i < allRequests.length; i++) {
+        assert.ok(
+          allRequests[i].transaction?.id,
+          'third and subsequent requests should include transaction id'
+        );
+      }
+      await database.close();
+    });
+
+    it('should use transaction returned by first PartialResultSet if second PartialResultSet returns a non-retryable error', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError({
+          message: 'Invalid data',
+          code: grpc.status.DATA_LOSS,
+          streamIndex: 1,
+        } as MockError)
+      );
+      await database.runTransactionAsync(async tx => {
+        try {
+          // This statement will fail, but it will return a transaction id, as
+          // the first PartialResultSet is returned successfully and the second
+          // fails.
+          await tx.run(selectSql);
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            e.message,
+            `${grpc.status.DATA_LOSS} DATA_LOSS: Invalid data`
+          );
+        }
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      assertSecondRequestUsesTransactionId(spannerMock);
+      await database.close();
+    });
+
+    it('should execute BeginTransaction for buffered mutations without statements', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        tx.insert('foo', {id: 1, val: 'v'});
+        await tx.commit();
+      });
+      const begin = spannerMock
+        .getRequests()
+        .filter(
+          request => (request as BeginTransactionRequest).options?.readWrite
+        );
+      assert.strictEqual(begin.length, 1);
+      const commit = spannerMock
+        .getRequests()
+        .filter(request => (request as CommitRequest).mutations);
+      assert.strictEqual(commit.length, 1);
+      await database.close();
+    });
+
+    it('should ignore query that is not consumed', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // Create a stream without a data handler.
+        tx.runStream(selectSql);
+        // This update statement should start a transaction.
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
     });
 
     function assertInlinedBegin(mock: MockSpanner) {

@@ -27,6 +27,7 @@ import {grpc} from 'google-gax';
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
 import ITransactionSelector = google.spanner.v1.ITransactionSelector;
+import {Snapshot} from './transaction';
 
 export type ResumeToken = string | Uint8Array;
 
@@ -413,14 +414,14 @@ export class PartialResultStream extends Transform implements ResultEvents {
  * @param {RequestFunction} requestFn The function that makes an API request. It
  *     will receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
- * @param {Promise<ITransactionSelector | Error>} transaction The transaction
+ * @param {Promise<ITransactionSelector | Error>} createTransactionSelectorFunc The transaction
  *     selector that will be used to execute the stream.
  * @param {RowOptions} [options] Options for formatting rows.
  * @returns {PartialResultStream}
  */
 export function partialResultStream(
   requestFn: RequestFunction,
-  transaction: Promise<ITransactionSelector | Error>,
+  snapshot: Snapshot,
   options?: RowOptions
 ): PartialResultStream {
   const retryableCodes = [grpc.status.UNAVAILABLE];
@@ -447,19 +448,20 @@ export function partialResultStream(
       setImmediate(() => requestsStream.end());
     }
   };
+  let transactionSelectorPromise: Promise<ITransactionSelector>;
   const makeRequest = (): void => {
     if (lastRequestStream) {
       lastRequestStream.removeListener('end', endListener);
     }
-    transaction
-      .then(transactionSelectorOrError => {
-        if ((transactionSelectorOrError as Error).message) {
-          lastRequestStream = new PassThrough();
-          lastRequestStream.destroy(transactionSelectorOrError as Error);
-        } else {
-          const transactionSelector = transactionSelectorOrError as ITransactionSelector;
-          lastRequestStream = requestFn(transactionSelector, lastResumeToken);
+    if (!transactionSelectorPromise || lastResumeToken) {
+      transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+    }
+    transactionSelectorPromise
+      .then(transactionSelector => {
+        if (transactionSelector.begin) {
+          snapshot.addTransactionListener(partialRSStream);
         }
+        lastRequestStream = requestFn(transactionSelector, lastResumeToken);
         lastRequestStream.on('end', endListener);
         requestsStream.add(lastRequestStream);
       })

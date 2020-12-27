@@ -446,9 +446,10 @@ export class Session extends common.GrpcServiceObject {
    * const transaction = session.transaction();
    */
   transaction(
-    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    inlineBegin?: boolean
   ) {
-    return new Transaction(this, undefined, queryOptions);
+    return new Transaction(this, undefined, queryOptions, inlineBegin);
   }
   /**
    * Format the session name to include the parent database's name.
