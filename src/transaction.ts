@@ -222,8 +222,10 @@ export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
   id?: Uint8Array | string;
-  idPromise?: Promise<Uint8Array | string>;
-  idResolve?: (id: Uint8Array | string) => void;
+  // idPromise?: Promise<Uint8Array | string>;
+  // idResolve?: (id: Uint8Array | string) => void;
+  idPromise?: Promise<ITransactionSelector>;
+  idResolve?: (ITransactionSelector) => void;
   idReject?: (error: Error) => void;
   inlineBegin?: boolean;
   ended: boolean;
@@ -377,7 +379,7 @@ export class Snapshot extends EventEmitter {
 
         const {id, readTimestamp} = resp;
 
-        this.idPromise = Promise.resolve(id!);
+        this.idPromise = Promise.resolve({id});
         this.id = id!;
         this.metadata = resp;
 
@@ -399,27 +401,25 @@ export class Snapshot extends EventEmitter {
    * @param prs The stream to attach the listener to.
    */
   addTransactionListener(prs: PartialResultStream) {
-    if (prs) {
-      prs
-        .once('response', (prs: google.spanner.v1.PartialResultSet) => {
-          if (
-            this.idResolve &&
-            prs.metadata &&
-            prs.metadata.transaction &&
-            prs.metadata.transaction.id
-          ) {
-            this.id = prs.metadata.transaction.id;
-            this.idResolve(prs.metadata.transaction.id);
-          } else if (this.idReject) {
-            this.idReject(noTransactionReturnedError);
-          }
-        })
-        .once('error', () => {
-          if (this.idReject) {
-            this.idReject(noTransactionReturnedError);
-          }
-        });
-    }
+    prs
+      .once('response', (prs: google.spanner.v1.PartialResultSet) => {
+        if (
+          this.idResolve &&
+          prs.metadata &&
+          prs.metadata.transaction &&
+          prs.metadata.transaction.id
+        ) {
+          this.id = prs.metadata.transaction.id;
+          this.idResolve(prs.metadata.transaction.id);
+        } else if (this.idReject) {
+          this.idReject(noTransactionReturnedError);
+        }
+      })
+      .once('error', () => {
+        if (this.idReject) {
+          this.idReject(noTransactionReturnedError);
+        }
+      });
   }
 
   /**
@@ -1017,18 +1017,12 @@ export class Snapshot extends EventEmitter {
 
   getOrCreateTransactionSelectorPromise(): Promise<ITransactionSelector> {
     if (this.idPromise) {
-      return this.idPromise
-        .then(id => {
-          return {id} as ITransactionSelector;
-        })
-        .catch(err => {
-          return err;
-        });
+      return this.idPromise;
     } else if (this.inlineBegin) {
       this.idPromise = new Promise((resolve, reject) => {
         this.idResolve = id => {
           this.id = id;
-          resolve(id);
+          resolve({id});
         };
         this.idReject = reject;
       });
@@ -1594,9 +1588,10 @@ export class Transaction extends Dml {
 
     let transaction;
     if (this.idPromise) {
-      transaction = this.idPromise.then(id => {
-        return {id} as ITransactionSelector;
-      });
+      transaction = this.idPromise;
+      // transaction = this.idPromise.then(id => {
+      //   return {id} as ITransactionSelector;
+      // });
     } else if (this.inlineBegin) {
       // Initiate a transaction that will be used for this commit.
       transaction = this.begin(gaxOpts).then(tx => {
@@ -1849,10 +1844,10 @@ export class Transaction extends Dml {
 
     const session = this.session.formattedName_!;
     this.idPromise
-      .then(transactionId => {
+      .then(transaction => {
         const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
           session,
-          transactionId,
+          transactionId: transaction.id,
         };
 
         this.request(

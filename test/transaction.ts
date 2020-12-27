@@ -196,8 +196,8 @@ describe('Transaction', () => {
 
         snapshot.begin(err => {
           assert.ifError(err);
-          snapshot.idPromise.then(id => {
-            assert.strictEqual(id, BEGIN_RESPONSE.id);
+          snapshot.idPromise.then(transaction => {
+            assert.strictEqual(transaction.id, BEGIN_RESPONSE.id);
             done();
           });
         });
@@ -264,7 +264,7 @@ describe('Transaction', () => {
         const id = 'transaction-id-123';
         const expectedTransaction = {id};
 
-        snapshot.idPromise = Promise.resolve(id);
+        snapshot.idPromise = Promise.resolve({id});
         snapshot.createReadStream(TABLE);
 
         REQUEST_STREAM_STARTED.then(() => {
@@ -312,7 +312,7 @@ describe('Transaction', () => {
           .withArgs(fakeRequest)
           .returns(fakeKeySet);
 
-        snapshot.idPromise = Promise.resolve(id);
+        snapshot.idPromise = Promise.resolve({id});
         snapshot.createReadStream(TABLE, fakeRequest);
 
         REQUEST_STREAM_STARTED.then(() => {
@@ -555,7 +555,7 @@ describe('Transaction', () => {
         const id = 'transaction-id-123';
         const expectedTransaction = {id};
 
-        snapshot.idPromise = Promise.resolve(id);
+        snapshot.idPromise = Promise.resolve({id});
         snapshot.runStream(QUERY);
 
         REQUEST_STREAM_STARTED.then(() => {
@@ -609,7 +609,7 @@ describe('Transaction', () => {
           paramTypes: fakeParamTypes,
         });
 
-        snapshot.idPromise = Promise.resolve(id);
+        snapshot.idPromise = Promise.resolve({id});
         snapshot.runStream(fakeQuery);
 
         REQUEST_STREAM_STARTED.then(() => {
@@ -1205,7 +1205,7 @@ describe('Transaction', () => {
           done();
         });
 
-        transaction.idPromise = Promise.resolve(fakeId);
+        transaction.idPromise = Promise.resolve({id: fakeId});
         transaction.batchUpdate(STRING_STATEMENTS);
       });
 
@@ -1397,7 +1397,7 @@ describe('Transaction', () => {
           done();
         });
 
-        transaction.idPromise = Promise.resolve(id);
+        transaction.idPromise = Promise.resolve({id});
         transaction.commit();
       });
 
@@ -1567,7 +1567,7 @@ describe('Transaction', () => {
       const ID = 'transaction-id-123';
 
       beforeEach(() => {
-        transaction.idPromise = Promise.resolve(ID);
+        transaction.idPromise = Promise.resolve({id: ID});
       });
 
       it('should return an error if the `id` is not set', done => {

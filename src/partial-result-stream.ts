@@ -467,7 +467,10 @@ export function partialResultStream(
       })
       .catch(err => {
         lastRequestStream = new PassThrough();
-        lastRequestStream.destroy(err);
+        //lastRequestStream.destroy(err);
+        setImmediate(() => lastRequestStream.destroy(err));
+        lastRequestStream.on('end', endListener);
+        requestsStream.add(lastRequestStream);
       });
   };
 

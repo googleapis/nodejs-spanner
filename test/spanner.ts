@@ -2611,8 +2611,32 @@ describe('Spanner with mock server', () => {
           await tx.run(selectSql);
           await tx.commit();
         });
-        // Both sql requests will be executed twice.
-        assertInlinedBeginRetry(spannerMock, 4);
+        // The first sql request will be executed twice, the second only once.
+        assertInlinedBeginRetry(spannerMock, 3);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should retry and use explicit BeginTransaction if the first statement fails asynchronously', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.runUpdate(invalidSql)
+            .then(response =>
+              assert.fail(`got unexpected update count ${response[0]}`)
+            )
+            .catch(() => {});
+          const [rows] = await tx.run(selectSql);
+          assert.strictEqual(rows.length, 3);
+          await tx.commit();
+        });
+        assertInlinedBeginRetry(spannerMock, 3);
       } finally {
         await database.close();
       }
@@ -2873,6 +2897,55 @@ describe('Spanner with mock server', () => {
         await tx.commit();
       });
       assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+
+    it('should ignore read that is not consumed', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // Create a stream without a data handler.
+        tx.createReadStream('NUMBERS', {
+          keySet: {all: true},
+          columns: ['NUM', 'NAME'],
+        });
+        // This update statement should start a transaction.
+        await tx.runUpdate(updateSql);
+        await tx.commit();
+      });
+      assertInlinedBegin(spannerMock);
+      await database.close();
+    });
+
+    it('should use transaction from previous statement for stream that is created before', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      await database.runTransactionAsync(async tx => {
+        // Create a stream without a data handler.
+        const stream = tx.runStream(selectSql);
+        // This update statement should start a transaction.
+        await tx.runUpdate(updateSql);
+        // Now attach a handler to the stream. This should cause the stream to
+        // start and use the transaction that was returned by the update
+        // statement.
+        let count = 0;
+        stream.on('data', () => count++);
+        await new Promise((resolve, reject) => {
+          stream.on('end', () => resolve()).on('error', reject);
+        });
+        await tx.commit();
+        assert.strictEqual(count, 3);
+      });
+      assertInlinedBegin(spannerMock);
+      assertSecondRequestUsesTransactionId(spannerMock);
       await database.close();
     });
 
