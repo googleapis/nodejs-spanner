@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-import {Done, describe, before, after, beforeEach, it} from 'mocha';
+import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
-import {grpc, Status} from 'google-gax';
+import {grpc} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
-import {
-  MockError,
-  MockSpanner,
-  NUM_ROWS_LARGE_RESULT_SET,
-  SimulatedExecutionTime,
-} from './mockserver/mockspanner';
+import {MockError, MockSpanner, NUM_ROWS_LARGE_RESULT_SET, SimulatedExecutionTime} from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
@@ -41,13 +36,14 @@ import {
   SessionPoolOptions,
 } from '../src/session-pool';
 import {Json} from '../src/codec';
+import * as stream from 'stream';
+import * as util from 'util';
+import {Status} from '@grpc/grpc-js/build/src/constants';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
-import * as stream from 'stream';
-import * as util from 'util';
 import BeginTransactionRequest = google.spanner.v1.BeginTransactionRequest;
 import CommitRequest = google.spanner.v1.CommitRequest;
 
@@ -2756,22 +2752,43 @@ describe('Spanner with mock server', () => {
         writes: 0.0,
         inlineBeginTx: true,
       });
-      try {
-        await database.runTransactionAsync(async tx => {
-          try {
-            await tx.batchUpdate([invalidSql, insertSql]);
-            assert.fail('missing expected error');
-          } catch (e) {
-            assert.ok(e.message.includes(fooNotFoundErr.message));
-          }
-          await tx.commit();
-        });
-        assert.fail('missing expected error');
-      } catch (e) {
-        assertInlinedBeginRetry(spannerMock, 2);
-      } finally {
-        await database.close();
-      }
+      await database.runTransactionAsync(async tx => {
+        try {
+          await tx.batchUpdate([invalidSql, insertSql]);
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.ok(e.message.includes(fooNotFoundErr.message));
+        }
+        await tx.commit();
+      });
+      assertInlinedBeginRetry(spannerMock, 2);
+      await database.close();
+    });
+
+    it('should retry if batch update fails with an error', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      spannerMock.setExecutionTime(
+        spannerMock.executeBatchDml,
+        SimulatedExecutionTime.ofError({
+          message: 'Invalid data',
+          code: grpc.status.DATA_LOSS,
+        } as MockError)
+      );
+      await database.runTransactionAsync(async tx => {
+        try {
+          await tx.batchUpdate([insertSql]);
+        } catch (e) {
+          assert.ok(e.message.includes('Invalid data'));
+        }
+        await tx.commit();
+      });
+      assertInlinedBeginRetry(spannerMock, 2);
+      await database.close();
     });
 
     it('should only include BeginTransaction on first call to executeStreamingSql', async () => {

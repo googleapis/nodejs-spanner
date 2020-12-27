@@ -158,7 +158,7 @@ function createMinimalRetryDelayMetadata(): grpc.Metadata {
  * to start because the first statement that included a BeginTransaction option did not return a
  * transaction id.
  */
-const noTransactionReturnedError = Object.assign(
+export const noTransactionReturnedError = Object.assign(
   new Error('The first statement did not return a transaction'),
   {
     code: grpc.status.ABORTED,

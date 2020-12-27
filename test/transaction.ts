@@ -27,6 +27,7 @@ import * as sinon from 'sinon';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {noTransactionReturnedError} from '../src/transaction';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -1101,6 +1102,58 @@ describe('Transaction', () => {
 
       it('should inherit from Dml', () => {
         assert(transaction instanceof Dml);
+      });
+    });
+
+    describe('inlineBegin', () => {
+      const TABLE = 'my-table-123';
+      let REQUEST_STREAM_STARTED: Promise<unknown>;
+
+      beforeEach(() => {
+        transaction = new Transaction(SESSION, {}, undefined, true);
+        REQUEST_STREAM_STARTED = initializeFakeRequestStream();
+      });
+
+      it('should configure `begin` if id is absent and inlineBegin is enabled', done => {
+        const expectedTransaction = {
+          begin: {readWrite: {}},
+        };
+
+        transaction.createReadStream(TABLE);
+
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+          done();
+        });
+      });
+
+      it('should fail if first statement fails to return a transaction', done => {
+        const expectedTransaction = {
+          begin: {readWrite: {}},
+        };
+
+        const fakeStream1 = new PassThrough();
+        REQUEST_STREAM.returns(fakeStream1);
+        transaction.addTransactionListener(fakeStream1);
+        transaction.createReadStream(TABLE);
+
+        REQUEST_STREAM_STARTED.then(() => {
+          const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+          assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
+
+          // Simulate a response without a transaction, although one was requested.
+          fakeStream1.emit('response', {});
+          transaction
+            .getOrCreateTransactionSelectorPromise()
+            .then(() => {
+              assert.fail('received unexpected transaction');
+            })
+            .catch(err => {
+              assert.deepStrictEqual(err, noTransactionReturnedError);
+              done();
+            });
+        });
       });
     });
 
