@@ -183,7 +183,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
    */
   _transform(
     chunk: google.spanner.v1.PartialResultSet,
-    enc: string,
+    encoding: string,
     next: Function
   ): void {
     this.emit('response', chunk);
@@ -414,8 +414,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
  * @param {RequestFunction} requestFn The function that makes an API request. It
  *     will receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
- * @param {Promise<ITransactionSelector | Error>} createTransactionSelectorFunc The transaction
- *     selector that will be used to execute the stream.
+ * @param {Snapshot} snapshot The snapshot / transaction to use for this stream.
  * @param {RowOptions} [options] Options for formatting rows.
  * @returns {PartialResultStream}
  */
@@ -453,6 +452,13 @@ export function partialResultStream(
     if (lastRequestStream) {
       lastRequestStream.removeListener('end', endListener);
     }
+    // Get a (new) transaction selector from the snapshot if:
+    // 1. This is the first call.
+    // 2. This is a retry and there is a resume token. That means that there
+    //    has also already been at least one response that potentially returned
+    //    a transaction id, and in that case we should use that id.
+    // If this is a retry and there is no resume token, then we should use the
+    // the same transaction selector as during the initial call.
     if (!transactionSelectorPromise || lastResumeToken) {
       transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
     }
@@ -467,7 +473,6 @@ export function partialResultStream(
       })
       .catch(err => {
         lastRequestStream = new PassThrough();
-        //lastRequestStream.destroy(err);
         setImmediate(() => lastRequestStream.destroy(err));
         lastRequestStream.on('end', endListener);
         requestsStream.add(lastRequestStream);

@@ -16,10 +16,15 @@
 
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
-import {grpc} from 'google-gax';
+import {grpc, Status} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
-import {MockError, MockSpanner, NUM_ROWS_LARGE_RESULT_SET, SimulatedExecutionTime} from './mockserver/mockspanner';
+import {
+  MockError,
+  MockSpanner,
+  NUM_ROWS_LARGE_RESULT_SET,
+  SimulatedExecutionTime,
+} from './mockserver/mockspanner';
 import * as mockInstanceAdmin from './mockserver/mockinstanceadmin';
 import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
@@ -38,7 +43,6 @@ import {
 import {Json} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
-import {Status} from '@grpc/grpc-js/build/src/constants';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
