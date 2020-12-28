@@ -16,7 +16,6 @@
 
 async function updateWithNumericData(instanceId, databaseId, projectId) {
   // [START spanner_update_data_with_numeric_column]
-  // [START spanner_update_data_with_numeric]
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -67,7 +66,6 @@ async function updateWithNumericData(instanceId, databaseId, projectId) {
     // Close the database when finished.
     database.close();
   }
-  // [END spanner_update_data_with_numeric]
   // [END spanner_update_data_with_numeric_column]
 }
 
