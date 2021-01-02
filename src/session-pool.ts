@@ -616,18 +616,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
-    // Delete the trace associated with this session to mark the session as checked
-    // back into the pool. This will prevent the session to be marked as leaked if
-    // the pool is closed while the session is being prepared.
-    this._traces.delete(session.id);
-    this._pendingPrepare++;
-    session.type = types.ReadWrite;
-    this._prepareTransaction(session)
-      .catch(() => (session.type = types.ReadOnly))
-      .then(() => {
-        this._pendingPrepare--;
-        this._release(session);
-      });
+    if (this.options.inlineBeginTx) {
+      this._release(session);
+    } else {
+      // Delete the trace associated with this session to mark the session as checked
+      // back into the pool. This will prevent the session to be marked as leaked if
+      // the pool is closed while the session is being prepared.
+      this._traces.delete(session.id);
+      this._pendingPrepare++;
+      session.type = types.ReadWrite;
+      this._prepareTransaction(session)
+        .catch(() => (session.type = types.ReadOnly))
+        .then(() => {
+          this._pendingPrepare--;
+          this._release(session);
+        });
+    }
   }
 
   /**
@@ -670,7 +674,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const session = await this._acquires.add(getSession);
 
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
-      this._numInProcessPrepare++;
+      if (!this.options.inlineBeginTx) {
+        this._numInProcessPrepare++;
+      }
       try {
         await this._prepareTransaction(session);
       } catch (e) {
@@ -1091,9 +1097,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   async _prepareTransaction(session: Session): Promise<void> {
     const transaction = session.transaction(
-      (session.parent as Database).queryOptions_
+      (session.parent as Database).queryOptions_,
+      this.options.inlineBeginTx
     );
-    await transaction.begin();
+    if (!this.options.inlineBeginTx) {
+      await transaction.begin();
+    }
     session.txn = transaction;
   }
 

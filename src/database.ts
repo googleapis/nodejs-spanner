@@ -2474,11 +2474,7 @@ class Database extends common.GrpcServiceObject {
       });
     };
 
-    if (options.inlineBeginTx) {
-      this.pool_.getReadSession(callback);
-    } else {
-      this.pool_.getWriteSession(callback);
-    }
+    this.pool_.getWriteSession(callback);
   }
 
   runTransactionAsync<T = {}>(
@@ -2557,18 +2553,12 @@ class Database extends common.GrpcServiceObject {
     }
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
-    const getReadSession = this.pool_.getReadSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
     // (and yes, we like while (true) more than for (;;) here)
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        let session, transaction;
-        if (options.inlineBeginTx) {
-          [session] = await promisify(getReadSession)();
-        } else {
-          [session, transaction] = await promisify(getWriteSession)();
-        }
+        const [session, transaction] = await promisify(getWriteSession)();
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,

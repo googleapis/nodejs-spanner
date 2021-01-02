@@ -1585,9 +1585,6 @@ export class Transaction extends Dml {
     let transaction;
     if (this.idPromise) {
       transaction = this.idPromise;
-      // transaction = this.idPromise.then(id => {
-      //   return {id} as ITransactionSelector;
-      // });
     } else if (this.inlineBegin) {
       // Initiate a transaction that will be used for this commit.
       transaction = this.begin(gaxOpts).then(tx => {
