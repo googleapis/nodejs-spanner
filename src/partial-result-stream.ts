@@ -458,7 +458,8 @@ export function partialResultStream(
     //    has also already been at least one response that potentially returned
     //    a transaction id, and in that case we should use that id.
     // If this is a retry and there is no resume token, then we should use the
-    // the same transaction selector as during the initial call.
+    // the same transaction selector as during the initial call, as it should
+    // still be treated as the initial request for the stream.
     if (!transactionSelectorPromise || lastResumeToken) {
       transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
     }

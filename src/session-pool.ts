@@ -132,8 +132,10 @@ export interface SessionPoolInterface extends EventEmitter {
  *     write sessions represented as a float.
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
- * @property {boolean} [inlineBeginTx=false] Indicates whether a BeginTransaction
- *     option should be included with the first statement of a transaction.
+ * @property {boolean} [inlineBeginTx=true] Indicates whether a BeginTransaction
+ *     option should be included with the first statement of a transaction. When
+ *     this option is enabled the session pool will not prepare a fraction of
+ *     the sessions in the pool with a read/write transaction.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -162,7 +164,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
-  inlineBeginTx: false,
+  inlineBeginTx: true,
 };
 
 /**
@@ -616,6 +618,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
+    // Do not prepare a transaction if the inlineBeginTx option has been
+    // enabled.
     if (this.options.inlineBeginTx) {
       this._release(session);
     } else {
@@ -678,6 +682,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         this._numInProcessPrepare++;
       }
       try {
+        // This will only create a transaction object and not call the
+        // BeginTransaction RPC if inlineBeginTx is enabled.
         await this._prepareTransaction(session);
       } catch (e) {
         if (isSessionNotFoundError(e)) {

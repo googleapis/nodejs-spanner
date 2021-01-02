@@ -137,6 +137,10 @@ export interface RunUpdateCallback {
 
 export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
+// These metadata are attached to Aborted errors that are created by the client
+// library to force a transaction retry when the first statement of a
+// transaction fails to return a transaction id. The client should not wait
+// before retrying the transaction in such a case.
 function createMinimalRetryDelayMetadata(): grpc.Metadata {
   const metadata = new grpc.Metadata();
   const retry = RetryInfo.encode({
@@ -218,11 +222,9 @@ export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
   id?: Uint8Array | string;
-  // idPromise?: Promise<Uint8Array | string>;
-  // idResolve?: (id: Uint8Array | string) => void;
-  idPromise?: Promise<ITransactionSelector>;
-  idResolve?: (ITransactionSelector) => void;
-  idReject?: (error: Error) => void;
+  transactionPromise?: Promise<ITransactionSelector>;
+  transactionResolve?: (ITransactionSelector) => void;
+  transactionReject?: (error: Error) => void;
   inlineBegin?: boolean;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -375,7 +377,7 @@ export class Snapshot extends EventEmitter {
 
         const {id, readTimestamp} = resp;
 
-        this.idPromise = Promise.resolve({id});
+        this.transactionPromise = Promise.resolve({id});
         this.id = id!;
         this.metadata = resp;
 
@@ -391,29 +393,30 @@ export class Snapshot extends EventEmitter {
 
   /**
    * Adds a listener to a stream that will set the transaction id that should be
-   * returned in the first response to the stream. This listener should only be
+   * returned in the first response of the stream. This listener should only be
    * added to streams that requested a transaction, as it will reject the
-   * idPromise if it does not return a transaction in its first response.
+   * transactionPromise if it does not return a transaction in its first
+   * response.
    * @param prs The stream to attach the listener to.
    */
   addTransactionListener(prs: PartialResultStream) {
     prs
       .once('response', (prs: google.spanner.v1.PartialResultSet) => {
         if (
-          this.idResolve &&
+          this.transactionResolve &&
           prs.metadata &&
           prs.metadata.transaction &&
           prs.metadata.transaction.id
         ) {
           this.id = prs.metadata.transaction.id;
-          this.idResolve(prs.metadata.transaction.id);
-        } else if (this.idReject) {
-          this.idReject(noTransactionReturnedError);
+          this.transactionResolve(prs.metadata.transaction.id);
+        } else if (this.transactionReject) {
+          this.transactionReject(noTransactionReturnedError);
         }
       })
       .once('error', () => {
-        if (this.idReject) {
-          this.idReject(noTransactionReturnedError);
+        if (this.transactionReject) {
+          this.transactionReject(noTransactionReturnedError);
         }
       });
   }
@@ -564,7 +567,6 @@ export class Snapshot extends EventEmitter {
   ): PartialResultStream {
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
     const keySet = Snapshot.encodeKeySet(request);
-    // const selector = this.createTransactionSelectorPromise();
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -647,9 +649,9 @@ export class Snapshot extends EventEmitter {
     }
 
     this.ended = true;
-    this.idPromise = undefined;
-    this.idResolve = undefined;
-    this.idReject = undefined;
+    // this.transactionPromise = undefined;
+    // this.transactionResolve = undefined;
+    // this.transactionReject = undefined;
     process.nextTick(() => this.emit('end'));
   }
 
@@ -1012,18 +1014,18 @@ export class Snapshot extends EventEmitter {
   }
 
   getOrCreateTransactionSelectorPromise(): Promise<ITransactionSelector> {
-    if (this.idPromise) {
-      return this.idPromise;
+    if (this.transactionPromise) {
+      return this.transactionPromise;
     } else if (this.inlineBegin) {
-      this.idPromise = new Promise((resolve, reject) => {
-        this.idResolve = id => {
+      this.transactionPromise = new Promise((resolve, reject) => {
+        this.transactionResolve = id => {
           this.id = id;
           resolve({id});
         };
-        this.idReject = reject;
+        this.transactionReject = reject;
       });
       // Add a no-op error handler to prevent UnhandledPromiseRejectionWarnings.
-      this.idPromise.catch(() => {});
+      this.transactionPromise.catch(() => {});
       return Promise.resolve({begin: this._options});
     } else {
       return Promise.resolve({singleUse: this._options});
@@ -1453,8 +1455,8 @@ export class Transaction extends Dml {
           let batchUpdateError: BatchUpdateError;
 
           if (err) {
-            if (transaction.begin && this.idReject) {
-              this.idReject(noTransactionReturnedError);
+            if (transaction.begin && this.transactionReject) {
+              this.transactionReject(noTransactionReturnedError);
             }
             const rowCounts: number[] = [];
             batchUpdateError = Object.assign(err, {rowCounts});
@@ -1465,16 +1467,16 @@ export class Transaction extends Dml {
           const {resultSets, status} = resp;
           if (
             transaction.begin &&
-            this.idResolve &&
+            this.transactionResolve &&
             resultSets[0] &&
             resultSets[0].metadata &&
             resultSets[0].metadata.transaction &&
             resultSets[0].metadata.transaction.id
           ) {
             this.id = resultSets[0].metadata.transaction.id;
-            this.idResolve(resultSets[0].metadata.transaction.id);
-          } else if (transaction.begin && this.idReject) {
-            this.idReject(noTransactionReturnedError);
+            this.transactionResolve(resultSets[0].metadata.transaction.id);
+          } else if (transaction.begin && this.transactionReject) {
+            this.transactionReject(noTransactionReturnedError);
           }
           const rowCounts: number[] = resultSets.map(({stats}) => {
             return (
@@ -1583,8 +1585,8 @@ export class Transaction extends Dml {
     const reqOpts: CommitRequest = {mutations, session};
 
     let transaction;
-    if (this.idPromise) {
-      transaction = this.idPromise;
+    if (this.transactionPromise) {
+      transaction = this.transactionPromise;
     } else if (this.inlineBegin) {
       // Initiate a transaction that will be used for this commit.
       transaction = this.begin(gaxOpts).then(tx => {
@@ -1826,7 +1828,7 @@ export class Transaction extends Dml {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
-    if (!this.idPromise) {
+    if (!this.transactionPromise) {
       callback!(
         new Error(
           'Transaction ID is unknown, nothing to rollback.'
@@ -1836,7 +1838,7 @@ export class Transaction extends Dml {
     }
 
     const session = this.session.formattedName_!;
-    this.idPromise
+    this.transactionPromise
       .then(transaction => {
         const reqOpts: spannerClient.spanner.v1.IRollbackRequest = {
           session,

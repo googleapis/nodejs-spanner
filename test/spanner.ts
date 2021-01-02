@@ -1292,8 +1292,13 @@ describe('Spanner with mock server', () => {
     });
 
     it('should retry "Session not found" errors on BeginTransaction during Database.runTransaction()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
+      // Create a session pool with 1 read-only session and no inlineBeginTx.
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one read-only session has been created.
       pool.once('available', () => {
@@ -1311,9 +1316,8 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors for a query on a write-session on Database.runTransaction()', done => {
       const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
       const pool = db.pool_ as SessionPool;
-      // Wait until one session with a transaction has been created.
+      // Wait until one session has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -1349,9 +1353,8 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors for Commit on a write-session on Database.runTransaction()', done => {
       const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
       const pool = db.pool_ as SessionPool;
-      // Wait until one session with a transaction has been created.
+      // Wait until one session has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
         spannerMock.setExecutionTime(
           spannerMock.commit,
           SimulatedExecutionTime.ofError({
@@ -1402,9 +1405,8 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransaction()', done => {
       const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
       const pool = db.pool_ as SessionPool;
-      // Wait until one session with a transaction has been created.
+      // Wait until one session has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -1433,9 +1435,8 @@ describe('Spanner with mock server', () => {
     it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransaction()', done => {
       const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
       const pool = db.pool_ as SessionPool;
-      // Wait until one session with a transaction has been created.
+      // Wait until one session has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeBatchDml,
           SimulatedExecutionTime.ofError({
@@ -1465,8 +1466,13 @@ describe('Spanner with mock server', () => {
     });
 
     it('should retry "Session not found" errors on BeginTransaction during Database.runTransactionAsync()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
+      // Create a session pool with 1 read-only session and no inlineBegin.
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one read-only session has been created.
       pool.once('available', async () => {
@@ -1482,7 +1488,12 @@ describe('Spanner with mock server', () => {
     });
 
     it('should retry "Session not found" errors for a query on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 1.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
@@ -1521,7 +1532,12 @@ describe('Spanner with mock server', () => {
     }
 
     it('should retry "Session not found" errors for Commit on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 1.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
@@ -1554,7 +1570,12 @@ describe('Spanner with mock server', () => {
     });
 
     it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 1.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
@@ -1588,7 +1609,12 @@ describe('Spanner with mock server', () => {
     });
 
     it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+      const db = newTestDatabase({
+        min: 1,
+        incStep: 1,
+        writes: 1.0,
+        inlineBeginTx: false,
+      });
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
@@ -1892,6 +1918,7 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    // Skipped by default because the execution time is long.
     it.skip('should not create unnecessary write-prepared sessions', async () => {
       const query = {
         sql: selectSql,
@@ -1900,6 +1927,7 @@ describe('Spanner with mock server', () => {
         sql: insertSql,
       };
       const database = newTestDatabase({
+        inlineBeginTx: false,
         writes: 0.2,
         min: 100,
       });
@@ -1931,6 +1959,7 @@ describe('Spanner with mock server', () => {
 
     it('should pre-fill session pool', async () => {
       const database = newTestDatabase({
+        inlineBeginTx: false,
         writes: 0.2,
         min: 100,
         max: 200,
@@ -1955,6 +1984,7 @@ describe('Spanner with mock server', () => {
 
     it('should use pre-filled session pool', async () => {
       const database = newTestDatabase({
+        inlineBeginTx: false,
         writes: 0.2,
         min: 100,
         max: 200,
@@ -2091,6 +2121,7 @@ describe('Spanner with mock server', () => {
 
     it('should use pre-filled write sessions', async () => {
       const database = newTestDatabase({
+        inlineBeginTx: false,
         writes: 0.2,
         min: 100,
         max: 200,

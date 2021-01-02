@@ -204,7 +204,9 @@ export type BatchCreateSessionsCallback = ResourceCallback<
 >;
 
 export type DatabaseDeleteResponse = [databaseAdmin.protobuf.IEmpty];
-export type DatabaseDeleteCallback = NormalCallback<databaseAdmin.protobuf.IEmpty>;
+export type DatabaseDeleteCallback = NormalCallback<
+  databaseAdmin.protobuf.IEmpty
+>;
 
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
@@ -1289,7 +1291,9 @@ class Database extends common.GrpcServiceObject {
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
       database: this.formattedName_,
     };
-    this.request<databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse>(
+    this.request<
+      databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+    >(
       {
         client: 'DatabaseAdminClient',
         method: 'getDatabaseDdl',
@@ -2441,11 +2445,14 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrRunFn === 'object' && optionsOrRunFn
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
-    if (this.inlineBeginTx_) {
-      options.inlineBeginTx = true;
-    }
+    Object.assign(
+      options,
+      this.inlineBeginTx_ !== undefined
+        ? {inlineBeginTx: this.inlineBeginTx_}
+        : null
+    );
 
-    const callback = (err, session?, transaction?) => {
+    this.pool_.getWriteSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
@@ -2472,9 +2479,7 @@ class Database extends common.GrpcServiceObject {
           release();
         }
       });
-    };
-
-    this.pool_.getWriteSession(callback);
+    });
   }
 
   runTransactionAsync<T = {}>(
@@ -2548,9 +2553,12 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrRunFn === 'object'
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
-    if (this.inlineBeginTx_) {
-      options.inlineBeginTx = true;
-    }
+    Object.assign(
+      options,
+      this.inlineBeginTx_ !== undefined
+        ? {inlineBeginTx: this.inlineBeginTx_}
+        : null
+    );
 
     const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.

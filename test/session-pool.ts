@@ -564,6 +564,7 @@ describe('SessionPool', () => {
       let fakeSession;
 
       beforeEach(() => {
+        sessionPool.options.inlineBeginTx = false;
         fakeSession = createSession('id', {type: types.ReadWrite});
         inventory.borrowed.add(fakeSession);
       });
@@ -1464,6 +1465,10 @@ describe('SessionPool', () => {
   });
 
   describe('_prepareTransaction', () => {
+    beforeEach(() => {
+      sessionPool.options.inlineBeginTx = false;
+    });
+
     it('should prepare a transaction', async () => {
       const fakeSession = createSession();
       const fakeTransaction = new FakeTransaction();
