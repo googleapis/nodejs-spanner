@@ -399,7 +399,7 @@ export class Snapshot extends EventEmitter {
    * response.
    * @param prs The stream to attach the listener to.
    */
-  addTransactionListener(prs: PartialResultStream) {
+  private _addTransactionListener(prs: PartialResultStream) {
     prs
       .once('response', (prs: google.spanner.v1.PartialResultSet) => {
         if (
@@ -649,9 +649,6 @@ export class Snapshot extends EventEmitter {
     }
 
     this.ended = true;
-    // this.transactionPromise = undefined;
-    // this.transactionResolve = undefined;
-    // this.transactionReject = undefined;
     process.nextTick(() => this.emit('end'));
   }
 
@@ -964,13 +961,11 @@ export class Snapshot extends EventEmitter {
     );
 
     const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
-    // const selector = this.createTransactionSelectorPromise();
     let reqOpts;
 
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
-
       delete query.gaxOptions;
       delete query.json;
       delete query.jsonOptions;
@@ -1013,7 +1008,24 @@ export class Snapshot extends EventEmitter {
     });
   }
 
-  getOrCreateTransactionSelectorPromise(): Promise<ITransactionSelector> {
+  /**
+   * Returns a Promise<ITransactionSelector> for this transaction. The promise
+   * will be created if it does not already exist.
+   *
+   * @returns {Promise<ITransactionSelector>} A promise that will resolve to a
+   *     ITransactionSelector that can be used for this transaction:
+   *     1. For single-use transactions it will return a resolved promise that
+   *        contains a {singleUse: this._options} object.
+   *     2. For transactions that have already been started it will return a
+   *        promise that will eventually return a {id} object.
+   *     3. If the transaction has not yet been initialized and is not a single-
+   *        use transaction, it will return a resolved promise that contains a
+   *        {begin: this._options} object.
+   */
+  /** @internal */
+  _getOrCreateTransactionSelectorPromise(
+    partialRSStream?: PartialResultStream
+  ): Promise<ITransactionSelector> {
     if (this.transactionPromise) {
       return this.transactionPromise;
     } else if (this.inlineBegin) {
@@ -1026,6 +1038,9 @@ export class Snapshot extends EventEmitter {
       });
       // Add a no-op error handler to prevent UnhandledPromiseRejectionWarnings.
       this.transactionPromise.catch(() => {});
+      if (partialRSStream) {
+        this._addTransactionListener(partialRSStream);
+      }
       return Promise.resolve({begin: this._options});
     } else {
       return Promise.resolve({singleUse: this._options});
@@ -1161,7 +1176,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end', 'getOrCreateTransactionSelectorPromise'],
+  exclude: ['end', '_getOrCreateTransactionSelectorPromise'],
 });
 
 /**
@@ -1431,7 +1446,7 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       }
     );
-    const selector = this.getOrCreateTransactionSelectorPromise();
+    const selector = this._getOrCreateTransactionSelectorPromise();
 
     selector.then(transaction => {
       const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {

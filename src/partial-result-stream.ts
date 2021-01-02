@@ -461,20 +461,19 @@ export function partialResultStream(
     // the same transaction selector as during the initial call, as it should
     // still be treated as the initial request for the stream.
     if (!transactionSelectorPromise || lastResumeToken) {
-      transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+      transactionSelectorPromise = snapshot._getOrCreateTransactionSelectorPromise(
+        partialRSStream
+      );
     }
     transactionSelectorPromise
       .then(transactionSelector => {
-        if (transactionSelector.begin) {
-          snapshot.addTransactionListener(partialRSStream);
-        }
         lastRequestStream = requestFn(transactionSelector, lastResumeToken);
-        lastRequestStream.on('end', endListener);
-        requestsStream.add(lastRequestStream);
       })
       .catch(err => {
         lastRequestStream = new PassThrough();
         setImmediate(() => lastRequestStream.destroy(err));
+      })
+      .finally(() => {
         lastRequestStream.on('end', endListener);
         requestsStream.add(lastRequestStream);
       });

@@ -213,7 +213,7 @@ describe('PartialResultStream', () => {
     const SNAPSHOT = Object.assign(
       {},
       {
-        getOrCreateTransactionSelectorPromise: () =>
+        _getOrCreateTransactionSelectorPromise: () =>
           Promise.resolve({singleUse: {}}),
       }
     );

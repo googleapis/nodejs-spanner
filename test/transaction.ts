@@ -55,7 +55,9 @@ describe('Transaction', () => {
 
     PARTIAL_RESULT_STREAM.callsFake((makeRequest, snapshot) => {
       const fakePartialResultStream = mergeStream();
-      const transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+      const transactionSelectorPromise = snapshot._getOrCreateTransactionSelectorPromise(
+        fakePartialResultStream
+      );
       transactionSelectorPromise.then(tx => {
         const requestStream = makeRequest(tx);
         if (requestStream) {
@@ -105,7 +107,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: ['end', 'getOrCreateTransactionSelectorPromise'],
+          exclude: ['end', '_getOrCreateTransactionSelectorPromise'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
@@ -356,7 +358,7 @@ describe('Transaction', () => {
         const fakeToken = 'fake-token-123';
 
         PARTIAL_RESULT_STREAM.callsFake((makeRequest, snapshot) => {
-          const transactionSelectorPromise = snapshot.getOrCreateTransactionSelectorPromise();
+          const transactionSelectorPromise = snapshot._getOrCreateTransactionSelectorPromise();
           transactionSelectorPromise.then(tx => {
             makeRequest(tx, fakeToken);
 
@@ -1135,7 +1137,7 @@ describe('Transaction', () => {
 
         const fakeStream1 = new PassThrough();
         REQUEST_STREAM.returns(fakeStream1);
-        transaction.addTransactionListener(fakeStream1);
+        transaction._addTransactionListener(fakeStream1);
         transaction.createReadStream(TABLE);
 
         REQUEST_STREAM_STARTED.then(() => {
@@ -1145,7 +1147,7 @@ describe('Transaction', () => {
           // Simulate a response without a transaction, although one was requested.
           fakeStream1.emit('response', {});
           transaction
-            .getOrCreateTransactionSelectorPromise()
+            ._getOrCreateTransactionSelectorPromise()
             .then(() => {
               assert.fail('received unexpected transaction');
             })
