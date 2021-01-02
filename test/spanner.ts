@@ -2539,7 +2539,7 @@ describe('Spanner with mock server', () => {
         }
         await tx.commit();
       });
-      assertInlinedBeginRetry(spannerMock, 2);
+      assertInlinedRetry(spannerMock);
       assert.strictEqual(attempt, 2);
       await database.close();
     });
@@ -2643,7 +2643,35 @@ describe('Spanner with mock server', () => {
           await tx.commit();
         });
         // The first sql request will be executed twice, the second only once.
-        assertInlinedBeginRetry(spannerMock, 3);
+        assertRetryWithExplicitBeginTransaction(spannerMock, 3);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('batchDml should handle error from first statement', async () => {
+      const database = newTestDatabase({
+        min: 0,
+        incStep: 1,
+        writes: 0.0,
+        inlineBeginTx: true,
+      });
+      try {
+        await database.runTransactionAsync(async tx => {
+          try {
+            await tx.runUpdate(invalidSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              e.message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          const [updateCounts] = await tx.batchUpdate([updateSql]);
+          assert.deepStrictEqual(updateCounts, [2]);
+          await tx.commit();
+        });
+        assertRetryWithExplicitBeginTransaction(spannerMock, 3);
       } finally {
         await database.close();
       }
@@ -2667,7 +2695,7 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(rows.length, 3);
           await tx.commit();
         });
-        assertInlinedBeginRetry(spannerMock, 3);
+        assertRetryWithExplicitBeginTransaction(spannerMock, 3);
       } finally {
         await database.close();
       }
@@ -2796,7 +2824,7 @@ describe('Spanner with mock server', () => {
         }
         await tx.commit();
       });
-      assertInlinedBeginRetry(spannerMock, 2);
+      assertRetryWithExplicitBeginTransaction(spannerMock, 2);
       await database.close();
     });
 
@@ -2822,7 +2850,7 @@ describe('Spanner with mock server', () => {
         }
         await tx.commit();
       });
-      assertInlinedBeginRetry(spannerMock, 2);
+      assertRetryWithExplicitBeginTransaction(spannerMock, 2);
       await database.close();
     });
 
@@ -3033,6 +3061,33 @@ describe('Spanner with mock server', () => {
       );
     }
 
+    function assertInlinedRetry(mock: MockSpanner) {
+      const requests = mock.getRequests().filter(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql ||
+          ((val as v1.ReadRequest).table && (val as v1.ReadRequest).columns) ||
+          (val as v1.ExecuteBatchDmlRequest).statements
+        );
+      }) as (
+        | v1.ExecuteSqlRequest
+        | v1.ReadRequest
+        | v1.ExecuteBatchDmlRequest
+      )[];
+      assert.strictEqual(requests.length, 2);
+      for (const request of requests) {
+        assert.ok(
+          request.transaction?.begin?.readWrite,
+          `No begin read/write option found on request ${request}`
+        );
+      }
+      assert.ok(
+        !mock.getRequests().find(val => {
+          return (val as BeginTransactionRequest).options;
+        }),
+        'BeginTransaction request found on server'
+      );
+    }
+
     function assertSecondRequestUsesTransactionId(mock: MockSpanner) {
       const requests = mock.getRequests().filter(val => {
         return (
@@ -3056,7 +3111,7 @@ describe('Spanner with mock server', () => {
       );
     }
 
-    function assertInlinedBeginRetry(
+    function assertRetryWithExplicitBeginTransaction(
       mock: MockSpanner,
       expectedRequests: number
     ) {

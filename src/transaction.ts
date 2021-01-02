@@ -1448,76 +1448,78 @@ export class Transaction extends Dml {
     );
     const selector = this._getOrCreateTransactionSelectorPromise();
 
-    selector.then(transaction => {
-      const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
-        session: this.session.formattedName_!,
-        transaction,
-        seqno: this._seqno++,
-        statements,
-      } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
-      this.request(
-        {
-          client: 'SpannerClient',
-          method: 'executeBatchDml',
-          reqOpts,
-          gaxOpts,
-          headers: this.resourceHeader_,
-        },
-        (
-          err: null | grpc.ServiceError,
-          resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
-        ) => {
-          let batchUpdateError: BatchUpdateError;
+    selector
+      .then(transaction => {
+        const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
+          session: this.session.formattedName_!,
+          transaction,
+          seqno: this._seqno++,
+          statements,
+        } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
+        this.request(
+          {
+            client: 'SpannerClient',
+            method: 'executeBatchDml',
+            reqOpts,
+            gaxOpts,
+            headers: this.resourceHeader_,
+          },
+          (
+            err: null | grpc.ServiceError,
+            resp: spannerClient.spanner.v1.ExecuteBatchDmlResponse
+          ) => {
+            let batchUpdateError: BatchUpdateError;
 
-          if (err) {
-            if (transaction.begin && this.transactionReject) {
+            if (err) {
+              if (transaction.begin && this.transactionReject) {
+                this.transactionReject(noTransactionReturnedError);
+              }
+              const rowCounts: number[] = [];
+              batchUpdateError = Object.assign(err, {rowCounts});
+              callback!(batchUpdateError, rowCounts, resp);
+              return;
+            }
+
+            const {resultSets, status} = resp;
+            if (
+              transaction.begin &&
+              this.transactionResolve &&
+              resultSets[0] &&
+              resultSets[0].metadata &&
+              resultSets[0].metadata.transaction &&
+              resultSets[0].metadata.transaction.id
+            ) {
+              this.id = resultSets[0].metadata.transaction.id;
+              this.transactionResolve(resultSets[0].metadata.transaction.id);
+            } else if (transaction.begin && this.transactionReject) {
               this.transactionReject(noTransactionReturnedError);
             }
-            const rowCounts: number[] = [];
-            batchUpdateError = Object.assign(err, {rowCounts});
-            callback!(batchUpdateError, rowCounts, resp);
-            return;
-          }
+            const rowCounts: number[] = resultSets.map(({stats}) => {
+              return (
+                (stats &&
+                  Number(
+                    stats[
+                      (stats as spannerClient.spanner.v1.ResultSetStats)
+                        .rowCount!
+                    ]
+                  )) ||
+                0
+              );
+            });
 
-          const {resultSets, status} = resp;
-          if (
-            transaction.begin &&
-            this.transactionResolve &&
-            resultSets[0] &&
-            resultSets[0].metadata &&
-            resultSets[0].metadata.transaction &&
-            resultSets[0].metadata.transaction.id
-          ) {
-            this.id = resultSets[0].metadata.transaction.id;
-            this.transactionResolve(resultSets[0].metadata.transaction.id);
-          } else if (transaction.begin && this.transactionReject) {
-            this.transactionReject(noTransactionReturnedError);
+            if (status && status.code !== 0) {
+              const error = new Error(status.message!);
+              batchUpdateError = Object.assign(error, {
+                code: status.code,
+                metadata: Transaction.extractKnownMetadata(status.details!),
+                rowCounts,
+              }) as BatchUpdateError;
+            }
+            callback!(batchUpdateError!, rowCounts, resp);
           }
-          const rowCounts: number[] = resultSets.map(({stats}) => {
-            return (
-              (stats &&
-                Number(
-                  stats[
-                    (stats as spannerClient.spanner.v1.ResultSetStats).rowCount!
-                  ]
-                )) ||
-              0
-            );
-          });
-
-          if (status && status.code !== 0) {
-            const error = new Error(status.message!);
-            batchUpdateError = Object.assign(error, {
-              code: status.code,
-              metadata: Transaction.extractKnownMetadata(status.details!),
-              rowCounts,
-            }) as BatchUpdateError;
-          }
-
-          callback!(batchUpdateError!, rowCounts, resp);
-        }
-      );
-    });
+        );
+      })
+      .catch(err => callback(err, []));
   }
 
   private static extractKnownMetadata(

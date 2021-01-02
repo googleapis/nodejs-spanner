@@ -20,7 +20,7 @@ import {Root} from 'protobufjs';
 import * as through from 'through2';
 
 import {Session} from './session';
-import {Transaction} from './transaction';
+import {noTransactionReturnedError, Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
@@ -182,7 +182,7 @@ export abstract class Runner<T> {
    *
    * @returns Promise<Transaction>
    */
-  async getTransaction(): Promise<Transaction> {
+  async getTransaction(skipInlineBegin?: boolean): Promise<Transaction> {
     if (this.transaction) {
       const transaction = this.transaction;
       delete this.transaction;
@@ -193,7 +193,7 @@ export abstract class Runner<T> {
       (this.session.parent as Database).queryOptions_,
       this.options.inlineBeginTx
     );
-    if (!this.options.inlineBeginTx) {
+    if (!this.options.inlineBeginTx || skipInlineBegin) {
       await transaction.begin();
     }
     return transaction;
@@ -210,16 +210,13 @@ export abstract class Runner<T> {
     const start = Date.now();
     const timeout = this.options.timeout!;
 
-    let lastError: grpc.ServiceError;
+    let lastError: grpc.ServiceError | undefined = undefined;
 
     // The transaction runner should always execute at least one attempt before
     // timing out.
     while (this.attempts === 0 || Date.now() - start < timeout) {
-      if (this.attempts > 0) {
-        // Do not inline BeginTransaction during retries.
-        this.options.inlineBeginTx = false;
-      }
-      const transaction = await this.getTransaction();
+      const skipInlineBegin = lastError === noTransactionReturnedError;
+      const transaction = await this.getTransaction(skipInlineBegin);
 
       try {
         return await this._run(transaction);
@@ -231,13 +228,13 @@ export abstract class Runner<T> {
       // Note that if the error is a 'Session not found' error, it will be
       // thrown here. We do this to bubble this error up to the caller who is
       // responsible for retrying the transaction on a different session.
-      if (!RETRYABLE.includes(lastError.code!)) {
+      if (!RETRYABLE.includes(lastError!.code!)) {
         throw lastError;
       }
 
       this.attempts += 1;
 
-      const delay = this.getNextDelay(lastError);
+      const delay = this.getNextDelay(lastError!);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
