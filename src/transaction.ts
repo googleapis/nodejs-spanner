@@ -19,7 +19,6 @@ import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError} from 'google-gax';
-import * as extend from 'extend';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable, PassThrough} from 'stream';
@@ -1427,9 +1426,9 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(options?: CommitOptions): Promise<CommitResponse>;
+  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
-  commit(options: CommitOptions, callback: CommitCallback): void;
+  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
    * @property {boolean} returnCommitStats Include statistics related to the
@@ -1489,15 +1488,15 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    optionsOrCallback?: CommitOptions | CommitCallback,
+    optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as CommitOptions);
+    const gaxOpts =
+      'gaxOptions' in options ? (options as CommitOptions).gaxOptions : options;
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -1509,8 +1508,11 @@ export class Transaction extends Dml {
       reqOpts.singleUseTransaction = this._options;
     }
 
-    if (options.returnCommitStats) {
-      reqOpts.returnCommitStats = options.returnCommitStats;
+    if (
+      'returnCommitStats' in options &&
+      (options as CommitOptions).returnCommitStats
+    ) {
+      reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
     }
 
     this.request(
@@ -1518,7 +1520,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts: gaxOpts,
         headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
