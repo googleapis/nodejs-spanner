@@ -83,7 +83,7 @@ async function deleteStaleInstances() {
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
   const old = new Date();
-  old.setHours(-4);
+  old.setHours(old.getHours() - 4);
 
   await Promise.all(
     instances.map(async instance => {
