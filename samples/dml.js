@@ -680,9 +680,7 @@ async function insertWithCustomTimeoutAndRetrySettings(
     LastName: 'Waller',
   };
 
-  await table.insert(row, {
-    gaxOptions: retryAndTimeoutSettings,
-  });
+  await table.insert(row, retryAndTimeoutSettings);
 
   console.log('record inserted.');
   // [END spanner_set_custom_timeout_and_retry]
