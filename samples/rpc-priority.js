@@ -14,7 +14,8 @@
 
 'use strict';
 
-async function queryWithRpcPriority(instanceId, databaseId, projectId) {
+function main(instanceId, databaseId, projectId) {
+  // TODO: Add start region tag here
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -30,47 +31,49 @@ async function queryWithRpcPriority(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  async function queryWithRpcPriority(instanceId, databaseId) {
+    // Gets a reference to a Cloud Spanner instance and database.
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
 
-  const sql = `SELECT AlbumId, AlbumTitle, MarketingBudget
+    const sql = `SELECT AlbumId, AlbumTitle, MarketingBudget
           FROM Albums
           ORDER BY AlbumTitle`;
 
-  try {
-    const [rows] = await database.run({
-      sql,
-      requestOptions: {
-        priority: spanner.v1.RequestOptions.Priority.PRIORITY_LOW,
-      },
-    });
+    try {
+      const [rows] = await database.run({
+        sql,
+        requestOptions: {
+          priority: spanner.v1.RequestOptions.Priority.PRIORITY_LOW,
+        },
+      });
 
-    rows.forEach(row => {
-      const json = row.toJSON();
-      const marketingBudget = json.MarketingBudget
-        ? json.MarketingBudget
-        : null; // This value is nullable
-      console.log(
-        `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
-      );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    await database.close();
+      rows.forEach(row => {
+        const json = row.toJSON();
+        const marketingBudget = json.MarketingBudget
+          ? json.MarketingBudget
+          : null; // This value is nullable
+        console.log(
+          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+        );
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      await database.close();
+    }
   }
+  // TODO: Add end region tag here
+  queryWithRpcPriority(instanceId, databaseId);
 }
-
 require('yargs')
   .demand(1)
   .command(
     'queryWithRpcPriority <instanceName> <databaseName> <projectId>',
     'Executes a query with a specific RPC priority',
     {},
-    opts =>
-      queryWithRpcPriority(opts.instanceName, opts.databaseName, opts.projectId)
+    opts => main(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .example(
     'node $0 queryWithRpcPriority "my-instance" "my-database" "my-project-id"'

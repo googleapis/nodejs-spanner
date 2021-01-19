@@ -1261,7 +1261,7 @@ export class Transaction extends Dml {
 
   batchUpdate(
     queries: Array<string | Statement>,
-    options?: BatchUpdateOptions
+    options?: BatchUpdateOptions | CallOptions
   ): Promise<BatchUpdateResponse>;
   batchUpdate(
     queries: Array<string | Statement>,
@@ -1269,7 +1269,7 @@ export class Transaction extends Dml {
   ): void;
   batchUpdate(
     queries: Array<string | Statement>,
-    options: BatchUpdateOptions,
+    options: BatchUpdateOptions | CallOptions,
     callback: BatchUpdateCallback
   ): void;
   /**
@@ -1301,6 +1301,8 @@ export class Transaction extends Dml {
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
+   * @param {object} [gaxOptions] Request configuration options, outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
    * @param {BatchUpdateOptions} [options] Options for configuring the request.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
@@ -1328,13 +1330,17 @@ export class Transaction extends Dml {
    */
   batchUpdate(
     queries: Array<string | Statement>,
-    optionsOrCallback?: BatchUpdateOptions | BatchUpdateCallback,
+    optionsOrCallback?: BatchUpdateOptions | CallOptions | BatchUpdateCallback,
     cb?: BatchUpdateCallback
   ): Promise<BatchUpdateResponse> | void {
     const options =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const gaxOpts =
+      'gaxOptions' in options
+        ? (options as BatchUpdateOptions).gaxOptions
+        : options;
 
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
@@ -1362,11 +1368,10 @@ export class Transaction extends Dml {
       session: this.session.formattedName_!,
       transaction: {id: this.id!},
       seqno: this._seqno++,
-      requestOptions: options.requestOptions,
+      requestOptions: (options as BatchUpdateOptions).requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const gaxOpts = options.gaxOptions;
     this.request(
       {
         client: 'SpannerClient',
@@ -1430,9 +1435,9 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(options?: CommitOptions): Promise<CommitResponse>;
+  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
-  commit(options: CommitOptions, callback: CommitCallback): void;
+  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
    * @property {IRequestOptions} requestOptions The request options to include
@@ -1489,19 +1494,21 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    optionsOrCallback?: CommitOptions | CommitCallback,
+    optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as CommitOptions);
+    const gaxOpts =
+      'gaxOptions' in options
+        ? (options as BatchUpdateOptions).gaxOptions
+        : options;
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const requestOptions = options.requestOptions;
+    const requestOptions = (options as CommitOptions).requestOptions;
     const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
     if (this.id) {
@@ -1515,7 +1522,7 @@ export class Transaction extends Dml {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
-        gaxOpts: options.gaxOptions,
+        gaxOpts: gaxOpts,
         headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {

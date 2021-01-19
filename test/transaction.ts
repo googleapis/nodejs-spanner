@@ -1078,6 +1078,15 @@ describe('Transaction', () => {
       ];
 
       it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
+      });
+
+      it('should accept gaxOptions in BatchUpdateOptions', done => {
         const options = {gaxOptions: {}};
         transaction.request = config => {
           assert.strictEqual(config.gaxOpts, options.gaxOptions);
@@ -1297,6 +1306,15 @@ describe('Transaction', () => {
       });
 
       it('should accept gaxOptions', done => {
+        const gaxOptions = {};
+        transaction.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.commit(gaxOptions, assert.ifError);
+      });
+
+      it('should accept gaxOptions in CommitOptions', done => {
         const options = {gaxOptions: {}};
         transaction.request = config => {
           assert.strictEqual(config.gaxOpts, options.gaxOptions);
