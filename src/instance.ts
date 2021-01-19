@@ -883,7 +883,6 @@ class Instance extends common.GrpcServiceObject {
         new Database(this, name, poolOptions, queryOptions)
       );
     }
-    console.log('returning database');
     return this.databases_.get(key!)!;
   }
 

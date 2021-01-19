@@ -41,6 +41,9 @@ function main(instanceId, databaseId, projectId) {
           ORDER BY AlbumTitle`;
 
     try {
+      // Execute a query with low priority. Note that the default for all
+      // requests is PRIORITY_HIGH, and that this option can only be used to
+      // reduce the priority of a request.
       const [rows] = await database.run({
         sql,
         requestOptions: {
@@ -50,11 +53,8 @@ function main(instanceId, databaseId, projectId) {
 
       rows.forEach(row => {
         const json = row.toJSON();
-        const marketingBudget = json.MarketingBudget
-          ? json.MarketingBudget
-          : null; // This value is nullable
         console.log(
-          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${marketingBudget}`
+          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json.MarketingBudget}`
         );
       });
     } catch (err) {
@@ -67,19 +67,4 @@ function main(instanceId, databaseId, projectId) {
   // TODO: Add end region tag here
   queryWithRpcPriority(instanceId, databaseId);
 }
-require('yargs')
-  .demand(1)
-  .command(
-    'queryWithRpcPriority <instanceName> <databaseName> <projectId>',
-    'Executes a query with a specific RPC priority',
-    {},
-    opts => main(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .example(
-    'node $0 queryWithRpcPriority "my-instance" "my-database" "my-project-id"'
-  )
-  .wrap(120)
-  .recommendCommands()
-  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
-  .strict()
-  .help().argv;
+main(...process.argv.slice(2));
