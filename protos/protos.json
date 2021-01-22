@@ -3507,7 +3507,10 @@
                   "fields": {
                     "name": {
                       "type": "string",
-                      "id": 1
+                      "id": 1,
+                      "options": {
+                        "(google.api.field_behavior)": "OUTPUT_ONLY"
+                      }
                     },
                     "labels": {
                       "keyType": "string",
@@ -3516,11 +3519,17 @@
                     },
                     "createTime": {
                       "type": "google.protobuf.Timestamp",
-                      "id": 3
+                      "id": 3,
+                      "options": {
+                        "(google.api.field_behavior)": "OUTPUT_ONLY"
+                      }
                     },
                     "approximateLastUseTime": {
                       "type": "google.protobuf.Timestamp",
-                      "id": 4
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "OUTPUT_ONLY"
+                      }
                     }
                   }
                 },
@@ -3935,6 +3944,10 @@
                       "rule": "repeated",
                       "type": "Mutation",
                       "id": 4
+                    },
+                    "returnCommitStats": {
+                      "type": "bool",
+                      "id": 5
                     }
                   }
                 },
@@ -3943,6 +3956,20 @@
                     "commitTimestamp": {
                       "type": "google.protobuf.Timestamp",
                       "id": 1
+                    },
+                    "commitStats": {
+                      "type": "CommitStats",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "CommitStats": {
+                      "fields": {
+                        "mutationCount": {
+                          "type": "int64",
+                          "id": 1
+                        }
+                      }
                     }
                   }
                 },
