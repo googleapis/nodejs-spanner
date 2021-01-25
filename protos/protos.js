@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36447,6 +36447,7 @@
                      * @property {Uint8Array|null} [transactionId] CommitRequest transactionId
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
+                     * @property {boolean|null} [returnCommitStats] CommitRequest returnCommitStats
                      */
     
                     /**
@@ -36497,6 +36498,14 @@
                      */
                     CommitRequest.prototype.mutations = $util.emptyArray;
     
+                    /**
+                     * CommitRequest returnCommitStats.
+                     * @member {boolean} returnCommitStats
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    CommitRequest.prototype.returnCommitStats = false;
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
     
@@ -36544,6 +36553,8 @@
                         if (message.mutations != null && message.mutations.length)
                             for (var i = 0; i < message.mutations.length; ++i)
                                 $root.google.spanner.v1.Mutation.encode(message.mutations[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.returnCommitStats != null && Object.hasOwnProperty.call(message, "returnCommitStats"))
+                            writer.uint32(/* id 5, wireType 0 =*/40).bool(message.returnCommitStats);
                         return writer;
                     };
     
@@ -36591,6 +36602,9 @@
                                 if (!(message.mutations && message.mutations.length))
                                     message.mutations = [];
                                 message.mutations.push($root.google.spanner.v1.Mutation.decode(reader, reader.uint32()));
+                                break;
+                            case 5:
+                                message.returnCommitStats = reader.bool();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -36655,6 +36669,9 @@
                                     return "mutations." + error;
                             }
                         }
+                        if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
+                            if (typeof message.returnCommitStats !== "boolean")
+                                return "returnCommitStats: boolean expected";
                         return null;
                     };
     
@@ -36692,6 +36709,8 @@
                                 message.mutations[i] = $root.google.spanner.v1.Mutation.fromObject(object.mutations[i]);
                             }
                         }
+                        if (object.returnCommitStats != null)
+                            message.returnCommitStats = Boolean(object.returnCommitStats);
                         return message;
                     };
     
@@ -36710,8 +36729,10 @@
                         var object = {};
                         if (options.arrays || options.defaults)
                             object.mutations = [];
-                        if (options.defaults)
+                        if (options.defaults) {
                             object.session = "";
+                            object.returnCommitStats = false;
+                        }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
                         if (message.transactionId != null && message.hasOwnProperty("transactionId")) {
@@ -36729,6 +36750,8 @@
                             for (var j = 0; j < message.mutations.length; ++j)
                                 object.mutations[j] = $root.google.spanner.v1.Mutation.toObject(message.mutations[j], options);
                         }
+                        if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
+                            object.returnCommitStats = message.returnCommitStats;
                         return object;
                     };
     
@@ -36753,6 +36776,7 @@
                      * @memberof google.spanner.v1
                      * @interface ICommitResponse
                      * @property {google.protobuf.ITimestamp|null} [commitTimestamp] CommitResponse commitTimestamp
+                     * @property {google.spanner.v1.CommitResponse.ICommitStats|null} [commitStats] CommitResponse commitStats
                      */
     
                     /**
@@ -36777,6 +36801,14 @@
                      * @instance
                      */
                     CommitResponse.prototype.commitTimestamp = null;
+    
+                    /**
+                     * CommitResponse commitStats.
+                     * @member {google.spanner.v1.CommitResponse.ICommitStats|null|undefined} commitStats
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @instance
+                     */
+                    CommitResponse.prototype.commitStats = null;
     
                     /**
                      * Creates a new CommitResponse instance using the specified properties.
@@ -36804,6 +36836,8 @@
                             writer = $Writer.create();
                         if (message.commitTimestamp != null && Object.hasOwnProperty.call(message, "commitTimestamp"))
                             $root.google.protobuf.Timestamp.encode(message.commitTimestamp, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.commitStats != null && Object.hasOwnProperty.call(message, "commitStats"))
+                            $root.google.spanner.v1.CommitResponse.CommitStats.encode(message.commitStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
     
@@ -36840,6 +36874,9 @@
                             switch (tag >>> 3) {
                             case 1:
                                 message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -36881,6 +36918,11 @@
                             if (error)
                                 return "commitTimestamp." + error;
                         }
+                        if (message.commitStats != null && message.hasOwnProperty("commitStats")) {
+                            var error = $root.google.spanner.v1.CommitResponse.CommitStats.verify(message.commitStats);
+                            if (error)
+                                return "commitStats." + error;
+                        }
                         return null;
                     };
     
@@ -36901,6 +36943,11 @@
                                 throw TypeError(".google.spanner.v1.CommitResponse.commitTimestamp: object expected");
                             message.commitTimestamp = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamp);
                         }
+                        if (object.commitStats != null) {
+                            if (typeof object.commitStats !== "object")
+                                throw TypeError(".google.spanner.v1.CommitResponse.commitStats: object expected");
+                            message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.fromObject(object.commitStats);
+                        }
                         return message;
                     };
     
@@ -36917,10 +36964,14 @@
                         if (!options)
                             options = {};
                         var object = {};
-                        if (options.defaults)
+                        if (options.defaults) {
                             object.commitTimestamp = null;
+                            object.commitStats = null;
+                        }
                         if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp"))
                             object.commitTimestamp = $root.google.protobuf.Timestamp.toObject(message.commitTimestamp, options);
+                        if (message.commitStats != null && message.hasOwnProperty("commitStats"))
+                            object.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.toObject(message.commitStats, options);
                         return object;
                     };
     
@@ -36934,6 +36985,207 @@
                     CommitResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
+    
+                    CommitResponse.CommitStats = (function() {
+    
+                        /**
+                         * Properties of a CommitStats.
+                         * @memberof google.spanner.v1.CommitResponse
+                         * @interface ICommitStats
+                         * @property {number|Long|null} [mutationCount] CommitStats mutationCount
+                         */
+    
+                        /**
+                         * Constructs a new CommitStats.
+                         * @memberof google.spanner.v1.CommitResponse
+                         * @classdesc Represents a CommitStats.
+                         * @implements ICommitStats
+                         * @constructor
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
+                         */
+                        function CommitStats(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * CommitStats mutationCount.
+                         * @member {number|Long} mutationCount
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @instance
+                         */
+                        CommitStats.prototype.mutationCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    
+                        /**
+                         * Creates a new CommitStats instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats instance
+                         */
+                        CommitStats.create = function create(properties) {
+                            return new CommitStats(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        CommitStats.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.mutationCount != null && Object.hasOwnProperty.call(message, "mutationCount"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).int64(message.mutationCount);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        CommitStats.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a CommitStats message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        CommitStats.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.CommitResponse.CommitStats();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.mutationCount = reader.int64();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a CommitStats message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        CommitStats.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a CommitStats message.
+                         * @function verify
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        CommitStats.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
+                                if (!$util.isInteger(message.mutationCount) && !(message.mutationCount && $util.isInteger(message.mutationCount.low) && $util.isInteger(message.mutationCount.high)))
+                                    return "mutationCount: integer|Long expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         */
+                        CommitStats.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.CommitResponse.CommitStats)
+                                return object;
+                            var message = new $root.google.spanner.v1.CommitResponse.CommitStats();
+                            if (object.mutationCount != null)
+                                if ($util.Long)
+                                    (message.mutationCount = $util.Long.fromValue(object.mutationCount)).unsigned = false;
+                                else if (typeof object.mutationCount === "string")
+                                    message.mutationCount = parseInt(object.mutationCount, 10);
+                                else if (typeof object.mutationCount === "number")
+                                    message.mutationCount = object.mutationCount;
+                                else if (typeof object.mutationCount === "object")
+                                    message.mutationCount = new $util.LongBits(object.mutationCount.low >>> 0, object.mutationCount.high >>> 0).toNumber();
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.CommitStats} message CommitStats
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        CommitStats.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                if ($util.Long) {
+                                    var long = new $util.Long(0, 0, false);
+                                    object.mutationCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                                } else
+                                    object.mutationCount = options.longs === String ? "0" : 0;
+                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
+                                if (typeof message.mutationCount === "number")
+                                    object.mutationCount = options.longs === String ? String(message.mutationCount) : message.mutationCount;
+                                else
+                                    object.mutationCount = options.longs === String ? $util.Long.prototype.toString.call(message.mutationCount) : options.longs === Number ? new $util.LongBits(message.mutationCount.low >>> 0, message.mutationCount.high >>> 0).toNumber() : message.mutationCount;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this CommitStats to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        CommitStats.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return CommitStats;
+                    })();
     
                     return CommitResponse;
                 })();
@@ -37206,6 +37458,7 @@
                  * @property {google.api.ResourceDescriptor.History|null} [history] ResourceDescriptor history
                  * @property {string|null} [plural] ResourceDescriptor plural
                  * @property {string|null} [singular] ResourceDescriptor singular
+                 * @property {Array.<google.api.ResourceDescriptor.Style>|null} [style] ResourceDescriptor style
                  */
     
                 /**
@@ -37218,6 +37471,7 @@
                  */
                 function ResourceDescriptor(properties) {
                     this.pattern = [];
+                    this.style = [];
                     if (properties)
                         for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                             if (properties[keys[i]] != null)
@@ -37273,6 +37527,14 @@
                 ResourceDescriptor.prototype.singular = "";
     
                 /**
+                 * ResourceDescriptor style.
+                 * @member {Array.<google.api.ResourceDescriptor.Style>} style
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.style = $util.emptyArray;
+    
+                /**
                  * Creates a new ResourceDescriptor instance using the specified properties.
                  * @function create
                  * @memberof google.api.ResourceDescriptor
@@ -37309,6 +37571,12 @@
                         writer.uint32(/* id 5, wireType 2 =*/42).string(message.plural);
                     if (message.singular != null && Object.hasOwnProperty.call(message, "singular"))
                         writer.uint32(/* id 6, wireType 2 =*/50).string(message.singular);
+                    if (message.style != null && message.style.length) {
+                        writer.uint32(/* id 10, wireType 2 =*/82).fork();
+                        for (var i = 0; i < message.style.length; ++i)
+                            writer.int32(message.style[i]);
+                        writer.ldelim();
+                    }
                     return writer;
                 };
     
@@ -37362,6 +37630,16 @@
                             break;
                         case 6:
                             message.singular = reader.string();
+                            break;
+                        case 10:
+                            if (!(message.style && message.style.length))
+                                message.style = [];
+                            if ((tag & 7) === 2) {
+                                var end2 = reader.uint32() + reader.pos;
+                                while (reader.pos < end2)
+                                    message.style.push(reader.int32());
+                            } else
+                                message.style.push(reader.int32());
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -37426,6 +37704,18 @@
                     if (message.singular != null && message.hasOwnProperty("singular"))
                         if (!$util.isString(message.singular))
                             return "singular: string expected";
+                    if (message.style != null && message.hasOwnProperty("style")) {
+                        if (!Array.isArray(message.style))
+                            return "style: array expected";
+                        for (var i = 0; i < message.style.length; ++i)
+                            switch (message.style[i]) {
+                            default:
+                                return "style: enum value[] expected";
+                            case 0:
+                            case 1:
+                                break;
+                            }
+                    }
                     return null;
                 };
     
@@ -37470,6 +37760,23 @@
                         message.plural = String(object.plural);
                     if (object.singular != null)
                         message.singular = String(object.singular);
+                    if (object.style) {
+                        if (!Array.isArray(object.style))
+                            throw TypeError(".google.api.ResourceDescriptor.style: array expected");
+                        message.style = [];
+                        for (var i = 0; i < object.style.length; ++i)
+                            switch (object.style[i]) {
+                            default:
+                            case "STYLE_UNSPECIFIED":
+                            case 0:
+                                message.style[i] = 0;
+                                break;
+                            case "DECLARATIVE_FRIENDLY":
+                            case 1:
+                                message.style[i] = 1;
+                                break;
+                            }
+                    }
                     return message;
                 };
     
@@ -37486,8 +37793,10 @@
                     if (!options)
                         options = {};
                     var object = {};
-                    if (options.arrays || options.defaults)
+                    if (options.arrays || options.defaults) {
                         object.pattern = [];
+                        object.style = [];
+                    }
                     if (options.defaults) {
                         object.type = "";
                         object.nameField = "";
@@ -37510,6 +37819,11 @@
                         object.plural = message.plural;
                     if (message.singular != null && message.hasOwnProperty("singular"))
                         object.singular = message.singular;
+                    if (message.style && message.style.length) {
+                        object.style = [];
+                        for (var j = 0; j < message.style.length; ++j)
+                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
+                    }
                     return object;
                 };
     
@@ -37537,6 +37851,20 @@
                     values[valuesById[0] = "HISTORY_UNSPECIFIED"] = 0;
                     values[valuesById[1] = "ORIGINALLY_SINGLE_PATTERN"] = 1;
                     values[valuesById[2] = "FUTURE_MULTI_PATTERN"] = 2;
+                    return values;
+                })();
+    
+                /**
+                 * Style enum.
+                 * @name google.api.ResourceDescriptor.Style
+                 * @enum {number}
+                 * @property {number} STYLE_UNSPECIFIED=0 STYLE_UNSPECIFIED value
+                 * @property {number} DECLARATIVE_FRIENDLY=1 DECLARATIVE_FRIENDLY value
+                 */
+                ResourceDescriptor.Style = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "STYLE_UNSPECIFIED"] = 0;
+                    values[valuesById[1] = "DECLARATIVE_FRIENDLY"] = 1;
                     return values;
                 })();
     
