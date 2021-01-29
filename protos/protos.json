@@ -1205,6 +1205,10 @@
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
                               }
                             },
+                            "versionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 9
+                            },
                             "expireTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 3
@@ -1283,11 +1287,17 @@
                           "fields": {
                             "name": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
                             },
                             "database": {
                               "type": "string",
-                              "id": 2
+                              "id": 2,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
                             },
                             "progress": {
                               "type": "OperationProgress",
@@ -1419,7 +1429,14 @@
                           "fields": {
                             "backup": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "versionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
                             },
                             "createTime": {
                               "type": "google.protobuf.Timestamp",
@@ -1427,7 +1444,10 @@
                             },
                             "sourceDatabase": {
                               "type": "string",
-                              "id": 3
+                              "id": 3,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
                             }
                           }
                         },
@@ -1879,6 +1899,20 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "versionRetentionPeriod": {
+                              "type": "string",
+                              "id": 6,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "earliestVersionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 7,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -2141,7 +2175,10 @@
                           "fields": {
                             "name": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
                             },
                             "sourceType": {
                               "type": "RestoreSourceType",
@@ -2169,7 +2206,10 @@
                           "fields": {
                             "name": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
                             },
                             "progress": {
                               "type": "OperationProgress",
