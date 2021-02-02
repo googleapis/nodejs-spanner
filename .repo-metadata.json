@@ -9,5 +9,6 @@
   "repo": "googleapis/nodejs-spanner",
   "distribution_name": "@google-cloud/spanner",
   "api_id": "spanner.googleapis.com",
-  "requires_billing": true
+  "requires_billing": true,
+  "codeowner_team": "@googleapis/api-spanner-nodejs"
 }
