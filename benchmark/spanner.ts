@@ -25,10 +25,12 @@ import {SessionPoolOptions} from '../src/session-pool';
 import protobuf = google.spanner.v1;
 import {performance} from 'perf_hooks';
 
+const USE_MOCK_SERVER = true;
 let spannerMock;
 const server = new grpc.Server();
 const selectSql = 'SELECT 1';
-const updateSql = 'UPDATE FOO SET BAR=1 WHERE BAZ=2';
+const updateSql =
+  'INSERT INTO Albums (AlbumId, Title, SingerId) VALUES (@id, @title, @singer)';
 let port: number;
 let spanner: Spanner;
 let instance: Instance;
@@ -173,7 +175,14 @@ async function runSteadyIncrease() {
 }
 
 function newTestDatabase(options?: SessionPoolOptions): Database {
-  return instance.database(`database-${dbCounter++}`, options);
+  if (USE_MOCK_SERVER) {
+    return instance.database(`database-${dbCounter++}`, options);
+  } else {
+    return instance.database(
+      process.env.BENCHMARK_DATABASE ?? 'benchmark-db',
+      options
+    );
+  }
 }
 
 /**
@@ -182,7 +191,7 @@ function newTestDatabase(options?: SessionPoolOptions): Database {
  * statement are mocked on the server.
  */
 async function setup() {
-  const NETWORK_LATENCY_TIME = 10;
+  const NETWORK_LATENCY_TIME = 2;
   const BATCH_CREATE_SESSIONS_MIN_TIME = 10;
   const BATCH_CREATE_SESSIONS_RND_TIME = 10;
   const BEGIN_TRANSACTION_MIN_TIME = 1;
@@ -191,9 +200,9 @@ async function setup() {
   const COMMIT_TRANSACTION_RND_TIME = 5;
   const ROLLBACK_TRANSACTION_MIN_TIME = 1;
   const ROLLBACK_TRANSACTION_RND_TIME = 1;
-  const EXECUTE_STREAMING_SQL_MIN_TIME = 10;
+  const EXECUTE_STREAMING_SQL_MIN_TIME = 2;
   const EXECUTE_STREAMING_SQL_RND_TIME = 10;
-  const EXECUTE_SQL_MIN_TIME = 10;
+  const EXECUTE_SQL_MIN_TIME = 2;
   const EXECUTE_SQL_RND_TIME = 10;
 
   spannerMock = mock.createMockSpanner(server);
@@ -266,14 +275,25 @@ async function setup() {
     mock.StatementResult.updateCount(1)
   );
 
-  spanner = new Spanner({
-    projectId: 'fake-project-id',
-    servicePath: 'localhost',
-    port,
-    sslCreds: grpc.credentials.createInsecure(),
-  });
-  // Gets a reference to a Cloud Spanner instance and database
-  instance = spanner.instance('instance');
+  if (USE_MOCK_SERVER) {
+    spanner = new Spanner({
+      projectId: 'fake-project-id',
+      servicePath: 'localhost',
+      port,
+      sslCreds: grpc.credentials.createInsecure(),
+    });
+    // Gets a reference to a Cloud Spanner instance and database
+    instance = spanner.instance('instance');
+  } else {
+    spanner = new Spanner({
+      projectId: process.env.BENCHMARK_PROJECT,
+    });
+    instance = spanner.instance(
+      process.env.BENCHMARK_INSTANCE ?? 'benchmark-instance'
+    );
+    const [metadata] = await instance.getMetadata();
+    console.log(`benchmarking using instance in ${metadata.config}`);
+  }
 }
 
 /**
@@ -293,32 +313,37 @@ async function burstRead() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 10;
   const NUM_BURST_READ = 3200;
   // Value 'undefined' is used to warm up the compiler.
-  for (const incStep of [undefined, 1, 10, 20, 25, 30, 40, 50, 100]) {
-    spannerMock.resetRequests();
-    const database = newTestDatabase({
-      min: 100,
-      max: 400,
-      writes: 0.2,
-      incStep: incStep,
-    });
-    const pool = database.pool_ as SessionPool;
-    try {
-      if (incStep) {
-        console.time(`burstRead incStep ${incStep}`);
+  for (const incStep of [undefined, 10, 25, 50]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
+      const database = newTestDatabase({
+        max: 400,
+        inlineBeginTx,
+        incStep: incStep,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        if (incStep) {
+          console.time(
+            `burstRead inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+        }
+        const promises = queueReadOperations(
+          database,
+          NUM_BURST_READ,
+          RND_WAIT_TIME_BETWEEN_REQUESTS,
+          HOLD_SESSION_TIME
+        );
+        await Promise.all(promises);
+        if (incStep) {
+          console.timeEnd(
+            `burstRead inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+          console.log(`Current session pool size: ${pool.size}`);
+        }
+      } finally {
+        await database.close();
       }
-      const promises = queueReadOperations(
-        database,
-        NUM_BURST_READ,
-        RND_WAIT_TIME_BETWEEN_REQUESTS,
-        HOLD_SESSION_TIME
-      );
-      await Promise.all(promises);
-      if (incStep) {
-        console.timeEnd(`burstRead incStep ${incStep}`);
-        console.log(`Current session pool size: ${pool.size}`);
-      }
-    } finally {
-      await database.close();
     }
   }
 }
@@ -331,31 +356,37 @@ async function burstWrite() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 10;
   const NUM_BURST_WRITE = 3200;
   // Value 'undefined' is used to warm up the compiler.
-  for (const incStep of [undefined, 1, 10, 20, 25, 30, 40, 50, 100]) {
-    const database = newTestDatabase({
-      min: 100,
-      max: 400,
-      writes: 0.2,
-      incStep: incStep,
-    });
-    const pool = database.pool_ as SessionPool;
-    try {
-      if (incStep) {
-        console.time(`burstWrite incStep ${incStep}`);
+  for (const incStep of [undefined, 10, 25, 50]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
+      const database = newTestDatabase({
+        max: 400,
+        inlineBeginTx,
+        incStep: incStep,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        if (incStep) {
+          console.time(
+            `burstWrite inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+        }
+        const promises = queueWriteOperations(
+          database,
+          NUM_BURST_WRITE,
+          RND_WAIT_TIME_BETWEEN_REQUESTS
+        );
+        await Promise.all(promises);
+        if (incStep) {
+          console.timeEnd(
+            `burstWrite inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+          console.log(`Current session pool size: ${pool.size}`);
+          console.log(`Current num write sessions: ${pool.writes}`);
+        }
+      } finally {
+        await database.close();
       }
-      const promises = queueWriteOperations(
-        database,
-        NUM_BURST_WRITE,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
-      );
-      await Promise.all(promises);
-      if (incStep) {
-        console.timeEnd(`burstWrite incStep ${incStep}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      }
-    } finally {
-      await database.close();
     }
   }
 }
@@ -370,37 +401,43 @@ async function burstReadAndWrite() {
   const NUM_BURST_READ = 1600;
   const NUM_BURST_WRITE = 1600;
   // Value 'undefined' is used to warm up the compiler.
-  for (const incStep of [undefined, 1, 10, 20, 25, 30, 40, 50, 100]) {
-    const database = newTestDatabase({
-      min: 100,
-      max: 400,
-      writes: 0.2,
-      incStep: incStep,
-    });
-    const pool = database.pool_ as SessionPool;
-    try {
-      if (incStep) {
-        console.time(`burstReadAndWrite incStep ${incStep}`);
+  for (const incStep of [undefined, 10, 25, 50]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
+      const database = newTestDatabase({
+        max: 400,
+        inlineBeginTx,
+        incStep: incStep,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        if (incStep) {
+          console.time(
+            `burstReadAndWrite inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+        }
+        const readPromises = queueReadOperations(
+          database,
+          NUM_BURST_READ,
+          RND_WAIT_TIME_BETWEEN_REQUESTS,
+          HOLD_SESSION_TIME
+        );
+        const writePromises = queueWriteOperations(
+          database,
+          NUM_BURST_WRITE,
+          RND_WAIT_TIME_BETWEEN_REQUESTS
+        );
+        await Promise.all(readPromises.concat(writePromises));
+        if (incStep) {
+          console.timeEnd(
+            `burstReadAndWrite inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+          console.log(`Current session pool size: ${pool.size}`);
+          console.log(`Current num write sessions: ${pool.writes}`);
+        }
+      } finally {
+        await database.close();
       }
-      const readPromises = queueReadOperations(
-        database,
-        NUM_BURST_READ,
-        RND_WAIT_TIME_BETWEEN_REQUESTS,
-        HOLD_SESSION_TIME
-      );
-      const writePromises = queueWriteOperations(
-        database,
-        NUM_BURST_WRITE,
-        RND_WAIT_TIME_BETWEEN_REQUESTS
-      );
-      await Promise.all(readPromises.concat(writePromises));
-      if (incStep) {
-        console.timeEnd(`burstReadAndWrite incStep ${incStep}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      }
-    } finally {
-      await database.close();
     }
   }
 }
@@ -412,34 +449,42 @@ async function multipleWriteBursts() {
   const NUM_BURST_WRITE = 3200;
   const WAIT_BETWEEN_BURSTS = 500;
   // Value 'undefined' is used to warm up the compiler.
-  for (const incStep of [undefined, 1, 10, 20, 25, 30, 40, 50, 100]) {
-    const database = newTestDatabase({
-      min: 100,
-      max: 400,
-      writes: 0.2,
-      incStep: incStep,
-    });
-    const pool = database.pool_ as SessionPool;
-    try {
-      if (incStep) {
-        console.time(`multipleWriteBursts incStep ${incStep}`);
+  for (const incStep of [undefined, 10, 25, 50]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
+      const database = newTestDatabase({
+        max: 400,
+        inlineBeginTx,
+        incStep: incStep,
+      });
+      const pool = database.pool_ as SessionPool;
+      try {
+        if (incStep) {
+          console.time(
+            `multipleWriteBursts inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+        }
+        for (let i = 0; i < NUM_BURSTS; i++) {
+          const writePromises = queueWriteOperations(
+            database,
+            NUM_BURST_WRITE,
+            RND_WAIT_TIME_BETWEEN_REQUESTS
+          );
+          await Promise.all(writePromises);
+          await new Promise(resolve =>
+            setTimeout(resolve, WAIT_BETWEEN_BURSTS)
+          );
+        }
+        if (incStep) {
+          console.timeEnd(
+            `multipleWriteBursts inlineBegin ${inlineBeginTx} incStep ${incStep}`
+          );
+          console.log(`Current session pool size: ${pool.size}`);
+          console.log(`Current num write sessions: ${pool.writes}`);
+        }
+      } finally {
+        await database.close();
       }
-      for (let i = 0; i < NUM_BURSTS; i++) {
-        const writePromises = queueWriteOperations(
-          database,
-          NUM_BURST_WRITE,
-          RND_WAIT_TIME_BETWEEN_REQUESTS
-        );
-        await Promise.all(writePromises);
-        await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_BURSTS));
-      }
-      if (incStep) {
-        console.timeEnd(`multipleWriteBursts incStep ${incStep}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      }
-    } finally {
-      await database.close();
     }
   }
 }
@@ -449,10 +494,11 @@ async function oneReadTransactionPerSecond() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 100000;
   const NUM_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
       const database = newTestDatabase({
         min: minSessions,
-        writes: writeFraction,
+        inlineBeginTx,
       });
       const pool = database.pool_ as SessionPool;
       try {
@@ -478,7 +524,7 @@ async function oneReadTransactionPerSecond() {
         const avg = sum / t.length || 0;
         const p90 = percentile(t, 0.9);
         console.log(
-          `oneReadTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
+          `oneReadTransactionPerSecond, min: ${minSessions}, inlineBegin: ${inlineBeginTx}`
         );
         console.log(`Max: ${max}`);
         console.log(`Min: ${min}`);
@@ -498,10 +544,11 @@ async function oneWriteTransactionPerSecond() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 100000;
   const NUM_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
+    for (const inlineBeginTx of [false, true]) {
+      spannerMock.resetRequests();
       const database = newTestDatabase({
         min: minSessions,
-        writes: writeFraction,
+        inlineBeginTx,
       });
       const pool = database.pool_ as SessionPool;
       try {
@@ -524,7 +571,7 @@ async function oneWriteTransactionPerSecond() {
         const avg = sum / t.length || 0;
         const p90 = percentile(t, 0.9);
         console.log(
-          `oneWriteTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
+          `oneWriteTransactionPerSecond, min: ${minSessions}, inlineBegin: ${inlineBeginTx}`
         );
         console.log(`Max: ${max}`);
         console.log(`Min: ${min}`);
@@ -541,14 +588,36 @@ async function oneWriteTransactionPerSecond() {
 
 async function oneReadAndOneWriteTransactionPerSecond() {
   console.log('Starting oneReadAndOneWriteTransactionPerSecond');
-  const RND_WAIT_TIME_BETWEEN_REQUESTS = 100000;
-  const NUM_READ_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
-  const NUM_WRITE_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
-  for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
+  const TPS = 5;
+  const TOTAL_TRANSACTIONS = 1000;
+  const NUM_READ_TRANSACTIONS = 0.8 * TOTAL_TRANSACTIONS;
+  const NUM_WRITE_TRANSACTIONS = 0.2 * TOTAL_TRANSACTIONS;
+  const RND_WAIT_TIME_BETWEEN_REQUESTS = (TOTAL_TRANSACTIONS * 1000) / TPS;
+
+  console.log(`Executing ${NUM_READ_TRANSACTIONS} read transactions`);
+  console.log(`Executing ${NUM_WRITE_TRANSACTIONS} write transactions`);
+  console.log(
+    `Avg TPS: ${
+      (NUM_READ_TRANSACTIONS + NUM_WRITE_TRANSACTIONS) /
+      (RND_WAIT_TIME_BETWEEN_REQUESTS / 1000)
+    }`
+  );
+
+  // Execute one read and one write operation to warm up the code.
+  const database = newTestDatabase({});
+  const readPromises = queueReadOperations(database, 10, 1, 0);
+  const writePromises = queueWriteOperations(database, 10, 1);
+  await Promise.all(readPromises.concat(writePromises));
+  await database.close();
+  console.log('Finished warming up code');
+
+  for (const minSessions of [25]) {
+    for (const inlineBeginTx of [true, false]) {
+      spannerMock.resetRequests();
       const database = newTestDatabase({
         min: minSessions,
-        writes: writeFraction,
+        max: 1000,
+        inlineBeginTx,
       });
       const pool = database.pool_ as SessionPool;
       try {
@@ -563,31 +632,47 @@ async function oneReadAndOneWriteTransactionPerSecond() {
           NUM_WRITE_TRANSACTIONS,
           RND_WAIT_TIME_BETWEEN_REQUESTS
         );
+        let count = 0;
         readPromises.forEach(p =>
           p.then(t => {
-            console.log(`Read tx: ${t}ms`);
+            count++;
+            if (count % TPS === 0) {
+              console.log(`Read tx: ${t}ms`);
+            }
           })
         );
         writePromises.forEach(p =>
           p.then(t => {
-            console.log(`Write tx: ${t}ms`);
+            count++;
+            if (count % TPS === 0) {
+              console.log(`Write tx: ${t}ms`);
+            }
           })
         );
-        const t = await Promise.all(readPromises.concat(writePromises));
-        const max = Math.max(...t);
-        const min = Math.min(...t);
-        const sum = t.reduce((a, b) => a + b, 0);
-        const avg = sum / t.length || 0;
-        const p90 = percentile(t, 0.9);
-        console.log(
-          `oneReadAndOneWriteTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
-        );
-        console.log(`Max: ${max}`);
-        console.log(`Min: ${min}`);
-        console.log(`Avg: ${avg}`);
-        console.log(`P90: ${p90}`);
+        const tRead = await Promise.all(readPromises);
+        const tWrite = await Promise.all(writePromises);
+        const time = await Promise.all(readPromises.concat(writePromises));
+        const measurement = ['Total', 'Read', 'Write'];
+        let index = 0;
+        for (const t of [time, tRead, tWrite]) {
+          const max = Math.max(...t);
+          const min = Math.min(...t);
+          const sum = t.reduce((a, b) => a + b, 0);
+          const avg = sum / t.length || 0;
+          const p90 = percentile(t, 0.9);
+          console.log(`Measurement: ${measurement[index]}`);
+          console.log(
+            `oneReadAndOneWriteTransactionPerSecond, min: ${minSessions}, inlineBegin: ${inlineBeginTx}`
+          );
+          console.log(`Max: ${max}`);
+          console.log(`Min: ${min}`);
+          console.log(`Avg: ${avg}`);
+          console.log(`P90: ${p90}`);
+          index++;
+        }
         console.log(`Current session pool size: ${pool.size}`);
         console.log(`Current num write sessions: ${pool.writes}`);
+        console.log(`Num in process prepare: ${pool._numInProcessPrepare}`);
       } finally {
         await database.close();
       }
@@ -701,8 +786,13 @@ function queueWriteOperations(
         setTimeout(() => {
           const t1 = performance.now();
           database.runTransaction((err, tx) => {
+            const id = Math.floor(Math.random() * Math.floor(999999999999));
+            const request = {
+              sql: updateSql,
+              params: {id, title: 'test', singer: 100},
+            };
             tx!
-              .runUpdate(updateSql)
+              .runUpdate(request)
               .then(() =>
                 tx!.commit().then(() => resolve(performance.now() - t1))
               );

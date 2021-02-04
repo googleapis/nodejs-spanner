@@ -210,9 +210,17 @@ describe('PartialResultStream', () => {
       resumeToken: '...',
     });
 
+    const SNAPSHOT = Object.assign(
+      {},
+      {
+        _getOrCreateTransactionSelectorPromise: () =>
+          Promise.resolve({singleUse: {}}),
+      }
+    );
+
     beforeEach(() => {
       fakeRequestStream = through.obj();
-      stream = partialResultStream(() => fakeRequestStream);
+      stream = partialResultStream(() => fakeRequestStream, SNAPSHOT);
     });
 
     it('should only push rows when there is a token', done => {
@@ -283,7 +291,7 @@ describe('PartialResultStream', () => {
         return firstFakeRequestStream;
       });
 
-      requestFnStub.onCall(1).callsFake(resumeToken => {
+      requestFnStub.onCall(1).callsFake((_, resumeToken) => {
         assert.ok(
           !resumeToken,
           'Retry should be called with empty resume token'
@@ -301,7 +309,7 @@ describe('PartialResultStream', () => {
         return secondFakeRequestStream;
       });
 
-      partialResultStream(requestFnStub)
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('error', done)
         .pipe(
           concat(rows => {
@@ -346,7 +354,7 @@ describe('PartialResultStream', () => {
         return firstFakeRequestStream;
       });
 
-      requestFnStub.onCall(1).callsFake(resumeToken => {
+      requestFnStub.onCall(1).callsFake((_, resumeToken) => {
         assert.strictEqual(resumeToken, RESULT_WITH_TOKEN.resumeToken);
 
         setTimeout(() => {
@@ -361,7 +369,7 @@ describe('PartialResultStream', () => {
         return secondFakeRequestStream;
       });
 
-      partialResultStream(requestFnStub)
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('error', done)
         .pipe(
           concat(rows => {
@@ -399,7 +407,7 @@ describe('PartialResultStream', () => {
       });
 
       const receivedRows: Row[] = [];
-      partialResultStream(requestFnStub)
+      partialResultStream(requestFnStub, SNAPSHOT)
         .on('data', row => {
           receivedRows.push(row);
         })
@@ -417,18 +425,25 @@ describe('PartialResultStream', () => {
       const error = new Error('Error.');
 
       const dataStub = sandbox.stub().withArgs(expectedRow);
+      const fakeRequestStream = through.obj();
+      const requestFnStub = sandbox.stub();
+      requestFnStub.callsFake(() => {
+        // No rows with tokens were emitted, so this should destroy the stream.
+        fakeRequestStream.push(RESULT);
+        fakeRequestStream.push(RESULT);
+        fakeRequestStream.push(RESULT);
+        fakeRequestStream.destroy(error);
+
+        return fakeRequestStream;
+      });
+
+      const stream = partialResultStream(requestFnStub, SNAPSHOT);
 
       stream.on('data', dataStub).on('error', err => {
         assert.strictEqual(err, error);
         assert.strictEqual(dataStub.callCount, 3);
         done();
       });
-
-      // No rows with tokens were emitted, so this should destroy the stream.
-      fakeRequestStream.push(RESULT);
-      fakeRequestStream.push(RESULT);
-      fakeRequestStream.push(RESULT);
-      fakeRequestStream.destroy(error);
     });
   });
 });

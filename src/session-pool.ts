@@ -132,6 +132,10 @@ export interface SessionPoolInterface extends EventEmitter {
  *     write sessions represented as a float.
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
+ * @property {boolean} [inlineBeginTx=true] Indicates whether a BeginTransaction
+ *     option should be included with the first statement of a transaction. When
+ *     this option is enabled the session pool will not prepare a fraction of
+ *     the sessions in the pool with a read/write transaction.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -145,6 +149,7 @@ export interface SessionPoolOptions {
   min?: number;
   writes?: number;
   incStep?: number;
+  inlineBeginTx?: boolean;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -159,6 +164,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
+  inlineBeginTx: true,
 };
 
 /**
@@ -612,18 +618,24 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return;
     }
 
-    // Delete the trace associated with this session to mark the session as checked
-    // back into the pool. This will prevent the session to be marked as leaked if
-    // the pool is closed while the session is being prepared.
-    this._traces.delete(session.id);
-    this._pendingPrepare++;
-    session.type = types.ReadWrite;
-    this._prepareTransaction(session)
-      .catch(() => (session.type = types.ReadOnly))
-      .then(() => {
-        this._pendingPrepare--;
-        this._release(session);
-      });
+    // Do not prepare a transaction if the inlineBeginTx option has been
+    // enabled.
+    if (this.options.inlineBeginTx) {
+      this._release(session);
+    } else {
+      // Delete the trace associated with this session to mark the session as checked
+      // back into the pool. This will prevent the session to be marked as leaked if
+      // the pool is closed while the session is being prepared.
+      this._traces.delete(session.id);
+      this._pendingPrepare++;
+      session.type = types.ReadWrite;
+      this._prepareTransaction(session)
+        .catch(() => (session.type = types.ReadOnly))
+        .then(() => {
+          this._pendingPrepare--;
+          this._release(session);
+        });
+    }
   }
 
   /**
@@ -666,8 +678,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const session = await this._acquires.add(getSession);
 
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
-      this._numInProcessPrepare++;
+      if (!this.options.inlineBeginTx) {
+        this._numInProcessPrepare++;
+      }
       try {
+        // This will only create a transaction object and not call the
+        // BeginTransaction RPC if inlineBeginTx is enabled.
         await this._prepareTransaction(session);
       } catch (e) {
         if (isSessionNotFoundError(e)) {
@@ -1087,9 +1103,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   async _prepareTransaction(session: Session): Promise<void> {
     const transaction = session.transaction(
-      (session.parent as Database).queryOptions_
+      (session.parent as Database).queryOptions_,
+      this.options.inlineBeginTx
     );
-    await transaction.begin();
+    if (!this.options.inlineBeginTx) {
+      await transaction.begin();
+    }
     session.txn = transaction;
   }
 

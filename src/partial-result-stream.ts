@@ -20,22 +20,25 @@ import * as eventsIntercept from 'events-intercept';
 import * as is from 'is';
 import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
-import {Readable, Transform} from 'stream';
+import {PassThrough, Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 import {grpc} from 'google-gax';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
+import ITransactionSelector = google.spanner.v1.ITransactionSelector;
+import {Snapshot} from './transaction';
 
 export type ResumeToken = string | Uint8Array;
 
 /**
  * @callback RequestFunction
+ * @param {ITransactionSelector} [transaction] The transaction id to use for the stream.
  * @param {string} [resumeToken] The token used to resume getting results.
  * @returns {Stream}
  */
 interface RequestFunction {
-  (resumeToken?: ResumeToken): Readable;
+  (transaction: ITransactionSelector, resumeToken?: ResumeToken): Readable;
 }
 
 /**
@@ -180,7 +183,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
    */
   _transform(
     chunk: google.spanner.v1.PartialResultSet,
-    enc: string,
+    encoding: string,
     next: Function
   ): void {
     this.emit('response', chunk);
@@ -189,7 +192,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       this.emit('stats', chunk.stats);
     }
 
-    if (!this._fields && chunk.metadata) {
+    if (!this._fields && chunk.metadata && chunk.metadata.rowType) {
       this._fields = chunk.metadata.rowType!
         .fields as google.spanner.v1.StructType.Field[];
     }
@@ -411,11 +414,13 @@ export class PartialResultStream extends Transform implements ResultEvents {
  * @param {RequestFunction} requestFn The function that makes an API request. It
  *     will receive one argument, `resumeToken`, which should be used however is
  *     necessary to send to the API for additional requests.
+ * @param {Snapshot} snapshot The snapshot / transaction to use for this stream.
  * @param {RowOptions} [options] Options for formatting rows.
  * @returns {PartialResultStream}
  */
 export function partialResultStream(
   requestFn: RequestFunction,
+  snapshot: Snapshot,
   options?: RowOptions
 ): PartialResultStream {
   const retryableCodes = [grpc.status.UNAVAILABLE];
@@ -442,13 +447,36 @@ export function partialResultStream(
       setImmediate(() => requestsStream.end());
     }
   };
+  let transactionSelectorPromise: Promise<ITransactionSelector>;
   const makeRequest = (): void => {
     if (lastRequestStream) {
       lastRequestStream.removeListener('end', endListener);
     }
-    lastRequestStream = requestFn(lastResumeToken);
-    lastRequestStream.on('end', endListener);
-    requestsStream.add(lastRequestStream);
+    // Get a (new) transaction selector from the snapshot if:
+    // 1. This is the first call.
+    // 2. This is a retry and there is a resume token. That means that there
+    //    has also already been at least one response that potentially returned
+    //    a transaction id, and in that case we should use that id.
+    // If this is a retry and there is no resume token, then we should use the
+    // the same transaction selector as during the initial call, as it should
+    // still be treated as the initial request for the stream.
+    if (!transactionSelectorPromise || lastResumeToken) {
+      transactionSelectorPromise = snapshot._getOrCreateTransactionSelectorPromise(
+        partialRSStream
+      );
+    }
+    transactionSelectorPromise
+      .then(transactionSelector => {
+        lastRequestStream = requestFn(transactionSelector, lastResumeToken);
+      })
+      .catch(err => {
+        lastRequestStream = new PassThrough();
+        setImmediate(() => lastRequestStream.destroy(err));
+      })
+      .finally(() => {
+        lastRequestStream.on('end', endListener);
+        requestsStream.add(lastRequestStream);
+      });
   };
 
   const retry = (err: grpc.ServiceError): void => {
