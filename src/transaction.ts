@@ -59,6 +59,11 @@ export interface RequestOptions {
   maxResumeRetries?: number;
 }
 
+export interface CommitOptions {
+  returnCommitStats?: boolean;
+  gaxOptions?: CallOptions;
+}
+
 export interface Statement {
   sql: string;
   params?: {[param: string]: Value};
@@ -1421,13 +1426,24 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(gaxOptions?: CallOptions): Promise<CommitResponse>;
+  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
   commit(callback: CommitCallback): void;
-  commit(gaxOptions: CallOptions, callback: CommitCallback): void;
+  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
+  /**
+   * @typedef {object} CommitOptions
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   */
   /**
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
    *     commit timestamp.
+   * @property {google.spanner.v1.CommitResponse.ICommitStats|null} commitStats
+   *     The statistics about this commit. Only populated if requested in
+   *     {@link CommitOptions}.
    */
   /**
    * @typedef {array} CommitPromiseResponse
@@ -1446,8 +1462,7 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#commit}
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {CommitOptions} [options] Options for configuring the request.
    * @param {CommitCallback} [callback] Callback function.
    * @returns {Promise<CommitPromiseResponse>}
    *
@@ -1473,13 +1488,15 @@ export class Transaction extends Dml {
    * });
    */
   commit(
-    gaxOptionsOrCallback?: CallOptions | CommitCallback,
+    optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
     cb?: CommitCallback
   ): void | Promise<CommitResponse> {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const gaxOpts =
+      'gaxOptions' in options ? (options as CommitOptions).gaxOptions : options;
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -1491,12 +1508,19 @@ export class Transaction extends Dml {
       reqOpts.singleUseTransaction = this._options;
     }
 
+    if (
+      'returnCommitStats' in options &&
+      (options as CommitOptions).returnCommitStats
+    ) {
+      reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
-        gaxOpts,
+        gaxOpts: gaxOpts,
         headers: this.resourceHeader_,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {

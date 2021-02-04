@@ -932,4 +932,12 @@ describe('Spanner', () => {
     );
     assert.match(output, /record inserted./);
   });
+
+  // get_commit_stats
+  it('should update rows in Albums example table and return CommitStats', async () => {
+    const output = execSync(
+      `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
+  });
 });

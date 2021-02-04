@@ -335,6 +335,8 @@ async function readStaleData(instanceId, databaseId, projectId) {
   // [END spanner_read_stale_data]
 }
 
+const {getCommitStats} = require('./get-commit-stats');
+
 require('yargs')
   .demand(1)
   .command(
@@ -373,12 +375,19 @@ require('yargs')
     {},
     opts => readStaleData(opts.instanceName, opts.databaseName, opts.projectId)
   )
+  .command(
+    'getCommitStats <instanceName> <databaseName> <projectId>',
+    'Updates rows in example Cloud Spanner table and reads CommitStats.',
+    {},
+    opts => getCommitStats(opts.instanceName, opts.databaseName, opts.projectId)
+  )
   .example('node $0 update "my-instance" "my-database" "my-project-id"')
   .example('node $0 query "my-instance" "my-database" "my-project-id"')
   .example('node $0 insert "my-instance" "my-database" "my-project-id"')
   .example('node $0 delete "my-instance" "my-database" "my-project-id"')
   .example('node $0 read "my-instance" "my-database" "my-project-id"')
   .example('node $0 read-stale "my-instance" "my-database" "my-project-id"')
+  .example('node $0 getCommitStats "my-instance" "my-database" "my-project-id"')
   .wrap(120)
   .recommendCommands()
   .epilogue('For more information, see https://cloud.google.com/spanner/docs')

@@ -1267,6 +1267,8 @@ describe('Transaction', () => {
     });
 
     describe('commit', () => {
+      const DEADLINE_EXCEEDED_STATUS_CODE = 4;
+
       it('should make the correct request', () => {
         const stub = sandbox.stub(transaction, 'request');
 
@@ -1281,13 +1283,44 @@ describe('Transaction', () => {
         assert.deepStrictEqual(headers, transaction.resourceHeader_);
       });
 
-      it('should accept gaxOptions', done => {
-        const gaxOptions = {};
+      it('should accept gaxOptions as CallOptions', done => {
+        const gaxOptions = {
+          retry: {
+            retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE],
+          },
+        };
         transaction.request = config => {
           assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.commit(gaxOptions, assert.ifError);
+      });
+
+      it('should accept commit options', done => {
+        const options = {returnCommitStats: true};
+        transaction.request = config => {
+          assert.strictEqual(config.reqOpts.returnCommitStats, true);
+          done();
+        };
+        transaction.commit(options, assert.ifError);
+      });
+
+      it('should accept commit and gaxOptions', done => {
+        const gaxOptions = {
+          retry: {
+            retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE],
+          },
+        };
+        const options = {
+          returnCommitStats: true,
+          gaxOptions,
+        };
+        transaction.request = config => {
+          assert.strictEqual(config.reqOpts.returnCommitStats, true);
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+        transaction.commit(options, assert.ifError);
       });
 
       it('should use the transaction `id` when set', () => {
