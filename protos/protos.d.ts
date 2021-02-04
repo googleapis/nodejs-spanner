@@ -5097,6 +5097,9 @@ export namespace google {
                         /** Backup database */
                         database?: (string|null);
 
+                        /** Backup versionTime */
+                        versionTime?: (google.protobuf.ITimestamp|null);
+
                         /** Backup expireTime */
                         expireTime?: (google.protobuf.ITimestamp|null);
 
@@ -5127,6 +5130,9 @@ export namespace google {
 
                         /** Backup database. */
                         public database: string;
+
+                        /** Backup versionTime. */
+                        public versionTime?: (google.protobuf.ITimestamp|null);
 
                         /** Backup expireTime. */
                         public expireTime?: (google.protobuf.ITimestamp|null);
@@ -6127,6 +6133,9 @@ export namespace google {
                         /** BackupInfo backup */
                         backup?: (string|null);
 
+                        /** BackupInfo versionTime */
+                        versionTime?: (google.protobuf.ITimestamp|null);
+
                         /** BackupInfo createTime */
                         createTime?: (google.protobuf.ITimestamp|null);
 
@@ -6145,6 +6154,9 @@ export namespace google {
 
                         /** BackupInfo backup. */
                         public backup: string;
+
+                        /** BackupInfo versionTime. */
+                        public versionTime?: (google.protobuf.ITimestamp|null);
 
                         /** BackupInfo createTime. */
                         public createTime?: (google.protobuf.ITimestamp|null);
@@ -6819,6 +6831,12 @@ export namespace google {
 
                         /** Database restoreInfo */
                         restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
+
+                        /** Database versionRetentionPeriod */
+                        versionRetentionPeriod?: (string|null);
+
+                        /** Database earliestVersionTime */
+                        earliestVersionTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Database. */
@@ -6841,6 +6859,12 @@ export namespace google {
 
                         /** Database restoreInfo. */
                         public restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
+
+                        /** Database versionRetentionPeriod. */
+                        public versionRetentionPeriod: string;
+
+                        /** Database earliestVersionTime. */
+                        public earliestVersionTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Database instance using the specified properties.

@@ -13252,6 +13252,7 @@
                              * @memberof google.spanner.admin.database.v1
                              * @interface IBackup
                              * @property {string|null} [database] Backup database
+                             * @property {google.protobuf.ITimestamp|null} [versionTime] Backup versionTime
                              * @property {google.protobuf.ITimestamp|null} [expireTime] Backup expireTime
                              * @property {string|null} [name] Backup name
                              * @property {google.protobuf.ITimestamp|null} [createTime] Backup createTime
@@ -13283,6 +13284,14 @@
                              * @instance
                              */
                             Backup.prototype.database = "";
+    
+                            /**
+                             * Backup versionTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} versionTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.versionTime = null;
     
                             /**
                              * Backup expireTime.
@@ -13371,6 +13380,8 @@
                                 if (message.referencingDatabases != null && message.referencingDatabases.length)
                                     for (var i = 0; i < message.referencingDatabases.length; ++i)
                                         writer.uint32(/* id 7, wireType 2 =*/58).string(message.referencingDatabases[i]);
+                                if (message.versionTime != null && Object.hasOwnProperty.call(message, "versionTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                                 return writer;
                             };
     
@@ -13407,6 +13418,9 @@
                                     switch (tag >>> 3) {
                                     case 2:
                                         message.database = reader.string();
+                                        break;
+                                    case 9:
+                                        message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     case 3:
                                         message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
@@ -13466,6 +13480,11 @@
                                 if (message.database != null && message.hasOwnProperty("database"))
                                     if (!$util.isString(message.database))
                                         return "database: string expected";
+                                if (message.versionTime != null && message.hasOwnProperty("versionTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.versionTime);
+                                    if (error)
+                                        return "versionTime." + error;
+                                }
                                 if (message.expireTime != null && message.hasOwnProperty("expireTime")) {
                                     var error = $root.google.protobuf.Timestamp.verify(message.expireTime);
                                     if (error)
@@ -13515,6 +13534,11 @@
                                 var message = new $root.google.spanner.admin.database.v1.Backup();
                                 if (object.database != null)
                                     message.database = String(object.database);
+                                if (object.versionTime != null) {
+                                    if (typeof object.versionTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.versionTime: object expected");
+                                    message.versionTime = $root.google.protobuf.Timestamp.fromObject(object.versionTime);
+                                }
                                 if (object.expireTime != null) {
                                     if (typeof object.expireTime !== "object")
                                         throw TypeError(".google.spanner.admin.database.v1.Backup.expireTime: object expected");
@@ -13586,6 +13610,7 @@
                                     } else
                                         object.sizeBytes = options.longs === String ? "0" : 0;
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
+                                    object.versionTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -13607,6 +13632,8 @@
                                     for (var j = 0; j < message.referencingDatabases.length; ++j)
                                         object.referencingDatabases[j] = message.referencingDatabases[j];
                                 }
+                                if (message.versionTime != null && message.hasOwnProperty("versionTime"))
+                                    object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 return object;
                             };
     
@@ -15712,6 +15739,7 @@
                              * @memberof google.spanner.admin.database.v1
                              * @interface IBackupInfo
                              * @property {string|null} [backup] BackupInfo backup
+                             * @property {google.protobuf.ITimestamp|null} [versionTime] BackupInfo versionTime
                              * @property {google.protobuf.ITimestamp|null} [createTime] BackupInfo createTime
                              * @property {string|null} [sourceDatabase] BackupInfo sourceDatabase
                              */
@@ -15738,6 +15766,14 @@
                              * @instance
                              */
                             BackupInfo.prototype.backup = "";
+    
+                            /**
+                             * BackupInfo versionTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} versionTime
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @instance
+                             */
+                            BackupInfo.prototype.versionTime = null;
     
                             /**
                              * BackupInfo createTime.
@@ -15785,6 +15821,8 @@
                                     $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 if (message.sourceDatabase != null && Object.hasOwnProperty.call(message, "sourceDatabase"))
                                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.sourceDatabase);
+                                if (message.versionTime != null && Object.hasOwnProperty.call(message, "versionTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
     
@@ -15821,6 +15859,9 @@
                                     switch (tag >>> 3) {
                                     case 1:
                                         message.backup = reader.string();
+                                        break;
+                                    case 4:
+                                        message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     case 2:
                                         message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
@@ -15866,6 +15907,11 @@
                                 if (message.backup != null && message.hasOwnProperty("backup"))
                                     if (!$util.isString(message.backup))
                                         return "backup: string expected";
+                                if (message.versionTime != null && message.hasOwnProperty("versionTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.versionTime);
+                                    if (error)
+                                        return "versionTime." + error;
+                                }
                                 if (message.createTime != null && message.hasOwnProperty("createTime")) {
                                     var error = $root.google.protobuf.Timestamp.verify(message.createTime);
                                     if (error)
@@ -15891,6 +15937,11 @@
                                 var message = new $root.google.spanner.admin.database.v1.BackupInfo();
                                 if (object.backup != null)
                                     message.backup = String(object.backup);
+                                if (object.versionTime != null) {
+                                    if (typeof object.versionTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.BackupInfo.versionTime: object expected");
+                                    message.versionTime = $root.google.protobuf.Timestamp.fromObject(object.versionTime);
+                                }
                                 if (object.createTime != null) {
                                     if (typeof object.createTime !== "object")
                                         throw TypeError(".google.spanner.admin.database.v1.BackupInfo.createTime: object expected");
@@ -15918,6 +15969,7 @@
                                     object.backup = "";
                                     object.createTime = null;
                                     object.sourceDatabase = "";
+                                    object.versionTime = null;
                                 }
                                 if (message.backup != null && message.hasOwnProperty("backup"))
                                     object.backup = message.backup;
@@ -15925,6 +15977,8 @@
                                     object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                                 if (message.sourceDatabase != null && message.hasOwnProperty("sourceDatabase"))
                                     object.sourceDatabase = message.sourceDatabase;
+                                if (message.versionTime != null && message.hasOwnProperty("versionTime"))
+                                    object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 return object;
                             };
     
@@ -17037,6 +17091,8 @@
                              * @property {google.spanner.admin.database.v1.Database.State|null} [state] Database state
                              * @property {google.protobuf.ITimestamp|null} [createTime] Database createTime
                              * @property {google.spanner.admin.database.v1.IRestoreInfo|null} [restoreInfo] Database restoreInfo
+                             * @property {string|null} [versionRetentionPeriod] Database versionRetentionPeriod
+                             * @property {google.protobuf.ITimestamp|null} [earliestVersionTime] Database earliestVersionTime
                              */
     
                             /**
@@ -17087,6 +17143,22 @@
                             Database.prototype.restoreInfo = null;
     
                             /**
+                             * Database versionRetentionPeriod.
+                             * @member {string} versionRetentionPeriod
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.versionRetentionPeriod = "";
+    
+                            /**
+                             * Database earliestVersionTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} earliestVersionTime
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.earliestVersionTime = null;
+    
+                            /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Database
@@ -17118,6 +17190,10 @@
                                     $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                                 if (message.restoreInfo != null && Object.hasOwnProperty.call(message, "restoreInfo"))
                                     $root.google.spanner.admin.database.v1.RestoreInfo.encode(message.restoreInfo, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.versionRetentionPeriod != null && Object.hasOwnProperty.call(message, "versionRetentionPeriod"))
+                                    writer.uint32(/* id 6, wireType 2 =*/50).string(message.versionRetentionPeriod);
+                                if (message.earliestVersionTime != null && Object.hasOwnProperty.call(message, "earliestVersionTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.earliestVersionTime, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
                                 return writer;
                             };
     
@@ -17163,6 +17239,12 @@
                                         break;
                                     case 4:
                                         message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.decode(reader, reader.uint32());
+                                        break;
+                                    case 6:
+                                        message.versionRetentionPeriod = reader.string();
+                                        break;
+                                    case 7:
+                                        message.earliestVersionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -17222,6 +17304,14 @@
                                     if (error)
                                         return "restoreInfo." + error;
                                 }
+                                if (message.versionRetentionPeriod != null && message.hasOwnProperty("versionRetentionPeriod"))
+                                    if (!$util.isString(message.versionRetentionPeriod))
+                                        return "versionRetentionPeriod: string expected";
+                                if (message.earliestVersionTime != null && message.hasOwnProperty("earliestVersionTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.earliestVersionTime);
+                                    if (error)
+                                        return "earliestVersionTime." + error;
+                                }
                                 return null;
                             };
     
@@ -17267,6 +17357,13 @@
                                         throw TypeError(".google.spanner.admin.database.v1.Database.restoreInfo: object expected");
                                     message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.fromObject(object.restoreInfo);
                                 }
+                                if (object.versionRetentionPeriod != null)
+                                    message.versionRetentionPeriod = String(object.versionRetentionPeriod);
+                                if (object.earliestVersionTime != null) {
+                                    if (typeof object.earliestVersionTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Database.earliestVersionTime: object expected");
+                                    message.earliestVersionTime = $root.google.protobuf.Timestamp.fromObject(object.earliestVersionTime);
+                                }
                                 return message;
                             };
     
@@ -17288,6 +17385,8 @@
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                     object.createTime = null;
                                     object.restoreInfo = null;
+                                    object.versionRetentionPeriod = "";
+                                    object.earliestVersionTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -17297,6 +17396,10 @@
                                     object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                                 if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo"))
                                     object.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.toObject(message.restoreInfo, options);
+                                if (message.versionRetentionPeriod != null && message.hasOwnProperty("versionRetentionPeriod"))
+                                    object.versionRetentionPeriod = message.versionRetentionPeriod;
+                                if (message.earliestVersionTime != null && message.hasOwnProperty("earliestVersionTime"))
+                                    object.earliestVersionTime = $root.google.protobuf.Timestamp.toObject(message.earliestVersionTime, options);
                                 return object;
                             };
     
