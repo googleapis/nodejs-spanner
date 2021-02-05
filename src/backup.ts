@@ -51,6 +51,7 @@ export type CreateBackupResponse = [
 export interface CreateBackupOptions {
   databasePath: string;
   expireTime: string | number | p.ITimestamp | PreciseDate;
+  versionTime?: string | number | p.ITimestamp | PreciseDate;
   gaxOptions?: CallOptions;
 }
 
@@ -119,6 +120,8 @@ class Backup {
    * @property {string} databasePath The database path.
    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     expireTime The expire time of the backup.
+   * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *     versionTime Take a backup of the state of the database at this time.
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
@@ -156,10 +159,12 @@ class Backup {
    * const instance = spanner.instance('my-instance');
    * const oneDay = 1000 * 60 * 60 * 24;
    * const expireTime = Date.now() + oneDay;
+   * const versionTime = Date.now() - oneDay;
    * const backup = instance.backup('my-backup');
    * const [, backupOperation] = await backup.create({
    *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
    *   expireTime: expireTime,
+   *   versionTime: versionTime,
    * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -178,6 +183,11 @@ class Backup {
         name: this.formattedName_,
       },
     };
+    if ('versionTime' in options) {
+      reqOpts.backup!.versionTime = Spanner.timestamp(
+        options.versionTime
+      ).toStruct();
+    }
     this.request(
       {
         client: 'DatabaseAdminClient',
