@@ -940,6 +940,7 @@ describe('Spanner', () => {
       `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
+  });
 
   // create_database_with_version_retention_period
   it('should create a database with a version retention period', async () => {
