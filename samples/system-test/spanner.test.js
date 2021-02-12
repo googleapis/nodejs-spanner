@@ -27,6 +27,7 @@ const crudCmd = 'node crud.js';
 const schemaCmd = 'node schema.js';
 const indexingCmd = 'node indexing.js';
 const queryOptionsCmd = 'node queryoptions.js';
+const rpcPriorityCommand = 'node rpc-priority.js';
 const transactionCmd = 'node transaction.js';
 const timestampCmd = 'node timestamp.js';
 const structCmd = 'node struct.js';
@@ -397,7 +398,7 @@ describe('Spanner', () => {
   // query with RPC priority
   it('should use request options', async () => {
     const output = execSync(
-      `${queryOptionsCmd} queryWithRpcPriority ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityCommand} queryWithRpcPriority ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
       output,

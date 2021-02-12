@@ -194,7 +194,7 @@ describe('Spanner with mock server', () => {
         request.requestOptions,
         'no requestOptions found on ExecuteSqlRequest'
       );
-      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_HIGH');
+      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_HIGH');
     });
 
     it('should execute batchUpdate with requestOptions', async () => {
@@ -213,7 +213,7 @@ describe('Spanner with mock server', () => {
         request.requestOptions,
         'no requestOptions found on ExecuteBatchDmlRequest'
       );
-      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
     });
 
     it('should return an array of json objects', async () => {
@@ -2485,7 +2485,7 @@ describe('Spanner with mock server', () => {
         request.requestOptions,
         'no requestOptions found on CommitRequest'
       );
-      assert.strictEqual(request.requestOptions.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
 
       await database.close();
     });
