@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -5097,6 +5097,9 @@ export namespace google {
                         /** Backup database */
                         database?: (string|null);
 
+                        /** Backup versionTime */
+                        versionTime?: (google.protobuf.ITimestamp|null);
+
                         /** Backup expireTime */
                         expireTime?: (google.protobuf.ITimestamp|null);
 
@@ -5127,6 +5130,9 @@ export namespace google {
 
                         /** Backup database. */
                         public database: string;
+
+                        /** Backup versionTime. */
+                        public versionTime?: (google.protobuf.ITimestamp|null);
 
                         /** Backup expireTime. */
                         public expireTime?: (google.protobuf.ITimestamp|null);
@@ -6127,6 +6133,9 @@ export namespace google {
                         /** BackupInfo backup */
                         backup?: (string|null);
 
+                        /** BackupInfo versionTime */
+                        versionTime?: (google.protobuf.ITimestamp|null);
+
                         /** BackupInfo createTime */
                         createTime?: (google.protobuf.ITimestamp|null);
 
@@ -6145,6 +6154,9 @@ export namespace google {
 
                         /** BackupInfo backup. */
                         public backup: string;
+
+                        /** BackupInfo versionTime. */
+                        public versionTime?: (google.protobuf.ITimestamp|null);
 
                         /** BackupInfo createTime. */
                         public createTime?: (google.protobuf.ITimestamp|null);
@@ -6819,6 +6831,12 @@ export namespace google {
 
                         /** Database restoreInfo */
                         restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
+
+                        /** Database versionRetentionPeriod */
+                        versionRetentionPeriod?: (string|null);
+
+                        /** Database earliestVersionTime */
+                        earliestVersionTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Database. */
@@ -6841,6 +6859,12 @@ export namespace google {
 
                         /** Database restoreInfo. */
                         public restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
+
+                        /** Database versionRetentionPeriod. */
+                        public versionRetentionPeriod: string;
+
+                        /** Database earliestVersionTime. */
+                        public earliestVersionTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Database instance using the specified properties.
@@ -14966,6 +14990,9 @@ export namespace google {
 
                 /** CommitRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** CommitRequest returnCommitStats */
+                returnCommitStats?: (boolean|null);
             }
 
             /** Represents a CommitRequest. */
@@ -14991,6 +15018,9 @@ export namespace google {
 
                 /** CommitRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** CommitRequest returnCommitStats. */
+                public returnCommitStats: boolean;
 
                 /** CommitRequest transaction. */
                 public transaction?: ("transactionId"|"singleUseTransaction");
@@ -15071,6 +15101,9 @@ export namespace google {
 
                 /** CommitResponse commitTimestamp */
                 commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** CommitResponse commitStats */
+                commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
             }
 
             /** Represents a CommitResponse. */
@@ -15084,6 +15117,9 @@ export namespace google {
 
                 /** CommitResponse commitTimestamp. */
                 public commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** CommitResponse commitStats. */
+                public commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
 
                 /**
                  * Creates a new CommitResponse instance using the specified properties.
@@ -15154,6 +15190,99 @@ export namespace google {
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
+            }
+
+            namespace CommitResponse {
+
+                /** Properties of a CommitStats. */
+                interface ICommitStats {
+
+                    /** CommitStats mutationCount */
+                    mutationCount?: (number|Long|string|null);
+                }
+
+                /** Represents a CommitStats. */
+                class CommitStats implements ICommitStats {
+
+                    /**
+                     * Constructs a new CommitStats.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.CommitResponse.ICommitStats);
+
+                    /** CommitStats mutationCount. */
+                    public mutationCount: (number|Long|string);
+
+                    /**
+                     * Creates a new CommitStats instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns CommitStats instance
+                     */
+                    public static create(properties?: google.spanner.v1.CommitResponse.ICommitStats): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                     * @param message CommitStats message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                     * @param message CommitStats message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a CommitStats message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns CommitStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Decodes a CommitStats message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns CommitStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Verifies a CommitStats message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns CommitStats
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
+                     * @param message CommitStats
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.CommitResponse.CommitStats, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this CommitStats to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
             }
 
             /** Properties of a RollbackRequest. */
@@ -15264,7 +15393,8 @@ export namespace google {
             REQUIRED = 2,
             OUTPUT_ONLY = 3,
             INPUT_ONLY = 4,
-            IMMUTABLE = 5
+            IMMUTABLE = 5,
+            UNORDERED_LIST = 6
         }
 
         /** Properties of a ResourceDescriptor. */
@@ -15287,6 +15417,9 @@ export namespace google {
 
             /** ResourceDescriptor singular */
             singular?: (string|null);
+
+            /** ResourceDescriptor style */
+            style?: (google.api.ResourceDescriptor.Style[]|null);
         }
 
         /** Represents a ResourceDescriptor. */
@@ -15315,6 +15448,9 @@ export namespace google {
 
             /** ResourceDescriptor singular. */
             public singular: string;
+
+            /** ResourceDescriptor style. */
+            public style: google.api.ResourceDescriptor.Style[];
 
             /**
              * Creates a new ResourceDescriptor instance using the specified properties.
@@ -15394,6 +15530,12 @@ export namespace google {
                 HISTORY_UNSPECIFIED = 0,
                 ORIGINALLY_SINGLE_PATTERN = 1,
                 FUTURE_MULTI_PATTERN = 2
+            }
+
+            /** Style enum. */
+            enum Style {
+                STYLE_UNSPECIFIED = 0,
+                DECLARATIVE_FRIENDLY = 1
             }
         }
 

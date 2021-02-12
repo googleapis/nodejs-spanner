@@ -27,6 +27,7 @@ and automatic, synchronous replication for high availability.
   * [CRUD](#crud)
   * [Datatypes](#datatypes)
   * [DML](#dml)
+  * [Get-commit-stats](#get-commit-stats)
   * [Indexing](#indexing)
   * [Instance](#instance)
   * [Numeric-add-column](#numeric-add-column)
@@ -268,6 +269,23 @@ __Usage:__
 
 
 `node samples/dml.js`
+
+
+-----
+
+
+
+
+### Get-commit-stats
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-commit-stats.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-commit-stats.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/get-commit-stats.js`
 
 
 -----

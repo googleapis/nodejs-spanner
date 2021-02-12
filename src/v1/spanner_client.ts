@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -756,8 +756,9 @@ export class SpannerClient {
    *   Parameter names and values that bind to placeholders in the SQL string.
    *
    *   A parameter placeholder consists of the `@` character followed by the
-   *   parameter name (for example, `@firstName`). Parameter names can contain
-   *   letters, numbers, and underscores.
+   *   parameter name (for example, `@firstName`). Parameter names must conform
+   *   to the naming requirements of identifiers as specified at
+   *   https://cloud.google.com/spanner/docs/lexical#identifiers.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:
@@ -1228,6 +1229,12 @@ export class SpannerClient {
    * reasons. If `Commit` returns `ABORTED`, the caller should re-attempt
    * the transaction from the beginning, re-using the same session.
    *
+   * On very rare occasions, `Commit` might return `UNKNOWN`. This can happen,
+   * for example, if the client job experiences a 1+ hour networking failure.
+   * At that point, Cloud Spanner has lost track of the transaction outcome and
+   * we recommend that you perform another read from the database to see the
+   * state of things as they are now.
+   *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.session
@@ -1248,8 +1255,15 @@ export class SpannerClient {
    *   The mutations to be executed when this transaction commits. All
    *   mutations are applied atomically, in the order they appear in
    *   this list.
+<<<<<<< HEAD
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+=======
+   * @param {boolean} request.returnCommitStats
+   *   If `true`, then statistics related to the transaction will be included in
+   *   the {@link google.spanner.v1.CommitResponse.commit_stats|CommitResponse}. Default value is
+   *   `false`.
+>>>>>>> master
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1656,8 +1670,9 @@ export class SpannerClient {
    *   Parameter names and values that bind to placeholders in the SQL string.
    *
    *   A parameter placeholder consists of the `@` character followed by the
-   *   parameter name (for example, `@firstName`). Parameter names can contain
-   *   letters, numbers, and underscores.
+   *   parameter name (for example, `@firstName`). Parameter names must conform
+   *   to the naming requirements of identifiers as specified at
+   *   https://cloud.google.com/spanner/docs/lexical#identifiers.
    *
    *   Parameters can appear anywhere that a literal value is expected.  The same
    *   parameter name can be used more than once, for example:

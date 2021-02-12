@@ -255,12 +255,21 @@ describe('Table', () => {
     });
 
     it('should accept gaxOptions', done => {
-      const gaxOptions = {};
+      const deleteRowsOptions = {gaxOptions: {}};
       transaction.commit = options => {
-        assert.strictEqual(options, gaxOptions);
+        assert.strictEqual(options, deleteRowsOptions);
         done();
       };
-      table.deleteRows(KEYS, gaxOptions, assert.ifError);
+      table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
+    });
+
+    it('should accept commit options', done => {
+      const deleteRowsOptions = {returnCommitStats: true};
+      transaction.commit = options => {
+        assert.strictEqual(options, deleteRowsOptions);
+        done();
+      };
+      table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
     });
 
     it('should accept requestOptions', done => {
@@ -346,17 +355,31 @@ describe('Table', () => {
     });
 
     it('should accept gaxOptions', done => {
-      const gaxOptions = {};
+      const insertRowsOptions = {gaxOptions: {}};
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
         ROW
       );
       transaction.commit = options => {
-        assert.strictEqual(options, gaxOptions);
+        assert.strictEqual(options, insertRowsOptions);
         done();
       };
 
-      table.insert(ROW, gaxOptions, assert.ifError);
+      table.insert(ROW, insertRowsOptions, assert.ifError);
+    });
+
+    it('should accept commit options', done => {
+      const insertRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, insertRowsOptions);
+        done();
+      };
+
+      table.insert(ROW, insertRowsOptions, assert.ifError);
     });
 
     it('should accept requestOptions', done => {
@@ -470,17 +493,31 @@ describe('Table', () => {
     });
 
     it('should accept gaxOptions', done => {
-      const gaxOptions = {};
+      const replaceRowsOptions = {gaxOptions: {}};
       (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
         table.name,
         ROW
       );
       transaction.commit = options => {
-        assert.strictEqual(options, gaxOptions);
+        assert.strictEqual(options, replaceRowsOptions);
         done();
       };
 
-      table.replace(ROW, gaxOptions, assert.ifError);
+      table.replace(ROW, replaceRowsOptions, assert.ifError);
+    });
+
+    it('should accept commit options', done => {
+      const replaceRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, replaceRowsOptions);
+        done();
+      };
+
+      table.replace(ROW, replaceRowsOptions, assert.ifError);
     });
 
     it('should accept requestOptions', done => {
@@ -530,17 +567,31 @@ describe('Table', () => {
     });
 
     it('should accept gaxOptions', done => {
-      const gaxOptions = {};
+      const updateRowsOptions = {gaxOptions: {}};
       (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
         table.name,
         ROW
       );
       transaction.commit = options => {
-        assert.strictEqual(options, gaxOptions);
+        assert.strictEqual(options, updateRowsOptions);
         done();
       };
 
-      table.update(ROW, gaxOptions, assert.ifError);
+      table.update(ROW, updateRowsOptions, assert.ifError);
+    });
+
+    it('should accept commit options', done => {
+      const updateRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, updateRowsOptions);
+        done();
+      };
+
+      table.update(ROW, updateRowsOptions, assert.ifError);
     });
 
     it('should accept requestOptions', done => {
@@ -590,17 +641,31 @@ describe('Table', () => {
     });
 
     it('should accept gaxOptions', done => {
-      const gaxOptions = {};
+      const upsertRowsOptions = {gaxOptions: {}};
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
         ROW
       );
       transaction.commit = options => {
-        assert.strictEqual(options, gaxOptions);
+        assert.strictEqual(options, upsertRowsOptions);
         done();
       };
 
-      table.upsert(ROW, gaxOptions, assert.ifError);
+      table.upsert(ROW, upsertRowsOptions, assert.ifError);
+    });
+
+    it('should accept commit options', done => {
+      const upsertRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, upsertRowsOptions);
+        done();
+      };
+
+      table.upsert(ROW, upsertRowsOptions, assert.ifError);
     });
 
     it('should accept requestOptions', done => {

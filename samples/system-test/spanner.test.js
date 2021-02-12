@@ -83,7 +83,7 @@ async function deleteStaleInstances() {
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
   const old = new Date();
-  old.setHours(-4);
+  old.setHours(old.getHours() - 4);
 
   await Promise.all(
     instances.map(async instance => {
@@ -134,7 +134,7 @@ describe('Spanner', () => {
         },
         gaxOptions: GAX_OPTIONS,
       });
-      await operation.promise();
+      return operation.promise();
     } else {
       console.log(
         `Not creating temp instance, using + ${instance.formattedName_}...`
@@ -185,6 +185,16 @@ describe('Spanner', () => {
         new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
       );
     });
+  });
+
+  // check that base instance was created
+  it('should have created an instance', async () => {
+    const [exists] = await instance.exists();
+    assert.strictEqual(
+      exists,
+      true,
+      'The main instance was not created successfully!'
+    );
   });
 
   // create_database
@@ -932,5 +942,13 @@ describe('Spanner', () => {
       `${dmlCmd} insertWithCustomTimeoutAndRetrySettings ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /record inserted./);
+  });
+
+  // get_commit_stats
+  it('should update rows in Albums example table and return CommitStats', async () => {
+    const output = execSync(
+      `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
   });
 });

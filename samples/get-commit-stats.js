@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 'use strict';
 
-async function updateWithNumericData(instanceId, databaseId, projectId) {
-  // [START spanner_update_data_with_numeric_column]
+async function getCommitStats(instanceId, databaseId, projectId) {
+  // [START spanner_get_commit_stats]
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -36,37 +36,27 @@ async function updateWithNumericData(instanceId, databaseId, projectId) {
   const database = instance.database(databaseId);
 
   // Instantiate Spanner table objects.
-  const venuesTable = database.table('Venues');
-
-  const data = [
-    {
-      VenueId: '4',
-      Revenue: Spanner.numeric('35000'),
-      LastUpdateTime: 'spanner.commit_timestamp()',
-    },
-    {
-      VenueId: '19',
-      Revenue: Spanner.numeric('104500'),
-      LastUpdateTime: 'spanner.commit_timestamp()',
-    },
-    {
-      VenueId: '42',
-      Revenue: Spanner.numeric('99999999999999999999999999999.99'),
-      LastUpdateTime: 'spanner.commit_timestamp()',
-    },
-  ];
+  const albumsTable = database.table('Albums');
 
   // Updates rows in the Venues table.
   try {
-    await venuesTable.update(data);
-    console.log('Updated data.');
+    const [response] = await albumsTable.upsert(
+      [
+        {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
+        {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
+      ],
+      {returnCommitStats: true}
+    );
+    console.log(
+      `Updated data with ${response.commitStats.mutationCount} mutations.`
+    );
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
     // Close the database when finished.
     database.close();
   }
-  // [END spanner_update_data_with_numeric_column]
+  // [END spanner_get_commit_stats]
 }
 
-module.exports.updateWithNumericData = updateWithNumericData;
+module.exports.getCommitStats = getCommitStats;

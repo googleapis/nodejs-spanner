@@ -321,12 +321,12 @@ class Table {
   }
   deleteRows(
     keys: Key[],
-    options?: DeleteRowsOptions | CallOptions
+    options?: DeleteRowsOptions
   ): Promise<DeleteRowsResponse>;
   deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
   deleteRows(
     keys: Key[],
-    options: DeleteRowsOptions | CallOptions,
+    options: DeleteRowsOptions,
     callback: DeleteRowsCallback
   ): void;
   /**
@@ -377,7 +377,7 @@ class Table {
    */
   deleteRows(
     keys: Key[],
-    optionsOrCallback?: DeleteRowsOptions | CallOptions | DeleteRowsCallback,
+    optionsOrCallback?: DeleteRowsOptions | DeleteRowsCallback,
     cb?: DeleteRowsCallback
   ): Promise<DeleteRowsResponse> | void {
     const options =
@@ -446,12 +446,12 @@ class Table {
   }
   insert(
     rows: object | object[],
-    options?: InsertRowsOptions | CallOptions
+    options?: InsertRowsOptions
   ): Promise<InsertRowsResponse>;
   insert(rows: object | object[], callback: InsertRowsCallback): void;
   insert(
     rows: object | object[],
-    options: InsertRowsOptions | CallOptions,
+    options: InsertRowsOptions,
     callback: InsertRowsCallback
   ): void;
   /**
@@ -461,7 +461,7 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {InsertRowsOptions} [options] Options for configuring the request.
+   * @param {DeleteRowsOptions} [options] Options for configuring the request.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
@@ -513,7 +513,7 @@ class Table {
    */
   insert(
     rows: object | object[],
-    optionsOrCallback?: InsertRowsOptions | CallOptions | InsertRowsCallback,
+    optionsOrCallback?: InsertRowsOptions | InsertRowsCallback,
     cb?: InsertRowsCallback
   ): Promise<InsertRowsResponse> | void {
     const options =
@@ -703,12 +703,12 @@ class Table {
   }
   replace(
     rows: object | object[],
-    options?: ReplaceRowsOptions | CallOptions
+    options?: ReplaceRowsOptions
   ): Promise<ReplaceRowsResponse>;
   replace(rows: object | object[], callback: ReplaceRowsCallback): void;
   replace(
     rows: object | object[],
-    options: ReplaceRowsOptions | CallOptions,
+    options: ReplaceRowsOptions,
     callback: ReplaceRowsCallback
   ): void;
   /**
@@ -753,7 +753,7 @@ class Table {
    */
   replace(
     rows: object | object[],
-    optionsOrCallback?: ReplaceRowsOptions | CallOptions | ReplaceRowsCallback,
+    optionsOrCallback?: ReplaceRowsOptions | ReplaceRowsCallback,
     cb?: ReplaceRowsCallback
   ): Promise<ReplaceRowsResponse> | void {
     const options =
@@ -765,12 +765,12 @@ class Table {
   }
   update(
     rows: object | object[],
-    options?: UpdateRowsOptions | CallOptions
+    options?: UpdateRowsOptions
   ): Promise<UpdateRowsResponse>;
   update(rows: object | object[], callback: UpdateRowsCallback): void;
   update(
     rows: object | object[],
-    options: UpdateRowsOptions | CallOptions,
+    options: UpdateRowsOptions,
     callback: UpdateRowsCallback
   ): void;
   /**
@@ -819,7 +819,7 @@ class Table {
    */
   update(
     rows: object | object[],
-    optionsOrCallback?: UpdateRowsOptions | CallOptions | UpdateRowsCallback,
+    optionsOrCallback?: UpdateRowsOptions | UpdateRowsCallback,
     cb?: UpdateRowsCallback
   ): Promise<UpdateRowsResponse> | void {
     const options =
@@ -831,12 +831,12 @@ class Table {
   }
   upsert(
     rows: object | object[],
-    options?: UpsertRowsOptions | CallOptions
+    options?: UpsertRowsOptions
   ): Promise<UpsertRowsResponse>;
   upsert(rows: object | object[], callback: UpsertRowsCallback): void;
   upsert(
     rows: object | object[],
-    options: UpsertRowsOptions | CallOptions,
+    options: UpsertRowsOptions,
     callback: UpsertRowsCallback
   ): void;
   /**
@@ -882,7 +882,7 @@ class Table {
    */
   upsert(
     rows: object | object[],
-    optionsOrCallback?: UpsertRowsOptions | CallOptions | UpsertRowsCallback,
+    optionsOrCallback?: UpsertRowsOptions | UpsertRowsCallback,
     cb?: UpsertRowsCallback
   ): Promise<UpsertRowsResponse> | void {
     const options =
@@ -908,7 +908,7 @@ class Table {
   private _mutate(
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
-    options: CommitOptions | CallOptions = {},
+    options: CommitOptions = {},
     callback: CommitCallback
   ): void {
     this.database.runTransaction((err, transaction) => {

@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -637,6 +637,8 @@ export class DatabaseAdminClient {
    *   The request object that will be sent.
    * @param {string} request.database
    *   Required. The database whose schema we wish to get.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>`
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2474,11 +2476,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
@@ -2608,11 +2610,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
@@ -2694,11 +2696,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
@@ -2820,9 +2822,9 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
@@ -2948,9 +2950,9 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
@@ -3032,9 +3034,9 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".

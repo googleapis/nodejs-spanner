@@ -86,8 +86,7 @@ rows.forEach(row => console.log(row));
 
 ## Samples
 
-Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tree/master/samples) directory. The samples' `README.md`
-has instructions for running the samples.
+Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tree/master/samples) directory. Each sample's `README.md` has instructions for running its sample.
 
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
@@ -104,6 +103,7 @@ has instructions for running the samples.
 | CRUD | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/crud.js,samples/README.md) |
 | Datatypes | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/datatypes.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/datatypes.js,samples/README.md) |
 | DML | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/dml.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml.js,samples/README.md) |
+| Get-commit-stats | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-commit-stats.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-commit-stats.js,samples/README.md) |
 | Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md) |
 | Instance | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance.js,samples/README.md) |
 | Numeric-add-column | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-add-column.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-add-column.js,samples/README.md) |

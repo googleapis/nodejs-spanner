@@ -62,6 +62,7 @@ export interface RequestOptions {
 
 export interface CommitOptions {
   requestOptions?: IRequestOptions;
+  returnCommitStats?: boolean;
   gaxOptions?: CallOptions;
 }
 
@@ -1440,8 +1441,13 @@ export class Transaction extends Dml {
   commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
+<<<<<<< HEAD
    * @property {IRequestOptions} requestOptions The request options to include
    *     with the commit request.
+=======
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+>>>>>>> master
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
@@ -1450,6 +1456,9 @@ export class Transaction extends Dml {
    * @typedef {object} CommitResponse
    * @property {google.protobuf.Timestamp} commitTimestamp The transaction
    *     commit timestamp.
+   * @property {google.spanner.v1.CommitResponse.ICommitStats|null} commitStats
+   *     The statistics about this commit. Only populated if requested in
+   *     {@link CommitOptions}.
    */
   /**
    * @typedef {array} CommitPromiseResponse
@@ -1502,9 +1511,7 @@ export class Transaction extends Dml {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const gaxOpts =
-      'gaxOptions' in options
-        ? (options as BatchUpdateOptions).gaxOptions
-        : options;
+      'gaxOptions' in options ? (options as CommitOptions).gaxOptions : options;
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -1515,6 +1522,13 @@ export class Transaction extends Dml {
       reqOpts.transactionId = this.id as Uint8Array;
     } else {
       reqOpts.singleUseTransaction = this._options;
+    }
+
+    if (
+      'returnCommitStats' in options &&
+      (options as CommitOptions).returnCommitStats
+    ) {
+      reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
     }
 
     this.request(
