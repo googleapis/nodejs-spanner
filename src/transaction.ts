@@ -1441,13 +1441,10 @@ export class Transaction extends Dml {
   commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
-<<<<<<< HEAD
    * @property {IRequestOptions} requestOptions The request options to include
    *     with the commit request.
-=======
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
->>>>>>> master
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.

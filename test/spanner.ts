@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {after, before, beforeEach, describe, Done, it} from 'mocha';
+import {Done, describe, before, after, beforeEach, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
@@ -41,13 +41,13 @@ import {
   SessionPoolOptions,
 } from '../src/session-pool';
 import {Json} from '../src/codec';
-import * as stream from 'stream';
-import * as util from 'util';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
+import * as stream from 'stream';
+import * as util from 'util';
 import RequestOptions = google.spanner.v1.RequestOptions;
 
 function numberToEnglishWord(num: number): string {

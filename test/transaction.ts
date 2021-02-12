@@ -1347,7 +1347,6 @@ describe('Transaction', () => {
         transaction.commit(options, assert.ifError);
       });
 
-      // TODO: Is this true?
       it('should accept gaxOptions in CommitOptions', done => {
         const options = {gaxOptions: {}};
         transaction.request = config => {
