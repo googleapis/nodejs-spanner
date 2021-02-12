@@ -14,7 +14,7 @@
 
 'use strict';
 
-function main(instanceId, databaseId, projectId) {
+async function main(instanceId, databaseId, projectId) {
   // TODO: Add start region tag here
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
@@ -65,6 +65,8 @@ function main(instanceId, databaseId, projectId) {
     }
   }
   // TODO: Add end region tag here
-  queryWithRpcPriority(instanceId, databaseId);
+  await queryWithRpcPriority(instanceId, databaseId);
 }
-main(...process.argv.slice(2));
+main(...process.argv.slice(2)).then(() =>
+  console.log('Finished executing sample')
+);
