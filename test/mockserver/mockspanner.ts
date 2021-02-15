@@ -1000,6 +1000,24 @@ export function createLargeResultSet(): protobuf.ResultSet {
   });
 }
 
+export function createSelect1ResultSet(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: '',
+      type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [{values: [{stringValue: '1'}]}],
+  });
+}
+
 function generateRandomString(length: number) {
   let result = '';
   const characters =

@@ -36,6 +36,7 @@ export interface Json {
 export interface JSONOptions {
   wrapNumbers?: boolean;
   wrapStructs?: boolean;
+  includeNameless?: boolean;
 }
 
 // https://github.com/Microsoft/TypeScript/issues/27920
@@ -218,6 +219,9 @@ export class Numeric {
  *     wrapped in Int/Float wrappers.
  * @property {boolean} [wrapStructs=false] Indicates if the structs should be
  *     wrapped in Struct wrapper.
+ * @property {boolean} [includeNameless=false] Indicates if nameless columns
+ *     should be included in the result. If true, nameless columns will be
+ *     assigned the name '_{column_index}'.
  */
 /**
  * Wherever a row or struct object is returned, it is assigned a "toJSON"
@@ -232,24 +236,31 @@ export class Numeric {
 function convertFieldsToJson(fields: Field[], options?: JSONOptions): Json {
   const json: Json = {};
 
-  const defaultOptions = {wrapNumbers: false, wrapStructs: false};
+  const defaultOptions = {
+    wrapNumbers: false,
+    wrapStructs: false,
+    includeNameless: false,
+  };
 
   options = Object.assign(defaultOptions, options);
 
+  let index = 0;
   for (const {name, value} of fields) {
-    if (!name) {
+    if (!name && !options.includeNameless) {
       continue;
     }
+    const fieldName = name ? name : `_${index}`;
 
     try {
-      json[name] = convertValueToJson(value, options);
+      json[fieldName] = convertValueToJson(value, options);
     } catch (e) {
       e.message = [
-        `Serializing column "${name}" encountered an error: ${e.message}`,
+        `Serializing column "${fieldName}" encountered an error: ${e.message}`,
         'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
       ].join(' ');
       throw e;
     }
+    index++;
   }
 
   return json;

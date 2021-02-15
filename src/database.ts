@@ -122,6 +122,7 @@ export type UpdateSchemaResponse = [
 type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
+type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
 
@@ -2081,6 +2082,7 @@ class Database extends common.GrpcServiceObject {
     cb?: RunCallback
   ): void | Promise<RunResponse> {
     let stats: ResultSetStats;
+    let metadata: ResultSetMetadata;
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
@@ -2093,12 +2095,17 @@ class Database extends common.GrpcServiceObject {
 
     this.runStream(query, options)
       .on('error', callback!)
+      .on('response', response => {
+        if (response.metadata) {
+          metadata = response.metadata;
+        }
+      })
       .on('stats', _stats => (stats = _stats))
       .on('data', row => {
         rows.push(row);
       })
       .on('end', () => {
-        callback!(null, rows, stats);
+        callback!(null, rows, stats, metadata);
       });
   }
   runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
@@ -2337,6 +2344,7 @@ class Database extends common.GrpcServiceObject {
           }
         })
         .on('stats', stats => proxyStream.emit('stats', stats))
+        .on('response', response => proxyStream.emit('response', response))
         .once('end', endListener)
         .pipe(proxyStream);
     });
