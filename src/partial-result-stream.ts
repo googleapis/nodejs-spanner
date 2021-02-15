@@ -492,9 +492,6 @@ export function partialResultStream(
         lastResumeToken = row.resumeToken;
       })
       .pipe(userStream)
-      // .on('response', response => {
-      //   console.log(response);
-      // })
       .on('paused', () => requestsStream.pause())
       .on('resumed', () => requestsStream.resume())
   );
