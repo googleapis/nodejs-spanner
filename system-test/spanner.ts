@@ -1998,6 +1998,27 @@ describe('Spanner', () => {
         DATABASE.run('SELECT 1', done);
       });
 
+      it('should return metadata', async () => {
+        const [rows, , metadata] = await DATABASE.run({
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+          params: {id: ID},
+        });
+        assert.strictEqual(rows.length, 1);
+        assert.deepStrictEqual(rows[0].toJSON(), EXPECTED_ROW);
+        assert.ok(metadata);
+        assert.strictEqual(metadata.rowType!.fields!.length, 10);
+        assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
+        assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
+        assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
+        assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
+      });
+
       it('should fail invalid queries', done => {
         DATABASE.run('SELECT Apples AND Oranges', err => {
           assert.strictEqual(err!.code, 3);

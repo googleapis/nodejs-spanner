@@ -113,7 +113,11 @@ export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.I
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
-export type RunResponse = [Rows, spannerClient.spanner.v1.ResultSetStats];
+export type RunResponse = [
+  Rows,
+  spannerClient.spanner.v1.ResultSetStats,
+  spannerClient.spanner.v1.ResultSetMetadata
+];
 export type RunUpdateResponse = [number];
 
 export interface BatchUpdateCallback {
@@ -130,7 +134,8 @@ export interface RunCallback {
   (
     err: null | grpc.ServiceError,
     rows: Rows,
-    stats: spannerClient.spanner.v1.ResultSetStats
+    stats: spannerClient.spanner.v1.ResultSetStats,
+    metadata?: spannerClient.spanner.v1.ResultSetMetadata
   ): void;
 }
 
@@ -813,13 +818,19 @@ export class Snapshot extends EventEmitter {
     callback?: RunCallback
   ): void | Promise<RunResponse> {
     const rows: Rows = [];
-    let stats;
+    let stats: google.spanner.v1.ResultSetStats;
+    let metadata: google.spanner.v1.ResultSetMetadata;
 
     this.runStream(query)
       .on('error', callback!)
+      .on('response', response => {
+        if (response.metadata) {
+          metadata = response.metadata;
+        }
+      })
       .on('data', row => rows.push(row))
       .on('stats', _stats => (stats = _stats))
-      .on('end', () => callback!(null, rows, stats));
+      .on('end', () => callback!(null, rows, stats, metadata));
   }
 
   /**
