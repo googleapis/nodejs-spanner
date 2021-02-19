@@ -44,6 +44,7 @@ const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
+const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 
@@ -886,7 +887,7 @@ describe('Spanner', () => {
       output,
       new RegExp(
         `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
-          `(.+)${BACKUP_ID}`
+          `(.+)${BACKUP_ID} with version time (.+)`
       )
     );
   });
@@ -939,5 +940,26 @@ describe('Spanner', () => {
       `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
+  });
+
+  // create_database_with_version_retention_period
+  it('should create a database with a version retention period', async () => {
+    const output = execSync(
+      `${schemaCmd} createDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Waiting for operation on ${VERSION_RETENTION_DATABASE_ID} to complete...`
+      )
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Created database ${VERSION_RETENTION_DATABASE_ID} with version retention period.`
+      )
+    );
+    assert.include(output, 'Version retention period: 1d');
+    assert.include(output, 'Earliest version time:');
   });
 });

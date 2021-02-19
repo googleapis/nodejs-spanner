@@ -160,6 +160,10 @@ async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
   // [END spanner_query_data_with_new_column]
 }
 
+const {
+  createDatabaseWithVersionRetentionPeriod,
+} = require('./database-create-with-version-retention-period');
+
 require('yargs')
   .demand(1)
   .command(
@@ -185,9 +189,23 @@ require('yargs')
         opts.projectId
       )
   )
+  .command(
+    'createDatabaseWithVersionRetentionPeriod <instanceName> <databaseId> <projectId>',
+    'Creates a database with a version retention period.',
+    {},
+    opts =>
+      createDatabaseWithVersionRetentionPeriod(
+        opts.instanceName,
+        opts.databaseId,
+        opts.projectId
+      )
+  )
   .example('node $0 createDatabase "my-instance" "my-database" "my-project-id"')
   .example('node $0 addColumn "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryNewColumn "my-instance" "my-database" "my-project-id"')
+  .example(
+    'node $0 createDatabaseWithVersionRetentionPeriod "my-instance" "my-database-id" "my-project-id"'
+  )
   .wrap(120)
   .recommendCommands()
   .epilogue('For more information, see https://cloud.google.com/spanner/docs')
