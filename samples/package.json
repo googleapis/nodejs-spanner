@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@google-cloud/precise-date": "^2.0.0",
-    "@google-cloud/spanner": "^5.4.0",
+    "@google-cloud/spanner": "^5.5.0",
     "yargs": "^16.0.0"
   },
   "devDependencies": {

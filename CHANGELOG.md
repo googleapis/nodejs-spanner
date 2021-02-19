@@ -4,6 +4,25 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.4.0...v5.5.0) (2021-02-19)
+
+
+### Features
+
+* add option for returning Spanner commit stats ([#1297](https://www.github.com/googleapis/nodejs-spanner/issues/1297)) ([bc286e2](https://www.github.com/googleapis/nodejs-spanner/commit/bc286e24b1d6f83cd09bdaad2023e8347ab1d12e))
+* adds PITR fields to backup and database ([#1299](https://www.github.com/googleapis/nodejs-spanner/issues/1299)) ([d7556c8](https://www.github.com/googleapis/nodejs-spanner/commit/d7556c89b92e2a9ab65f1f928faf8c452bf24a7c))
+* adds style enumeration ([#1292](https://www.github.com/googleapis/nodejs-spanner/issues/1292)) ([dcf7013](https://www.github.com/googleapis/nodejs-spanner/commit/dcf7013907f8e232d0b99303a6d30be598944db9))
+* CommitStats in CommitResponse ([#1254](https://www.github.com/googleapis/nodejs-spanner/issues/1254)) ([e3730d2](https://www.github.com/googleapis/nodejs-spanner/commit/e3730d219fb395d1ce8416b1e7cdecb0c8ad995e))
+* Point In Time Recovery (PITR) ([#1250](https://www.github.com/googleapis/nodejs-spanner/issues/1250)) ([c53f677](https://www.github.com/googleapis/nodejs-spanner/commit/c53f677fe33ca5ed6fc65e8ee350f365d03a7642))
+* return ResultSetMetadata for query ([#1308](https://www.github.com/googleapis/nodejs-spanner/issues/1308)) ([6625ef2](https://www.github.com/googleapis/nodejs-spanner/commit/6625ef2168ade370596ffefe92fc75640cf9f6f1))
+
+
+### Bug Fixes
+
+* **deps:** update dependency google-auth-library to v7 ([#1305](https://www.github.com/googleapis/nodejs-spanner/issues/1305)) ([329c901](https://www.github.com/googleapis/nodejs-spanner/commit/329c901927885c6fd34f99c71abead15ff10f7d8))
+* **sample-test:** ensure instance is created before proceeding with tests ([#1291](https://www.github.com/googleapis/nodejs-spanner/issues/1291)) ([577357a](https://www.github.com/googleapis/nodejs-spanner/commit/577357ab8f8cdac70f5483312c7618c6e403fd26))
+* wrong gaxOptions argument in sample ([#1294](https://www.github.com/googleapis/nodejs-spanner/issues/1294)) ([8fec23a](https://www.github.com/googleapis/nodejs-spanner/commit/8fec23a28accbaa28cfb980bac406c50b1935e32))
+
 ## [5.4.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.3.0...v5.4.0) (2020-12-02)
 
 
