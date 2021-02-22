@@ -5117,6 +5117,9 @@ export namespace google {
 
                         /** Backup referencingDatabases */
                         referencingDatabases?: (string[]|null);
+
+                        /** Backup encryptionInfo */
+                        encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
                     }
 
                     /** Represents a Backup. */
@@ -5151,6 +5154,9 @@ export namespace google {
 
                         /** Backup referencingDatabases. */
                         public referencingDatabases: string[];
+
+                        /** Backup encryptionInfo. */
+                        public encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -5244,6 +5250,9 @@ export namespace google {
 
                         /** CreateBackupRequest backup */
                         backup?: (google.spanner.admin.database.v1.IBackup|null);
+
+                        /** CreateBackupRequest encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null);
                     }
 
                     /** Represents a CreateBackupRequest. */
@@ -5263,6 +5272,9 @@ export namespace google {
 
                         /** CreateBackupRequest backup. */
                         public backup?: (google.spanner.admin.database.v1.IBackup|null);
+
+                        /** CreateBackupRequest encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null);
 
                         /**
                          * Creates a new CreateBackupRequest instance using the specified properties.
@@ -6235,6 +6247,113 @@ export namespace google {
                         public toJSON(): { [k: string]: any };
                     }
 
+                    /** Properties of a CreateBackupEncryptionConfig. */
+                    interface ICreateBackupEncryptionConfig {
+
+                        /** CreateBackupEncryptionConfig encryptionType */
+                        encryptionType?: (google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType|null);
+
+                        /** CreateBackupEncryptionConfig kmsKeyName */
+                        kmsKeyName?: (string|null);
+                    }
+
+                    /** Represents a CreateBackupEncryptionConfig. */
+                    class CreateBackupEncryptionConfig implements ICreateBackupEncryptionConfig {
+
+                        /**
+                         * Constructs a new CreateBackupEncryptionConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICreateBackupEncryptionConfig);
+
+                        /** CreateBackupEncryptionConfig encryptionType. */
+                        public encryptionType: (google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType);
+
+                        /** CreateBackupEncryptionConfig kmsKeyName. */
+                        public kmsKeyName: string;
+
+                        /**
+                         * Creates a new CreateBackupEncryptionConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateBackupEncryptionConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICreateBackupEncryptionConfig): google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
+
+                        /**
+                         * Encodes the specified CreateBackupEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.verify|verify} messages.
+                         * @param message CreateBackupEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICreateBackupEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateBackupEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.verify|verify} messages.
+                         * @param message CreateBackupEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICreateBackupEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateBackupEncryptionConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateBackupEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
+
+                        /**
+                         * Decodes a CreateBackupEncryptionConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateBackupEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
+
+                        /**
+                         * Verifies a CreateBackupEncryptionConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateBackupEncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateBackupEncryptionConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CreateBackupEncryptionConfig;
+
+                        /**
+                         * Creates a plain object from a CreateBackupEncryptionConfig message. Also converts values to other types if specified.
+                         * @param message CreateBackupEncryptionConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CreateBackupEncryptionConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateBackupEncryptionConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace CreateBackupEncryptionConfig {
+
+                        /** EncryptionType enum. */
+                        enum EncryptionType {
+                            ENCRYPTION_TYPE_UNSPECIFIED = 0,
+                            USE_DATABASE_ENCRYPTION = 1,
+                            GOOGLE_DEFAULT_ENCRYPTION = 2,
+                            CUSTOMER_MANAGED_ENCRYPTION = 3
+                        }
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -6335,6 +6454,208 @@ export namespace google {
                          * @returns JSON object
                          */
                         public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an EncryptionConfig. */
+                    interface IEncryptionConfig {
+
+                        /** EncryptionConfig kmsKeyName */
+                        kmsKeyName?: (string|null);
+                    }
+
+                    /** Represents an EncryptionConfig. */
+                    class EncryptionConfig implements IEncryptionConfig {
+
+                        /**
+                         * Constructs a new EncryptionConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IEncryptionConfig);
+
+                        /** EncryptionConfig kmsKeyName. */
+                        public kmsKeyName: string;
+
+                        /**
+                         * Creates a new EncryptionConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns EncryptionConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IEncryptionConfig): google.spanner.admin.database.v1.EncryptionConfig;
+
+                        /**
+                         * Encodes the specified EncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionConfig.verify|verify} messages.
+                         * @param message EncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified EncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionConfig.verify|verify} messages.
+                         * @param message EncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an EncryptionConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns EncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.EncryptionConfig;
+
+                        /**
+                         * Decodes an EncryptionConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns EncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.EncryptionConfig;
+
+                        /**
+                         * Verifies an EncryptionConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an EncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns EncryptionConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.EncryptionConfig;
+
+                        /**
+                         * Creates a plain object from an EncryptionConfig message. Also converts values to other types if specified.
+                         * @param message EncryptionConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.EncryptionConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this EncryptionConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an EncryptionInfo. */
+                    interface IEncryptionInfo {
+
+                        /** EncryptionInfo encryptionType */
+                        encryptionType?: (google.spanner.admin.database.v1.EncryptionInfo.Type|keyof typeof google.spanner.admin.database.v1.EncryptionInfo.Type|null);
+
+                        /** EncryptionInfo encryptionStatus */
+                        encryptionStatus?: (google.rpc.IStatus|null);
+
+                        /** EncryptionInfo kmsKeyVersion */
+                        kmsKeyVersion?: (string|null);
+                    }
+
+                    /** Represents an EncryptionInfo. */
+                    class EncryptionInfo implements IEncryptionInfo {
+
+                        /**
+                         * Constructs a new EncryptionInfo.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IEncryptionInfo);
+
+                        /** EncryptionInfo encryptionType. */
+                        public encryptionType: (google.spanner.admin.database.v1.EncryptionInfo.Type|keyof typeof google.spanner.admin.database.v1.EncryptionInfo.Type);
+
+                        /** EncryptionInfo encryptionStatus. */
+                        public encryptionStatus?: (google.rpc.IStatus|null);
+
+                        /** EncryptionInfo kmsKeyVersion. */
+                        public kmsKeyVersion: string;
+
+                        /**
+                         * Creates a new EncryptionInfo instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns EncryptionInfo instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IEncryptionInfo): google.spanner.admin.database.v1.EncryptionInfo;
+
+                        /**
+                         * Encodes the specified EncryptionInfo message. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionInfo.verify|verify} messages.
+                         * @param message EncryptionInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IEncryptionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified EncryptionInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionInfo.verify|verify} messages.
+                         * @param message EncryptionInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IEncryptionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an EncryptionInfo message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns EncryptionInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.EncryptionInfo;
+
+                        /**
+                         * Decodes an EncryptionInfo message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns EncryptionInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.EncryptionInfo;
+
+                        /**
+                         * Verifies an EncryptionInfo message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an EncryptionInfo message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns EncryptionInfo
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.EncryptionInfo;
+
+                        /**
+                         * Creates a plain object from an EncryptionInfo message. Also converts values to other types if specified.
+                         * @param message EncryptionInfo
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.EncryptionInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this EncryptionInfo to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace EncryptionInfo {
+
+                        /** Type enum. */
+                        enum Type {
+                            TYPE_UNSPECIFIED = 0,
+                            GOOGLE_DEFAULT_ENCRYPTION = 1,
+                            CUSTOMER_MANAGED_ENCRYPTION = 2
+                        }
                     }
 
                     /** Represents a DatabaseAdmin */
@@ -6832,6 +7153,12 @@ export namespace google {
                         /** Database restoreInfo */
                         restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
 
+                        /** Database encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
+
+                        /** Database encryptionInfo */
+                        encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo[]|null);
+
                         /** Database versionRetentionPeriod */
                         versionRetentionPeriod?: (string|null);
 
@@ -6859,6 +7186,12 @@ export namespace google {
 
                         /** Database restoreInfo. */
                         public restoreInfo?: (google.spanner.admin.database.v1.IRestoreInfo|null);
+
+                        /** Database encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
+
+                        /** Database encryptionInfo. */
+                        public encryptionInfo: google.spanner.admin.database.v1.IEncryptionInfo[];
 
                         /** Database versionRetentionPeriod. */
                         public versionRetentionPeriod: string;
@@ -7157,6 +7490,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest extraStatements */
                         extraStatements?: (string[]|null);
+
+                        /** CreateDatabaseRequest encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
                     }
 
                     /** Represents a CreateDatabaseRequest. */
@@ -7176,6 +7512,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest extraStatements. */
                         public extraStatements: string[];
+
+                        /** CreateDatabaseRequest encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
 
                         /**
                          * Creates a new CreateDatabaseRequest instance using the specified properties.
@@ -8123,6 +8462,9 @@ export namespace google {
 
                         /** RestoreDatabaseRequest backup */
                         backup?: (string|null);
+
+                        /** RestoreDatabaseRequest encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null);
                     }
 
                     /** Represents a RestoreDatabaseRequest. */
@@ -8142,6 +8484,9 @@ export namespace google {
 
                         /** RestoreDatabaseRequest backup. */
                         public backup: string;
+
+                        /** RestoreDatabaseRequest encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null);
 
                         /** RestoreDatabaseRequest source. */
                         public source?: "backup";
@@ -8215,6 +8560,113 @@ export namespace google {
                          * @returns JSON object
                          */
                         public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a RestoreDatabaseEncryptionConfig. */
+                    interface IRestoreDatabaseEncryptionConfig {
+
+                        /** RestoreDatabaseEncryptionConfig encryptionType */
+                        encryptionType?: (google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType|null);
+
+                        /** RestoreDatabaseEncryptionConfig kmsKeyName */
+                        kmsKeyName?: (string|null);
+                    }
+
+                    /** Represents a RestoreDatabaseEncryptionConfig. */
+                    class RestoreDatabaseEncryptionConfig implements IRestoreDatabaseEncryptionConfig {
+
+                        /**
+                         * Constructs a new RestoreDatabaseEncryptionConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig);
+
+                        /** RestoreDatabaseEncryptionConfig encryptionType. */
+                        public encryptionType: (google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType);
+
+                        /** RestoreDatabaseEncryptionConfig kmsKeyName. */
+                        public kmsKeyName: string;
+
+                        /**
+                         * Creates a new RestoreDatabaseEncryptionConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns RestoreDatabaseEncryptionConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig): google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+
+                        /**
+                         * Encodes the specified RestoreDatabaseEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.verify|verify} messages.
+                         * @param message RestoreDatabaseEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified RestoreDatabaseEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.verify|verify} messages.
+                         * @param message RestoreDatabaseEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a RestoreDatabaseEncryptionConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns RestoreDatabaseEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+
+                        /**
+                         * Decodes a RestoreDatabaseEncryptionConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns RestoreDatabaseEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+
+                        /**
+                         * Verifies a RestoreDatabaseEncryptionConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a RestoreDatabaseEncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns RestoreDatabaseEncryptionConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig;
+
+                        /**
+                         * Creates a plain object from a RestoreDatabaseEncryptionConfig message. Also converts values to other types if specified.
+                         * @param message RestoreDatabaseEncryptionConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this RestoreDatabaseEncryptionConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace RestoreDatabaseEncryptionConfig {
+
+                        /** EncryptionType enum. */
+                        enum EncryptionType {
+                            ENCRYPTION_TYPE_UNSPECIFIED = 0,
+                            USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1,
+                            GOOGLE_DEFAULT_ENCRYPTION = 2,
+                            CUSTOMER_MANAGED_ENCRYPTION = 3
+                        }
                     }
 
                     /** Properties of a RestoreDatabaseMetadata. */
