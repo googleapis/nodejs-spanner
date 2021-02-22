@@ -849,7 +849,7 @@ describe('Spanner', () => {
     // in the query for 'size_bytes > 100' as the backup is empty because we
     // create it at its earliest version time, so it should appear 6 times.
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
-    assert.equal(count, 7);
+    assert.equal(count, 6);
   });
 
   // list_backup_operations
