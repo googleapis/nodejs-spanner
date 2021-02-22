@@ -845,8 +845,9 @@ describe('Spanner', () => {
     assert.include(output, 'Backups filtered by size:');
     assert.include(output, 'Ready backups filtered by create time:');
     assert.include(output, 'Get backups paginated:');
-    // BACKUP_ID should appear in each getBackups() call in the sample so it
-    // should appear 7 times.
+    // BACKUP_ID should appear in each getBackups() call in the sample except
+    // in the query for 'size_bytes > 100' as the backup is empty because we
+    // create it at its earliest version time, so it should appear 6 times.
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
     assert.equal(count, 7);
   });
