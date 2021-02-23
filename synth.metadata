@@ -4,15 +4,15 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "e3730d219fb395d1ce8416b1e7cdecb0c8ad995e"
+        "sha": "63051b60d5d1eec5e196207ce6077d38fbebcdae"
       }
     },
     {
       "git": {
         "name": "googleapis",
         "remote": "https://github.com/googleapis/googleapis.git",
-        "sha": "30eb779ddcc4f389df34d0802d081ef6c4559d6d",
-        "internalRef": "354462069"
+        "sha": "f829b1334cce86aa3738f3c0698d814b56664445",
+        "internalRef": "358725120"
       }
     },
     {
