@@ -115,9 +115,9 @@ describe('Spanner', () => {
     if (generateInstanceForTest) {
       // Deleting all backups before an instance can be deleted.
       await Promise.all(
-        RESOURCES_TO_CLEAN.filter(
-          resource => resource instanceof Backup
-        ).map(backup => backup.delete(GAX_OPTIONS))
+        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
+          backup => backup.delete(GAX_OPTIONS)
+        )
       );
       /**
        * Deleting instances created during this test.
@@ -125,9 +125,9 @@ describe('Spanner', () => {
        * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
        */
       await Promise.all(
-        RESOURCES_TO_CLEAN.filter(
-          resource => resource instanceof Instance
-        ).map(instance => instance.delete(GAX_OPTIONS))
+        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Instance).map(
+          instance => instance.delete(GAX_OPTIONS)
+        )
       );
     } else {
       /**
@@ -179,59 +179,31 @@ describe('Spanner', () => {
     }
 
     before(done => {
-      if (IS_EMULATOR_ENABLED) {
-        // Table without NUMERIC types since the emulator doesn't yet support
-        // this type.
-        DATABASE.updateSchema(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                BytesValue BYTES(MAX),
-                BoolValue BOOL,
-                DateValue DATE,
-                FloatValue FLOAT64,
-                IntValue INT64,
-                StringValue STRING(MAX),
-                TimestampValue TIMESTAMP,
-                BytesArray ARRAY<BYTES(MAX)>,
-                BoolArray ARRAY<BOOL>,
-                DateArray ARRAY<DATE>,
-                FloatArray ARRAY<FLOAT64>,
-                IntArray ARRAY<INT64>,
-                StringArray ARRAY<STRING(MAX)>,
-                TimestampArray ARRAY<TIMESTAMP>,
-                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-              ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
-        );
-      } else {
-        DATABASE.updateSchema(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                BytesValue BYTES(MAX),
-                BoolValue BOOL,
-                DateValue DATE,
-                FloatValue FLOAT64,
-                IntValue INT64,
-                NumericValue NUMERIC,
-                StringValue STRING(MAX),
-                TimestampValue TIMESTAMP,
-                BytesArray ARRAY<BYTES(MAX)>,
-                BoolArray ARRAY<BOOL>,
-                DateArray ARRAY<DATE>,
-                FloatArray ARRAY<FLOAT64>,
-                IntArray ARRAY<INT64>,
-                NumericArray ARRAY<NUMERIC>,
-                StringArray ARRAY<STRING(MAX)>,
-                TimestampArray ARRAY<TIMESTAMP>,
-                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-              ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
-        );
-      }
+      DATABASE.updateSchema(
+        `
+            CREATE TABLE ${TABLE_NAME} (
+              Key STRING(MAX) NOT NULL,
+              BytesValue BYTES(MAX),
+              BoolValue BOOL,
+              DateValue DATE,
+              FloatValue FLOAT64,
+              IntValue INT64,
+              NumericValue NUMERIC,
+              StringValue STRING(MAX),
+              TimestampValue TIMESTAMP,
+              BytesArray ARRAY<BYTES(MAX)>,
+              BoolArray ARRAY<BOOL>,
+              DateArray ARRAY<DATE>,
+              FloatArray ARRAY<FLOAT64>,
+              IntArray ARRAY<INT64>,
+              NumericArray ARRAY<NUMERIC>,
+              StringArray ARRAY<STRING(MAX)>,
+              TimestampArray ARRAY<TIMESTAMP>,
+              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+            ) PRIMARY KEY (Key)
+          `,
+        execAfterOperationComplete(done)
+      );
     });
 
     describe('uneven rows', () => {
@@ -558,12 +530,6 @@ describe('Spanner', () => {
     });
 
     describe('numerics', () => {
-      before(async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
-      });
-
       it('should write numeric values', done => {
         const value = Spanner.numeric('3.141592653');
 
@@ -1425,9 +1391,10 @@ describe('Spanner', () => {
         operationForCurrentBackupWithFilter!.metadata!.type_url,
         'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
       );
-      const operationForCurrentBackupWithFilterMetadata = CreateBackupMetadata.decode(
-        operationForCurrentBackupWithFilter!.metadata!.value! as Uint8Array
-      );
+      const operationForCurrentBackupWithFilterMetadata =
+        CreateBackupMetadata.decode(
+          operationForCurrentBackupWithFilter!.metadata!.value! as Uint8Array
+        );
       assert.strictEqual(
         operationForCurrentBackupWithFilterMetadata.database,
         database1.formattedName_
@@ -1731,10 +1698,10 @@ describe('Spanner', () => {
 
       const table = DATABASE.table('SingersComposite');
 
-      const keys = ([
+      const keys = [
         [id1, name1],
         [id2, name2],
-      ] as {}) as string[];
+      ] as {} as string[];
 
       return table
         .create(
@@ -1963,7 +1930,7 @@ describe('Spanner', () => {
           options
         )
           .then(data => {
-            const rows = (data[0] as {}) as Row[];
+            const rows = data[0] as {} as Row[];
             assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
             done();
           })
@@ -3072,8 +3039,7 @@ describe('Spanner', () => {
 
           it('should allow equality checks', done => {
             const query = {
-              sql:
-                'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
+              sql: 'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
                 structParam: Spanner.struct({
                   threadf: Spanner.int(1),
@@ -3945,7 +3911,7 @@ describe('Spanner', () => {
         DATABASE.getSnapshot((err, transaction) => {
           assert.ifError(err);
 
-          const query = ({
+          const query = {
             ranges: [
               {
                 startClosed: 'k0',
@@ -3953,7 +3919,7 @@ describe('Spanner', () => {
               },
             ],
             columns: ['Key'],
-          } as {}) as ReadRequest;
+          } as {} as ReadRequest;
 
           transaction!.read(table.name, query, (err, rows) => {
             assert.ifError(err);
@@ -4502,7 +4468,7 @@ describe('Spanner', () => {
           let err;
 
           try {
-            await txn.batchUpdate((null as unknown) as []);
+            await txn.batchUpdate(null as unknown as []);
           } catch (e) {
             err = e;
           }

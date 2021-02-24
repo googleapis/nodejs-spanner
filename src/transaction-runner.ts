@@ -24,12 +24,14 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
+import {google} from '../protos/protos';
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
-const RETRYABLE: grpc.status[] = [grpc.status.ABORTED, grpc.status.UNKNOWN];
+const RETRYABLE: grpc.status[] = [grpc.status.ABORTED];
 
 // tslint:disable-next-line variable-name
 const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
@@ -41,6 +43,7 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
  */
 export interface RunTransactionOptions {
   timeout?: number;
+  requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
 }
 
 /**

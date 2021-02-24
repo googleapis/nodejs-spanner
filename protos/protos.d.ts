@@ -3733,16 +3733,16 @@ export namespace google {
             constructor(properties?: google.protobuf.IValue);
 
             /** Value nullValue. */
-            public nullValue: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue);
+            public nullValue?: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue|null);
 
             /** Value numberValue. */
-            public numberValue: number;
+            public numberValue?: (number|null);
 
             /** Value stringValue. */
-            public stringValue: string;
+            public stringValue?: (string|null);
 
             /** Value boolValue. */
-            public boolValue: boolean;
+            public boolValue?: (boolean|null);
 
             /** Value structValue. */
             public structValue?: (google.protobuf.IStruct|null);
@@ -7461,6 +7461,9 @@ export namespace google {
 
                         /** Database earliestVersionTime */
                         earliestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Database defaultLeader */
+                        defaultLeader?: (string|null);
                     }
 
                     /** Represents a Database. */
@@ -7495,6 +7498,9 @@ export namespace google {
 
                         /** Database earliestVersionTime. */
                         public earliestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Database defaultLeader. */
+                        public defaultLeader: string;
 
                         /**
                          * Creates a new Database instance using the specified properties.
@@ -8786,7 +8792,7 @@ export namespace google {
                         public databaseId: string;
 
                         /** RestoreDatabaseRequest backup. */
-                        public backup: string;
+                        public backup?: (string|null);
 
                         /** RestoreDatabaseRequest encryptionConfig. */
                         public encryptionConfig?: (google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null);
@@ -9563,6 +9569,9 @@ export namespace google {
 
                         /** InstanceConfig replicas */
                         replicas?: (google.spanner.admin.instance.v1.IReplicaInfo[]|null);
+
+                        /** InstanceConfig leaderOptions */
+                        leaderOptions?: (string[]|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -9582,6 +9591,9 @@ export namespace google {
 
                         /** InstanceConfig replicas. */
                         public replicas: google.spanner.admin.instance.v1.IReplicaInfo[];
+
+                        /** InstanceConfig leaderOptions. */
+                        public leaderOptions: string[];
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
@@ -9669,6 +9681,9 @@ export namespace google {
                         /** Instance nodeCount */
                         nodeCount?: (number|null);
 
+                        /** Instance processingUnits */
+                        processingUnits?: (number|null);
+
                         /** Instance state */
                         state?: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State|null);
 
@@ -9699,6 +9714,9 @@ export namespace google {
 
                         /** Instance nodeCount. */
                         public nodeCount: number;
+
+                        /** Instance processingUnits. */
+                        public processingUnits: number;
 
                         /** Instance state. */
                         public state: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State);
@@ -12379,10 +12397,10 @@ export namespace google {
                 public queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact. */
-                public rowCountExact: (number|Long|string);
+                public rowCountExact?: (number|Long|string|null);
 
                 /** ResultSetStats rowCountLowerBound. */
-                public rowCountLowerBound: (number|Long|string);
+                public rowCountLowerBound?: (number|Long|string|null);
 
                 /** ResultSetStats rowCount. */
                 public rowCount?: ("rowCountExact"|"rowCountLowerBound");
@@ -12765,7 +12783,7 @@ export namespace google {
                     constructor(properties?: google.spanner.v1.TransactionOptions.IReadOnly);
 
                     /** ReadOnly strong. */
-                    public strong: boolean;
+                    public strong?: (boolean|null);
 
                     /** ReadOnly minReadTimestamp. */
                     public minReadTimestamp?: (google.protobuf.ITimestamp|null);
@@ -12979,7 +12997,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id: (Uint8Array|string);
+                public id?: (Uint8Array|string|null);
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -13361,7 +13379,8 @@ export namespace google {
                 BYTES = 7,
                 ARRAY = 8,
                 STRUCT = 9,
-                NUMERIC = 10
+                NUMERIC = 10,
+                JSON = 11
             }
 
             /** Represents a Spanner */
@@ -15976,7 +15995,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId: (Uint8Array|string);
+                public transactionId?: (Uint8Array|string|null);
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -16557,19 +16576,19 @@ export namespace google {
             public selector: string;
 
             /** HttpRule get. */
-            public get: string;
+            public get?: (string|null);
 
             /** HttpRule put. */
-            public put: string;
+            public put?: (string|null);
 
             /** HttpRule post. */
-            public post: string;
+            public post?: (string|null);
 
             /** HttpRule delete. */
-            public delete: string;
+            public delete?: (string|null);
 
             /** HttpRule patch. */
-            public patch: string;
+            public patch?: (string|null);
 
             /** HttpRule custom. */
             public custom?: (google.api.ICustomHttpPattern|null);

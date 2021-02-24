@@ -45,8 +45,7 @@ function insertUsingDml(instanceId, databaseId, projectId) {
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql:
-          'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
+        sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
         params: {
           firstName: 'Virginia',
           lastName: 'Watson',
@@ -654,16 +653,29 @@ async function insertWithCustomTimeoutAndRetrySettings(
   const UNAVAILABLE_STATUS_CODE = 14;
   const retryAndTimeoutSettings = {
     retry: {
+      // The set of error codes that will be retried.
       retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE, UNAVAILABLE_STATUS_CODE],
       backoffSettings: {
         // Configure retry delay settings.
+        // The initial amount of time to wait before retrying the request.
         initialRetryDelayMillis: 500,
+        // The maximum amount of time to wait before retrying. I.e. after this
+        // value is reached, the wait time will not increase further by the
+        // multiplier.
         maxRetryDelayMillis: 64000,
+        // The previous wait time is multiplied by this multiplier to come up
+        // with the next wait time, until the max is reached.
         retryDelayMultiplier: 1.5,
+
         // Configure RPC and total timeout settings.
+        // Timeout for the first RPC call. Subsequent retries will be based off
+        // this value.
         initialRpcTimeoutMillis: 60000,
+        // Controls the change of timeout for each retry.
         rpcTimeoutMultiplier: 1.0,
+        // The max for the per RPC timeout.
         maxRpcTimeoutMillis: 60000,
+        // The timeout for all calls (first call + all retries).
         totalTimeoutMillis: 60000,
       },
     },

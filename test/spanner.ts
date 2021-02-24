@@ -40,15 +40,19 @@ import {
   SessionPoolExhaustedError,
   SessionPoolOptions,
 } from '../src/session-pool';
-import {Json} from '../src/codec';
+import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
+import {PreciseDate} from '@google-cloud/precise-date';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
 import RequestOptions = google.spanner.v1.RequestOptions;
+import PartialResultSet = google.spanner.v1.PartialResultSet;
+import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 
 function numberToEnglishWord(num: number): string {
@@ -70,6 +74,7 @@ describe('Spanner with mock server', () => {
   const select1 = 'SELECT 1';
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
+  const selectAllTypes = 'SELECT * FROM TABLE_WITH_ALL_TYPES';
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
@@ -112,6 +117,10 @@ describe('Spanner with mock server', () => {
       mock.StatementResult.resultSet(mock.createSelect1ResultSet())
     );
     spannerMock.putStatementResult(
+      selectAllTypes,
+      mock.StatementResult.resultSet(mock.createResultSetWithAllDataTypes())
+    );
+    spannerMock.putStatementResult(
       invalidSql,
       mock.StatementResult.error(fooNotFoundErr)
     );
@@ -127,8 +136,8 @@ describe('Spanner with mock server', () => {
     // TODO(loite): Enable when SPANNER_EMULATOR_HOST is supported.
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
+    process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     spanner = new Spanner({
-      projectId: 'fake-project-id',
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -138,6 +147,7 @@ describe('Spanner with mock server', () => {
   });
 
   after(() => {
+    spanner.close();
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
@@ -180,13 +190,31 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should replace {{projectId}} in resource header', async () => {
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        await database.run(query);
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(CLOUD_RESOURCE_HEADER)[0],
+            `projects/test-project/instances/instance/databases/${database.id}`
+          );
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should execute query with requestOptions', async () => {
       const priority = RequestOptions.Priority.PRIORITY_HIGH;
       const database = newTestDatabase();
       try {
         const [rows] = await database.run({
           sql: selectSql,
-          requestOptions: {priority: priority},
+          requestOptions: {priority: priority, requestTag: 'request-tag'},
         });
         assert.strictEqual(rows.length, 3);
       } finally {
@@ -201,6 +229,7 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteSqlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_HIGH');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
     });
 
     it('should execute read with requestOptions', async () => {
@@ -209,7 +238,10 @@ describe('Spanner with mock server', () => {
       try {
         await snapshot.read('foo', {
           keySet: {all: true},
-          requestOptions: {priority: Priority.PRIORITY_MEDIUM},
+          requestOptions: {
+            priority: Priority.PRIORITY_MEDIUM,
+            requestTag: 'request-tag',
+          },
         });
       } catch (e) {
         // Ignore the fact that streaming read is unimplemented on the mock
@@ -228,15 +260,23 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ReadRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
     });
 
     it('should execute batchUpdate with requestOptions', async () => {
       const database = newTestDatabase();
-      await database.runTransactionAsync(tx => {
-        return tx!.batchUpdate([insertSql, insertSql], {
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
-        });
-      });
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          await tx!.batchUpdate([insertSql, insertSql], {
+            requestOptions: {
+              priority: RequestOptions.Priority.PRIORITY_MEDIUM,
+              requestTag: 'request-tag',
+            },
+          });
+          return await tx.commit();
+        }
+      );
       await database.close();
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteBatchDmlRequest).statements;
@@ -247,16 +287,36 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteBatchDmlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        commitRequest.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
 
     it('should execute update with requestOptions', async () => {
       const database = newTestDatabase();
-      await database.runTransactionAsync(tx => {
-        return tx!.runUpdate({
-          sql: insertSql,
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        });
-      });
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+            requestOptions: {
+              priority: RequestOptions.Priority.PRIORITY_LOW,
+              requestTag: 'request-tag',
+            },
+          });
+          return await tx.commit();
+        }
+      );
       await database.close();
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteSqlRequest).sql;
@@ -267,6 +327,59 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteSqlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        commitRequest.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+    });
+
+    it('should execute read with requestOptions in a read/write transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          try {
+            return await tx.read('foo', {
+              keySet: {all: true},
+              requestOptions: {
+                priority: Priority.PRIORITY_LOW,
+                requestTag: 'request-tag',
+              },
+            });
+          } catch (e) {
+            // Ignore the fact that streaming read is unimplemented on the mock
+            // server. We just want to verify that the correct request is sent.
+            assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+            return undefined;
+          } finally {
+            tx.end();
+          }
+        }
+      );
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ReadRequest).table === 'foo';
+      }) as v1.ReadRequest;
+      assert.ok(request, 'no ReadRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on ReadRequest'
+      );
+      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
 
     it('should return an array of json objects', async () => {
@@ -279,6 +392,179 @@ describe('Spanner with mock server', () => {
           i++;
           assert.strictEqual(row.NUM, i);
           assert.strictEqual(row.NAME, numberToEnglishWord(i));
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should support all data types', async () => {
+      const database = newTestDatabase();
+      try {
+        const [rows] = await database.run(selectAllTypes);
+        assert.strictEqual(rows.length, 3);
+        let i = 0;
+        (rows as Row[]).forEach(row => {
+          i++;
+          const [
+            boolCol,
+            int64Col,
+            float64Col,
+            numericCol,
+            stringCol,
+            bytesCol,
+            dateCol,
+            timestampCol,
+            arrayBoolCol,
+            arrayInt64Col,
+            arrayFloat64Col,
+            arrayNumericCol,
+            arrayStringCol,
+            arrayBytesCol,
+            arrayDateCol,
+            arrayTimestampCol,
+          ] = row;
+          if (i === 3) {
+            assert.ok(boolCol.value === null);
+            assert.ok(int64Col.value === null);
+            assert.ok(float64Col.value === null);
+            assert.ok(numericCol.value === null);
+            assert.ok(stringCol.value === null);
+            assert.ok(bytesCol.value === null);
+            assert.ok(dateCol.value === null);
+            assert.ok(timestampCol.value === null);
+            assert.ok(arrayBoolCol.value === null);
+            assert.ok(arrayInt64Col.value === null);
+            assert.ok(arrayFloat64Col.value === null);
+            assert.ok(arrayNumericCol.value === null);
+            assert.ok(arrayStringCol.value === null);
+            assert.ok(arrayBytesCol.value === null);
+            assert.ok(arrayDateCol.value === null);
+            assert.ok(arrayTimestampCol.value === null);
+          } else {
+            assert.strictEqual(boolCol.value, i === 1);
+            assert.deepStrictEqual(int64Col.value, new Int(`${i}`));
+            assert.deepStrictEqual(float64Col.value, new Float(3.14));
+            assert.deepStrictEqual(numericCol.value, new Numeric('6.626'));
+            assert.strictEqual(stringCol.value, numberToEnglishWord(i));
+            assert.deepStrictEqual(bytesCol.value, Buffer.from('test'));
+            assert.deepStrictEqual(
+              dateCol.value,
+              new SpannerDate('2021-05-11')
+            );
+            assert.deepStrictEqual(
+              timestampCol.value,
+              new PreciseDate('2021-05-11T16:46:04.872Z')
+            );
+            assert.deepStrictEqual(arrayBoolCol.value, [true, false, null]);
+            assert.deepStrictEqual(arrayInt64Col.value, [
+              new Int(`${i}`),
+              new Int(`${i}00`),
+              null,
+            ]);
+            assert.deepStrictEqual(arrayFloat64Col.value, [
+              new Float(3.14),
+              new Float(100.9),
+              null,
+            ]);
+            assert.deepStrictEqual(arrayNumericCol.value, [
+              new Numeric('6.626'),
+              new Numeric('100'),
+              null,
+            ]);
+            assert.deepStrictEqual(arrayStringCol.value, [
+              numberToEnglishWord(i),
+              'test',
+              null,
+            ]);
+            assert.deepStrictEqual(arrayBytesCol.value, [
+              Buffer.from('test1'),
+              Buffer.from('test2'),
+              null,
+            ]);
+            assert.deepStrictEqual(arrayDateCol.value, [
+              new SpannerDate('2021-05-12'),
+              new SpannerDate('2000-02-29'),
+              null,
+            ]);
+            assert.deepStrictEqual(arrayTimestampCol.value, [
+              new PreciseDate('2021-05-12T08:38:19.8474Z'),
+              new PreciseDate('2000-02-29T07:00:00Z'),
+              null,
+            ]);
+          }
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should support all data types as JSON', async () => {
+      const database = newTestDatabase();
+      try {
+        const [rows] = await database.run({sql: selectAllTypes, json: true});
+        assert.strictEqual(rows.length, 3);
+        let i = 0;
+        (rows as Json[]).forEach(row => {
+          i++;
+          if (i === 3) {
+            assert.ok(row.COLBOOL === null);
+            assert.ok(row.COLINT64 === null);
+            assert.ok(row.COLFLOAT64 === null);
+            assert.ok(row.COLNUMERIC === null);
+            assert.ok(row.COLSTRING === null);
+            assert.ok(row.COLBYTES === null);
+            assert.ok(row.COLDATE === null);
+            assert.ok(row.COLTIMESTAMP === null);
+            assert.ok(row.COLBOOLARRAY === null);
+            assert.ok(row.COLINT64ARRAY === null);
+            assert.ok(row.COLFLOAT64ARRAY === null);
+            assert.ok(row.COLNUMERICARRAY === null);
+            assert.ok(row.COLSTRINGARRAY === null);
+            assert.ok(row.COLBYTESARRAY === null);
+            assert.ok(row.COLDATEARRAY === null);
+            assert.ok(row.COLTIMESTAMPARRAY === null);
+          } else {
+            assert.strictEqual(row.COLBOOL, i === 1);
+            assert.strictEqual(row.COLINT64, i);
+            assert.strictEqual(row.COLFLOAT64, 3.14);
+            assert.deepStrictEqual(row.COLNUMERIC, new Numeric('6.626'));
+            assert.strictEqual(row.COLSTRING, numberToEnglishWord(i));
+            assert.deepStrictEqual(row.COLBYTES, Buffer.from('test'));
+            assert.deepStrictEqual(row.COLDATE, new SpannerDate('2021-05-11'));
+            assert.deepStrictEqual(
+              row.COLTIMESTAMP,
+              new PreciseDate('2021-05-11T16:46:04.872Z')
+            );
+            assert.deepStrictEqual(row.COLBOOLARRAY, [true, false, null]);
+            assert.deepStrictEqual(row.COLINT64ARRAY, [i, 100 * i, null]);
+            assert.deepStrictEqual(row.COLFLOAT64ARRAY, [3.14, 100.9, null]);
+            assert.deepStrictEqual(row.COLNUMERICARRAY, [
+              new Numeric('6.626'),
+              new Numeric('100'),
+              null,
+            ]);
+            assert.deepStrictEqual(row.COLSTRINGARRAY, [
+              numberToEnglishWord(i),
+              'test',
+              null,
+            ]);
+            assert.deepStrictEqual(row.COLBYTESARRAY, [
+              Buffer.from('test1'),
+              Buffer.from('test2'),
+              null,
+            ]);
+            assert.deepStrictEqual(row.COLDATEARRAY, [
+              new SpannerDate('2021-05-12'),
+              new SpannerDate('2000-02-29'),
+              null,
+            ]);
+            assert.deepStrictEqual(row.COLTIMESTAMPARRAY, [
+              new PreciseDate('2021-05-12T08:38:19.8474Z'),
+              new PreciseDate('2000-02-29T07:00:00Z'),
+              null,
+            ]);
+          }
         });
       } finally {
         await database.close();
@@ -673,6 +959,57 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should not retry UNAVAILABLE from executeStreamingSql when maxQueued was exceeded', async () => {
+      // Setup a query result with more than maxQueued (10) PartialResultSets.
+      // None of the PartialResultSets include a resume token.
+      const sql = 'SELECT C1 FROM TestTable';
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'C1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+      ];
+      const metadata = new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+      const results: PartialResultSet[] = [];
+      for (let i = 0; i < 12; i++) {
+        results.push(
+          PartialResultSet.create({
+            metadata,
+            values: [{stringValue: `V${i}`}],
+          })
+        );
+      }
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(results)
+      );
+      // Register an error after maxQueued has been exceeded.
+      const err = {
+        message: 'Temporary unavailable',
+        code: grpc.status.UNAVAILABLE,
+        details: 'Transient error',
+        streamIndex: 11,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+
+      const database = newTestDatabase();
+      try {
+        await database.run(sql);
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(e.message, '14 UNAVAILABLE: Transient error');
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should handle missing parameters in query', async () => {
       const sql =
         'SELECT * FROM tableId WHERE namedParameter = @namedParameter';
@@ -944,7 +1281,10 @@ describe('Spanner with mock server', () => {
 
   describe('queryOptions', () => {
     /** Common verify method for QueryOptions tests. */
-    function verifyQueryOptions(optimizerVersion: string) {
+    function verifyQueryOptions(
+      optimizerVersion: string,
+      optimizerStatisticsPackage: string
+    ) {
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteSqlRequest).sql;
       }) as v1.ExecuteSqlRequest;
@@ -957,20 +1297,28 @@ describe('Spanner with mock server', () => {
         request.queryOptions!.optimizerVersion,
         optimizerVersion
       );
+      assert.strictEqual(
+        request.queryOptions!.optimizerStatisticsPackage,
+        optimizerStatisticsPackage
+      );
     }
 
     describe('on request', () => {
+      const OPTIMIZER_VERSION = '100';
+      const OPTIMIZER_STATISTICS_PACKAGE = 'auto_20191128_14_47_22UTC';
+
       it('database.run', async () => {
         const query = {
           sql: selectSql,
           queryOptions: QueryOptions.create({
-            optimizerVersion: '100',
+            optimizerVersion: OPTIMIZER_VERSION,
+            optimizerStatisticsPackage: OPTIMIZER_STATISTICS_PACKAGE,
           }),
         } as ExecuteSqlRequest;
         const database = newTestDatabase();
         try {
           await database.run(query);
-          verifyQueryOptions('100');
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
         } finally {
           await database.close();
         }
@@ -980,14 +1328,15 @@ describe('Spanner with mock server', () => {
         const query = {
           sql: selectSql,
           queryOptions: QueryOptions.create({
-            optimizerVersion: '100',
+            optimizerVersion: OPTIMIZER_VERSION,
+            optimizerStatisticsPackage: OPTIMIZER_STATISTICS_PACKAGE,
           }),
         } as ExecuteSqlRequest;
         const database = newTestDatabase();
         try {
           const [snapshot] = await database.getSnapshot();
           await snapshot.run(query);
-          verifyQueryOptions('100');
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await snapshot.end();
         } finally {
           await database.close();
@@ -998,14 +1347,15 @@ describe('Spanner with mock server', () => {
         const query = {
           sql: selectSql,
           queryOptions: QueryOptions.create({
-            optimizerVersion: '100',
+            optimizerVersion: OPTIMIZER_VERSION,
+            optimizerStatisticsPackage: OPTIMIZER_STATISTICS_PACKAGE,
           }),
         } as ExecuteSqlRequest;
         const database = newTestDatabase();
         database.runTransaction(async (err, transaction) => {
           assert.ifError(err);
           await transaction!.run(query);
-          verifyQueryOptions('100');
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await transaction!.commit();
           await database.close();
           done();
@@ -1016,14 +1366,15 @@ describe('Spanner with mock server', () => {
         const query = {
           sql: selectSql,
           queryOptions: QueryOptions.create({
-            optimizerVersion: '100',
+            optimizerVersion: OPTIMIZER_VERSION,
+            optimizerStatisticsPackage: OPTIMIZER_STATISTICS_PACKAGE,
           }),
         } as ExecuteSqlRequest;
         const database = newTestDatabase();
         try {
           await database.runTransactionAsync(async transaction => {
             await transaction.run(query);
-            verifyQueryOptions('100');
+            verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
             await transaction.commit();
           });
         } finally {
@@ -1034,6 +1385,8 @@ describe('Spanner with mock server', () => {
 
     describe('with environment variable', () => {
       const OPTIMIZER_VERSION = '20';
+      const OPTIMIZER_STATISTICS_PACKAGE = 'auto_20191128_14_47_22UTC';
+
       let spannerWithEnvVar: Spanner;
       let instanceWithEnvVar: Instance;
 
@@ -1050,6 +1403,8 @@ describe('Spanner with mock server', () => {
 
       before(() => {
         process.env.SPANNER_OPTIMIZER_VERSION = OPTIMIZER_VERSION;
+        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE =
+          OPTIMIZER_STATISTICS_PACKAGE;
         spannerWithEnvVar = new Spanner({
           projectId: 'fake-project-id',
           servicePath: 'localhost',
@@ -1062,13 +1417,14 @@ describe('Spanner with mock server', () => {
 
       after(() => {
         delete process.env.SPANNER_OPTIMIZER_VERSION;
+        delete process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE;
       });
 
       it('database.run', async () => {
         const database = newTestDatabase();
         try {
           await database.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
         } finally {
           await database.close();
         }
@@ -1079,10 +1435,11 @@ describe('Spanner with mock server', () => {
         // as they are overridden by the environment variable.
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
+          optimizerStatisticsPackage: 'stats-package-in-db-opts',
         });
         try {
           await database.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
         } finally {
           await database.close();
         }
@@ -1095,9 +1452,10 @@ describe('Spanner with mock server', () => {
             sql: selectSql,
             queryOptions: {
               optimizerVersion: 'version-on-query',
+              optimizerStatisticsPackage: 'stats-package-on-query',
             },
           });
-          verifyQueryOptions('version-on-query');
+          verifyQueryOptions('version-on-query', 'stats-package-on-query');
         } finally {
           await database.close();
         }
@@ -1108,7 +1466,7 @@ describe('Spanner with mock server', () => {
         try {
           const [snapshot] = await database.getSnapshot();
           await snapshot.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await snapshot.end();
         } finally {
           await database.close();
@@ -1123,9 +1481,10 @@ describe('Spanner with mock server', () => {
             sql: selectSql,
             queryOptions: {
               optimizerVersion: 'version-on-query',
+              optimizerStatisticsPackage: 'stats-package-on-query',
             },
           });
-          verifyQueryOptions('version-on-query');
+          verifyQueryOptions('version-on-query', 'stats-package-on-query');
           await snapshot.end();
         } finally {
           await database.close();
@@ -1135,11 +1494,12 @@ describe('Spanner with mock server', () => {
       it('snapshot.run with database-with-query-options', async () => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
+          optimizerStatisticsPackage: 'stats-package-in-db-opts',
         });
         try {
           const [snapshot] = await database.getSnapshot();
           await snapshot.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await snapshot.end();
         } finally {
           await database.close();
@@ -1151,7 +1511,7 @@ describe('Spanner with mock server', () => {
         database.runTransaction(async (err, transaction) => {
           assert.ifError(err);
           await transaction!.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await transaction!.commit();
           await database.close();
           done();
@@ -1166,9 +1526,10 @@ describe('Spanner with mock server', () => {
             sql: selectSql,
             queryOptions: {
               optimizerVersion: 'version-on-query',
+              optimizerStatisticsPackage: 'stats-package-on-query',
             },
           });
-          verifyQueryOptions('version-on-query');
+          verifyQueryOptions('version-on-query', 'stats-package-on-query');
           await transaction!.commit();
           await database.close();
           done();
@@ -1178,11 +1539,12 @@ describe('Spanner with mock server', () => {
       it('transaction.run with database-with-query-options', done => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
+          optimizerStatisticsPackage: 'stats-package-in-db-opts',
         });
         database.runTransaction(async (err, transaction) => {
           assert.ifError(err);
           await transaction!.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await transaction!.commit();
           await database.close();
           done();
@@ -1194,7 +1556,7 @@ describe('Spanner with mock server', () => {
         try {
           await database.runTransactionAsync(async transaction => {
             await transaction.run(selectSql);
-            verifyQueryOptions(OPTIMIZER_VERSION);
+            verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
             await transaction.commit();
           });
         } finally {
@@ -1210,9 +1572,10 @@ describe('Spanner with mock server', () => {
               sql: selectSql,
               queryOptions: {
                 optimizerVersion: 'version-on-query',
+                optimizerStatisticsPackage: 'stats-package-on-query',
               },
             });
-            verifyQueryOptions('version-on-query');
+            verifyQueryOptions('version-on-query', 'stats-package-on-query');
             await transaction.commit();
           });
         } finally {
@@ -1223,11 +1586,12 @@ describe('Spanner with mock server', () => {
       it('async transaction.run with database-with-query-options', async () => {
         const database = newTestDatabase(undefined, {
           optimizerVersion: 'version-in-db-opts',
+          optimizerStatisticsPackage: 'stats-package-in-db-opts',
         });
         try {
           await database.runTransactionAsync(async transaction => {
             await transaction.run(selectSql);
-            verifyQueryOptions(OPTIMIZER_VERSION);
+            verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
             await transaction.commit();
           });
         } finally {
@@ -1238,11 +1602,13 @@ describe('Spanner with mock server', () => {
 
     describe('on database options', () => {
       const OPTIMIZER_VERSION = '40';
+      const OPTIMIZER_STATISTICS_PACKAGE = 'auto_20191128_14_47_22UTC';
 
       // Request a database with default query options.
       function newTestDatabase(options?: SessionPoolOptions): Database {
         return instance.database(`database-${dbCounter++}`, options, {
           optimizerVersion: OPTIMIZER_VERSION,
+          optimizerStatisticsPackage: OPTIMIZER_STATISTICS_PACKAGE,
         } as IQueryOptions);
       }
 
@@ -1250,7 +1616,7 @@ describe('Spanner with mock server', () => {
         const database = newTestDatabase();
         try {
           await database.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
         } finally {
           await database.close();
         }
@@ -1261,7 +1627,7 @@ describe('Spanner with mock server', () => {
         try {
           const [snapshot] = await database.getSnapshot();
           await snapshot.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await snapshot.end();
         } finally {
           await database.close();
@@ -1273,7 +1639,7 @@ describe('Spanner with mock server', () => {
         database.runTransaction(async (err, transaction) => {
           assert.ifError(err);
           await transaction!.run(selectSql);
-          verifyQueryOptions(OPTIMIZER_VERSION);
+          verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
           await transaction!.commit();
           await database.close();
           done();
@@ -1285,7 +1651,7 @@ describe('Spanner with mock server', () => {
         try {
           await database.runTransactionAsync(async transaction => {
             await transaction.run(selectSql);
-            verifyQueryOptions(OPTIMIZER_VERSION);
+            verifyQueryOptions(OPTIMIZER_VERSION, OPTIMIZER_STATISTICS_PACKAGE);
             await transaction.commit();
           });
         } finally {
@@ -1629,20 +1995,18 @@ describe('Spanner with mock server', () => {
 
     async function runAsyncTransactionWithExpectedSessionRetry(db: Database) {
       try {
-        await db.runTransactionAsync(
-          async (transaction): Promise<void> => {
-            try {
-              const [rows] = await transaction.run(selectSql);
-              assert.strictEqual(rows.length, 3);
-              const [sessions] = await db.getSessions();
-              assert.strictEqual(sessions!.length, 2);
-              await transaction.commit();
-              return Promise.resolve();
-            } catch (e) {
-              return Promise.reject(e);
-            }
+        await db.runTransactionAsync(async (transaction): Promise<void> => {
+          try {
+            const [rows] = await transaction.run(selectSql);
+            assert.strictEqual(rows.length, 3);
+            const [sessions] = await db.getSessions();
+            assert.strictEqual(sessions!.length, 2);
+            await transaction.commit();
+            return Promise.resolve();
+          } catch (e) {
+            return Promise.reject(e);
           }
-        );
+        });
         await db.close();
       } catch (e) {
         assert.fail(e);
@@ -1664,14 +2028,12 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                transaction.insert('FOO', {Id: 1, Name: 'foo'});
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              transaction.insert('FOO', {Id: 1, Name: 'foo'});
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -1697,15 +2059,13 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                const [updateCount] = await transaction.runUpdate(insertSql);
-                assert.strictEqual(updateCount, 1);
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              const [updateCount] = await transaction.runUpdate(insertSql);
+              assert.strictEqual(updateCount, 1);
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -1731,18 +2091,16 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                const [updateCounts] = await transaction.batchUpdate([
-                  insertSql,
-                  insertSql,
-                ]);
-                assert.deepStrictEqual(updateCounts, [1, 1]);
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              const [updateCounts] = await transaction.batchUpdate([
+                insertSql,
+                insertSql,
+              ]);
+              assert.deepStrictEqual(updateCounts, [1, 1]);
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -2042,7 +2400,7 @@ describe('Spanner with mock server', () => {
           await sleep(ms);
         }
         let maxWriteSessions = 0;
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 500; i++) {
           if (Math.random() < 0.8) {
             promises.push(database.run(query));
           } else {
@@ -2555,18 +2913,94 @@ describe('Spanner with mock server', () => {
           await database.close();
         }
       });
+
+      it('should use request options', async () => {
+        const database = newTestDatabase();
+        await database.runPartitionedUpdate({
+          sql: updateSql,
+          requestOptions: {
+            priority: Priority.PRIORITY_LOW,
+            requestTag: 'request-tag',
+          },
+        });
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.ok(
+          request.requestOptions,
+          'no requestOptions found on ExecuteSqlRequest'
+        );
+        assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+        assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+        await database.close();
+      });
+    });
+  });
+
+  describe('hand-crafted transaction', () => {
+    it('should use transactionTag on beginTransaction', async () => {
+      const database = newTestDatabase({min: 0});
+      const [session] = await database.createSession({});
+      const transaction = session.transaction(
+        {},
+        {transactionTag: 'transaction-tag'}
+      );
+      await transaction.begin();
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(request, 'no BeginTransactionRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on BeginTransactionRequest'
+      );
+      assert.strictEqual(request.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+    });
+
+    it('should use transactionTag on blind commit', async () => {
+      const database = newTestDatabase({min: 0});
+      const [session] = await database.createSession({});
+      const transaction = session.transaction(
+        {},
+        {transactionTag: 'transaction-tag'}
+      );
+      transaction.insert('foo', {id: 1, name: 'One'});
+      await transaction.commit();
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).singleUseTransaction?.readWrite;
+      }) as v1.CommitRequest;
+      assert.ok(request, 'no CommitRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on CommitRequest'
+      );
+      assert.strictEqual(request.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
   });
 
   describe('table', () => {
     it('should use requestOptions for mutations', async () => {
       const database = newTestDatabase();
-      await database
-        .table('foo')
-        .upsert(
-          {id: 1, name: 'bar'},
-          {requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM}}
-        );
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
+          requestOptions: {
+            priority: RequestOptions.Priority.PRIORITY_MEDIUM,
+            transactionTag: 'transaction-tag',
+          },
+        }
+      );
 
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).mutations;
@@ -2577,9 +3011,338 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on CommitRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
 
       await database.close();
     });
+  });
+
+  describe('chunking', () => {
+    it('should return each value only once when all partial results miss a resume token and the buffer size is exceeded', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const partials: PartialResultSet[] = [];
+      for (let i = 0; i < 11; i++) {
+        partials.push(
+          PartialResultSet.create({
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'Value'},
+              {
+                listValue: {
+                  values: [{stringValue: '1'}, {stringValue: '2'}],
+                },
+              },
+            ],
+          })
+        );
+      }
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(partials)
+      );
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 11);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked string value', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [{stringValue: 'This value is '}],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {stringValue: 'chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'One'}, {stringValue: 'Two'}],
+                },
+              },
+              {stringValue: 'This value is not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+            assert.strictEqual(rows[1].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked string value in an array', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'This value is not chunked'},
+              {listValue: {values: [{stringValue: 'On'}]}},
+            ],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {listValue: {values: [{stringValue: 'e'}, {stringValue: 'Two'}]}},
+              {stringValue: 'This value is also not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+            assert.strictEqual(
+              rows[1].ColString,
+              'This value is also not chunked'
+            );
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked list value', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'This value is not chunked'},
+              // The last value in this list value is a null value. A null value
+              // cannot be chunked, which means that in this case the list value
+              // itself is what is chunked.
+              {
+                listValue: {
+                  values: [
+                    {stringValue: 'One'},
+                    {nullValue: google.protobuf.NullValue.NULL_VALUE},
+                  ],
+                },
+              },
+            ],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {listValue: {values: [{stringValue: 'Two'}]}},
+              {stringValue: 'This value is also not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, [
+              'One',
+              null,
+              'Two',
+            ]);
+            assert.strictEqual(
+              rows[1].ColString,
+              'This value is also not chunked'
+            );
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should reset to the chunked value of the last PartialResultSet with a resume token on retry', async () => {
+      // This tests the following scenario:
+      // 1. PartialResultSet without resume token, no chunked value.
+      // 2. PartialResultSet with resume token and chunked value.
+      // 3. PartialResultSet without resume token and chunked value.
+      // 4. PartialResultSet without resume token and no chunked value.
+      // The stream breaks with UNAVAILABLE after receiving 3 but before
+      // receiving 4. This means that the stream must retry from PRS 2, and
+      // reset the pending value that should be merged with the next result to
+      // the chunked value that was returned by PRS 2 and not the one from PRS
+      // 3.
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        metadata: createMetadata(),
+        values: [
+          {stringValue: 'This value is not chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'One'}, {stringValue: 'Two'}],
+            },
+          },
+        ],
+      });
+      const prs2 = PartialResultSet.create({
+        resumeToken: Buffer.from('00000001'),
+        values: [{stringValue: 'This value is'}],
+        chunkedValue: true,
+      });
+      const prs3 = PartialResultSet.create({
+        values: [
+          {stringValue: ' chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+            },
+          },
+          {stringValue: 'This value is also'},
+        ],
+        chunkedValue: true,
+      });
+      const prs4 = PartialResultSet.create({
+        values: [
+          {stringValue: ' chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'Five'}, {stringValue: 'Six'}],
+            },
+          },
+        ],
+      });
+      setupResultsAndErrors(sql, [prs1, prs2, prs3, prs4], [3]);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 3);
+        assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+        assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+        assert.strictEqual(rows[1].ColString, 'This value is chunked');
+        assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+        assert.strictEqual(rows[2].ColString, 'This value is also chunked');
+        assert.deepStrictEqual(rows[2].ColStringArray, ['Five', 'Six']);
+      } finally {
+        await database.close();
+      }
+    });
+
+    function createMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'ColString',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'ColStringArray',
+          type: protobuf.Type.create({
+            code: protobuf.TypeCode.ARRAY,
+            arrayElementType: protobuf.Type.create({
+              code: protobuf.TypeCode.STRING,
+            }),
+          }),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
+
+    function setupResultsAndErrors(
+      sql: string,
+      results: PartialResultSet[],
+      errorOnIndexes: number[]
+    ) {
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(results)
+      );
+      if (errorOnIndexes.length) {
+        const errors: MockError[] = [];
+        for (const index of errorOnIndexes) {
+          errors.push({
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError);
+        }
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofErrors(errors)
+        );
+      }
+    }
   });
 
   describe('instanceAdmin', () => {
@@ -2710,6 +3473,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should create an instance with processing units', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          processingUnits: 500,
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.processingUnits, 500);
+      assert.strictEqual(createdInstance.nodeCount, 0);
+    });
+
     it('should update an instance', async () => {
       const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
       const [updatedInstance] = await instance
@@ -2784,25 +3570,23 @@ function executeSimpleUpdate(
   update: string | ExecuteSqlRequest
 ): Promise<number | [number]> {
   return database
-    .runTransactionAsync<[number]>(
-      (transaction): Promise<[number]> => {
-        return transaction
-          .runUpdate(update)
-          .then(rowCount => {
-            return rowCount;
-          })
-          .then(rowCount => {
-            return transaction.commit().then(() => rowCount);
-          })
-          .then(rowCount => {
-            return rowCount;
-          })
-          .catch(() => {
-            transaction.rollback().then(() => {});
-            return [-1];
-          });
-      }
-    )
+    .runTransactionAsync<[number]>((transaction): Promise<[number]> => {
+      return transaction
+        .runUpdate(update)
+        .then(rowCount => {
+          return rowCount;
+        })
+        .then(rowCount => {
+          return transaction.commit().then(() => rowCount);
+        })
+        .then(rowCount => {
+          return rowCount;
+        })
+        .catch(() => {
+          transaction.rollback().then(() => {});
+          return [-1];
+        });
+    })
     .then(updated => {
       return updated;
     });

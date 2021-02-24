@@ -56,6 +56,10 @@ async function createInstance(instanceId, projectId) {
   // [END spanner_create_instance]
 }
 
+const {
+  createInstanceWithProcessingUnits,
+} = require('./instance-with-processing-units');
+
 require('yargs')
   .demand(1)
   .command(
@@ -65,6 +69,15 @@ require('yargs')
     opts => createInstance(opts.instanceName, opts.projectId)
   )
   .example('node $0 createInstance "my-instance" "my-project-id"')
+  .command(
+    'createInstanceWithProcessingUnits <instanceName> <projectId>',
+    'Creates an example instance in a Cloud Spanner instance with processing units.',
+    {},
+    opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
+  )
+  .example(
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+  )
   .wrap(120)
   .recommendCommands()
   .epilogue('For more information, see https://cloud.google.com/spanner/docs')

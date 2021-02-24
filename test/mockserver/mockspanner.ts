@@ -18,6 +18,8 @@ import * as path from 'path';
 import {google} from '../../protos/protos';
 import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
+// eslint-disable-next-line node/no-extraneous-import
+import {Metadata} from '@grpc/grpc-js';
 import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
@@ -27,6 +29,7 @@ import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import NullValue = google.protobuf.NullValue;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -77,8 +80,11 @@ export class StatementResult {
     }
     throw new Error('The StatementResult does not contain an Error');
   }
-  private readonly _resultSet: protobuf.ResultSet | null;
-  get resultSet(): protobuf.ResultSet {
+  private readonly _resultSet:
+    | protobuf.ResultSet
+    | protobuf.PartialResultSet[]
+    | null;
+  get resultSet(): protobuf.ResultSet | protobuf.PartialResultSet[] {
     if (this._resultSet) {
       return this._resultSet;
     }
@@ -95,7 +101,7 @@ export class StatementResult {
   private constructor(
     type: StatementResultType,
     error: Error | null,
-    resultSet: protobuf.ResultSet | null,
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[] | null,
     updateCount: number | null
   ) {
     this._type = type;
@@ -116,7 +122,9 @@ export class StatementResult {
    * Create a StatementResult that will return a ResultSet or a stream of PartialResultSets.
    * @param resultSet The result set to return.
    */
-  static resultSet(resultSet: protobuf.ResultSet): StatementResult {
+  static resultSet(
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[]
+  ): StatementResult {
     return new StatementResult(
       StatementResultType.RESULT_SET,
       null,
@@ -215,6 +223,7 @@ interface Request {}
  */
 export class MockSpanner {
   private requests: Request[] = [];
+  private metadata: Metadata[] = [];
   private frozen = 0;
   private sessionCounter = 0;
   private sessions: Map<string, protobuf.Session> = new Map<
@@ -268,6 +277,7 @@ export class MockSpanner {
 
   resetRequests(): void {
     this.requests = [];
+    this.metadata = [];
   }
 
   /**
@@ -275,6 +285,13 @@ export class MockSpanner {
    */
   getRequests(): Request[] {
     return this.requests;
+  }
+
+  /**
+   * @return the metadata that have been received by this mock server.
+   */
+  getMetadata(): Metadata[] {
+    return this.metadata;
   }
 
   /**
@@ -411,6 +428,11 @@ export class MockSpanner {
     return undefined;
   }
 
+  private pushRequest(request: Request, metadata: Metadata): void {
+    this.requests.push(request);
+    this.metadata.push(metadata);
+  }
+
   batchCreateSessions(
     call: grpc.ServerUnaryCall<
       protobuf.BatchCreateSessionsRequest,
@@ -418,7 +440,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.BatchCreateSessionsCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.batchCreateSessions.name)
       .then(() => {
         const sessions = new Array<protobuf.Session>();
@@ -439,7 +461,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.createSession.name).then(() => {
       callback(null, this.newSession(call.request!.database));
     });
@@ -449,7 +471,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.GetSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.GetSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.getSession.name).then(() => {
       const session = this.sessions[call.request!.name];
       if (session) {
@@ -467,7 +489,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ListSessionsCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.listSessions.name).then(() => {
       callback(
         null,
@@ -487,7 +509,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.DeleteSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     if (this.sessions.delete(call.request!.name)) {
       callback(null, google.protobuf.Empty.create());
     } else {
@@ -499,7 +521,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.ExecuteSqlRequest, {}>,
     callback: protobuf.Spanner.ExecuteSqlCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('ExecuteSql is not yet implemented'));
   }
 
@@ -509,7 +531,7 @@ export class MockSpanner {
       protobuf.PartialResultSet
     >
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
         if (call.request!.transaction && call.request!.transaction.id) {
@@ -532,10 +554,14 @@ export class MockSpanner {
           let streamErr;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
-              partialResultSets = MockSpanner.toPartialResultSets(
-                res.resultSet,
-                call.request!.queryMode
-              );
+              if (Array.isArray(res.resultSet)) {
+                partialResultSets = res.resultSet;
+              } else {
+                partialResultSets = MockSpanner.toPartialResultSets(
+                  res.resultSet,
+                  call.request!.queryMode
+                );
+              }
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
                 call.request!.resumeToken.length === 0
@@ -677,7 +703,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
         if (call.request!.transaction && call.request!.transaction.id) {
@@ -768,12 +794,12 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.ReadRequest, {}>,
     callback: protobuf.Spanner.ReadCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('Read is not yet implemented'));
   }
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     call.emit(
       'error',
       createUnimplementedError('StreamingRead is not yet implemented')
@@ -788,7 +814,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.BeginTransactionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.beginTransaction.name)
       .then(() => {
         const session = this.sessions.get(call.request!.session);
@@ -828,7 +854,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CommitRequest, protobuf.CommitResponse>,
     callback: protobuf.Spanner.CommitCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.commit.name)
       .then(() => {
         if (call.request!.transactionId) {
@@ -844,23 +870,32 @@ export class MockSpanner {
         }
         const session = this.sessions.get(call.request!.session);
         if (session) {
-          const buffer = Buffer.from(call.request!.transactionId as string);
-          const transactionId = buffer.toString();
-          const fullTransactionId =
-            session.name + '/transactions/' + transactionId;
-          const transaction = this.transactions.get(fullTransactionId);
-          if (transaction) {
-            this.transactions.delete(fullTransactionId);
-            this.transactionOptions.delete(fullTransactionId);
+          if (call.request!.transactionId) {
+            const buffer = Buffer.from(call.request!.transactionId as string);
+            const transactionId = buffer.toString();
+            const fullTransactionId =
+              session.name + '/transactions/' + transactionId;
+            const transaction = this.transactions.get(fullTransactionId);
+            if (transaction) {
+              this.transactions.delete(fullTransactionId);
+              this.transactionOptions.delete(fullTransactionId);
+              callback(
+                null,
+                protobuf.CommitResponse.create({
+                  commitTimestamp: now(),
+                })
+              );
+            } else {
+              callback(
+                MockSpanner.createTransactionNotFoundError(fullTransactionId)
+              );
+            }
+          } else if (call.request!.singleUseTransaction) {
             callback(
               null,
               protobuf.CommitResponse.create({
                 commitTimestamp: now(),
               })
-            );
-          } else {
-            callback(
-              MockSpanner.createTransactionNotFoundError(fullTransactionId)
             );
           }
         } else {
@@ -878,7 +913,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.RollbackRequest, google.protobuf.Empty>,
     callback: protobuf.Spanner.RollbackCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     const session = this.sessions.get(call.request!.session);
     if (session) {
       const buffer = Buffer.from(call.request!.transactionId as string);
@@ -901,7 +936,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.PartitionQueryRequest, {}>,
     callback: protobuf.Spanner.PartitionQueryCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 
@@ -909,7 +944,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.PartitionReadRequest, {}>,
     callback: protobuf.Spanner.PartitionReadCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 }
@@ -1026,6 +1061,377 @@ export function createSelect1ResultSet(): protobuf.ResultSet {
   return protobuf.ResultSet.create({
     metadata,
     rows: [{values: [{stringValue: '1'}]}],
+  });
+}
+
+export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'COLBOOL',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLINT64',
+      type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLFLOAT64',
+      type: protobuf.Type.create({code: protobuf.TypeCode.FLOAT64}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLNUMERIC',
+      type: protobuf.Type.create({code: protobuf.TypeCode.NUMERIC}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLSTRING',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBYTES',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BYTES}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLDATE',
+      type: protobuf.Type.create({code: protobuf.TypeCode.DATE}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLTIMESTAMP',
+      type: protobuf.Type.create({code: protobuf.TypeCode.TIMESTAMP}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBOOLARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLINT64ARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLFLOAT64ARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.FLOAT64,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLNUMERICARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.NUMERIC,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLSTRINGARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.STRING,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBYTESARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.BYTES}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLDATEARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.DATE}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLTIMESTAMPARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.TIMESTAMP,
+        }),
+      }),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {
+        values: [
+          {boolValue: true},
+          {stringValue: '1'},
+          {numberValue: 3.14},
+          {stringValue: '6.626'},
+          {stringValue: 'One'},
+          {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '2021-05-11'},
+          {stringValue: '2021-05-11T16:46:04.872Z'},
+          {
+            listValue: {
+              values: [
+                {boolValue: true},
+                {boolValue: false},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '1'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {numberValue: 3.14},
+                {numberValue: 100.9},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '6.626'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: 'One'},
+                {stringValue: 'test'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: Buffer.from('test1').toString('base64')},
+                {stringValue: Buffer.from('test2').toString('base64')},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12'},
+                {stringValue: '2000-02-29'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12T08:38:19.8474Z'},
+                {stringValue: '2000-02-29T07:00:00Z'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {boolValue: false},
+          {stringValue: '2'},
+          {numberValue: 3.14},
+          {stringValue: '6.626'},
+          {stringValue: 'Two'},
+          {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '2021-05-11'},
+          {stringValue: '2021-05-11T16:46:04.872Z'},
+          {
+            listValue: {
+              values: [
+                {boolValue: true},
+                {boolValue: false},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2'},
+                {stringValue: '200'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {numberValue: 3.14},
+                {numberValue: 100.9},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '6.626'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: 'Two'},
+                {stringValue: 'test'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: Buffer.from('test1').toString('base64')},
+                {stringValue: Buffer.from('test2').toString('base64')},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12'},
+                {stringValue: '2000-02-29'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12T08:38:19.8474Z'},
+                {stringValue: '2000-02-29T07:00:00Z'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+        ],
+      },
+    ],
+  });
+}
+
+export function createResultSetWithStringArray(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'string1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'string2',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'bool1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'stringArray',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.STRING,
+        }),
+      }),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {
+        values: [
+          {stringValue: 'test1_1'},
+          {stringValue: 'test2_1'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'One'}, {stringValue: 'test 1'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_2'},
+          {stringValue: 'test2_2'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Two'}, {stringValue: 'test 2'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_3'},
+          {stringValue: 'test2_3'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Three'}, {stringValue: 'test 3'}],
+            },
+          },
+        ],
+      },
+    ],
   });
 }
 

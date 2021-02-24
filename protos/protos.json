@@ -2062,6 +2062,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "defaultLeader": {
+                              "type": "string",
+                              "id": 9,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -2695,6 +2702,11 @@
                               "rule": "repeated",
                               "type": "ReplicaInfo",
                               "id": 3
+                            },
+                            "leaderOptions": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 4
                             }
                           }
                         },
@@ -2722,6 +2734,10 @@
                             "nodeCount": {
                               "type": "int32",
                               "id": 5
+                            },
+                            "processingUnits": {
+                              "type": "int32",
+                              "id": 9
                             },
                             "state": {
                               "type": "State",
@@ -3431,7 +3447,8 @@
                     "BYTES": 7,
                     "ARRAY": 8,
                     "STRUCT": 9,
-                    "NUMERIC": 10
+                    "NUMERIC": 10,
+                    "JSON": 11
                   }
                 },
                 "Spanner": {

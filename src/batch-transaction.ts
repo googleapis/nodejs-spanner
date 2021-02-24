@@ -107,8 +107,9 @@ class BatchTransaction extends Snapshot {
    * @param {string|object} query A SQL query or
    *     [`ExecuteSqlRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ExecuteSqlRequest)
    *     object.
-   * @param {object} [query.gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @param {object} [query.gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.partitionOptions] A map of partition options.
    * @param {object} [query.types] A map of parameter types.
@@ -188,8 +189,9 @@ class BatchTransaction extends Snapshot {
    * @typedef {object} ReadPartition
    * @mixes ReadRequestOptions
    * @property {string} partitionToken The partition token.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} CreateReadPartitionsResponse
@@ -239,8 +241,8 @@ class BatchTransaction extends Snapshot {
    *
    * @param {ReadPartition|QueryParition} partition The partition object.
    * @param {object} [partition.gaxOptions] Request configuration options,
-   *     outlined here:
-   * https://googleapis.github.io/gax-nodejs/CallSettings.html.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {TransactionRequestReadCallback|RunCallback} [callback] Callback
    *     function.
    * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
@@ -308,7 +310,7 @@ class BatchTransaction extends Snapshot {
   }
   /**
    * @typedef {object} TransactionIdentifier
-   * @property {string} session The full session name.
+   * @property {string|Session} session The full session name.
    * @property {string} transaction The transaction ID.
    * @property {string|Date} readTimestamp The transaction read timestamp.
    */

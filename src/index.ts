@@ -92,6 +92,7 @@ export interface RequestConfig {
 export interface CreateInstanceRequest {
   config?: string;
   nodes?: number;
+  processingUnits?: number;
   displayName?: string;
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
@@ -157,6 +158,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
 
@@ -216,7 +218,7 @@ class Spanner extends GrpcService {
         }
       }
     }
-    options = (Object.assign(
+    options = Object.assign(
       {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
@@ -228,7 +230,7 @@ class Spanner extends GrpcService {
         grpc,
       },
       options || {}
-    ) as {}) as SpannerOptions;
+    ) as {} as SpannerOptions;
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -239,7 +241,7 @@ class Spanner extends GrpcService {
       options.port = emulatorHost.port;
       options.sslCreds = grpc.credentials.createInsecure();
     }
-    const config = ({
+    const config = {
       baseUrl:
         options.apiEndpoint ||
         options.servicePath ||
@@ -253,16 +255,29 @@ class Spanner extends GrpcService {
       },
       scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       packageJson: require('../../package.json'),
-    } as {}) as GrpcServiceConfig;
+    } as {} as GrpcServiceConfig;
     super(config, options);
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+  }
+
+  /** Closes this Spanner client and cleans up all resources used by it. */
+  close(): void {
+    this.clients_.forEach(c => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = c as any;
+      if (client.operationsClient && client.operationsClient.close) {
+        client.operationsClient.close();
+      }
+      client.close();
+    });
   }
 
   createInstance(
@@ -297,17 +312,17 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An operation object that can be used to check
+   * @property {google.longrunning.Operation} 1 An operation object that can be used to check
    *     the status of the request.
-   * @property {IOperation} 2 The full API response.
+   * @property {google.longrunning.IOperation} 2 The full API response.
    */
   /**
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An operation object that can be used to
+   * @param {google.longrunning.Operation} operation An operation object that can be used to
    *     check the status of the request.
-   * @param {IOperation} apiResponse The full API response.
+   * @param {google.longrunning.IOperation} apiResponse The full API response.
    */
   /**
    * Create an instance.
@@ -383,11 +398,23 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName,
-          nodeCount: config.nodes || 1,
+          nodeCount: config.nodes,
+          processingUnits: config.processingUnits,
         },
         config
       ),
     };
+
+    if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
+      throw new Error(
+        ['Only one of nodeCount or processingUnits can be specified.'].join('')
+      );
+    }
+    if (!reqOpts.instance.nodeCount && !reqOpts.instance.processingUnits) {
+      // If neither nodes nor processingUnits are specified, default to a
+      // nodeCount of 1.
+      reqOpts.instance.nodeCount = 1;
+    }
 
     delete reqOpts.instance.nodes;
     delete reqOpts.instance.gaxOptions;
@@ -424,8 +451,9 @@ class Spanner extends GrpcService {
    * Query object for listing instances.
    *
    * @typedef {object} GetInstancesOptions
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @property {string} [filter] An expression for filtering the results of the
    *     request. Filter rules are case insensitive. The fields eligible for
    *     filtering are:
@@ -644,9 +672,9 @@ class Spanner extends GrpcService {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
-
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetInstanceConfigsResponse
@@ -875,6 +903,34 @@ class Spanner extends GrpcService {
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId!);
+      // It would have been preferable to replace the projectId already in the
+      // constructor of Spanner, but that is not possible as auth.getProjectId
+      // is an async method. This is therefore the first place where we have
+      // access to the value that should be used instead of the placeholder.
+      if (!this.projectIdReplaced_) {
+        this.projectId = replaceProjectIdToken(this.projectId, projectId!);
+        this.projectFormattedName_ = replaceProjectIdToken(
+          this.projectFormattedName_,
+          projectId!
+        );
+        this.instances_.forEach(instance => {
+          instance.formattedName_ = replaceProjectIdToken(
+            instance.formattedName_,
+            projectId!
+          );
+          instance.databases_.forEach(database => {
+            database.formattedName_ = replaceProjectIdToken(
+              database.formattedName_,
+              projectId!
+            );
+          });
+        });
+        this.projectIdReplaced_ = true;
+      }
+      config.headers[CLOUD_RESOURCE_HEADER] = replaceProjectIdToken(
+        config.headers[CLOUD_RESOURCE_HEADER],
+        projectId!
+      );
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,

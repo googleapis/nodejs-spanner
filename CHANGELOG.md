@@ -4,6 +4,80 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.11.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.0...v5.11.1) (2021-07-07)
+
+
+### Bug Fixes
+
+* add close method to Spanner client ([#1416](https://www.github.com/googleapis/nodejs-spanner/issues/1416)) ([69cd0b4](https://www.github.com/googleapis/nodejs-spanner/commit/69cd0b474ab6c836724813fd8bea88ec2e1ac9f5)), closes [#1306](https://www.github.com/googleapis/nodejs-spanner/issues/1306)
+
+## [5.11.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.10.0...v5.11.0) (2021-07-01)
+
+
+### Features
+
+* **spanner:** add leader_options to InstanceConfig and default_leader to Database ([#1414](https://www.github.com/googleapis/nodejs-spanner/issues/1414)) ([e67adc2](https://www.github.com/googleapis/nodejs-spanner/commit/e67adc281d603d741af49d957eff05fd4184d38e))
+
+## [5.10.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.3...v5.10.0) (2021-06-30)
+
+
+### Features
+
+* create instances with processing units ([#1279](https://www.github.com/googleapis/nodejs-spanner/issues/1279)) ([05c2135](https://www.github.com/googleapis/nodejs-spanner/commit/05c213522a32627186ad9b474b416c1b9996df1f))
+
+
+### Bug Fixes
+
+* replace projectId placeholder in formatted names ([#1407](https://www.github.com/googleapis/nodejs-spanner/issues/1407)) ([4364d2b](https://www.github.com/googleapis/nodejs-spanner/commit/4364d2b25638384a6a1bea2e283b1219b4e5cdf3)), closes [#1375](https://www.github.com/googleapis/nodejs-spanner/issues/1375)
+
+### [5.9.3](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.2...v5.9.3) (2021-06-29)
+
+
+### Bug Fixes
+
+* **deps:** require google-gax v2.17.0 ([#1409](https://www.github.com/googleapis/nodejs-spanner/issues/1409)) ([080d82f](https://www.github.com/googleapis/nodejs-spanner/commit/080d82f455324d2010187904532032e7905e14ac))
+
+### [5.9.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.1...v5.9.2) (2021-06-25)
+
+
+### Bug Fixes
+
+* reset buffered chunked value before retry ([#1397](https://www.github.com/googleapis/nodejs-spanner/issues/1397)) ([da2ca7b](https://www.github.com/googleapis/nodejs-spanner/commit/da2ca7b15539119fada7869c206ad24460d8edfa)), closes [#1392](https://www.github.com/googleapis/nodejs-spanner/issues/1392)
+
+### [5.9.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.0...v5.9.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* make request optional in all cases ([#1400](https://www.github.com/googleapis/nodejs-spanner/issues/1400)) ([0b78770](https://www.github.com/googleapis/nodejs-spanner/commit/0b78770bfef6f463abb0f336999f7dfd61b5b2fe))
+
+## [5.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.1...v5.9.0) (2021-06-14)
+
+
+### Features
+
+* **spanner:** add processing_units to Instance resource ([#1398](https://www.github.com/googleapis/nodejs-spanner/issues/1398)) ([878cd3f](https://www.github.com/googleapis/nodejs-spanner/commit/878cd3f1596526b6e4e2457babd3dc2c2add11ad))
+
+### [5.8.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.0...v5.8.1) (2021-06-10)
+
+
+### Bug Fixes
+
+* unknown errors should not be retried ([#1388](https://www.github.com/googleapis/nodejs-spanner/issues/1388)) ([1d6f4e2](https://www.github.com/googleapis/nodejs-spanner/commit/1d6f4e2923bc1ac20c0a73c342332ec2ae259812)), closes [#1387](https://www.github.com/googleapis/nodejs-spanner/issues/1387)
+
+## [5.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.7.0...v5.8.0) (2021-06-07)
+
+
+### Features
+
+* support setting `optimizerStatisticsPackage` ([#1225](https://www.github.com/googleapis/nodejs-spanner/issues/1225)) ([dadc6dc](https://www.github.com/googleapis/nodejs-spanner/commit/dadc6dcf5c01e1bb380555fa9ea2ba9182af049c))
+
+
+### Bug Fixes
+
+* ensure table funcs accept gaxOptions directly ([#1371](https://www.github.com/googleapis/nodejs-spanner/issues/1371)) ([2c57c16](https://www.github.com/googleapis/nodejs-spanner/commit/2c57c1631a93d545bab52e309a5acd7641a747f3))
+* lint issue ([#1372](https://www.github.com/googleapis/nodejs-spanner/issues/1372)) ([3be0b4b](https://www.github.com/googleapis/nodejs-spanner/commit/3be0b4b51c8a76c7682101851d94e0611a87bc24))
+
 ## [5.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.1...v5.7.0) (2021-04-21)
 
 

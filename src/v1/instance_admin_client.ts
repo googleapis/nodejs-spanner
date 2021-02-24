@@ -27,11 +27,11 @@ import {
   PaginationCallback,
   GaxCall,
 } from 'google-gax';
-import * as path from 'path';
 
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+import jsonProtos = require('../../protos/protos.json');
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/instance_admin_client_config.json`.
@@ -162,27 +162,14 @@ export class InstanceAdminClient {
     }
     if (!opts.fallback) {
       clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
+    } else if (opts.fallback === 'rest') {
+      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    // For Node.js, pass the path to JSON proto file.
-    // For browsers, pass the JSON content.
-
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
-    this._protos = this._gaxGrpc.loadProto(
-      opts.fallback
-        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/protos.json')
-        : nodejsProtoPath
-    );
+    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
@@ -215,15 +202,11 @@ export class InstanceAdminClient {
       ),
     };
 
+    const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
+
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
     // rather than holding a request open.
-    const protoFilesRoot = opts.fallback
-      ? this._gaxModule.protobuf.Root.fromJSON(
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/protos.json')
-        )
-      : this._gaxModule.protobuf.loadSync(nodejsProtoPath);
 
     this.operationsClient = this._gaxModule
       .lro({
@@ -316,13 +299,14 @@ export class InstanceAdminClient {
     ];
     for (const methodName of instanceAdminStubMethods) {
       const callPromise = this.instanceAdminStub.then(
-        stub => (...args: Array<{}>) => {
-          if (this._terminated) {
-            return Promise.reject('The client has already been closed.');
-          }
-          const func = stub[methodName];
-          return func.apply(stub, args);
-        },
+        stub =>
+          (...args: Array<{}>) => {
+            if (this._terminated) {
+              return Promise.reject('The client has already been closed.');
+            }
+            const func = stub[methodName];
+            return func.apply(stub, args);
+          },
         (err: Error | null | undefined) => () => {
           throw err;
         }
@@ -401,7 +385,7 @@ export class InstanceAdminClient {
   // -- Service calls --
   // -------------------
   getInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -453,7 +437,7 @@ export class InstanceAdminClient {
    * const [response] = await client.getInstanceConfig(request);
    */
   getInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
+    request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -491,16 +475,15 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.getInstanceConfig(request, options, callback);
   }
   getInstance(
-    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -553,7 +536,7 @@ export class InstanceAdminClient {
    * const [response] = await client.getInstance(request);
    */
   getInstance(
-    request: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -588,16 +571,15 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.getInstance(request, options, callback);
   }
   deleteInstance(
-    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -659,7 +641,7 @@ export class InstanceAdminClient {
    * const [response] = await client.deleteInstance(request);
    */
   deleteInstance(
-    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -697,16 +679,15 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.deleteInstance(request, options, callback);
   }
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -760,7 +741,7 @@ export class InstanceAdminClient {
    * const [response] = await client.setIamPolicy(request);
    */
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -791,16 +772,15 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -852,7 +832,7 @@ export class InstanceAdminClient {
    * const [response] = await client.getIamPolicy(request);
    */
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -883,16 +863,15 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -947,7 +926,7 @@ export class InstanceAdminClient {
    * const [response] = await client.testIamPermissions(request);
    */
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -978,17 +957,16 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
   createInstance(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1085,7 +1063,7 @@ export class InstanceAdminClient {
    * const [response] = await operation.promise();
    */
   createInstance(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1125,11 +1103,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.createInstance(request, options, callback);
   }
@@ -1171,7 +1148,7 @@ export class InstanceAdminClient {
     >;
   }
   updateInstance(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1272,7 +1249,7 @@ export class InstanceAdminClient {
    * const [response] = await operation.promise();
    */
   updateInstance(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1312,11 +1289,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'instance.name': request.instance!.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'instance.name': request.instance!.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.updateInstance(request, options, callback);
   }
@@ -1358,7 +1334,7 @@ export class InstanceAdminClient {
     >;
   }
   listInstanceConfigs(
-    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1418,7 +1394,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   listInstanceConfigs(
-    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -1453,11 +1429,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listInstanceConfigs(request, options, callback);
   }
@@ -1497,11 +1472,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listInstanceConfigs.createStream(
@@ -1552,22 +1526,21 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listInstanceConfigs.asyncIterate(
       this.innerApiCalls['listInstanceConfigs'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
   listInstances(
-    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1646,7 +1619,7 @@ export class InstanceAdminClient {
    *   for more details and examples.
    */
   listInstances(
-    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -1681,11 +1654,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listInstances(request, options, callback);
   }
@@ -1744,11 +1716,10 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listInstances.createStream(
@@ -1818,17 +1789,16 @@ export class InstanceAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listInstances.asyncIterate(
       this.innerApiCalls['listInstances'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance>;
   }

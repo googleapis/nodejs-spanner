@@ -180,8 +180,8 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.callInvocationTransformer': fakeGrpcGcp()
-        .gcpCallInvocationTransformer,
+      'grpc.callInvocationTransformer':
+        fakeGrpcGcp().gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
       'grpc.gcpApiConfig': {
         calledWith_: apiConfig,
@@ -557,6 +557,7 @@ describe('Spanner', () => {
             name: PATH,
             displayName: NAME,
             nodeCount: 1,
+            processingUnits: undefined,
             config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
           },
         });
@@ -585,6 +586,32 @@ describe('Spanner', () => {
       };
 
       spanner.createInstance(NAME, config, assert.ifError);
+    });
+
+    it('should create an instance with processing units', done => {
+      const processingUnits = 500;
+      const config = Object.assign({}, CONFIG, {processingUnits});
+
+      spanner.request = config => {
+        assert.strictEqual(
+          config.reqOpts.instance.processingUnits,
+          processingUnits
+        );
+        assert.strictEqual(config.reqOpts.instance.nodeCount, undefined);
+        done();
+      };
+
+      spanner.createInstance(NAME, config, assert.ifError);
+    });
+
+    it('should throw if both nodes and processingUnits are given', () => {
+      const nodeCount = 1;
+      const processingUnits = 500;
+      const config = Object.assign({}, CONFIG, {nodeCount, processingUnits});
+
+      assert.throws(() => {
+        spanner.createInstance(NAME, config);
+      }, /Only one of nodeCount or processingUnits can be specified\./);
     });
 
     it('should accept gaxOptions', done => {
@@ -1373,8 +1400,10 @@ describe('Spanner', () => {
       const replacedReqOpts = {};
 
       replaceProjectIdTokenOverride = (reqOpts, projectId) => {
-        assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
-        assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
+        if (typeof reqOpts === 'object') {
+          assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
+          assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
+        }
         assert.strictEqual(projectId, PROJECT_ID);
         return replacedReqOpts;
       };

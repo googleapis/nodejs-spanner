@@ -27,11 +27,11 @@ import {
   PaginationCallback,
   GaxCall,
 } from 'google-gax';
-import * as path from 'path';
 
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+import jsonProtos = require('../../protos/protos.json');
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/database_admin_client_config.json`.
@@ -147,27 +147,14 @@ export class DatabaseAdminClient {
     }
     if (!opts.fallback) {
       clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
+    } else if (opts.fallback === 'rest') {
+      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    // For Node.js, pass the path to JSON proto file.
-    // For browsers, pass the JSON content.
-
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
-    this._protos = this._gaxGrpc.loadProto(
-      opts.fallback
-        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/protos.json')
-        : nodejsProtoPath
-    );
+    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
@@ -213,15 +200,11 @@ export class DatabaseAdminClient {
       ),
     };
 
+    const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
+
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
     // rather than holding a request open.
-    const protoFilesRoot = opts.fallback
-      ? this._gaxModule.protobuf.Root.fromJSON(
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/protos.json')
-        )
-      : this._gaxModule.protobuf.loadSync(nodejsProtoPath);
 
     this.operationsClient = this._gaxModule
       .lro({
@@ -343,13 +326,14 @@ export class DatabaseAdminClient {
     ];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
-        stub => (...args: Array<{}>) => {
-          if (this._terminated) {
-            return Promise.reject('The client has already been closed.');
-          }
-          const func = stub[methodName];
-          return func.apply(stub, args);
-        },
+        stub =>
+          (...args: Array<{}>) => {
+            if (this._terminated) {
+              return Promise.reject('The client has already been closed.');
+            }
+            const func = stub[methodName];
+            return func.apply(stub, args);
+          },
         (err: Error | null | undefined) => () => {
           throw err;
         }
@@ -428,7 +412,7 @@ export class DatabaseAdminClient {
   // -- Service calls --
   // -------------------
   getDatabase(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -477,7 +461,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getDatabase(request);
    */
   getDatabase(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -512,16 +496,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.getDatabase(request, options, callback);
   }
   dropDatabase(
-    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -571,7 +554,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.dropDatabase(request);
    */
   dropDatabase(
-    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -606,16 +589,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.dropDatabase(request, options, callback);
   }
   getDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -670,7 +652,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getDatabaseDdl(request);
    */
   getDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -708,16 +690,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.getDatabaseDdl(request, options, callback);
   }
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -773,7 +754,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.setIamPolicy(request);
    */
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -804,16 +785,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -868,7 +848,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getIamPolicy(request);
    */
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -899,16 +879,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -967,7 +946,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.testIamPermissions(request);
    */
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -998,16 +977,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      resource: request.resource || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        resource: request.resource || '',
+      });
     this.initialize();
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
   getBackup(
-    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1057,7 +1035,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getBackup(request);
    */
   getBackup(
-    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1092,16 +1070,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.getBackup(request, options, callback);
   }
   updateBackup(
-    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1158,7 +1135,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.updateBackup(request);
    */
   updateBackup(
-    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1193,16 +1170,15 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'backup.name': request.backup!.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        'backup.name': request.backup!.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.updateBackup(request, options, callback);
   }
   deleteBackup(
-    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1252,7 +1228,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.deleteBackup(request);
    */
   deleteBackup(
-    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1287,17 +1263,16 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.deleteBackup(request, options, callback);
   }
 
   createDatabase(
-    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1376,7 +1351,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   createDatabase(
-    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1416,11 +1391,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.createDatabase(request, options, callback);
   }
@@ -1462,7 +1436,7 @@ export class DatabaseAdminClient {
     >;
   }
   updateDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1546,7 +1520,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   updateDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1586,11 +1560,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.updateDatabaseDdl(request, options, callback);
   }
@@ -1632,7 +1605,7 @@ export class DatabaseAdminClient {
     >;
   }
   createBackup(
-    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1716,7 +1689,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   createBackup(
-    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1756,11 +1729,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.createBackup(request, options, callback);
   }
@@ -1802,7 +1774,7 @@ export class DatabaseAdminClient {
     >;
   }
   restoreDatabase(
-    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1893,7 +1865,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   restoreDatabase(
-    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1933,11 +1905,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.restoreDatabase(request, options, callback);
   }
@@ -1979,7 +1950,7 @@ export class DatabaseAdminClient {
     >;
   }
   listDatabases(
-    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2038,7 +2009,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listDatabases(
-    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2073,11 +2044,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listDatabases(request, options, callback);
   }
@@ -2116,11 +2086,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listDatabases.createStream(
@@ -2170,22 +2139,21 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
   listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2283,7 +2251,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2318,11 +2286,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listBackups(request, options, callback);
   }
@@ -2398,11 +2365,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listBackups.createStream(
@@ -2489,22 +2455,21 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
   listDatabaseOperations(
-    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2612,7 +2577,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listDatabaseOperations(
-    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2647,11 +2612,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listDatabaseOperations(
       request,
@@ -2736,11 +2700,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.createStream(
@@ -2832,22 +2795,21 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2955,7 +2917,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2990,11 +2952,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     this.initialize();
     return this.innerApiCalls.listBackupOperations(request, options, callback);
   }
@@ -3073,11 +3034,10 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listBackupOperations.createStream(
@@ -3167,17 +3127,16 @@ export class DatabaseAdminClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      parent: request.parent || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }

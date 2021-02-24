@@ -71,12 +71,12 @@ describe('Backup', () => {
   // tslint:disable-next-line variable-name
   let Backup: typeof bu.Backup;
 
-  const INSTANCE = ({
+  const INSTANCE = {
     request: util.noop,
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
-  } as {}) as Instance;
+  } as {} as Instance;
 
   const BACKUP_NAME = 'backup-name';
   const DATABASE_NAME = 'database-name';

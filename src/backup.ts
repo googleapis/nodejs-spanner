@@ -68,7 +68,8 @@ type IBackupTranslatedEnum = TranslateEnumKeys<
 export type GetMetadataResponse = [IBackupTranslatedEnum];
 type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
-type UpdateExpireTimeCallback = RequestCallback<databaseAdmin.spanner.admin.database.v1.IBackup>;
+type UpdateExpireTimeCallback =
+  RequestCallback<databaseAdmin.spanner.admin.database.v1.IBackup>;
 
 type DeleteCallback = RequestCallback<databaseAdmin.protobuf.IEmpty>;
 
@@ -123,18 +124,18 @@ class Backup {
    *     expireTime The expire time of the backup.
    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     versionTime Take a backup of the state of the database at this time.
-   * @property {databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
+   * @property {google.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
    *     encryptionConfig An encryption configuration describing the
    *     encryption type and key resources in Cloud KMS to be used to encrypt
    *     the backup.
-   * @property {CallOptions} [gaxOptions] The request configuration options
-   *     outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @property {object} [gaxOptions] The request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
    */
@@ -142,7 +143,7 @@ class Backup {
    * @callback CreateBackupCallback
    * @param {?Error} err Request error, if any.
    * @param {Backup} backup The new {@link Backup}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */
@@ -152,8 +153,8 @@ class Backup {
    * @method Backup#create
    * @param {CreateBackupOptions} options Parameters for creating a backup.
    * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} When resolved, the backup
    *     operation will have started, but will not have necessarily completed.
@@ -183,15 +184,16 @@ class Backup {
     callback?: CreateBackupCallback
   ): Promise<CreateBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
-      parent: this.instanceFormattedName_,
-      backupId: this.id,
-      backup: {
-        database: options.databasePath,
-        expireTime: Spanner.timestamp(options.expireTime).toStruct(),
-        name: this.formattedName_,
-      },
-    };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest =
+      {
+        parent: this.instanceFormattedName_,
+        backupId: this.id,
+        backup: {
+          database: options.databasePath,
+          expireTime: Spanner.timestamp(options.expireTime).toStruct(),
+          name: this.formattedName_,
+        },
+      };
     if ('versionTime' in options) {
       reqOpts.backup!.versionTime = Spanner.timestamp(
         options.versionTime
@@ -201,7 +203,9 @@ class Backup {
       'encryptionConfig' in options &&
       (options as CreateBackupOptions).encryptionConfig
     ) {
-      reqOpts.encryptionConfig = (options as CreateBackupOptions).encryptionConfig;
+      reqOpts.encryptionConfig = (
+        options as CreateBackupOptions
+      ).encryptionConfig;
     }
     this.request(
       {
@@ -242,8 +246,9 @@ class Backup {
    * @see {@link #getExpireTime}
    *
    * @method Backup#getMetadata
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
@@ -411,8 +416,9 @@ class Backup {
    * @method Backup#updateExpireTime
    * @param {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     expireTime The expiry time to update with.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {UpdateExpireTimeCallback} [callback] Callback function.
    * @returns {Promise<google.spanner.admin.database.v1.IBackup>} When resolved,
    *     the backup's expire time will have been updated.
@@ -439,15 +445,16 @@ class Backup {
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
         : {};
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest = {
-      backup: {
-        name: this.formattedName_,
-        expireTime: Spanner.timestamp(expireTime).toStruct(),
-      },
-      updateMask: {
-        paths: ['expire_time'],
-      },
-    };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateBackupRequest =
+      {
+        backup: {
+          name: this.formattedName_,
+          expireTime: Spanner.timestamp(expireTime).toStruct(),
+        },
+        updateMask: {
+          paths: ['expire_time'],
+        },
+      };
     this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
         client: 'DatabaseAdminClient',
@@ -469,8 +476,9 @@ class Backup {
    * Deletes a backup.
    *
    * @method Backup#delete
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DeleteBackupCallback} [callback] Callback function.
    * @returns {Promise<void>} When resolved, the backup will have been deleted.
    *
@@ -493,9 +501,10 @@ class Backup {
       typeof gaxOptionsOrCallback === 'object'
         ? (gaxOptionsOrCallback as CallOptions)
         : {};
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest = {
-      name: this.formattedName_,
-    };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDeleteBackupRequest =
+      {
+        name: this.formattedName_,
+      };
     this.request<databaseAdmin.spanner.admin.database.v1.IBackup>(
       {
         client: 'DatabaseAdminClient',

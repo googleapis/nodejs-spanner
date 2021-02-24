@@ -113,7 +113,8 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
+export type BeginTransactionCallback =
+  NormalCallback<spannerClient.spanner.v1.ITransaction>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -124,6 +125,10 @@ export type RunResponse = [
 ];
 export type RunUpdateResponse = [number];
 
+export interface BatchUpdateOptions {
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  gaxOptions?: CallOptions;
+}
 export interface BatchUpdateCallback {
   (
     err: null | BatchUpdateError,
@@ -151,7 +156,8 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
+export type CommitCallback =
+  NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
 /**
  * @typedef {object} TimestampBounds
@@ -218,6 +224,7 @@ export class Snapshot extends EventEmitter {
   session: Session;
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
+  requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
 
   /**
    * The transaction ID.
@@ -306,8 +313,9 @@ export class Snapshot extends EventEmitter {
    *
    * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {TransactionBeginCallback} [callback] Callback function.
    * @returns {Promise<TransactionBeginResponse>}
    *
@@ -340,6 +348,14 @@ export class Snapshot extends EventEmitter {
       session,
       options,
     };
+
+    // Only hand crafted read-write transactions will be able to set a
+    // transaction tag for the BeginTransaction RPC. Also, this.requestOptions
+    // is only set in the constructor of Transaction, which is the constructor
+    // for read/write transactions.
+    if (this.requestOptions) {
+      reqOpts.requestOptions = this.requestOptions;
+    }
 
     this.request(
       {
@@ -400,15 +416,33 @@ export class Snapshot extends EventEmitter {
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
    * @typedef {object} ReadRequest
-   * @property {string[]|string[][]} [keys] The primary keys of the rows in this table to be
+   * @property {string} table The name of the table in the database to be read.
+   * @property {string[]} columns The columns of the table to be returned for each
+   *     row matching this query.
+   * @property {string[]|string[][]} keys The primary or index keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
    * @property {KeyRange[]} [ranges] An alternative to the keys property; this can
-   *       be used to define a range of keys to be yielded.
+   *     be used to define a range of keys to be yielded.
+   * @property {string} [index] The name of an index on the table if a
+   *     different index than the primary key should be used to determine which rows to return.
    * @property {boolean} [json=false] Receive the rows as serialized objects. This
    *     is the equivalent of calling `toJSON()` on each row.
-   * @property {JSONOptions} [jsonOptions] Configuration options for the
-   *     serialized objects.
+   * @property {JSONOptions} [jsonOptions] Configuration options for the serialized
+   *     objects.
+   * @property {object} [keySet] Defines a collection of keys and/or key ranges to
+   *     read.
+   * @property {number} [limit] The number of rows to yield.
+   * @property {Buffer} [partitionToken]
+   *     If present, results will be restricted to the specified partition
+   *     previously created using PartitionRead(). There must be an exact
+   *     match for the values of fields common to this message and the
+   *     PartitionReadRequest message used to create this partition_token.
+   * @property {google.spanner.v1.RequestOptions} [requestOptions]
+   *     Common options for this request.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * Create a readable object stream to receive rows from the database using key
@@ -517,7 +551,8 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -535,13 +570,22 @@ export class Snapshot extends EventEmitter {
     delete request.maxResumeRetries;
     delete request.keys;
     delete request.ranges;
+    delete request.requestOptions;
 
-    const reqOpts: ReadRequest = Object.assign(request, {
-      session: this.session.formattedName_!,
-      transaction,
-      table,
-      keySet,
-    });
+    const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
+      request,
+      {
+        session: this.session.formattedName_!,
+        requestOptions: this.configureTagOptions(
+          typeof transaction.singleUse !== 'undefined',
+          this.requestOptions?.transactionTag!,
+          requestOptions
+        ),
+        transaction,
+        table,
+        keySet,
+      }
+    );
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       return this.requestStream({
@@ -614,7 +658,7 @@ export class Snapshot extends EventEmitter {
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
-   * @typedef {array} TransactionReadResponse
+   * @typedef {array} ReadResponse
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
@@ -624,7 +668,7 @@ export class Snapshot extends EventEmitter {
    * Spanner.Int}.
    */
   /**
-   * @callback TransactionReadCallback
+   * @callback ReadCallback
    * @param {?Error} err Request error, if any.
    * @param {array[]} rows Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
@@ -645,8 +689,8 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} query Configuration object. See official
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
    *     API documentation.
-   * @param {TransactionRequestReadCallback} [callback] Callback function.
-   * @returns {Promise<TransactionRequestReadResponse>}
+   * @param {ReadCallback} [callback] Callback function.
+   * @returns {Promise<ReadResponse>}
    *
    * @example
    * const query = {
@@ -849,7 +893,19 @@ export class Snapshot extends EventEmitter {
    * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
    *
    * @typedef {object} ExecuteSqlRequest
+   * @property {string} resumeToken The token used to resume getting results.
+   * @property {google.spanner.v1.ExecuteSqlRequest.QueryMode} queryMode Query plan and
+   *     execution statistics for the SQL statement that
+   *     produced this result set.
+   * @property {string} partitionToken The partition token.
+   * @property {number} seqno The Sequence number.
    * @property {string} sql The SQL string.
+   * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
+   *     Default query options to use with the database. These options will be
+   *     overridden by any query options set in environment variables or that
+   *     are specified on a per-query basis.
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
    * @property {Object.<string, *>} [params] A map of parameter names to values.
    * @property {Object.<string, (string|ParamType)>} [types] A map of parameter
    *     names to types. If omitted the client will attempt to guess for all
@@ -858,6 +914,14 @@ export class Snapshot extends EventEmitter {
    *     is the equivalent of calling `toJSON()` on each row.
    * @property {JSONOptions} [jsonOptions] Configuration options for the
    *     serialized objects.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   *  @property {number} [maxResumeRetries] The maximum number of times that the
+   *     stream will retry to push data downstream, when the downstream indicates
+   *     that it is not ready for any more data. Increase this value if you
+   *     experience 'Stream is still not ready to receive data' errors as a
+   *     result of a slow writer in your receiving stream.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -924,7 +988,8 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      query;
     let reqOpts;
 
     const sanitizeRequest = () => {
@@ -940,10 +1005,17 @@ export class Snapshot extends EventEmitter {
       delete query.json;
       delete query.jsonOptions;
       delete query.maxResumeRetries;
+      delete query.requestOptions;
       delete query.types;
+
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
         seqno: this._seqno++,
+        requestOptions: this.configureTagOptions(
+          typeof transaction.singleUse !== 'undefined',
+          this.requestOptions?.transactionTag!,
+          requestOptions
+        ),
         transaction,
         params,
         paramTypes,
@@ -975,6 +1047,22 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
     });
+  }
+
+  /**
+   *
+   * @private
+   */
+  configureTagOptions(
+    singleUse?: boolean,
+    transactionTag?: string,
+    requestOptions = {}
+  ): IRequestOptions | null {
+    if (!singleUse && transactionTag) {
+      (requestOptions as IRequestOptions).transactionTag = transactionTag;
+    }
+
+    return requestOptions!;
   }
 
   /**
@@ -1030,11 +1118,15 @@ export class Snapshot extends EventEmitter {
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
-      readOnly.minReadTimestamp = (options.minReadTimestamp as PreciseDate).toStruct();
+      readOnly.minReadTimestamp = (
+        options.minReadTimestamp as PreciseDate
+      ).toStruct();
     }
 
     if (options.readTimestamp instanceof PreciseDate) {
-      readOnly.readTimestamp = (options.readTimestamp as PreciseDate).toStruct();
+      readOnly.readTimestamp = (
+        options.readTimestamp as PreciseDate
+      ).toStruct();
     }
 
     if (typeof options.maxStaleness === 'number') {
@@ -1106,7 +1198,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end'],
+  exclude: ['configureTagOptions', 'end'],
 });
 
 /**
@@ -1267,12 +1359,14 @@ export class Transaction extends Dml {
   constructor(
     session: Session,
     options = {} as spannerClient.spanner.v1.TransactionOptions.ReadWrite,
-    queryOptions?: IQueryOptions
+    queryOptions?: IQueryOptions,
+    requestOptions?: Pick<IRequestOptions, 'transactionTag'>
   ) {
     super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+    this.requestOptions = requestOptions;
   }
 
   batchUpdate(
@@ -1296,6 +1390,14 @@ export class Transaction extends Dml {
    *     statements that were executed successfully before this error occurred.
    */
   /**
+   * @typedef {object} BatchUpdateOptions
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @property {google.spanner.v1.IRequestOptions} [requestOptions] The request options to include
+   *     with the commit request.
+   */
+  /**
    * @typedef {array} BatchUpdateResponse
    * @property {number[]} 0 Affected row counts.
    * @property {object} 1 The full API response.
@@ -1317,8 +1419,9 @@ export class Transaction extends Dml {
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BatchUpdateOptions} [options] Options for configuring the request.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
@@ -1369,22 +1472,25 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(
-      query => {
+    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] =
+      queries.map(query => {
         if (typeof query === 'string') {
           return {sql: query};
         }
         const {sql} = query;
         const {params, paramTypes} = Snapshot.encodeParams(query);
         return {sql, params, paramTypes};
-      }
-    );
+      });
 
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
+      requestOptions: this.configureTagOptions(
+        false,
+        this.requestOptions?.transactionTag!,
+        (options as BatchUpdateOptions).requestOptions
+      ),
       transaction: {id: this.id!},
       seqno: this._seqno++,
-      requestOptions: (options as BatchUpdateOptions).requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
@@ -1456,13 +1562,13 @@ export class Transaction extends Dml {
   commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
-   * @property {IRequestOptions} requestOptions The request options to include
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
-   * @property {CallOptions} [gaxOptions] The request configuration options
-   *     outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @property {object} [gaxOptions] The request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {object} CommitResponse
@@ -1542,6 +1648,10 @@ export class Transaction extends Dml {
     ) {
       reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
     }
+    reqOpts.requestOptions = Object.assign(
+      requestOptions || {},
+      this.requestOptions
+    );
 
     this.request(
       {
@@ -1734,8 +1844,9 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#rollback}
    * @see [Rollback API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Rollback)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
