@@ -24,6 +24,8 @@ import {Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {isSessionNotFoundError} from './session-pool';
 import {Database} from './database';
+import {google} from '../protos/protos';
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jsonProtos = require('../protos/protos.json');
@@ -41,6 +43,7 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
  */
 export interface RunTransactionOptions {
   timeout?: number;
+  requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
 }
 
 /**

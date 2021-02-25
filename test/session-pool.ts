@@ -579,7 +579,7 @@ describe('SessionPool', () => {
   });
 
   describe('release', () => {
-    let prepStub: sinon.SinonStub<[Session], Promise<void>>;
+    let prepStub;
 
     beforeEach(() => {
       prepStub = sandbox.stub(sessionPool, '_prepareTransaction').resolves();

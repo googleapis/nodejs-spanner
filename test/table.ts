@@ -70,7 +70,7 @@ describe('Table', () => {
   let transaction: FakeTransaction;
 
   const DATABASE = {
-    runTransaction: callback => callback(null, transaction),
+    runTransaction: (opts, callback) => callback(null, transaction),
     getSnapshot: (options, callback) => callback(null, transaction),
   };
 
@@ -246,7 +246,7 @@ describe('Table', () => {
 
       sandbox
         .stub(DATABASE, 'runTransaction')
-        .callsFake(callback => callback(fakeError));
+        .callsFake((opts, callback) => callback(fakeError));
 
       table.deleteRows(KEYS, err => {
         assert.strictEqual(err, fakeError);
@@ -333,7 +333,7 @@ describe('Table', () => {
 
       sandbox
         .stub(DATABASE, 'runTransaction')
-        .callsFake(callback => callback(fakeError));
+        .callsFake((opts, callback) => callback(fakeError));
 
       table.insert(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -471,7 +471,7 @@ describe('Table', () => {
 
       sandbox
         .stub(DATABASE, 'runTransaction')
-        .callsFake(callback => callback(fakeError));
+        .callsFake((opts, callback) => callback(fakeError));
 
       table.replace(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -545,7 +545,7 @@ describe('Table', () => {
 
       sandbox
         .stub(DATABASE, 'runTransaction')
-        .callsFake(callback => callback(fakeError));
+        .callsFake((opts, callback) => callback(fakeError));
 
       table.update(ROW, err => {
         assert.strictEqual(err, fakeError);
@@ -619,7 +619,7 @@ describe('Table', () => {
 
       sandbox
         .stub(DATABASE, 'runTransaction')
-        .callsFake(callback => callback(fakeError));
+        .callsFake((opts, callback) => callback(fakeError));
 
       table.upsert(ROW, err => {
         assert.strictEqual(err, fakeError);

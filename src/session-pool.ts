@@ -579,9 +579,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {GetWriteSessionCallback} callback The callback function.
    */
-  getWriteSession(callback: GetWriteSessionCallback): void {
+  getWriteSession(callback?: GetWriteSessionCallback): void {
     this._acquire(types.ReadWrite).then(
-      session => callback(null, session, session.txn!),
+      session => callback!(null, session, session.txn!),
       callback
     );
   }
