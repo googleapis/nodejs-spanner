@@ -37,7 +37,6 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
-  const [metadata] = await database.getMetadata();
 
   const backup = instance.backup(backupId);
 
@@ -47,12 +46,17 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const databasePath = database.formattedName_;
     // Expire backup 14 days in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
-    // Create a backup of the state of the database at the earliest possible
-    // version time.
+    // Version time is the server's current time
+    const query = {
+      sql: "SELECT CURRENT_TIMESTAMP() as Timestamp",
+    };
+    const [rows] = await database.run(query);
+    const versionTime = rows[0].toJSON().Timestamp;
+    // Create a backup of the state of the database at the current time.
     const [, operation] = await backup.create({
       databasePath: databasePath,
       expireTime: expireTime,
-      versionTime: metadata.earliestVersionTime,
+      versionTime: versionTime,
     });
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
