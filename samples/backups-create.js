@@ -48,7 +48,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
     // Version time is the server's current time
     const query = {
-      sql: "SELECT CURRENT_TIMESTAMP() as Timestamp",
+      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
     };
     const [rows] = await database.run(query);
     const versionTime = rows[0].toJSON().Timestamp;
