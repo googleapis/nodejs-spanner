@@ -15,7 +15,13 @@
 
 'use strict';
 
-async function createBackup(instanceId, databaseId, backupId, projectId, versionTime) {
+async function createBackup(
+  instanceId,
+  databaseId,
+  backupId,
+  projectId,
+  versionTime
+) {
   // [START spanner_create_backup]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
