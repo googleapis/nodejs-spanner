@@ -825,7 +825,7 @@ describe('Spanner', () => {
       sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
     };
     const [rows] = await database.run(query);
-    const versionTime = rows[0].toJSON().Timestamp;
+    const versionTime = rows[0].toJSON().Timestamp.toISOString();
 
     const output = execSync(
       `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
