@@ -819,8 +819,16 @@ describe('Spanner', () => {
 
   // create_backup
   it('should create a backup of the database', async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    const query = {
+      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
+    };
+    const [rows] = await database.run(query);
+    const versionTime = rows[0].toJSON().Timestamp;
+
     const output = execSync(
-      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
     );
     assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
   });

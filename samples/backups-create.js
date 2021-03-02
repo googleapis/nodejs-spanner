@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function createBackup(instanceId, databaseId, backupId, projectId) {
+async function createBackup(instanceId, databaseId, backupId, projectId, versionTime) {
   // [START spanner_create_backup]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
@@ -28,6 +28,7 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
+  // const versionTime = Date.now() - 1000 * 60 * 60 * 24; // One day ago
 
   // Creates a client
   const spanner = new Spanner({
@@ -46,12 +47,6 @@ async function createBackup(instanceId, databaseId, backupId, projectId) {
     const databasePath = database.formattedName_;
     // Expire backup 14 days in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
-    // Version time is the server's current time
-    const query = {
-      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
-    };
-    const [rows] = await database.run(query);
-    const versionTime = rows[0].toJSON().Timestamp;
     // Create a backup of the state of the database at the current time.
     const [, operation] = await backup.create({
       databasePath: databasePath,

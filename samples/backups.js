@@ -27,7 +27,7 @@ const {deleteBackup} = require('./backups-delete');
 require('yargs')
   .demand(1)
   .command(
-    'createBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'createBackup <instanceName> <databaseName> <backupName> <projectId> <versionTime>',
     'Creates a backup of a Cloud Spanner database.',
     {},
     opts =>
@@ -35,7 +35,8 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
-        opts.projectId
+        opts.projectId,
+        Date.parse(opts.versionTime)
       )
   )
   .command(
