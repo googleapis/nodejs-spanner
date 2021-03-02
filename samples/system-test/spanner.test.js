@@ -819,8 +819,16 @@ describe('Spanner', () => {
 
   // create_backup
   it('should create a backup of the database', async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    const query = {
+      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
+    };
+    const [rows] = await database.run(query);
+    const versionTime = rows[0].toJSON().Timestamp.toISOString();
+
     const output = execSync(
-      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
     );
     assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
   });
@@ -845,11 +853,8 @@ describe('Spanner', () => {
     assert.include(output, 'Backups filtered by size:');
     assert.include(output, 'Ready backups filtered by create time:');
     assert.include(output, 'Get backups paginated:');
-    // BACKUP_ID should appear in each getBackups() call in the sample except
-    // in the query for 'size_bytes > 100' as the backup is empty because we
-    // create it at its earliest version time, so it should appear 6 times.
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
-    assert.equal(count, 6);
+    assert.equal(count, 7);
   });
 
   // list_backup_operations
