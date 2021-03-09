@@ -3839,6 +3839,10 @@
                         "optimizerVersion": {
                           "type": "string",
                           "id": 1
+                        },
+                        "optimizerStatisticsPackage": {
+                          "type": "string",
+                          "id": 2
                         }
                       }
                     },

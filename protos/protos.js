@@ -34658,6 +34658,7 @@
                          * @memberof google.spanner.v1.ExecuteSqlRequest
                          * @interface IQueryOptions
                          * @property {string|null} [optimizerVersion] QueryOptions optimizerVersion
+                         * @property {string|null} [optimizerStatisticsPackage] QueryOptions optimizerStatisticsPackage
                          */
     
                         /**
@@ -34682,6 +34683,14 @@
                          * @instance
                          */
                         QueryOptions.prototype.optimizerVersion = "";
+    
+                        /**
+                         * QueryOptions optimizerStatisticsPackage.
+                         * @member {string} optimizerStatisticsPackage
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @instance
+                         */
+                        QueryOptions.prototype.optimizerStatisticsPackage = "";
     
                         /**
                          * Creates a new QueryOptions instance using the specified properties.
@@ -34709,6 +34718,8 @@
                                 writer = $Writer.create();
                             if (message.optimizerVersion != null && Object.hasOwnProperty.call(message, "optimizerVersion"))
                                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.optimizerVersion);
+                            if (message.optimizerStatisticsPackage != null && Object.hasOwnProperty.call(message, "optimizerStatisticsPackage"))
+                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.optimizerStatisticsPackage);
                             return writer;
                         };
     
@@ -34745,6 +34756,9 @@
                                 switch (tag >>> 3) {
                                 case 1:
                                     message.optimizerVersion = reader.string();
+                                    break;
+                                case 2:
+                                    message.optimizerStatisticsPackage = reader.string();
                                     break;
                                 default:
                                     reader.skipType(tag & 7);
@@ -34784,6 +34798,9 @@
                             if (message.optimizerVersion != null && message.hasOwnProperty("optimizerVersion"))
                                 if (!$util.isString(message.optimizerVersion))
                                     return "optimizerVersion: string expected";
+                            if (message.optimizerStatisticsPackage != null && message.hasOwnProperty("optimizerStatisticsPackage"))
+                                if (!$util.isString(message.optimizerStatisticsPackage))
+                                    return "optimizerStatisticsPackage: string expected";
                             return null;
                         };
     
@@ -34801,6 +34818,8 @@
                             var message = new $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions();
                             if (object.optimizerVersion != null)
                                 message.optimizerVersion = String(object.optimizerVersion);
+                            if (object.optimizerStatisticsPackage != null)
+                                message.optimizerStatisticsPackage = String(object.optimizerStatisticsPackage);
                             return message;
                         };
     
@@ -34817,10 +34836,14 @@
                             if (!options)
                                 options = {};
                             var object = {};
-                            if (options.defaults)
+                            if (options.defaults) {
                                 object.optimizerVersion = "";
+                                object.optimizerStatisticsPackage = "";
+                            }
                             if (message.optimizerVersion != null && message.hasOwnProperty("optimizerVersion"))
                                 object.optimizerVersion = message.optimizerVersion;
+                            if (message.optimizerStatisticsPackage != null && message.hasOwnProperty("optimizerStatisticsPackage"))
+                                object.optimizerStatisticsPackage = message.optimizerStatisticsPackage;
                             return object;
                         };
     

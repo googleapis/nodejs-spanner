@@ -14142,6 +14142,9 @@ export namespace google {
 
                     /** QueryOptions optimizerVersion */
                     optimizerVersion?: (string|null);
+
+                    /** QueryOptions optimizerStatisticsPackage */
+                    optimizerStatisticsPackage?: (string|null);
                 }
 
                 /** Represents a QueryOptions. */
@@ -14155,6 +14158,9 @@ export namespace google {
 
                     /** QueryOptions optimizerVersion. */
                     public optimizerVersion: string;
+
+                    /** QueryOptions optimizerStatisticsPackage. */
+                    public optimizerStatisticsPackage: string;
 
                     /**
                      * Creates a new QueryOptions instance using the specified properties.
