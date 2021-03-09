@@ -1840,12 +1840,12 @@ class Database extends common.GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(
     backupPath: string,
-    options?: RestoreOptions
+    options?: RestoreOptions | CallOptions
   ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   restore(
     backupPath: string,
-    options: RestoreOptions,
+    options: RestoreOptions | CallOptions,
     callback: RestoreDatabaseCallback
   ): void;
   /**
@@ -1896,17 +1896,19 @@ class Database extends common.GrpcServiceObject {
    */
   restore(
     backupName: string,
-    optionsOrCallback?: RestoreOptions | RestoreDatabaseCallback,
+    optionsOrCallback?: RestoreOptions | CallOptions | RestoreDatabaseCallback,
     cb?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as RestoreDatabaseCallback)
         : cb;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as RestoreOptions);
+    const gaxOpts =
+      'gaxOptions' in options
+        ? (options as RestoreOptions).gaxOptions
+        : (options as CallOptions);
 
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
       parent: this.instance.formattedName_,
@@ -1914,8 +1916,11 @@ class Database extends common.GrpcServiceObject {
       backup: Backup.formatName_(this.instance.formattedName_, backupName),
     };
 
-    if (options.encryptionConfig) {
-      reqOpts.encryptionConfig = options.encryptionConfig;
+    if (
+      'encryptionConfig' in options &&
+      (options as RestoreOptions).encryptionConfig
+    ) {
+      reqOpts.encryptionConfig = (options as RestoreOptions).encryptionConfig;
     }
 
     return this.request(
@@ -1923,7 +1928,7 @@ class Database extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'restoreDatabase',
         reqOpts,
-        gaxOpts: options.gaxOptions || {},
+        gaxOpts: gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, operation, resp) => {

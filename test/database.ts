@@ -2747,15 +2747,15 @@ describe('Database', () => {
       database.restore(BACKUP_NAME, options, assert.ifError);
     });
 
-    it('should accept gaxOpts', done => {
-      const options = {gaxOptions: {timeout: 1000}};
+    it('should accept gaxOpts as CallOptions', done => {
+      const gaxOptions = {timeout: 1000};
 
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
         done();
       };
 
-      database.restore(BACKUP_NAME, options, assert.ifError);
+      database.restore(BACKUP_NAME, gaxOptions, assert.ifError);
     });
 
     it('should accept restore and gax options', done => {
