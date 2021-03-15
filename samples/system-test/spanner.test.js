@@ -422,18 +422,13 @@ describe('Spanner', () => {
     assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
   });
 
-  // create_query_partitions
-  it('should create query partitions', async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
-    const [transaction] = await database.createBatchTransaction();
-    const identifier = JSON.stringify(transaction.identifier());
-
+  // batch_client
+  it('should create and execute query partitions', async () => {
     const output = execSync(
-      `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`
+      `${batchCmd} create-and-execute-query-partitions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully created \d query partitions\./);
-    await transaction.close();
+    assert.match(output, /Successfully received \d from executed partitions\./);
   });
 
   // execute_partition
