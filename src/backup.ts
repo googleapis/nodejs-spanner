@@ -193,8 +193,12 @@ class Backup {
         options.versionTime
       ).toStruct();
     }
-    if (options.encryptionConfig) {
-      reqOpts.encryptionConfig = options.encryptionConfig;
+    if (
+      'encryptionConfig' in options &&
+      (options as CreateBackupOptions).encryptionConfig
+    ) {
+      reqOpts.encryptionConfig =
+        (options as CreateBackupOptions).encryptionConfig;
     }
     this.request(
       {
