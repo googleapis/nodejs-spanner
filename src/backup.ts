@@ -201,8 +201,7 @@ class Backup {
       'encryptionConfig' in options &&
       (options as CreateBackupOptions).encryptionConfig
     ) {
-      reqOpts.encryptionConfig =
-        (options as CreateBackupOptions).encryptionConfig;
+      reqOpts.encryptionConfig = (options as CreateBackupOptions).encryptionConfig;
     }
     this.request(
       {

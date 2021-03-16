@@ -15,11 +15,16 @@
 
 'use strict';
 
-async function restoreBackupWithEncryptionKey(instanceId, databaseId, backupId, projectId, keyName) {
+async function restoreBackupWithEncryptionKey(
+  instanceId,
+  databaseId,
+  backupId,
+  projectId,
+  keyName
+) {
   // [START spanner_restore_backup_with_encryption_key]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
-  const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -51,7 +56,7 @@ async function restoreBackupWithEncryptionKey(instanceId, databaseId, backupId, 
         encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
         kmsKeyName: keyName,
       },
-    },
+    }
   );
 
   // Wait for restore to complete

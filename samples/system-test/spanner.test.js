@@ -931,14 +931,15 @@ describe('Spanner', () => {
 
   // create_backup_with_encryption_key
   it('should create an encrypted backup of the database', async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
     const key = await getCryptoKey();
 
     const output = execSync(
       `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
     );
-    assert.match(output, new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`));
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`)
+    );
     assert.include(output, `using encryption key ${key.name}`);
   });
 

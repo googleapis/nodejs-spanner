@@ -16,14 +16,18 @@
 'use strict';
 
 const {createBackup} = require('./backups-create');
-const {createBackupWithEncryptionKey} = require('./backups-create-with-encryption-key');
+const {
+  createBackupWithEncryptionKey,
+} = require('./backups-create-with-encryption-key');
 const {cancelBackup} = require('./backups-cancel');
 const {getBackups} = require('./backups-get');
 const {getBackupOperations} = require('./backups-get-operations');
 const {getDatabaseOperations} = require('./backups-get-database-operations');
 const {updateBackup} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
-const {restoreBackupWithEncryptionKey} = require('./backups-restore-with-encryption-key');
+const {
+  restoreBackupWithEncryptionKey,
+} = require('./backups-restore-with-encryption-key');
 const {deleteBackup} = require('./backups-delete');
 
 require('yargs')
