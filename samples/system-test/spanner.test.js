@@ -51,7 +51,8 @@ const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
-const LOCATION_ID = 'us-central1';
+const LOCATION_ID = 'regional-us-central1';
+const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
 
@@ -133,7 +134,11 @@ async function getCryptoKey() {
   const client = new KeyManagementServiceClient();
 
   // Build the parent key ring name.
-  const keyRingName = client.keyRingPath(PROJECT_ID, LOCATION_ID, KEY_RING_ID);
+  const keyRingName = client.keyRingPath(
+    PROJECT_ID,
+    KEY_LOCATION_ID,
+    KEY_RING_ID
+  );
 
   // Get key ring.
   try {
@@ -142,7 +147,7 @@ async function getCryptoKey() {
     // Create key ring if it doesn't exist.
     if (err.code === NOT_FOUND) {
       // Build the parent location name.
-      const locationName = client.locationPath(PROJECT_ID, LOCATION_ID);
+      const locationName = client.locationPath(PROJECT_ID, KEY_LOCATION_ID);
       await client.createKeyRing({
         parent: locationName,
         keyRingId: KEY_RING_ID,
@@ -157,7 +162,7 @@ async function getCryptoKey() {
     // Build the key name
     const keyName = client.cryptoKeyPath(
       PROJECT_ID,
-      LOCATION_ID,
+      KEY_LOCATION_ID,
       KEY_RING_ID,
       KEY_ID
     );
