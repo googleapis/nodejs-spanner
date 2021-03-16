@@ -16,12 +16,14 @@
 'use strict';
 
 const {createBackup} = require('./backups-create');
+const {createBackupWithEncryptionKey} = require('./backups-create-with-encryption-key');
 const {cancelBackup} = require('./backups-cancel');
 const {getBackups} = require('./backups-get');
 const {getBackupOperations} = require('./backups-get-operations');
 const {getDatabaseOperations} = require('./backups-get-database-operations');
 const {updateBackup} = require('./backups-update');
 const {restoreBackup} = require('./backups-restore');
+const {restoreBackupWithEncryptionKey} = require('./backups-restore-with-encryption-key');
 const {deleteBackup} = require('./backups-delete');
 
 require('yargs')
@@ -37,6 +39,19 @@ require('yargs')
         opts.backupName,
         opts.projectId,
         Date.parse(opts.versionTime)
+      )
+  )
+  .command(
+    'createBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
+    'Creates a backup of a Cloud Spanner database using an encryption key.',
+    {},
+    opts =>
+      createBackupWithEncryptionKey(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId,
+        opts.keyName
       )
   )
   .command(
@@ -92,6 +107,19 @@ require('yargs')
         opts.databaseName,
         opts.backupName,
         opts.projectId
+      )
+  )
+  .command(
+    'restoreBackupWithEncryptionKey <instanceName> <databaseName> <backupName> <projectId> <keyName>',
+    'Restores a Cloud Spanner database from a backup with an encryption key.',
+    {},
+    opts =>
+      restoreBackupWithEncryptionKey(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.projectId,
+        opts.keyName
       )
   )
   .command(

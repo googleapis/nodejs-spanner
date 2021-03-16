@@ -45,11 +45,13 @@ const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
+const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
+const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
-const LOCATION_ID = 'eur5'; // TODO: Revert to regional-us-central1.
+const LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
 
@@ -221,7 +223,9 @@ describe('Spanner', () => {
       await Promise.all([
         instance.database(DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
+        instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
     }
@@ -925,6 +929,19 @@ describe('Spanner', () => {
     assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
   });
 
+  // create_backup_with_encryption_key
+  it('should create an encrypted backup of the database', async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    const key = await getCryptoKey();
+
+    const output = execSync(
+      `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
+    );
+    assert.match(output, new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`));
+    assert.include(output, `using encryption key ${key.name}`);
+  });
+
   // cancel_backup
   it('should cancel a backup of the database', async () => {
     const output = execSync(
@@ -986,6 +1003,29 @@ describe('Spanner', () => {
       new RegExp(
         `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
           `(.+)${BACKUP_ID} with version time (.+)`
+      )
+    );
+  });
+
+  // restore_backup_with_encryption_key
+  it('should restore database from a backup using an encryption key', async function () {
+    // Restoring a backup can be a slow operation so the test may timeout and
+    // we'll have to retry.
+    this.retries(5);
+    // Delay the start of the test, if this is a retry.
+    await delay(this.test);
+
+    const key = await getCryptoKey();
+
+    const output = execSync(
+      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${key.name}`
+    );
+    assert.match(output, /Database restored from backup./);
+    assert.match(
+      output,
+      new RegExp(
+        `Database (.+) was restored to ${ENCRYPTED_RESTORE_DATABASE_ID} from backup ` +
+          `(.+)${BACKUP_ID} using encryption key ${key.name}`
       )
     );
   });

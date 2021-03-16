@@ -31,7 +31,7 @@ async function createDatabaseWithEncryptionKey(
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const keyName =
-  //   'projects/my-project-id/eur5/keyRings/my-key-ring/cryptoKeys/my-key';
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
   // Creates a client
   const spanner = new Spanner({
