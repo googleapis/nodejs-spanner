@@ -170,6 +170,10 @@ class Backup {
    *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
    *   expireTime: expireTime,
    *   versionTime: versionTime,
+   *   encryptionConfig: {
+   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *   },
    * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();

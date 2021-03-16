@@ -1890,7 +1890,15 @@ class Database extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const backupName = 'projects/my-project/instances/my-instance/backups/my-backup';
-   * const [, restoreOperation] = await database.restore(backupName);
+   * const [, restoreOperation] = await database.restore(
+   *   backupName,
+   *   {
+   *     encryptionConfig: {
+   *       encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *       kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *     }
+   *   },
+   * );
    * // Wait for restore to complete
    * await restoreOperation.promise();
    */
