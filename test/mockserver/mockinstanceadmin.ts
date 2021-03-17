@@ -29,7 +29,11 @@ const PROTO_PATH = 'spanner_instance_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
 const PROTO_DIR =
   __dirname + '/../../../protos/google/spanner/admin/instance/v1';
-const GAX_PROTO_DIR = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
+const GAX_PROTO_DIR = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 /**
  * Load the Spanner Instance Admin service proto.

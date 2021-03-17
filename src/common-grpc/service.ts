@@ -42,7 +42,11 @@ import {Request, Response} from 'teeny-request';
 import * as retryRequest from 'retry-request';
 import {Duplex, PassThrough} from 'stream';
 
-const gaxProtoPath = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
+const gaxProtoPath = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 export interface ServiceRequestCallback {
   (err: Error | null, apiResponse?: Response): void;

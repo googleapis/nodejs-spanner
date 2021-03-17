@@ -30,7 +30,11 @@ import {PassThrough} from 'stream';
 const sinon = sn.createSandbox();
 const glob = (global as {}) as {GCLOUD_SANDBOX_ENV: boolean | {}};
 
-const gaxProtosDir = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
+const gaxProtosDir = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 let getUserAgentFromPackageJsonOverride: Function | null;
 const fakeUtil = Object.assign({}, util, {

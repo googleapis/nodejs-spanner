@@ -31,7 +31,11 @@ import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
 const PROTO_DIR = __dirname + '/../../../protos/google/spanner/v1';
-const GAX_PROTO_DIR = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
+const GAX_PROTO_DIR = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 /**
  * Load the Spanner service proto.
