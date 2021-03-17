@@ -18,6 +18,7 @@
  * @module commonGrpc/service
  */
 
+import * as path from 'path';
 import {
   Abortable,
   BodyResponseCallback,
@@ -40,6 +41,8 @@ import * as is from 'is';
 import {Request, Response} from 'teeny-request';
 import * as retryRequest from 'retry-request';
 import {Duplex, PassThrough} from 'stream';
+
+const gaxProtoPath = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
 
 export interface ServiceRequestCallback {
   (err: Error | null, apiResponse?: Response): void;
@@ -1019,7 +1022,7 @@ export class GrpcService extends Service {
         longs: String,
         enums: String,
         oneofs: true,
-        includeDirs: [config.protosDir],
+        includeDirs: [config.protosDir, gaxProtoPath],
       });
       GrpcService.protoObjectCache[protoObjectCacheKey] = services;
     }

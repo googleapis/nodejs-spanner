@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import * as path from 'path';
 import {util} from '@google-cloud/common';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as grpcProtoLoader from '@grpc/proto-loader';
@@ -28,6 +29,8 @@ import {PassThrough} from 'stream';
 
 const sinon = sn.createSandbox();
 const glob = (global as {}) as {GCLOUD_SANDBOX_ENV: boolean | {}};
+
+const gaxProtosDir = path.join(path.dirname(require.resolve('google-gax')), '..', 'protos');
 
 let getUserAgentFromPackageJsonOverride: Function | null;
 const fakeUtil = Object.assign({}, util, {
@@ -1766,6 +1769,7 @@ describe('GrpcService', () => {
       grpcProtoLoadOverride = (file, options) => {
         assert.deepStrictEqual(options!.includeDirs, [
           fakeMainConfig.protosDir,
+          gaxProtosDir,
         ]);
         assert.strictEqual(file, fakeProtoPath);
 
