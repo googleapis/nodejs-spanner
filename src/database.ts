@@ -1890,7 +1890,15 @@ class Database extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const backupName = 'projects/my-project/instances/my-instance/backups/my-backup';
-   * const [, restoreOperation] = await database.restore(
+   * const [, restoreOperation] = await database.restore(backupName);
+   * // Wait for restore to complete
+   * await restoreOperation.promise();
+   *
+   * //-
+   * // Restore database with a different encryption key to the one used by the
+   * // backup.
+   * //-
+   * const [, restoreWithKeyOperation] = await database.restore(
    *   backupName,
    *   {
    *     encryptionConfig: {
@@ -1900,7 +1908,7 @@ class Database extends common.GrpcServiceObject {
    *   },
    * );
    * // Wait for restore to complete
-   * await restoreOperation.promise();
+   * await restoreWithKeyOperation.promise();
    */
   restore(
     backupName: string,
@@ -1936,7 +1944,7 @@ class Database extends common.GrpcServiceObject {
         client: 'DatabaseAdminClient',
         method: 'restoreDatabase',
         reqOpts,
-        gaxOpts: gaxOpts,
+        gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, operation, resp) => {
