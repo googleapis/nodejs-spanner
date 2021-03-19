@@ -221,6 +221,7 @@ describe('Spanner', () => {
       // Make sure all backups are deleted before an instance can be deleted.
       await Promise.all([
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
       await instance.delete(GAX_OPTIONS);
@@ -969,7 +970,7 @@ describe('Spanner', () => {
     assert.include(output, 'Ready backups filtered by create time:');
     assert.include(output, 'Get backups paginated:');
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
-    assert.equal(count, 7);
+    assert.equal(count, 14);
   });
 
   // list_backup_operations
@@ -1024,14 +1025,14 @@ describe('Spanner', () => {
     const key = await getCryptoKey();
 
     const output = execSync(
-      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${key.name}`
+      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
     );
     assert.match(output, /Database restored from backup./);
     assert.match(
       output,
       new RegExp(
         `Database (.+) was restored to ${ENCRYPTED_RESTORE_DATABASE_ID} from backup ` +
-          `(.+)${BACKUP_ID} using encryption key ${key.name}`
+          `(.+)${ENCRYPTED_BACKUP_ID} using encryption key ${key.name}`
       )
     );
   });
