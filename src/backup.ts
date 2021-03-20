@@ -52,6 +52,7 @@ export interface CreateBackupOptions {
   databasePath: string;
   expireTime: string | number | p.ITimestamp | PreciseDate;
   versionTime?: string | number | p.ITimestamp | PreciseDate;
+  encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig;
   gaxOptions?: CallOptions;
 }
 
@@ -122,6 +123,10 @@ class Backup {
    *     expireTime The expire time of the backup.
    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     versionTime Take a backup of the state of the database at this time.
+   * @property {databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
+   *     encryptionConfig An encryption configuration describing the
+   *     encryption type and key resources in Cloud KMS to be used to encrypt
+   *     the backup.
    * @property {CallOptions} [gaxOptions] The request configuration options
    *     outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
@@ -165,6 +170,10 @@ class Backup {
    *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
    *   expireTime: expireTime,
    *   versionTime: versionTime,
+   *   encryptionConfig: {
+   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *   },
    * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();
@@ -187,6 +196,12 @@ class Backup {
       reqOpts.backup!.versionTime = Spanner.timestamp(
         options.versionTime
       ).toStruct();
+    }
+    if (
+      'encryptionConfig' in options &&
+      (options as CreateBackupOptions).encryptionConfig
+    ) {
+      reqOpts.encryptionConfig = (options as CreateBackupOptions).encryptionConfig;
     }
     this.request(
       {
