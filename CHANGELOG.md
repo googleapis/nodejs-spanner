@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.5.0...v5.6.0) (2021-03-20)
+
+
+### Features
+
+* customer-managed encryption keys ([#1274](https://www.github.com/googleapis/nodejs-spanner/issues/1274)) ([51cabc7](https://www.github.com/googleapis/nodejs-spanner/commit/51cabc7a6d8c96a86acbbeea3a357c261248ddb4))
+* **spanner:** add `optimizer_statistics_package` field in `QueryOptions` ([#1314](https://www.github.com/googleapis/nodejs-spanner/issues/1314)) ([31f9fd9](https://www.github.com/googleapis/nodejs-spanner/commit/31f9fd9255cec763682b03ca4d3a076ef0a247ce))
+
+
+### Bug Fixes
+
+* remove common protos ([#1320](https://www.github.com/googleapis/nodejs-spanner/issues/1320)) ([a73f9fc](https://www.github.com/googleapis/nodejs-spanner/commit/a73f9fc534019186e262a3e5ac6a78f156e7a56d))
+* run [spanner_batch_client] independently ([#1318](https://www.github.com/googleapis/nodejs-spanner/issues/1318)) ([3844ff8](https://www.github.com/googleapis/nodejs-spanner/commit/3844ff89cb53aeeefe7309ce82f31200a0de3ae2))
+
 ## [5.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.4.0...v5.5.0) (2021-02-19)
 
 
