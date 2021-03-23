@@ -10,7 +10,6 @@
 ### Features
 
 * customer-managed encryption keys ([#1274](https://www.github.com/googleapis/nodejs-spanner/issues/1274)) ([51cabc7](https://www.github.com/googleapis/nodejs-spanner/commit/51cabc7a6d8c96a86acbbeea3a357c261248ddb4))
-* **spanner:** add `optimizer_statistics_package` field in `QueryOptions` ([#1314](https://www.github.com/googleapis/nodejs-spanner/issues/1314)) ([31f9fd9](https://www.github.com/googleapis/nodejs-spanner/commit/31f9fd9255cec763682b03ca4d3a076ef0a247ce))
 
 
 ### Bug Fixes
