@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
 import {google} from '../../protos/protos';
 import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
@@ -30,6 +31,11 @@ import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
 const PROTO_DIR = __dirname + '/../../../protos/google/spanner/v1';
+const GAX_PROTO_DIR = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 /**
  * Load the Spanner service proto.
@@ -40,7 +46,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   enums: String,
   defaults: true,
   oneofs: true,
-  includeDirs: [IMPORT_PATH, PROTO_DIR],
+  includeDirs: [IMPORT_PATH, PROTO_DIR, GAX_PROTO_DIR],
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const spannerProtoDescriptor = protoDescriptor['google']['spanner']['v1'];
