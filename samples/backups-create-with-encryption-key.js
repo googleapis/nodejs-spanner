@@ -15,14 +15,14 @@
 
 'use strict';
 
-async function createBackup(
+async function createBackupWithEncryptionKey(
   instanceId,
   databaseId,
   backupId,
   projectId,
-  versionTime
+  keyName
 ) {
-  // [START spanner_create_backup]
+  // [START spanner_create_backup_with_encryption_key]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
@@ -35,6 +35,8 @@ async function createBackup(
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
   // const versionTime = Date.now() - 1000 * 60 * 60 * 24; // One day ago
+  // const keyName =
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
   // Creates a client
   const spanner = new Spanner({
@@ -57,7 +59,10 @@ async function createBackup(
     const [, operation] = await backup.create({
       databasePath: databasePath,
       expireTime: expireTime,
-      versionTime: versionTime,
+      encryptionConfig: {
+        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+        kmsKeyName: keyName,
+      },
     });
 
     console.log(`Waiting for backup ${backup.formattedName_} to complete...`);
@@ -70,8 +75,7 @@ async function createBackup(
         `Backup ${backupInfo.name} of size ` +
           `${backupInfo.sizeBytes} bytes was created at ` +
           `${new PreciseDate(backupInfo.createTime).toISOString()} ` +
-          'for version of database at ' +
-          `${new PreciseDate(backupInfo.versionTime).toISOString()}`
+          `using encryption key ${backupInfo.encryptionInfo.kmsKeyVersion}`
       );
     } else {
       console.error('ERROR: Backup is not ready.');
@@ -82,7 +86,7 @@ async function createBackup(
     // Close the database when finished.
     await database.close();
   }
-  // [END spanner_create_backup]
+  // [END spanner_create_backup_with_encryption_key]
 }
 
-module.exports.createBackup = createBackup;
+module.exports.createBackupWithEncryptionKey = createBackupWithEncryptionKey;

@@ -34,6 +34,7 @@ import {IOperation} from '../src/instance';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import {google} from '../protos/protos';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -2751,13 +2752,49 @@ describe('Database', () => {
       database.restore(BACKUP_NAME, assert.ifError);
     });
 
-    it('should accept gaxOpts', done => {
-      const options = {
-        timeout: 1000,
+    it('should accept restore options', done => {
+      const encryptionConfig = {
+        encryptionType: EncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
+        kmsKeyName: 'some/key/path',
       };
+      const options = {encryptionConfig};
 
       database.request = config => {
-        assert.deepStrictEqual(config.gaxOpts, options);
+        assert.deepStrictEqual(
+          config.reqOpts.encryptionConfig,
+          encryptionConfig
+        );
+        done();
+      };
+
+      database.restore(BACKUP_NAME, options, assert.ifError);
+    });
+
+    it('should accept gaxOpts as CallOptions', done => {
+      const gaxOptions = {timeout: 1000};
+
+      database.request = config => {
+        assert.deepStrictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+
+      database.restore(BACKUP_NAME, gaxOptions, assert.ifError);
+    });
+
+    it('should accept restore and gax options', done => {
+      const encryptionConfig = {
+        encryptionType: EncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
+        kmsKeyName: 'some/key/path',
+      };
+      const gaxOptions = {timeout: 1000};
+      const options = {gaxOptions, encryptionConfig};
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.encryptionConfig,
+          encryptionConfig
+        );
+        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
         done();
       };
 

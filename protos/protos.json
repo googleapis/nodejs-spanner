@@ -1243,6 +1243,14 @@
                               "type": "string",
                               "id": 7,
                               "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "encryptionInfo": {
+                              "type": "EncryptionInfo",
+                              "id": 8,
+                              "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             }
@@ -1279,6 +1287,13 @@
                               "id": 3,
                               "options": {
                                 "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "encryptionConfig": {
+                              "type": "CreateBackupEncryptionConfig",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
                               }
                             }
                           }
@@ -1451,6 +1466,35 @@
                             }
                           }
                         },
+                        "CreateBackupEncryptionConfig": {
+                          "fields": {
+                            "encryptionType": {
+                              "type": "EncryptionType",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "kmsKeyName": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "EncryptionType": {
+                              "values": {
+                                "ENCRYPTION_TYPE_UNSPECIFIED": 0,
+                                "USE_DATABASE_ENCRYPTION": 1,
+                                "GOOGLE_DEFAULT_ENCRYPTION": 2,
+                                "CUSTOMER_MANAGED_ENCRYPTION": 3
+                              }
+                            }
+                          }
+                        },
                         "OperationProgress": {
                           "fields": {
                             "progressPercent": {
@@ -1464,6 +1508,52 @@
                             "endTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 3
+                            }
+                          }
+                        },
+                        "EncryptionConfig": {
+                          "fields": {
+                            "kmsKeyName": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            }
+                          }
+                        },
+                        "EncryptionInfo": {
+                          "fields": {
+                            "encryptionType": {
+                              "type": "Type",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "encryptionStatus": {
+                              "type": "google.rpc.Status",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "kmsKeyVersion": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKeyVersion"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "Type": {
+                              "values": {
+                                "TYPE_UNSPECIFIED": 0,
+                                "GOOGLE_DEFAULT_ENCRYPTION": 1,
+                                "CUSTOMER_MANAGED_ENCRYPTION": 2
+                              }
                             }
                           }
                         },
@@ -1686,6 +1776,21 @@
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
+                            "encryptionConfig": {
+                              "type": "EncryptionConfig",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "encryptionInfo": {
+                              "rule": "repeated",
+                              "type": "EncryptionInfo",
+                              "id": 8,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "versionRetentionPeriod": {
                               "type": "string",
                               "id": 6,
@@ -1766,6 +1871,13 @@
                               "rule": "repeated",
                               "type": "string",
                               "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "encryptionConfig": {
+                              "type": "EncryptionConfig",
+                              "id": 4,
                               "options": {
                                 "(google.api.field_behavior)": "OPTIONAL"
                               }
@@ -1939,6 +2051,42 @@
                               "id": 3,
                               "options": {
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "encryptionConfig": {
+                              "type": "RestoreDatabaseEncryptionConfig",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "RestoreDatabaseEncryptionConfig": {
+                          "fields": {
+                            "encryptionType": {
+                              "type": "EncryptionType",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "kmsKeyName": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "EncryptionType": {
+                              "values": {
+                                "ENCRYPTION_TYPE_UNSPECIFIED": 0,
+                                "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION": 1,
+                                "GOOGLE_DEFAULT_ENCRYPTION": 2,
+                                "CUSTOMER_MANAGED_ENCRYPTION": 3
                               }
                             }
                           }
@@ -3231,6 +3379,10 @@
                         "optimizerVersion": {
                           "type": "string",
                           "id": 1
+                        },
+                        "optimizerStatisticsPackage": {
+                          "type": "string",
+                          "id": 2
                         }
                       }
                     },

@@ -14,10 +14,9 @@
 
 'use strict';
 
-async function createQueryPartitions(
+async function createAndExecuteQueryPartitions(
   instanceId,
   databaseId,
-  identifier,
   projectId
 ) {
   // [START spanner_batch_client]
@@ -30,7 +29,6 @@ async function createQueryPartitions(
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
-  // const identifier = {};
 
   // Creates a client
   const spanner = new Spanner({
@@ -40,12 +38,33 @@ async function createQueryPartitions(
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
-  const transaction = database.batchTransaction(identifier);
+  const [transaction] = await database.createBatchTransaction();
 
   const query = 'SELECT * FROM Singers';
 
   const [partitions] = await transaction.createQueryPartitions(query);
   console.log(`Successfully created ${partitions.length} query partitions.`);
+
+  let row_count = 0;
+  const promises = [];
+  partitions.forEach(partition => {
+    promises.push(
+      transaction.execute(partition).then(results => {
+        const rows = results[0].map(row => row.toJSON());
+        row_count += rows.length;
+      })
+    );
+  });
+  Promise.all(promises)
+    .then(() => {
+      console.log(
+        `Successfully received ${row_count} from executed partitions.`
+      );
+      transaction.close();
+    })
+    .then(() => {
+      database.close();
+    });
   // [END spanner_batch_client]
 }
 
@@ -87,14 +106,13 @@ async function executePartition(
 require('yargs')
   .demand(1)
   .command(
-    'create-query-partitions <instanceName> <databaseName> <identifier> <projectId>',
-    'Creates query partitions.',
+    'create-and-execute-query-partitions <instanceName> <databaseName> <projectId>',
+    'Creates query partitions and executes them.',
     {},
     opts =>
-      createQueryPartitions(
+      createAndExecuteQueryPartitions(
         opts.instanceName,
         opts.databaseName,
-        JSON.parse(opts.identifier),
         opts.projectId
       )
   )
@@ -112,7 +130,7 @@ require('yargs')
       )
   )
   .example(
-    'node $0 create-query-partitions "my-instance" "my-database" "{}" "my-project-id"'
+    'node $0 create-and-execute-query-partitions "my-instance" "my-database" "my-project-id"'
   )
   .example(
     'node $0 execute-partition "my-instance" "my-database" "{}" "{}" "my-project-id"'

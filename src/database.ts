@@ -122,6 +122,7 @@ export type UpdateSchemaResponse = [
 type PoolRequestCallback = RequestCallback<Session>;
 
 type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
+type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
 
@@ -231,6 +232,12 @@ interface DatabaseRequest {
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
 }
+
+export interface RestoreOptions {
+  encryptionConfig?: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig;
+  gaxOptions?: CallOptions;
+}
+
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -1833,14 +1840,24 @@ class Database extends common.GrpcServiceObject {
   restore(backupPath: string): Promise<RestoreDatabaseResponse>;
   restore(
     backupPath: string,
-    options?: CallOptions
+    options?: RestoreOptions | CallOptions
   ): Promise<RestoreDatabaseResponse>;
   restore(backupPath: string, callback: RestoreDatabaseCallback): void;
   restore(
     backupPath: string,
-    options: CallOptions,
+    options: RestoreOptions | CallOptions,
     callback: RestoreDatabaseCallback
   ): void;
+  /**
+   * @typedef {object} RestoreOptions
+   * @property {databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig}
+   *     encryptionConfig An encryption configuration describing
+   *     the encryption type and key resources in Cloud KMS used to
+   *     encrypt/decrypt the database to restore to.
+   * @property {CallOptions} [gaxOptions] The request configuration options
+   *     outlined here:
+   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   */
   /**
    * @typedef {array} RestoreDatabaseResponse
    * @property {Database} 0 The new {@link Database}.
@@ -1876,25 +1893,52 @@ class Database extends common.GrpcServiceObject {
    * const [, restoreOperation] = await database.restore(backupName);
    * // Wait for restore to complete
    * await restoreOperation.promise();
+   *
+   * //-
+   * // Restore database with a different encryption key to the one used by the
+   * // backup.
+   * //-
+   * const [, restoreWithKeyOperation] = await database.restore(
+   *   backupName,
+   *   {
+   *     encryptionConfig: {
+   *       encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *       kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *     }
+   *   },
+   * );
+   * // Wait for restore to complete
+   * await restoreWithKeyOperation.promise();
    */
   restore(
     backupName: string,
-    optionsOrCallback?: CallOptions | RestoreDatabaseCallback,
+    optionsOrCallback?: RestoreOptions | CallOptions | RestoreDatabaseCallback,
     cb?: RestoreDatabaseCallback
   ): Promise<RestoreDatabaseResponse> | void {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as RestoreDatabaseCallback)
         : cb;
     const gaxOpts =
-      typeof optionsOrCallback === 'object'
-        ? (optionsOrCallback as CallOptions)
-        : {};
+      'gaxOptions' in options
+        ? (options as RestoreOptions).gaxOptions
+        : (options as CallOptions);
+
     const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
       parent: this.instance.formattedName_,
       databaseId: this.id,
       backup: Backup.formatName_(this.instance.formattedName_, backupName),
     };
+
+    if (
+      'encryptionConfig' in options &&
+      (options as RestoreOptions).encryptionConfig
+    ) {
+      reqOpts.encryptionConfig = (options as RestoreOptions).encryptionConfig;
+    }
+
     return this.request(
       {
         client: 'DatabaseAdminClient',
@@ -2081,6 +2125,7 @@ class Database extends common.GrpcServiceObject {
     cb?: RunCallback
   ): void | Promise<RunResponse> {
     let stats: ResultSetStats;
+    let metadata: ResultSetMetadata;
     const rows: Row[] = [];
     const callback =
       typeof optionsOrCallback === 'function'
@@ -2093,12 +2138,17 @@ class Database extends common.GrpcServiceObject {
 
     this.runStream(query, options)
       .on('error', callback!)
+      .on('response', response => {
+        if (response.metadata) {
+          metadata = response.metadata;
+        }
+      })
       .on('stats', _stats => (stats = _stats))
       .on('data', row => {
         rows.push(row);
       })
       .on('end', () => {
-        callback!(null, rows, stats);
+        callback!(null, rows, stats, metadata);
       });
   }
   runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
@@ -2337,6 +2387,7 @@ class Database extends common.GrpcServiceObject {
           }
         })
         .on('stats', stats => proxyStream.emit('stats', stats))
+        .on('response', response => proxyStream.emit('response', response))
         .once('end', endListener)
         .pipe(proxyStream);
     });

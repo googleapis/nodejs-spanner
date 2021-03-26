@@ -25,6 +25,7 @@ and automatic, synchronous replication for high availability.
   * [Backups](#backups)
   * [Batch](#batch)
   * [CRUD](#crud)
+  * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Datatypes](#datatypes)
   * [DML](#dml)
   * [Get-commit-stats](#get-commit-stats)
@@ -235,6 +236,23 @@ __Usage:__
 
 
 `node samples/crud.js`
+
+
+-----
+
+
+
+
+### Database-create-with-version-retention-period
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-version-retention-period.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-version-retention-period.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-version-retention-period.js`
 
 
 -----

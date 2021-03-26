@@ -170,6 +170,9 @@ export class DatabaseAdminClient {
       backupPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/backups/{backup}'
       ),
+      cryptoKeyPathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}'
+      ),
       databasePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
@@ -1002,7 +1005,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Gets metadata on a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Gets metadata on a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1092,7 +1096,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Updates a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Updates a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1189,7 +1194,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Deletes a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Deletes a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1290,8 +1296,8 @@ export class DatabaseAdminClient {
    * have a name of the format `<database_name>/operations/<operation_id>` and
    * can be used to track preparation of the database. The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}. The
-   * {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
    * {@link google.spanner.admin.database.v1.Database|Database}, if successful.
    *
    * @param {Object} request
@@ -1310,6 +1316,10 @@ export class DatabaseAdminClient {
    *   database. Statements can create tables, indexes, etc. These
    *   statements execute atomically with the creation of the database:
    *   if there is an error in any statement, the database is not created.
+   * @param {google.spanner.admin.database.v1.EncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration for the database. If this field is
+   *   not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   *   Google default encryption.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1444,7 +1454,8 @@ export class DatabaseAdminClient {
    * the format `<database_name>/operations/<operation_id>` and can be used to
    * track execution of the schema change(s). The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.  The operation has no response.
+   * {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.
+   * The operation has no response.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1460,18 +1471,20 @@ export class DatabaseAdminClient {
    *
    *   Specifying an explicit operation ID simplifies determining
    *   whether the statements were executed in the event that the
-   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} call is replayed,
-   *   or the return value is otherwise lost: the {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database} and
-   *   `operation_id` fields can be combined to form the
+   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   call is replayed, or the return value is otherwise lost: the
+   *   {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database}
+   *   and `operation_id` fields can be combined to form the
    *   {@link google.longrunning.Operation.name|name} of the resulting
-   *   {@link google.longrunning.Operation|longrunning.Operation}: `<database>/operations/<operation_id>`.
+   *   {@link google.longrunning.Operation|longrunning.Operation}:
+   *   `<database>/operations/<operation_id>`.
    *
    *   `operation_id` should be unique within the database, and must be
    *   a valid identifier: `{@link a-z0-9_|a-z}*`. Note that
    *   automatically-generated operation IDs always begin with an
    *   underscore. If the named operation already exists,
-   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} returns
-   *   `ALREADY_EXISTS`.
+   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   returns `ALREADY_EXISTS`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1606,12 +1619,12 @@ export class DatabaseAdminClient {
    * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
    * and can be used to track creation of the backup. The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}. The
-   * {@link google.longrunning.Operation.response|response} field type is
-   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
-   * creation and delete the backup.
-   * There can be only one pending backup creation per database. Backup creation
-   * of different databases can run concurrently.
+   * {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful.
+   * Cancelling the returned operation will stop the creation and delete the
+   * backup. There can be only one pending backup creation per database. Backup
+   * creation of different databases can run concurrently.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1628,6 +1641,12 @@ export class DatabaseAdminClient {
    *   `projects/<project>/instances/<instance>/backups/<backup_id>`.
    * @param {google.spanner.admin.database.v1.Backup} request.backup
    *   Required. The backup to create.
+   * @param {google.spanner.admin.database.v1.CreateBackupEncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration used to encrypt the backup. If this
+   *   field is not specified, the backup will use the same encryption
+   *   configuration as the database by default, namely
+   *   {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_DATABASE_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1790,6 +1809,13 @@ export class DatabaseAdminClient {
    * @param {string} request.backup
    *   Name of the backup from which to restore.  Values are of the form
    *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig} [request.encryptionConfig]
+   *   Optional. An encryption configuration describing the encryption type and
+   *   key resources in Cloud KMS used to encrypt/decrypt the database to restore
+   *   to. If this field is not specified, the restored database will use the same
+   *   encryption configuration as the backup by default, namely
+   *   {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_CONFIG_DEFAULT_OR_DATABASE_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1925,8 +1951,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2013,8 +2040,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2057,8 +2085,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2136,13 +2165,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2167,9 +2199,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2260,13 +2293,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2291,9 +2327,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2340,13 +2377,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2371,9 +2411,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2462,7 +2503,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2482,7 +2525,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2494,8 +2538,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2596,7 +2641,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2616,7 +2663,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2628,8 +2676,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2682,7 +2731,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2702,7 +2753,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2714,8 +2766,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2806,7 +2859,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2826,7 +2881,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -2836,8 +2892,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2934,7 +2991,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2954,7 +3013,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -2964,8 +3024,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -3018,7 +3079,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -3038,7 +3101,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3048,8 +3112,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -3128,6 +3193,77 @@ export class DatabaseAdminClient {
    */
   matchBackupFromBackupName(backupName: string) {
     return this.pathTemplates.backupPathTemplate.match(backupName).backup;
+  }
+
+  /**
+   * Return a fully-qualified cryptoKey resource name string.
+   *
+   * @param {string} project
+   * @param {string} location
+   * @param {string} key_ring
+   * @param {string} crypto_key
+   * @returns {string} Resource name string.
+   */
+  cryptoKeyPath(
+    project: string,
+    location: string,
+    keyRing: string,
+    cryptoKey: string
+  ) {
+    return this.pathTemplates.cryptoKeyPathTemplate.render({
+      project: project,
+      location: location,
+      key_ring: keyRing,
+      crypto_key: cryptoKey,
+    });
+  }
+
+  /**
+   * Parse the project from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .project;
+  }
+
+  /**
+   * Parse the location from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the location.
+   */
+  matchLocationFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .location;
+  }
+
+  /**
+   * Parse the key_ring from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the key_ring.
+   */
+  matchKeyRingFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .key_ring;
+  }
+
+  /**
+   * Parse the crypto_key from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the crypto_key.
+   */
+  matchCryptoKeyFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .crypto_key;
   }
 
   /**

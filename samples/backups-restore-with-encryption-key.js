@@ -15,11 +15,16 @@
 
 'use strict';
 
-async function restoreBackup(instanceId, databaseId, backupId, projectId) {
-  // [START spanner_restore_backup]
+async function restoreBackupWithEncryptionKey(
+  instanceId,
+  databaseId,
+  backupId,
+  projectId,
+  keyName
+) {
+  // [START spanner_restore_backup_with_encryption_key]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
-  const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -28,6 +33,8 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
+  // const keyName =
+  //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
   // Creates a client
   const spanner = new Spanner({
@@ -43,7 +50,13 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
     `Restoring database ${database.formattedName_} from backup ${backupId}.`
   );
   const [, restoreOperation] = await database.restore(
-    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`
+    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`,
+    {
+      encryptionConfig: {
+        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+        kmsKeyName: keyName,
+      },
+    }
   );
 
   // Wait for restore to complete
@@ -52,13 +65,13 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   console.log('Database restored from backup.');
   const restoreInfo = await database.getRestoreInfo();
+  const [data] = await database.get();
   console.log(
     `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
       `to ${databaseId} from backup ${restoreInfo.backupInfo.backup} ` +
-      'with version time ' +
-      `${new PreciseDate(restoreInfo.backupInfo.versionTime).toISOString()}.`
+      `using encryption key ${data.metadata.encryptionConfig.kmsKeyName}.`
   );
-  // [END spanner_restore_backup]
+  // [END spanner_restore_backup_with_encryption_key]
 }
 
-module.exports.restoreBackup = restoreBackup;
+module.exports.restoreBackupWithEncryptionKey = restoreBackupWithEncryptionKey;

@@ -66,6 +66,7 @@ function numberToEnglishWord(num: number): string {
 describe('Spanner with mock server', () => {
   let sandbox: sinon.SinonSandbox;
   const selectSql = 'SELECT NUM, NAME FROM NUMBERS';
+  const select1 = 'SELECT 1';
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
@@ -104,6 +105,10 @@ describe('Spanner with mock server', () => {
     spannerMock.putStatementResult(
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet())
+    );
+    spannerMock.putStatementResult(
+      select1,
+      mock.StatementResult.resultSet(mock.createSelect1ResultSet())
     );
     spannerMock.putStatementResult(
       invalidSql,
@@ -227,6 +232,44 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(row.NUM, i);
           assert.strictEqual(row.NAME, numberToEnglishWord(i));
         });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should receive metadata', async () => {
+      // The query to execute
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        const [rows, , metadata] = await database.run(query);
+        assert.strictEqual(rows.length, 3);
+        assert.ok(metadata);
+        assert.strictEqual(metadata.rowType!.fields!.length, 2);
+        assert.strictEqual(metadata.rowType!.fields![0].name, 'NUM');
+        assert.strictEqual(metadata.rowType!.fields![1].name, 'NAME');
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should return result without column name in JSON', async () => {
+      // The query to execute
+      const query = {
+        sql: select1,
+        json: true,
+        jsonOptions: {includeNameless: true},
+      } as ExecuteSqlRequest;
+      const database = newTestDatabase();
+      try {
+        const [rows, , metadata] = await database.run(query);
+        assert.strictEqual(rows.length, 1);
+        assert.ok(metadata);
+        assert.strictEqual(metadata.rowType!.fields!.length, 1);
+        assert.strictEqual(metadata.rowType!.fields![0].name, '');
+        assert.strictEqual(rows[0]['_0'], 1);
       } finally {
         await database.close();
       }
