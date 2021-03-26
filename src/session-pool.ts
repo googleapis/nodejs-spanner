@@ -248,6 +248,17 @@ export function isInstanceNotFoundError(
 }
 
 /**
+ * Checks whether the given error is an 'Create session permission' error.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is an 'Create session permission' error, and otherwise false.
+ */
+export function isCreateSessionPermissionError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return error !== undefined && error.code === grpc.status.PERMISSION_DENIED;
+}
+
+/**
  * enum to capture errors that can appear from multiple places
  */
 const enum errors {
@@ -558,7 +569,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._fill().catch(err => {
       // Ignore `Database not found` error. This allows a user to call instance.database('db-name')
       // for a database that does not yet exist with SessionPoolOptions.min > 0.
-      if (isDatabaseNotFoundError(err) || isInstanceNotFoundError(err)) {
+      if (
+        isDatabaseNotFoundError(err) ||
+        isInstanceNotFoundError(err) ||
+        isCreateSessionPermissionError(err)
+      ) {
         return;
       }
       this.emit('error', err);
