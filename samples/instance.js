@@ -42,6 +42,7 @@ async function createInstance(instanceId, projectId) {
       displayName: 'This is a display name.',
       labels: {
         ['cloud_spanner_samples']: 'true',
+        created: Math.round(Date.now() / 1000).toString(), // current time
       },
     });
 
