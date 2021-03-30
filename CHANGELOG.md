@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.0...v5.6.1) (2021-03-30)
+
+
+### Bug Fixes
+
+* remove acquire timeout listener on return of session ([#1327](https://www.github.com/googleapis/nodejs-spanner/issues/1327)) ([72c7cce](https://www.github.com/googleapis/nodejs-spanner/commit/72c7cce0cc00631a0ce46cdb2bf66a0ee48d615b)), closes [#1324](https://www.github.com/googleapis/nodejs-spanner/issues/1324)
+
 ## [5.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.5.0...v5.6.0) (2021-03-20)
 
 
