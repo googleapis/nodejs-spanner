@@ -829,6 +829,8 @@ export class SpannerClient {
    *   Required for DML statements. Ignored for queries.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
    *   Query optimizer configuration to use for the given query.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -945,6 +947,8 @@ export class SpannerClient {
    *   transaction. If a request arrives for the first time with an out-of-order
    *   sequence number, the transaction may be aborted. Replays of previously
    *   handled requests will yield the same response as the first execution.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1082,6 +1086,8 @@ export class SpannerClient {
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionReadRequest message used to create this partition_token.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1171,6 +1177,12 @@ export class SpannerClient {
    *   Required. The session in which the transaction runs.
    * @param {google.spanner.v1.TransactionOptions} request.options
    *   Required. Options for the new transaction.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
+   *   Priority is ignored for this request. Setting the priority in this
+   *   request_options struct will not do anything. To set the priority for a
+   *   transaction, set it on the reads and writes that are part of this
+   *   transaction instead.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1288,6 +1300,8 @@ export class SpannerClient {
    *   If `true`, then statistics related to the transaction will be included in
    *   the {@link google.spanner.v1.CommitResponse.commit_stats|CommitResponse}. Default value is
    *   `false`.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1758,6 +1772,8 @@ export class SpannerClient {
    *   Required for DML statements. Ignored for queries.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryOptions} request.queryOptions
    *   Query optimizer configuration to use for the given query.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1839,6 +1855,8 @@ export class SpannerClient {
    *   previously created using PartitionRead().    There must be an exact
    *   match for the values of fields common to this message and the
    *   PartitionReadRequest message used to create this partition_token.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
