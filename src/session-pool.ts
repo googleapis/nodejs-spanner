@@ -255,7 +255,11 @@ export function isInstanceNotFoundError(
 export function isCreateSessionPermissionError(
   error: grpc.ServiceError | undefined
 ): boolean {
-  return error !== undefined && error.code === grpc.status.PERMISSION_DENIED;
+  return (
+    error !== undefined &&
+    error.code === grpc.status.PERMISSION_DENIED &&
+    error.message.includes('spanner.sessions.create')
+  );
 }
 
 /**
