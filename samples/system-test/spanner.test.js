@@ -89,36 +89,23 @@ const delay = async test => {
 };
 
 async function deleteStaleInstances() {
-  const [instances] = await spanner.getInstances({
+  let [instances] = await spanner.getInstances({
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
   const old = new Date();
   old.setHours(old.getHours() - 4);
 
+  instances = instances.filter(instance => {
+    return (
+      instance.metadata.labels['created'] &&
+      new Date(parseInt(instance.metadata.labels['created']) * 1000) < old
+    );
+  });
+  const limit = pLimit(5);
   await Promise.all(
-    instances.map(async instance => {
-      const instanceName = instance.metadata.name;
-
-      const res = await spanner.auth.request({
-        url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-      });
-      const operations = res.data.operations;
-
-      const delay = 500;
-      const limit = pLimit(5);
-
-      await Promise.all(
-        operations
-          .filter(operation => {
-            return operation.metadata['@type'].includes('CreateInstance');
-          })
-          .filter(operation => {
-            const instanceCreated = new Date(operation.metadata.startTime);
-            return instanceCreated < Math.round(old.getTime() / 1000);
-          })
-          .map(() => limit(() => setTimeout(deleteInstance, delay, instance)))
-      );
-    })
+    instances.map(instance =>
+      limit(() => setTimeout(deleteInstance, delay, instance))
+    )
   );
 }
 

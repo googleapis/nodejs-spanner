@@ -963,6 +963,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     const timeout = this.options.acquireTimeout;
 
+    let removeTimeoutListener = () => {};
     if (!is.infinite(timeout!)) {
       const elapsed = Date.now() - startTime!;
       const remaining = timeout! - elapsed;
@@ -970,7 +971,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       promises.push(
         new Promise((_, reject) => {
           const error = new Error(errors.Timeout);
-          setTimeout(reject.bind(null, error), remaining);
+          const timeoutFunction = setTimeout(
+            reject.bind(null, error),
+            remaining
+          );
+          removeTimeoutListener = () => clearTimeout(timeoutFunction);
         })
       );
     }
@@ -1018,6 +1023,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this._waiters[type]--;
       removeListener!();
       removeErrorListener!();
+      removeTimeoutListener();
     }
 
     return this._borrowNextAvailableSession(type);
