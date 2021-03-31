@@ -26,30 +26,30 @@
 
     // Common aliases
     var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
-
+    
     // Exported root namespace
     var $root = $protobuf.roots._google_cloud_spanner_protos || ($protobuf.roots._google_cloud_spanner_protos = {});
-
+    
     $root.google = (function() {
-
+    
         /**
          * Namespace google.
          * @exports google
          * @namespace
          */
         var google = {};
-
+    
         google.protobuf = (function() {
-
+    
             /**
              * Namespace protobuf.
              * @memberof google
              * @namespace
              */
             var protobuf = {};
-
+    
             protobuf.Duration = (function() {
-
+    
                 /**
                  * Properties of a Duration.
                  * @memberof google.protobuf
@@ -57,7 +57,7 @@
                  * @property {number|Long|null} [seconds] Duration seconds
                  * @property {number|null} [nanos] Duration nanos
                  */
-
+    
                 /**
                  * Constructs a new Duration.
                  * @memberof google.protobuf
@@ -72,7 +72,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Duration seconds.
                  * @member {number|Long} seconds
@@ -80,7 +80,7 @@
                  * @instance
                  */
                 Duration.prototype.seconds = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                 /**
                  * Duration nanos.
                  * @member {number} nanos
@@ -88,7 +88,7 @@
                  * @instance
                  */
                 Duration.prototype.nanos = 0;
-
+    
                 /**
                  * Creates a new Duration instance using the specified properties.
                  * @function create
@@ -100,7 +100,7 @@
                 Duration.create = function create(properties) {
                     return new Duration(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Duration message. Does not implicitly {@link google.protobuf.Duration.verify|verify} messages.
                  * @function encode
@@ -119,7 +119,7 @@
                         writer.uint32(/* id 2, wireType 0 =*/16).int32(message.nanos);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Duration message, length delimited. Does not implicitly {@link google.protobuf.Duration.verify|verify} messages.
                  * @function encodeDelimited
@@ -132,7 +132,7 @@
                 Duration.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Duration message from the specified reader or buffer.
                  * @function decode
@@ -164,7 +164,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Duration message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -180,7 +180,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Duration message.
                  * @function verify
@@ -200,7 +200,7 @@
                             return "nanos: integer expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a Duration message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -226,7 +226,7 @@
                         message.nanos = object.nanos | 0;
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Duration message. Also converts values to other types if specified.
                  * @function toObject
@@ -257,7 +257,7 @@
                         object.nanos = message.nanos;
                     return object;
                 };
-
+    
                 /**
                  * Converts this Duration to JSON.
                  * @function toJSON
@@ -268,19 +268,19 @@
                 Duration.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Duration;
             })();
-
+    
             protobuf.FileDescriptorSet = (function() {
-
+    
                 /**
                  * Properties of a FileDescriptorSet.
                  * @memberof google.protobuf
                  * @interface IFileDescriptorSet
                  * @property {Array.<google.protobuf.IFileDescriptorProto>|null} [file] FileDescriptorSet file
                  */
-
+    
                 /**
                  * Constructs a new FileDescriptorSet.
                  * @memberof google.protobuf
@@ -296,7 +296,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FileDescriptorSet file.
                  * @member {Array.<google.protobuf.IFileDescriptorProto>} file
@@ -304,7 +304,7 @@
                  * @instance
                  */
                 FileDescriptorSet.prototype.file = $util.emptyArray;
-
+    
                 /**
                  * Creates a new FileDescriptorSet instance using the specified properties.
                  * @function create
@@ -316,7 +316,7 @@
                 FileDescriptorSet.create = function create(properties) {
                     return new FileDescriptorSet(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FileDescriptorSet message. Does not implicitly {@link google.protobuf.FileDescriptorSet.verify|verify} messages.
                  * @function encode
@@ -334,7 +334,7 @@
                             $root.google.protobuf.FileDescriptorProto.encode(message.file[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FileDescriptorSet message, length delimited. Does not implicitly {@link google.protobuf.FileDescriptorSet.verify|verify} messages.
                  * @function encodeDelimited
@@ -347,7 +347,7 @@
                 FileDescriptorSet.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FileDescriptorSet message from the specified reader or buffer.
                  * @function decode
@@ -378,7 +378,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FileDescriptorSet message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -394,7 +394,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FileDescriptorSet message.
                  * @function verify
@@ -417,7 +417,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a FileDescriptorSet message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -442,7 +442,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FileDescriptorSet message. Also converts values to other types if specified.
                  * @function toObject
@@ -465,7 +465,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this FileDescriptorSet to JSON.
                  * @function toJSON
@@ -476,12 +476,12 @@
                 FileDescriptorSet.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return FileDescriptorSet;
             })();
-
+    
             protobuf.FileDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of a FileDescriptorProto.
                  * @memberof google.protobuf
@@ -499,7 +499,7 @@
                  * @property {google.protobuf.ISourceCodeInfo|null} [sourceCodeInfo] FileDescriptorProto sourceCodeInfo
                  * @property {string|null} [syntax] FileDescriptorProto syntax
                  */
-
+    
                 /**
                  * Constructs a new FileDescriptorProto.
                  * @memberof google.protobuf
@@ -521,7 +521,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FileDescriptorProto name.
                  * @member {string} name
@@ -529,7 +529,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * FileDescriptorProto package.
                  * @member {string} package
@@ -537,7 +537,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype["package"] = "";
-
+    
                 /**
                  * FileDescriptorProto dependency.
                  * @member {Array.<string>} dependency
@@ -545,7 +545,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.dependency = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto publicDependency.
                  * @member {Array.<number>} publicDependency
@@ -553,7 +553,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.publicDependency = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto weakDependency.
                  * @member {Array.<number>} weakDependency
@@ -561,7 +561,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.weakDependency = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto messageType.
                  * @member {Array.<google.protobuf.IDescriptorProto>} messageType
@@ -569,7 +569,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.messageType = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto enumType.
                  * @member {Array.<google.protobuf.IEnumDescriptorProto>} enumType
@@ -577,7 +577,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.enumType = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto service.
                  * @member {Array.<google.protobuf.IServiceDescriptorProto>} service
@@ -585,7 +585,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.service = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto extension.
                  * @member {Array.<google.protobuf.IFieldDescriptorProto>} extension
@@ -593,7 +593,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.extension = $util.emptyArray;
-
+    
                 /**
                  * FileDescriptorProto options.
                  * @member {google.protobuf.IFileOptions|null|undefined} options
@@ -601,7 +601,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * FileDescriptorProto sourceCodeInfo.
                  * @member {google.protobuf.ISourceCodeInfo|null|undefined} sourceCodeInfo
@@ -609,7 +609,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.sourceCodeInfo = null;
-
+    
                 /**
                  * FileDescriptorProto syntax.
                  * @member {string} syntax
@@ -617,7 +617,7 @@
                  * @instance
                  */
                 FileDescriptorProto.prototype.syntax = "";
-
+    
                 /**
                  * Creates a new FileDescriptorProto instance using the specified properties.
                  * @function create
@@ -629,7 +629,7 @@
                 FileDescriptorProto.create = function create(properties) {
                     return new FileDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FileDescriptorProto message. Does not implicitly {@link google.protobuf.FileDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -675,7 +675,7 @@
                         writer.uint32(/* id 12, wireType 2 =*/98).string(message.syntax);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FileDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.FileDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -688,7 +688,7 @@
                 FileDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FileDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -774,7 +774,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FileDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -790,7 +790,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FileDescriptorProto message.
                  * @function verify
@@ -880,7 +880,7 @@
                             return "syntax: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a FileDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -972,7 +972,7 @@
                         message.syntax = String(object.syntax);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FileDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -1049,7 +1049,7 @@
                         object.syntax = message.syntax;
                     return object;
                 };
-
+    
                 /**
                  * Converts this FileDescriptorProto to JSON.
                  * @function toJSON
@@ -1060,12 +1060,12 @@
                 FileDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return FileDescriptorProto;
             })();
-
+    
             protobuf.DescriptorProto = (function() {
-
+    
                 /**
                  * Properties of a DescriptorProto.
                  * @memberof google.protobuf
@@ -1081,7 +1081,7 @@
                  * @property {Array.<google.protobuf.DescriptorProto.IReservedRange>|null} [reservedRange] DescriptorProto reservedRange
                  * @property {Array.<string>|null} [reservedName] DescriptorProto reservedName
                  */
-
+    
                 /**
                  * Constructs a new DescriptorProto.
                  * @memberof google.protobuf
@@ -1104,7 +1104,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * DescriptorProto name.
                  * @member {string} name
@@ -1112,7 +1112,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.name = "";
-
+    
                 /**
                  * DescriptorProto field.
                  * @member {Array.<google.protobuf.IFieldDescriptorProto>} field
@@ -1120,7 +1120,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.field = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto extension.
                  * @member {Array.<google.protobuf.IFieldDescriptorProto>} extension
@@ -1128,7 +1128,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.extension = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto nestedType.
                  * @member {Array.<google.protobuf.IDescriptorProto>} nestedType
@@ -1136,7 +1136,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.nestedType = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto enumType.
                  * @member {Array.<google.protobuf.IEnumDescriptorProto>} enumType
@@ -1144,7 +1144,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.enumType = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto extensionRange.
                  * @member {Array.<google.protobuf.DescriptorProto.IExtensionRange>} extensionRange
@@ -1152,7 +1152,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.extensionRange = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto oneofDecl.
                  * @member {Array.<google.protobuf.IOneofDescriptorProto>} oneofDecl
@@ -1160,7 +1160,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.oneofDecl = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto options.
                  * @member {google.protobuf.IMessageOptions|null|undefined} options
@@ -1168,7 +1168,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.options = null;
-
+    
                 /**
                  * DescriptorProto reservedRange.
                  * @member {Array.<google.protobuf.DescriptorProto.IReservedRange>} reservedRange
@@ -1176,7 +1176,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.reservedRange = $util.emptyArray;
-
+    
                 /**
                  * DescriptorProto reservedName.
                  * @member {Array.<string>} reservedName
@@ -1184,7 +1184,7 @@
                  * @instance
                  */
                 DescriptorProto.prototype.reservedName = $util.emptyArray;
-
+    
                 /**
                  * Creates a new DescriptorProto instance using the specified properties.
                  * @function create
@@ -1196,7 +1196,7 @@
                 DescriptorProto.create = function create(properties) {
                     return new DescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified DescriptorProto message. Does not implicitly {@link google.protobuf.DescriptorProto.verify|verify} messages.
                  * @function encode
@@ -1239,7 +1239,7 @@
                             writer.uint32(/* id 10, wireType 2 =*/82).string(message.reservedName[i]);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified DescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.DescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -1252,7 +1252,7 @@
                 DescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a DescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -1324,7 +1324,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a DescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -1340,7 +1340,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a DescriptorProto message.
                  * @function verify
@@ -1432,7 +1432,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a DescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -1531,7 +1531,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a DescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -1605,7 +1605,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this DescriptorProto to JSON.
                  * @function toJSON
@@ -1616,9 +1616,9 @@
                 DescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 DescriptorProto.ExtensionRange = (function() {
-
+    
                     /**
                      * Properties of an ExtensionRange.
                      * @memberof google.protobuf.DescriptorProto
@@ -1627,7 +1627,7 @@
                      * @property {number|null} [end] ExtensionRange end
                      * @property {google.protobuf.IExtensionRangeOptions|null} [options] ExtensionRange options
                      */
-
+    
                     /**
                      * Constructs a new ExtensionRange.
                      * @memberof google.protobuf.DescriptorProto
@@ -1642,7 +1642,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ExtensionRange start.
                      * @member {number} start
@@ -1650,7 +1650,7 @@
                      * @instance
                      */
                     ExtensionRange.prototype.start = 0;
-
+    
                     /**
                      * ExtensionRange end.
                      * @member {number} end
@@ -1658,7 +1658,7 @@
                      * @instance
                      */
                     ExtensionRange.prototype.end = 0;
-
+    
                     /**
                      * ExtensionRange options.
                      * @member {google.protobuf.IExtensionRangeOptions|null|undefined} options
@@ -1666,7 +1666,7 @@
                      * @instance
                      */
                     ExtensionRange.prototype.options = null;
-
+    
                     /**
                      * Creates a new ExtensionRange instance using the specified properties.
                      * @function create
@@ -1678,7 +1678,7 @@
                     ExtensionRange.create = function create(properties) {
                         return new ExtensionRange(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ExtensionRange message. Does not implicitly {@link google.protobuf.DescriptorProto.ExtensionRange.verify|verify} messages.
                      * @function encode
@@ -1699,7 +1699,7 @@
                             $root.google.protobuf.ExtensionRangeOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ExtensionRange message, length delimited. Does not implicitly {@link google.protobuf.DescriptorProto.ExtensionRange.verify|verify} messages.
                      * @function encodeDelimited
@@ -1712,7 +1712,7 @@
                     ExtensionRange.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an ExtensionRange message from the specified reader or buffer.
                      * @function decode
@@ -1747,7 +1747,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an ExtensionRange message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -1763,7 +1763,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an ExtensionRange message.
                      * @function verify
@@ -1788,7 +1788,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates an ExtensionRange message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -1812,7 +1812,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an ExtensionRange message. Also converts values to other types if specified.
                      * @function toObject
@@ -1839,7 +1839,7 @@
                             object.options = $root.google.protobuf.ExtensionRangeOptions.toObject(message.options, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ExtensionRange to JSON.
                      * @function toJSON
@@ -1850,12 +1850,12 @@
                     ExtensionRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ExtensionRange;
                 })();
-
+    
                 DescriptorProto.ReservedRange = (function() {
-
+    
                     /**
                      * Properties of a ReservedRange.
                      * @memberof google.protobuf.DescriptorProto
@@ -1863,7 +1863,7 @@
                      * @property {number|null} [start] ReservedRange start
                      * @property {number|null} [end] ReservedRange end
                      */
-
+    
                     /**
                      * Constructs a new ReservedRange.
                      * @memberof google.protobuf.DescriptorProto
@@ -1878,7 +1878,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ReservedRange start.
                      * @member {number} start
@@ -1886,7 +1886,7 @@
                      * @instance
                      */
                     ReservedRange.prototype.start = 0;
-
+    
                     /**
                      * ReservedRange end.
                      * @member {number} end
@@ -1894,7 +1894,7 @@
                      * @instance
                      */
                     ReservedRange.prototype.end = 0;
-
+    
                     /**
                      * Creates a new ReservedRange instance using the specified properties.
                      * @function create
@@ -1906,7 +1906,7 @@
                     ReservedRange.create = function create(properties) {
                         return new ReservedRange(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ReservedRange message. Does not implicitly {@link google.protobuf.DescriptorProto.ReservedRange.verify|verify} messages.
                      * @function encode
@@ -1925,7 +1925,7 @@
                             writer.uint32(/* id 2, wireType 0 =*/16).int32(message.end);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ReservedRange message, length delimited. Does not implicitly {@link google.protobuf.DescriptorProto.ReservedRange.verify|verify} messages.
                      * @function encodeDelimited
@@ -1938,7 +1938,7 @@
                     ReservedRange.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ReservedRange message from the specified reader or buffer.
                      * @function decode
@@ -1970,7 +1970,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ReservedRange message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -1986,7 +1986,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ReservedRange message.
                      * @function verify
@@ -2006,7 +2006,7 @@
                                 return "end: integer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a ReservedRange message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -2025,7 +2025,7 @@
                             message.end = object.end | 0;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ReservedRange message. Also converts values to other types if specified.
                      * @function toObject
@@ -2049,7 +2049,7 @@
                             object.end = message.end;
                         return object;
                     };
-
+    
                     /**
                      * Converts this ReservedRange to JSON.
                      * @function toJSON
@@ -2060,22 +2060,22 @@
                     ReservedRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ReservedRange;
                 })();
-
+    
                 return DescriptorProto;
             })();
-
+    
             protobuf.ExtensionRangeOptions = (function() {
-
+    
                 /**
                  * Properties of an ExtensionRangeOptions.
                  * @memberof google.protobuf
                  * @interface IExtensionRangeOptions
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] ExtensionRangeOptions uninterpretedOption
                  */
-
+    
                 /**
                  * Constructs a new ExtensionRangeOptions.
                  * @memberof google.protobuf
@@ -2091,7 +2091,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ExtensionRangeOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -2099,7 +2099,7 @@
                  * @instance
                  */
                 ExtensionRangeOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * Creates a new ExtensionRangeOptions instance using the specified properties.
                  * @function create
@@ -2111,7 +2111,7 @@
                 ExtensionRangeOptions.create = function create(properties) {
                     return new ExtensionRangeOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ExtensionRangeOptions message. Does not implicitly {@link google.protobuf.ExtensionRangeOptions.verify|verify} messages.
                  * @function encode
@@ -2129,7 +2129,7 @@
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ExtensionRangeOptions message, length delimited. Does not implicitly {@link google.protobuf.ExtensionRangeOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -2142,7 +2142,7 @@
                 ExtensionRangeOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an ExtensionRangeOptions message from the specified reader or buffer.
                  * @function decode
@@ -2173,7 +2173,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an ExtensionRangeOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -2189,7 +2189,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an ExtensionRangeOptions message.
                  * @function verify
@@ -2212,7 +2212,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an ExtensionRangeOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -2237,7 +2237,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an ExtensionRangeOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -2260,7 +2260,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this ExtensionRangeOptions to JSON.
                  * @function toJSON
@@ -2271,12 +2271,12 @@
                 ExtensionRangeOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ExtensionRangeOptions;
             })();
-
+    
             protobuf.FieldDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of a FieldDescriptorProto.
                  * @memberof google.protobuf
@@ -2293,7 +2293,7 @@
                  * @property {google.protobuf.IFieldOptions|null} [options] FieldDescriptorProto options
                  * @property {boolean|null} [proto3Optional] FieldDescriptorProto proto3Optional
                  */
-
+    
                 /**
                  * Constructs a new FieldDescriptorProto.
                  * @memberof google.protobuf
@@ -2308,7 +2308,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FieldDescriptorProto name.
                  * @member {string} name
@@ -2316,7 +2316,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * FieldDescriptorProto number.
                  * @member {number} number
@@ -2324,7 +2324,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.number = 0;
-
+    
                 /**
                  * FieldDescriptorProto label.
                  * @member {google.protobuf.FieldDescriptorProto.Label} label
@@ -2332,7 +2332,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.label = 1;
-
+    
                 /**
                  * FieldDescriptorProto type.
                  * @member {google.protobuf.FieldDescriptorProto.Type} type
@@ -2340,7 +2340,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.type = 1;
-
+    
                 /**
                  * FieldDescriptorProto typeName.
                  * @member {string} typeName
@@ -2348,7 +2348,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.typeName = "";
-
+    
                 /**
                  * FieldDescriptorProto extendee.
                  * @member {string} extendee
@@ -2356,7 +2356,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.extendee = "";
-
+    
                 /**
                  * FieldDescriptorProto defaultValue.
                  * @member {string} defaultValue
@@ -2364,7 +2364,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.defaultValue = "";
-
+    
                 /**
                  * FieldDescriptorProto oneofIndex.
                  * @member {number} oneofIndex
@@ -2372,7 +2372,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.oneofIndex = 0;
-
+    
                 /**
                  * FieldDescriptorProto jsonName.
                  * @member {string} jsonName
@@ -2380,7 +2380,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.jsonName = "";
-
+    
                 /**
                  * FieldDescriptorProto options.
                  * @member {google.protobuf.IFieldOptions|null|undefined} options
@@ -2388,7 +2388,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * FieldDescriptorProto proto3Optional.
                  * @member {boolean} proto3Optional
@@ -2396,7 +2396,7 @@
                  * @instance
                  */
                 FieldDescriptorProto.prototype.proto3Optional = false;
-
+    
                 /**
                  * Creates a new FieldDescriptorProto instance using the specified properties.
                  * @function create
@@ -2408,7 +2408,7 @@
                 FieldDescriptorProto.create = function create(properties) {
                     return new FieldDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FieldDescriptorProto message. Does not implicitly {@link google.protobuf.FieldDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -2445,7 +2445,7 @@
                         writer.uint32(/* id 17, wireType 0 =*/136).bool(message.proto3Optional);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FieldDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.FieldDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -2458,7 +2458,7 @@
                 FieldDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FieldDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -2517,7 +2517,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FieldDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -2533,7 +2533,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FieldDescriptorProto message.
                  * @function verify
@@ -2609,7 +2609,7 @@
                             return "proto3Optional: boolean expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a FieldDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -2733,7 +2733,7 @@
                         message.proto3Optional = Boolean(object.proto3Optional);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FieldDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -2784,7 +2784,7 @@
                         object.proto3Optional = message.proto3Optional;
                     return object;
                 };
-
+    
                 /**
                  * Converts this FieldDescriptorProto to JSON.
                  * @function toJSON
@@ -2795,7 +2795,7 @@
                 FieldDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 /**
                  * Type enum.
                  * @name google.protobuf.FieldDescriptorProto.Type
@@ -2841,7 +2841,7 @@
                     values[valuesById[18] = "TYPE_SINT64"] = 18;
                     return values;
                 })();
-
+    
                 /**
                  * Label enum.
                  * @name google.protobuf.FieldDescriptorProto.Label
@@ -2857,12 +2857,12 @@
                     values[valuesById[3] = "LABEL_REPEATED"] = 3;
                     return values;
                 })();
-
+    
                 return FieldDescriptorProto;
             })();
-
+    
             protobuf.OneofDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of an OneofDescriptorProto.
                  * @memberof google.protobuf
@@ -2870,7 +2870,7 @@
                  * @property {string|null} [name] OneofDescriptorProto name
                  * @property {google.protobuf.IOneofOptions|null} [options] OneofDescriptorProto options
                  */
-
+    
                 /**
                  * Constructs a new OneofDescriptorProto.
                  * @memberof google.protobuf
@@ -2885,7 +2885,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * OneofDescriptorProto name.
                  * @member {string} name
@@ -2893,7 +2893,7 @@
                  * @instance
                  */
                 OneofDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * OneofDescriptorProto options.
                  * @member {google.protobuf.IOneofOptions|null|undefined} options
@@ -2901,7 +2901,7 @@
                  * @instance
                  */
                 OneofDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * Creates a new OneofDescriptorProto instance using the specified properties.
                  * @function create
@@ -2913,7 +2913,7 @@
                 OneofDescriptorProto.create = function create(properties) {
                     return new OneofDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified OneofDescriptorProto message. Does not implicitly {@link google.protobuf.OneofDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -2932,7 +2932,7 @@
                         $root.google.protobuf.OneofOptions.encode(message.options, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified OneofDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.OneofDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -2945,7 +2945,7 @@
                 OneofDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an OneofDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -2977,7 +2977,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an OneofDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -2993,7 +2993,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an OneofDescriptorProto message.
                  * @function verify
@@ -3015,7 +3015,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an OneofDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -3037,7 +3037,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an OneofDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -3061,7 +3061,7 @@
                         object.options = $root.google.protobuf.OneofOptions.toObject(message.options, options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this OneofDescriptorProto to JSON.
                  * @function toJSON
@@ -3072,12 +3072,12 @@
                 OneofDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return OneofDescriptorProto;
             })();
-
+    
             protobuf.EnumDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of an EnumDescriptorProto.
                  * @memberof google.protobuf
@@ -3088,7 +3088,7 @@
                  * @property {Array.<google.protobuf.EnumDescriptorProto.IEnumReservedRange>|null} [reservedRange] EnumDescriptorProto reservedRange
                  * @property {Array.<string>|null} [reservedName] EnumDescriptorProto reservedName
                  */
-
+    
                 /**
                  * Constructs a new EnumDescriptorProto.
                  * @memberof google.protobuf
@@ -3106,7 +3106,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * EnumDescriptorProto name.
                  * @member {string} name
@@ -3114,7 +3114,7 @@
                  * @instance
                  */
                 EnumDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * EnumDescriptorProto value.
                  * @member {Array.<google.protobuf.IEnumValueDescriptorProto>} value
@@ -3122,7 +3122,7 @@
                  * @instance
                  */
                 EnumDescriptorProto.prototype.value = $util.emptyArray;
-
+    
                 /**
                  * EnumDescriptorProto options.
                  * @member {google.protobuf.IEnumOptions|null|undefined} options
@@ -3130,7 +3130,7 @@
                  * @instance
                  */
                 EnumDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * EnumDescriptorProto reservedRange.
                  * @member {Array.<google.protobuf.EnumDescriptorProto.IEnumReservedRange>} reservedRange
@@ -3138,7 +3138,7 @@
                  * @instance
                  */
                 EnumDescriptorProto.prototype.reservedRange = $util.emptyArray;
-
+    
                 /**
                  * EnumDescriptorProto reservedName.
                  * @member {Array.<string>} reservedName
@@ -3146,7 +3146,7 @@
                  * @instance
                  */
                 EnumDescriptorProto.prototype.reservedName = $util.emptyArray;
-
+    
                 /**
                  * Creates a new EnumDescriptorProto instance using the specified properties.
                  * @function create
@@ -3158,7 +3158,7 @@
                 EnumDescriptorProto.create = function create(properties) {
                     return new EnumDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified EnumDescriptorProto message. Does not implicitly {@link google.protobuf.EnumDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -3186,7 +3186,7 @@
                             writer.uint32(/* id 5, wireType 2 =*/42).string(message.reservedName[i]);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified EnumDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.EnumDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -3199,7 +3199,7 @@
                 EnumDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an EnumDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -3246,7 +3246,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an EnumDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -3262,7 +3262,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an EnumDescriptorProto message.
                  * @function verify
@@ -3309,7 +3309,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an EnumDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -3358,7 +3358,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an EnumDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -3402,7 +3402,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this EnumDescriptorProto to JSON.
                  * @function toJSON
@@ -3413,9 +3413,9 @@
                 EnumDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 EnumDescriptorProto.EnumReservedRange = (function() {
-
+    
                     /**
                      * Properties of an EnumReservedRange.
                      * @memberof google.protobuf.EnumDescriptorProto
@@ -3423,7 +3423,7 @@
                      * @property {number|null} [start] EnumReservedRange start
                      * @property {number|null} [end] EnumReservedRange end
                      */
-
+    
                     /**
                      * Constructs a new EnumReservedRange.
                      * @memberof google.protobuf.EnumDescriptorProto
@@ -3438,7 +3438,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * EnumReservedRange start.
                      * @member {number} start
@@ -3446,7 +3446,7 @@
                      * @instance
                      */
                     EnumReservedRange.prototype.start = 0;
-
+    
                     /**
                      * EnumReservedRange end.
                      * @member {number} end
@@ -3454,7 +3454,7 @@
                      * @instance
                      */
                     EnumReservedRange.prototype.end = 0;
-
+    
                     /**
                      * Creates a new EnumReservedRange instance using the specified properties.
                      * @function create
@@ -3466,7 +3466,7 @@
                     EnumReservedRange.create = function create(properties) {
                         return new EnumReservedRange(properties);
                     };
-
+    
                     /**
                      * Encodes the specified EnumReservedRange message. Does not implicitly {@link google.protobuf.EnumDescriptorProto.EnumReservedRange.verify|verify} messages.
                      * @function encode
@@ -3485,7 +3485,7 @@
                             writer.uint32(/* id 2, wireType 0 =*/16).int32(message.end);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified EnumReservedRange message, length delimited. Does not implicitly {@link google.protobuf.EnumDescriptorProto.EnumReservedRange.verify|verify} messages.
                      * @function encodeDelimited
@@ -3498,7 +3498,7 @@
                     EnumReservedRange.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an EnumReservedRange message from the specified reader or buffer.
                      * @function decode
@@ -3530,7 +3530,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an EnumReservedRange message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -3546,7 +3546,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an EnumReservedRange message.
                      * @function verify
@@ -3566,7 +3566,7 @@
                                 return "end: integer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates an EnumReservedRange message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -3585,7 +3585,7 @@
                             message.end = object.end | 0;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an EnumReservedRange message. Also converts values to other types if specified.
                      * @function toObject
@@ -3609,7 +3609,7 @@
                             object.end = message.end;
                         return object;
                     };
-
+    
                     /**
                      * Converts this EnumReservedRange to JSON.
                      * @function toJSON
@@ -3620,15 +3620,15 @@
                     EnumReservedRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return EnumReservedRange;
                 })();
-
+    
                 return EnumDescriptorProto;
             })();
-
+    
             protobuf.EnumValueDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of an EnumValueDescriptorProto.
                  * @memberof google.protobuf
@@ -3637,7 +3637,7 @@
                  * @property {number|null} [number] EnumValueDescriptorProto number
                  * @property {google.protobuf.IEnumValueOptions|null} [options] EnumValueDescriptorProto options
                  */
-
+    
                 /**
                  * Constructs a new EnumValueDescriptorProto.
                  * @memberof google.protobuf
@@ -3652,7 +3652,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * EnumValueDescriptorProto name.
                  * @member {string} name
@@ -3660,7 +3660,7 @@
                  * @instance
                  */
                 EnumValueDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * EnumValueDescriptorProto number.
                  * @member {number} number
@@ -3668,7 +3668,7 @@
                  * @instance
                  */
                 EnumValueDescriptorProto.prototype.number = 0;
-
+    
                 /**
                  * EnumValueDescriptorProto options.
                  * @member {google.protobuf.IEnumValueOptions|null|undefined} options
@@ -3676,7 +3676,7 @@
                  * @instance
                  */
                 EnumValueDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * Creates a new EnumValueDescriptorProto instance using the specified properties.
                  * @function create
@@ -3688,7 +3688,7 @@
                 EnumValueDescriptorProto.create = function create(properties) {
                     return new EnumValueDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified EnumValueDescriptorProto message. Does not implicitly {@link google.protobuf.EnumValueDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -3709,7 +3709,7 @@
                         $root.google.protobuf.EnumValueOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified EnumValueDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.EnumValueDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -3722,7 +3722,7 @@
                 EnumValueDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an EnumValueDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -3757,7 +3757,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an EnumValueDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -3773,7 +3773,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an EnumValueDescriptorProto message.
                  * @function verify
@@ -3798,7 +3798,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an EnumValueDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -3822,7 +3822,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an EnumValueDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -3849,7 +3849,7 @@
                         object.options = $root.google.protobuf.EnumValueOptions.toObject(message.options, options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this EnumValueDescriptorProto to JSON.
                  * @function toJSON
@@ -3860,12 +3860,12 @@
                 EnumValueDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return EnumValueDescriptorProto;
             })();
-
+    
             protobuf.ServiceDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of a ServiceDescriptorProto.
                  * @memberof google.protobuf
@@ -3874,7 +3874,7 @@
                  * @property {Array.<google.protobuf.IMethodDescriptorProto>|null} [method] ServiceDescriptorProto method
                  * @property {google.protobuf.IServiceOptions|null} [options] ServiceDescriptorProto options
                  */
-
+    
                 /**
                  * Constructs a new ServiceDescriptorProto.
                  * @memberof google.protobuf
@@ -3890,7 +3890,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ServiceDescriptorProto name.
                  * @member {string} name
@@ -3898,7 +3898,7 @@
                  * @instance
                  */
                 ServiceDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * ServiceDescriptorProto method.
                  * @member {Array.<google.protobuf.IMethodDescriptorProto>} method
@@ -3906,7 +3906,7 @@
                  * @instance
                  */
                 ServiceDescriptorProto.prototype.method = $util.emptyArray;
-
+    
                 /**
                  * ServiceDescriptorProto options.
                  * @member {google.protobuf.IServiceOptions|null|undefined} options
@@ -3914,7 +3914,7 @@
                  * @instance
                  */
                 ServiceDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * Creates a new ServiceDescriptorProto instance using the specified properties.
                  * @function create
@@ -3926,7 +3926,7 @@
                 ServiceDescriptorProto.create = function create(properties) {
                     return new ServiceDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ServiceDescriptorProto message. Does not implicitly {@link google.protobuf.ServiceDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -3948,7 +3948,7 @@
                         $root.google.protobuf.ServiceOptions.encode(message.options, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ServiceDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.ServiceDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -3961,7 +3961,7 @@
                 ServiceDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ServiceDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -3998,7 +3998,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ServiceDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -4014,7 +4014,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ServiceDescriptorProto message.
                  * @function verify
@@ -4045,7 +4045,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a ServiceDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -4077,7 +4077,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ServiceDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -4108,7 +4108,7 @@
                         object.options = $root.google.protobuf.ServiceOptions.toObject(message.options, options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this ServiceDescriptorProto to JSON.
                  * @function toJSON
@@ -4119,12 +4119,12 @@
                 ServiceDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ServiceDescriptorProto;
             })();
-
+    
             protobuf.MethodDescriptorProto = (function() {
-
+    
                 /**
                  * Properties of a MethodDescriptorProto.
                  * @memberof google.protobuf
@@ -4136,7 +4136,7 @@
                  * @property {boolean|null} [clientStreaming] MethodDescriptorProto clientStreaming
                  * @property {boolean|null} [serverStreaming] MethodDescriptorProto serverStreaming
                  */
-
+    
                 /**
                  * Constructs a new MethodDescriptorProto.
                  * @memberof google.protobuf
@@ -4151,7 +4151,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * MethodDescriptorProto name.
                  * @member {string} name
@@ -4159,7 +4159,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.name = "";
-
+    
                 /**
                  * MethodDescriptorProto inputType.
                  * @member {string} inputType
@@ -4167,7 +4167,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.inputType = "";
-
+    
                 /**
                  * MethodDescriptorProto outputType.
                  * @member {string} outputType
@@ -4175,7 +4175,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.outputType = "";
-
+    
                 /**
                  * MethodDescriptorProto options.
                  * @member {google.protobuf.IMethodOptions|null|undefined} options
@@ -4183,7 +4183,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.options = null;
-
+    
                 /**
                  * MethodDescriptorProto clientStreaming.
                  * @member {boolean} clientStreaming
@@ -4191,7 +4191,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.clientStreaming = false;
-
+    
                 /**
                  * MethodDescriptorProto serverStreaming.
                  * @member {boolean} serverStreaming
@@ -4199,7 +4199,7 @@
                  * @instance
                  */
                 MethodDescriptorProto.prototype.serverStreaming = false;
-
+    
                 /**
                  * Creates a new MethodDescriptorProto instance using the specified properties.
                  * @function create
@@ -4211,7 +4211,7 @@
                 MethodDescriptorProto.create = function create(properties) {
                     return new MethodDescriptorProto(properties);
                 };
-
+    
                 /**
                  * Encodes the specified MethodDescriptorProto message. Does not implicitly {@link google.protobuf.MethodDescriptorProto.verify|verify} messages.
                  * @function encode
@@ -4238,7 +4238,7 @@
                         writer.uint32(/* id 6, wireType 0 =*/48).bool(message.serverStreaming);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified MethodDescriptorProto message, length delimited. Does not implicitly {@link google.protobuf.MethodDescriptorProto.verify|verify} messages.
                  * @function encodeDelimited
@@ -4251,7 +4251,7 @@
                 MethodDescriptorProto.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a MethodDescriptorProto message from the specified reader or buffer.
                  * @function decode
@@ -4295,7 +4295,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a MethodDescriptorProto message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -4311,7 +4311,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a MethodDescriptorProto message.
                  * @function verify
@@ -4345,7 +4345,7 @@
                             return "serverStreaming: boolean expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a MethodDescriptorProto message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -4375,7 +4375,7 @@
                         message.serverStreaming = Boolean(object.serverStreaming);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a MethodDescriptorProto message. Also converts values to other types if specified.
                  * @function toObject
@@ -4411,7 +4411,7 @@
                         object.serverStreaming = message.serverStreaming;
                     return object;
                 };
-
+    
                 /**
                  * Converts this MethodDescriptorProto to JSON.
                  * @function toJSON
@@ -4422,12 +4422,12 @@
                 MethodDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return MethodDescriptorProto;
             })();
-
+    
             protobuf.FileOptions = (function() {
-
+    
                 /**
                  * Properties of a FileOptions.
                  * @memberof google.protobuf
@@ -4455,7 +4455,7 @@
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] FileOptions uninterpretedOption
                  * @property {Array.<google.api.IResourceDescriptor>|null} [".google.api.resourceDefinition"] FileOptions .google.api.resourceDefinition
                  */
-
+    
                 /**
                  * Constructs a new FileOptions.
                  * @memberof google.protobuf
@@ -4472,7 +4472,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FileOptions javaPackage.
                  * @member {string} javaPackage
@@ -4480,7 +4480,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaPackage = "";
-
+    
                 /**
                  * FileOptions javaOuterClassname.
                  * @member {string} javaOuterClassname
@@ -4488,7 +4488,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaOuterClassname = "";
-
+    
                 /**
                  * FileOptions javaMultipleFiles.
                  * @member {boolean} javaMultipleFiles
@@ -4496,7 +4496,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaMultipleFiles = false;
-
+    
                 /**
                  * FileOptions javaGenerateEqualsAndHash.
                  * @member {boolean} javaGenerateEqualsAndHash
@@ -4504,7 +4504,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaGenerateEqualsAndHash = false;
-
+    
                 /**
                  * FileOptions javaStringCheckUtf8.
                  * @member {boolean} javaStringCheckUtf8
@@ -4512,7 +4512,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaStringCheckUtf8 = false;
-
+    
                 /**
                  * FileOptions optimizeFor.
                  * @member {google.protobuf.FileOptions.OptimizeMode} optimizeFor
@@ -4520,7 +4520,7 @@
                  * @instance
                  */
                 FileOptions.prototype.optimizeFor = 1;
-
+    
                 /**
                  * FileOptions goPackage.
                  * @member {string} goPackage
@@ -4528,7 +4528,7 @@
                  * @instance
                  */
                 FileOptions.prototype.goPackage = "";
-
+    
                 /**
                  * FileOptions ccGenericServices.
                  * @member {boolean} ccGenericServices
@@ -4536,7 +4536,7 @@
                  * @instance
                  */
                 FileOptions.prototype.ccGenericServices = false;
-
+    
                 /**
                  * FileOptions javaGenericServices.
                  * @member {boolean} javaGenericServices
@@ -4544,7 +4544,7 @@
                  * @instance
                  */
                 FileOptions.prototype.javaGenericServices = false;
-
+    
                 /**
                  * FileOptions pyGenericServices.
                  * @member {boolean} pyGenericServices
@@ -4552,7 +4552,7 @@
                  * @instance
                  */
                 FileOptions.prototype.pyGenericServices = false;
-
+    
                 /**
                  * FileOptions phpGenericServices.
                  * @member {boolean} phpGenericServices
@@ -4560,7 +4560,7 @@
                  * @instance
                  */
                 FileOptions.prototype.phpGenericServices = false;
-
+    
                 /**
                  * FileOptions deprecated.
                  * @member {boolean} deprecated
@@ -4568,7 +4568,7 @@
                  * @instance
                  */
                 FileOptions.prototype.deprecated = false;
-
+    
                 /**
                  * FileOptions ccEnableArenas.
                  * @member {boolean} ccEnableArenas
@@ -4576,7 +4576,7 @@
                  * @instance
                  */
                 FileOptions.prototype.ccEnableArenas = true;
-
+    
                 /**
                  * FileOptions objcClassPrefix.
                  * @member {string} objcClassPrefix
@@ -4584,7 +4584,7 @@
                  * @instance
                  */
                 FileOptions.prototype.objcClassPrefix = "";
-
+    
                 /**
                  * FileOptions csharpNamespace.
                  * @member {string} csharpNamespace
@@ -4592,7 +4592,7 @@
                  * @instance
                  */
                 FileOptions.prototype.csharpNamespace = "";
-
+    
                 /**
                  * FileOptions swiftPrefix.
                  * @member {string} swiftPrefix
@@ -4600,7 +4600,7 @@
                  * @instance
                  */
                 FileOptions.prototype.swiftPrefix = "";
-
+    
                 /**
                  * FileOptions phpClassPrefix.
                  * @member {string} phpClassPrefix
@@ -4608,7 +4608,7 @@
                  * @instance
                  */
                 FileOptions.prototype.phpClassPrefix = "";
-
+    
                 /**
                  * FileOptions phpNamespace.
                  * @member {string} phpNamespace
@@ -4616,7 +4616,7 @@
                  * @instance
                  */
                 FileOptions.prototype.phpNamespace = "";
-
+    
                 /**
                  * FileOptions phpMetadataNamespace.
                  * @member {string} phpMetadataNamespace
@@ -4624,7 +4624,7 @@
                  * @instance
                  */
                 FileOptions.prototype.phpMetadataNamespace = "";
-
+    
                 /**
                  * FileOptions rubyPackage.
                  * @member {string} rubyPackage
@@ -4632,7 +4632,7 @@
                  * @instance
                  */
                 FileOptions.prototype.rubyPackage = "";
-
+    
                 /**
                  * FileOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -4640,7 +4640,7 @@
                  * @instance
                  */
                 FileOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * FileOptions .google.api.resourceDefinition.
                  * @member {Array.<google.api.IResourceDescriptor>} .google.api.resourceDefinition
@@ -4648,7 +4648,7 @@
                  * @instance
                  */
                 FileOptions.prototype[".google.api.resourceDefinition"] = $util.emptyArray;
-
+    
                 /**
                  * Creates a new FileOptions instance using the specified properties.
                  * @function create
@@ -4660,7 +4660,7 @@
                 FileOptions.create = function create(properties) {
                     return new FileOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FileOptions message. Does not implicitly {@link google.protobuf.FileOptions.verify|verify} messages.
                  * @function encode
@@ -4721,7 +4721,7 @@
                             $root.google.api.ResourceDescriptor.encode(message[".google.api.resourceDefinition"][i], writer.uint32(/* id 1053, wireType 2 =*/8426).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FileOptions message, length delimited. Does not implicitly {@link google.protobuf.FileOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -4734,7 +4734,7 @@
                 FileOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FileOptions message from the specified reader or buffer.
                  * @function decode
@@ -4830,7 +4830,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FileOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -4846,7 +4846,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FileOptions message.
                  * @function verify
@@ -4944,7 +4944,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a FileOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -5031,7 +5031,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FileOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -5123,7 +5123,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this FileOptions to JSON.
                  * @function toJSON
@@ -5134,7 +5134,7 @@
                 FileOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 /**
                  * OptimizeMode enum.
                  * @name google.protobuf.FileOptions.OptimizeMode
@@ -5150,12 +5150,12 @@
                     values[valuesById[3] = "LITE_RUNTIME"] = 3;
                     return values;
                 })();
-
+    
                 return FileOptions;
             })();
-
+    
             protobuf.MessageOptions = (function() {
-
+    
                 /**
                  * Properties of a MessageOptions.
                  * @memberof google.protobuf
@@ -5167,7 +5167,7 @@
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] MessageOptions uninterpretedOption
                  * @property {google.api.IResourceDescriptor|null} [".google.api.resource"] MessageOptions .google.api.resource
                  */
-
+    
                 /**
                  * Constructs a new MessageOptions.
                  * @memberof google.protobuf
@@ -5183,7 +5183,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * MessageOptions messageSetWireFormat.
                  * @member {boolean} messageSetWireFormat
@@ -5191,7 +5191,7 @@
                  * @instance
                  */
                 MessageOptions.prototype.messageSetWireFormat = false;
-
+    
                 /**
                  * MessageOptions noStandardDescriptorAccessor.
                  * @member {boolean} noStandardDescriptorAccessor
@@ -5199,7 +5199,7 @@
                  * @instance
                  */
                 MessageOptions.prototype.noStandardDescriptorAccessor = false;
-
+    
                 /**
                  * MessageOptions deprecated.
                  * @member {boolean} deprecated
@@ -5207,7 +5207,7 @@
                  * @instance
                  */
                 MessageOptions.prototype.deprecated = false;
-
+    
                 /**
                  * MessageOptions mapEntry.
                  * @member {boolean} mapEntry
@@ -5215,7 +5215,7 @@
                  * @instance
                  */
                 MessageOptions.prototype.mapEntry = false;
-
+    
                 /**
                  * MessageOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -5223,7 +5223,7 @@
                  * @instance
                  */
                 MessageOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * MessageOptions .google.api.resource.
                  * @member {google.api.IResourceDescriptor|null|undefined} .google.api.resource
@@ -5231,7 +5231,7 @@
                  * @instance
                  */
                 MessageOptions.prototype[".google.api.resource"] = null;
-
+    
                 /**
                  * Creates a new MessageOptions instance using the specified properties.
                  * @function create
@@ -5243,7 +5243,7 @@
                 MessageOptions.create = function create(properties) {
                     return new MessageOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified MessageOptions message. Does not implicitly {@link google.protobuf.MessageOptions.verify|verify} messages.
                  * @function encode
@@ -5271,7 +5271,7 @@
                         $root.google.api.ResourceDescriptor.encode(message[".google.api.resource"], writer.uint32(/* id 1053, wireType 2 =*/8426).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified MessageOptions message, length delimited. Does not implicitly {@link google.protobuf.MessageOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -5284,7 +5284,7 @@
                 MessageOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a MessageOptions message from the specified reader or buffer.
                  * @function decode
@@ -5330,7 +5330,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a MessageOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -5346,7 +5346,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a MessageOptions message.
                  * @function verify
@@ -5386,7 +5386,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a MessageOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -5424,7 +5424,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a MessageOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -5464,7 +5464,7 @@
                         object[".google.api.resource"] = $root.google.api.ResourceDescriptor.toObject(message[".google.api.resource"], options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this MessageOptions to JSON.
                  * @function toJSON
@@ -5475,12 +5475,12 @@
                 MessageOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return MessageOptions;
             })();
-
+    
             protobuf.FieldOptions = (function() {
-
+    
                 /**
                  * Properties of a FieldOptions.
                  * @memberof google.protobuf
@@ -5495,7 +5495,7 @@
                  * @property {Array.<google.api.FieldBehavior>|null} [".google.api.fieldBehavior"] FieldOptions .google.api.fieldBehavior
                  * @property {google.api.IResourceReference|null} [".google.api.resourceReference"] FieldOptions .google.api.resourceReference
                  */
-
+    
                 /**
                  * Constructs a new FieldOptions.
                  * @memberof google.protobuf
@@ -5512,7 +5512,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FieldOptions ctype.
                  * @member {google.protobuf.FieldOptions.CType} ctype
@@ -5520,7 +5520,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.ctype = 0;
-
+    
                 /**
                  * FieldOptions packed.
                  * @member {boolean} packed
@@ -5528,7 +5528,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.packed = false;
-
+    
                 /**
                  * FieldOptions jstype.
                  * @member {google.protobuf.FieldOptions.JSType} jstype
@@ -5536,7 +5536,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.jstype = 0;
-
+    
                 /**
                  * FieldOptions lazy.
                  * @member {boolean} lazy
@@ -5544,7 +5544,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.lazy = false;
-
+    
                 /**
                  * FieldOptions deprecated.
                  * @member {boolean} deprecated
@@ -5552,7 +5552,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.deprecated = false;
-
+    
                 /**
                  * FieldOptions weak.
                  * @member {boolean} weak
@@ -5560,7 +5560,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.weak = false;
-
+    
                 /**
                  * FieldOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -5568,7 +5568,7 @@
                  * @instance
                  */
                 FieldOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * FieldOptions .google.api.fieldBehavior.
                  * @member {Array.<google.api.FieldBehavior>} .google.api.fieldBehavior
@@ -5576,7 +5576,7 @@
                  * @instance
                  */
                 FieldOptions.prototype[".google.api.fieldBehavior"] = $util.emptyArray;
-
+    
                 /**
                  * FieldOptions .google.api.resourceReference.
                  * @member {google.api.IResourceReference|null|undefined} .google.api.resourceReference
@@ -5584,7 +5584,7 @@
                  * @instance
                  */
                 FieldOptions.prototype[".google.api.resourceReference"] = null;
-
+    
                 /**
                  * Creates a new FieldOptions instance using the specified properties.
                  * @function create
@@ -5596,7 +5596,7 @@
                 FieldOptions.create = function create(properties) {
                     return new FieldOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FieldOptions message. Does not implicitly {@link google.protobuf.FieldOptions.verify|verify} messages.
                  * @function encode
@@ -5634,7 +5634,7 @@
                         $root.google.api.ResourceReference.encode(message[".google.api.resourceReference"], writer.uint32(/* id 1055, wireType 2 =*/8442).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FieldOptions message, length delimited. Does not implicitly {@link google.protobuf.FieldOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -5647,7 +5647,7 @@
                 FieldOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FieldOptions message from the specified reader or buffer.
                  * @function decode
@@ -5709,7 +5709,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FieldOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -5725,7 +5725,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FieldOptions message.
                  * @function verify
@@ -5800,7 +5800,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a FieldOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -5903,7 +5903,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FieldOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -5956,7 +5956,7 @@
                         object[".google.api.resourceReference"] = $root.google.api.ResourceReference.toObject(message[".google.api.resourceReference"], options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this FieldOptions to JSON.
                  * @function toJSON
@@ -5967,7 +5967,7 @@
                 FieldOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 /**
                  * CType enum.
                  * @name google.protobuf.FieldOptions.CType
@@ -5983,7 +5983,7 @@
                     values[valuesById[2] = "STRING_PIECE"] = 2;
                     return values;
                 })();
-
+    
                 /**
                  * JSType enum.
                  * @name google.protobuf.FieldOptions.JSType
@@ -5999,19 +5999,19 @@
                     values[valuesById[2] = "JS_NUMBER"] = 2;
                     return values;
                 })();
-
+    
                 return FieldOptions;
             })();
-
+    
             protobuf.OneofOptions = (function() {
-
+    
                 /**
                  * Properties of an OneofOptions.
                  * @memberof google.protobuf
                  * @interface IOneofOptions
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] OneofOptions uninterpretedOption
                  */
-
+    
                 /**
                  * Constructs a new OneofOptions.
                  * @memberof google.protobuf
@@ -6027,7 +6027,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * OneofOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -6035,7 +6035,7 @@
                  * @instance
                  */
                 OneofOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * Creates a new OneofOptions instance using the specified properties.
                  * @function create
@@ -6047,7 +6047,7 @@
                 OneofOptions.create = function create(properties) {
                     return new OneofOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified OneofOptions message. Does not implicitly {@link google.protobuf.OneofOptions.verify|verify} messages.
                  * @function encode
@@ -6065,7 +6065,7 @@
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified OneofOptions message, length delimited. Does not implicitly {@link google.protobuf.OneofOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -6078,7 +6078,7 @@
                 OneofOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an OneofOptions message from the specified reader or buffer.
                  * @function decode
@@ -6109,7 +6109,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an OneofOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -6125,7 +6125,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an OneofOptions message.
                  * @function verify
@@ -6148,7 +6148,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an OneofOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -6173,7 +6173,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an OneofOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -6196,7 +6196,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this OneofOptions to JSON.
                  * @function toJSON
@@ -6207,12 +6207,12 @@
                 OneofOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return OneofOptions;
             })();
-
+    
             protobuf.EnumOptions = (function() {
-
+    
                 /**
                  * Properties of an EnumOptions.
                  * @memberof google.protobuf
@@ -6221,7 +6221,7 @@
                  * @property {boolean|null} [deprecated] EnumOptions deprecated
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] EnumOptions uninterpretedOption
                  */
-
+    
                 /**
                  * Constructs a new EnumOptions.
                  * @memberof google.protobuf
@@ -6237,7 +6237,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * EnumOptions allowAlias.
                  * @member {boolean} allowAlias
@@ -6245,7 +6245,7 @@
                  * @instance
                  */
                 EnumOptions.prototype.allowAlias = false;
-
+    
                 /**
                  * EnumOptions deprecated.
                  * @member {boolean} deprecated
@@ -6253,7 +6253,7 @@
                  * @instance
                  */
                 EnumOptions.prototype.deprecated = false;
-
+    
                 /**
                  * EnumOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -6261,7 +6261,7 @@
                  * @instance
                  */
                 EnumOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * Creates a new EnumOptions instance using the specified properties.
                  * @function create
@@ -6273,7 +6273,7 @@
                 EnumOptions.create = function create(properties) {
                     return new EnumOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified EnumOptions message. Does not implicitly {@link google.protobuf.EnumOptions.verify|verify} messages.
                  * @function encode
@@ -6295,7 +6295,7 @@
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified EnumOptions message, length delimited. Does not implicitly {@link google.protobuf.EnumOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -6308,7 +6308,7 @@
                 EnumOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an EnumOptions message from the specified reader or buffer.
                  * @function decode
@@ -6345,7 +6345,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an EnumOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -6361,7 +6361,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an EnumOptions message.
                  * @function verify
@@ -6390,7 +6390,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an EnumOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -6419,7 +6419,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an EnumOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -6450,7 +6450,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this EnumOptions to JSON.
                  * @function toJSON
@@ -6461,12 +6461,12 @@
                 EnumOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return EnumOptions;
             })();
-
+    
             protobuf.EnumValueOptions = (function() {
-
+    
                 /**
                  * Properties of an EnumValueOptions.
                  * @memberof google.protobuf
@@ -6474,7 +6474,7 @@
                  * @property {boolean|null} [deprecated] EnumValueOptions deprecated
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] EnumValueOptions uninterpretedOption
                  */
-
+    
                 /**
                  * Constructs a new EnumValueOptions.
                  * @memberof google.protobuf
@@ -6490,7 +6490,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * EnumValueOptions deprecated.
                  * @member {boolean} deprecated
@@ -6498,7 +6498,7 @@
                  * @instance
                  */
                 EnumValueOptions.prototype.deprecated = false;
-
+    
                 /**
                  * EnumValueOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -6506,7 +6506,7 @@
                  * @instance
                  */
                 EnumValueOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * Creates a new EnumValueOptions instance using the specified properties.
                  * @function create
@@ -6518,7 +6518,7 @@
                 EnumValueOptions.create = function create(properties) {
                     return new EnumValueOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified EnumValueOptions message. Does not implicitly {@link google.protobuf.EnumValueOptions.verify|verify} messages.
                  * @function encode
@@ -6538,7 +6538,7 @@
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified EnumValueOptions message, length delimited. Does not implicitly {@link google.protobuf.EnumValueOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -6551,7 +6551,7 @@
                 EnumValueOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an EnumValueOptions message from the specified reader or buffer.
                  * @function decode
@@ -6585,7 +6585,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an EnumValueOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -6601,7 +6601,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an EnumValueOptions message.
                  * @function verify
@@ -6627,7 +6627,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an EnumValueOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -6654,7 +6654,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an EnumValueOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -6681,7 +6681,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this EnumValueOptions to JSON.
                  * @function toJSON
@@ -6692,12 +6692,12 @@
                 EnumValueOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return EnumValueOptions;
             })();
-
+    
             protobuf.ServiceOptions = (function() {
-
+    
                 /**
                  * Properties of a ServiceOptions.
                  * @memberof google.protobuf
@@ -6707,7 +6707,7 @@
                  * @property {string|null} [".google.api.defaultHost"] ServiceOptions .google.api.defaultHost
                  * @property {string|null} [".google.api.oauthScopes"] ServiceOptions .google.api.oauthScopes
                  */
-
+    
                 /**
                  * Constructs a new ServiceOptions.
                  * @memberof google.protobuf
@@ -6723,7 +6723,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ServiceOptions deprecated.
                  * @member {boolean} deprecated
@@ -6731,7 +6731,7 @@
                  * @instance
                  */
                 ServiceOptions.prototype.deprecated = false;
-
+    
                 /**
                  * ServiceOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -6739,7 +6739,7 @@
                  * @instance
                  */
                 ServiceOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * ServiceOptions .google.api.defaultHost.
                  * @member {string} .google.api.defaultHost
@@ -6747,7 +6747,7 @@
                  * @instance
                  */
                 ServiceOptions.prototype[".google.api.defaultHost"] = "";
-
+    
                 /**
                  * ServiceOptions .google.api.oauthScopes.
                  * @member {string} .google.api.oauthScopes
@@ -6755,7 +6755,7 @@
                  * @instance
                  */
                 ServiceOptions.prototype[".google.api.oauthScopes"] = "";
-
+    
                 /**
                  * Creates a new ServiceOptions instance using the specified properties.
                  * @function create
@@ -6767,7 +6767,7 @@
                 ServiceOptions.create = function create(properties) {
                     return new ServiceOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ServiceOptions message. Does not implicitly {@link google.protobuf.ServiceOptions.verify|verify} messages.
                  * @function encode
@@ -6791,7 +6791,7 @@
                         writer.uint32(/* id 1050, wireType 2 =*/8402).string(message[".google.api.oauthScopes"]);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ServiceOptions message, length delimited. Does not implicitly {@link google.protobuf.ServiceOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -6804,7 +6804,7 @@
                 ServiceOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ServiceOptions message from the specified reader or buffer.
                  * @function decode
@@ -6844,7 +6844,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ServiceOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -6860,7 +6860,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ServiceOptions message.
                  * @function verify
@@ -6892,7 +6892,7 @@
                             return ".google.api.oauthScopes: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a ServiceOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -6923,7 +6923,7 @@
                         message[".google.api.oauthScopes"] = String(object[".google.api.oauthScopes"]);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ServiceOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -6957,7 +6957,7 @@
                         object[".google.api.oauthScopes"] = message[".google.api.oauthScopes"];
                     return object;
                 };
-
+    
                 /**
                  * Converts this ServiceOptions to JSON.
                  * @function toJSON
@@ -6968,12 +6968,12 @@
                 ServiceOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ServiceOptions;
             })();
-
+    
             protobuf.MethodOptions = (function() {
-
+    
                 /**
                  * Properties of a MethodOptions.
                  * @memberof google.protobuf
@@ -6985,7 +6985,7 @@
                  * @property {Array.<string>|null} [".google.api.methodSignature"] MethodOptions .google.api.methodSignature
                  * @property {google.longrunning.IOperationInfo|null} [".google.longrunning.operationInfo"] MethodOptions .google.longrunning.operationInfo
                  */
-
+    
                 /**
                  * Constructs a new MethodOptions.
                  * @memberof google.protobuf
@@ -7002,7 +7002,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * MethodOptions deprecated.
                  * @member {boolean} deprecated
@@ -7010,7 +7010,7 @@
                  * @instance
                  */
                 MethodOptions.prototype.deprecated = false;
-
+    
                 /**
                  * MethodOptions idempotencyLevel.
                  * @member {google.protobuf.MethodOptions.IdempotencyLevel} idempotencyLevel
@@ -7018,7 +7018,7 @@
                  * @instance
                  */
                 MethodOptions.prototype.idempotencyLevel = 0;
-
+    
                 /**
                  * MethodOptions uninterpretedOption.
                  * @member {Array.<google.protobuf.IUninterpretedOption>} uninterpretedOption
@@ -7026,7 +7026,7 @@
                  * @instance
                  */
                 MethodOptions.prototype.uninterpretedOption = $util.emptyArray;
-
+    
                 /**
                  * MethodOptions .google.api.http.
                  * @member {google.api.IHttpRule|null|undefined} .google.api.http
@@ -7034,7 +7034,7 @@
                  * @instance
                  */
                 MethodOptions.prototype[".google.api.http"] = null;
-
+    
                 /**
                  * MethodOptions .google.api.methodSignature.
                  * @member {Array.<string>} .google.api.methodSignature
@@ -7042,7 +7042,7 @@
                  * @instance
                  */
                 MethodOptions.prototype[".google.api.methodSignature"] = $util.emptyArray;
-
+    
                 /**
                  * MethodOptions .google.longrunning.operationInfo.
                  * @member {google.longrunning.IOperationInfo|null|undefined} .google.longrunning.operationInfo
@@ -7050,7 +7050,7 @@
                  * @instance
                  */
                 MethodOptions.prototype[".google.longrunning.operationInfo"] = null;
-
+    
                 /**
                  * Creates a new MethodOptions instance using the specified properties.
                  * @function create
@@ -7062,7 +7062,7 @@
                 MethodOptions.create = function create(properties) {
                     return new MethodOptions(properties);
                 };
-
+    
                 /**
                  * Encodes the specified MethodOptions message. Does not implicitly {@link google.protobuf.MethodOptions.verify|verify} messages.
                  * @function encode
@@ -7091,7 +7091,7 @@
                         $root.google.api.HttpRule.encode(message[".google.api.http"], writer.uint32(/* id 72295728, wireType 2 =*/578365826).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified MethodOptions message, length delimited. Does not implicitly {@link google.protobuf.MethodOptions.verify|verify} messages.
                  * @function encodeDelimited
@@ -7104,7 +7104,7 @@
                 MethodOptions.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a MethodOptions message from the specified reader or buffer.
                  * @function decode
@@ -7152,7 +7152,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a MethodOptions message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -7168,7 +7168,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a MethodOptions message.
                  * @function verify
@@ -7220,7 +7220,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a MethodOptions message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -7278,7 +7278,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a MethodOptions message. Also converts values to other types if specified.
                  * @function toObject
@@ -7322,7 +7322,7 @@
                         object[".google.api.http"] = $root.google.api.HttpRule.toObject(message[".google.api.http"], options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this MethodOptions to JSON.
                  * @function toJSON
@@ -7333,7 +7333,7 @@
                 MethodOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 /**
                  * IdempotencyLevel enum.
                  * @name google.protobuf.MethodOptions.IdempotencyLevel
@@ -7349,12 +7349,12 @@
                     values[valuesById[2] = "IDEMPOTENT"] = 2;
                     return values;
                 })();
-
+    
                 return MethodOptions;
             })();
-
+    
             protobuf.UninterpretedOption = (function() {
-
+    
                 /**
                  * Properties of an UninterpretedOption.
                  * @memberof google.protobuf
@@ -7367,7 +7367,7 @@
                  * @property {Uint8Array|null} [stringValue] UninterpretedOption stringValue
                  * @property {string|null} [aggregateValue] UninterpretedOption aggregateValue
                  */
-
+    
                 /**
                  * Constructs a new UninterpretedOption.
                  * @memberof google.protobuf
@@ -7383,7 +7383,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * UninterpretedOption name.
                  * @member {Array.<google.protobuf.UninterpretedOption.INamePart>} name
@@ -7391,7 +7391,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.name = $util.emptyArray;
-
+    
                 /**
                  * UninterpretedOption identifierValue.
                  * @member {string} identifierValue
@@ -7399,7 +7399,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.identifierValue = "";
-
+    
                 /**
                  * UninterpretedOption positiveIntValue.
                  * @member {number|Long} positiveIntValue
@@ -7407,7 +7407,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.positiveIntValue = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-
+    
                 /**
                  * UninterpretedOption negativeIntValue.
                  * @member {number|Long} negativeIntValue
@@ -7415,7 +7415,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.negativeIntValue = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                 /**
                  * UninterpretedOption doubleValue.
                  * @member {number} doubleValue
@@ -7423,7 +7423,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.doubleValue = 0;
-
+    
                 /**
                  * UninterpretedOption stringValue.
                  * @member {Uint8Array} stringValue
@@ -7431,7 +7431,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.stringValue = $util.newBuffer([]);
-
+    
                 /**
                  * UninterpretedOption aggregateValue.
                  * @member {string} aggregateValue
@@ -7439,7 +7439,7 @@
                  * @instance
                  */
                 UninterpretedOption.prototype.aggregateValue = "";
-
+    
                 /**
                  * Creates a new UninterpretedOption instance using the specified properties.
                  * @function create
@@ -7451,7 +7451,7 @@
                 UninterpretedOption.create = function create(properties) {
                     return new UninterpretedOption(properties);
                 };
-
+    
                 /**
                  * Encodes the specified UninterpretedOption message. Does not implicitly {@link google.protobuf.UninterpretedOption.verify|verify} messages.
                  * @function encode
@@ -7481,7 +7481,7 @@
                         writer.uint32(/* id 8, wireType 2 =*/66).string(message.aggregateValue);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified UninterpretedOption message, length delimited. Does not implicitly {@link google.protobuf.UninterpretedOption.verify|verify} messages.
                  * @function encodeDelimited
@@ -7494,7 +7494,7 @@
                 UninterpretedOption.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an UninterpretedOption message from the specified reader or buffer.
                  * @function decode
@@ -7543,7 +7543,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an UninterpretedOption message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -7559,7 +7559,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an UninterpretedOption message.
                  * @function verify
@@ -7600,7 +7600,7 @@
                             return "aggregateValue: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates an UninterpretedOption message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -7654,7 +7654,7 @@
                         message.aggregateValue = String(object.aggregateValue);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an UninterpretedOption message. Also converts values to other types if specified.
                  * @function toObject
@@ -7717,7 +7717,7 @@
                         object.aggregateValue = message.aggregateValue;
                     return object;
                 };
-
+    
                 /**
                  * Converts this UninterpretedOption to JSON.
                  * @function toJSON
@@ -7728,9 +7728,9 @@
                 UninterpretedOption.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 UninterpretedOption.NamePart = (function() {
-
+    
                     /**
                      * Properties of a NamePart.
                      * @memberof google.protobuf.UninterpretedOption
@@ -7738,7 +7738,7 @@
                      * @property {string} namePart NamePart namePart
                      * @property {boolean} isExtension NamePart isExtension
                      */
-
+    
                     /**
                      * Constructs a new NamePart.
                      * @memberof google.protobuf.UninterpretedOption
@@ -7753,7 +7753,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * NamePart namePart.
                      * @member {string} namePart
@@ -7761,7 +7761,7 @@
                      * @instance
                      */
                     NamePart.prototype.namePart = "";
-
+    
                     /**
                      * NamePart isExtension.
                      * @member {boolean} isExtension
@@ -7769,7 +7769,7 @@
                      * @instance
                      */
                     NamePart.prototype.isExtension = false;
-
+    
                     /**
                      * Creates a new NamePart instance using the specified properties.
                      * @function create
@@ -7781,7 +7781,7 @@
                     NamePart.create = function create(properties) {
                         return new NamePart(properties);
                     };
-
+    
                     /**
                      * Encodes the specified NamePart message. Does not implicitly {@link google.protobuf.UninterpretedOption.NamePart.verify|verify} messages.
                      * @function encode
@@ -7798,7 +7798,7 @@
                         writer.uint32(/* id 2, wireType 0 =*/16).bool(message.isExtension);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified NamePart message, length delimited. Does not implicitly {@link google.protobuf.UninterpretedOption.NamePart.verify|verify} messages.
                      * @function encodeDelimited
@@ -7811,7 +7811,7 @@
                     NamePart.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a NamePart message from the specified reader or buffer.
                      * @function decode
@@ -7847,7 +7847,7 @@
                             throw $util.ProtocolError("missing required 'isExtension'", { instance: message });
                         return message;
                     };
-
+    
                     /**
                      * Decodes a NamePart message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -7863,7 +7863,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a NamePart message.
                      * @function verify
@@ -7881,7 +7881,7 @@
                             return "isExtension: boolean expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a NamePart message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -7900,7 +7900,7 @@
                             message.isExtension = Boolean(object.isExtension);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a NamePart message. Also converts values to other types if specified.
                      * @function toObject
@@ -7924,7 +7924,7 @@
                             object.isExtension = message.isExtension;
                         return object;
                     };
-
+    
                     /**
                      * Converts this NamePart to JSON.
                      * @function toJSON
@@ -7935,22 +7935,22 @@
                     NamePart.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return NamePart;
                 })();
-
+    
                 return UninterpretedOption;
             })();
-
+    
             protobuf.SourceCodeInfo = (function() {
-
+    
                 /**
                  * Properties of a SourceCodeInfo.
                  * @memberof google.protobuf
                  * @interface ISourceCodeInfo
                  * @property {Array.<google.protobuf.SourceCodeInfo.ILocation>|null} [location] SourceCodeInfo location
                  */
-
+    
                 /**
                  * Constructs a new SourceCodeInfo.
                  * @memberof google.protobuf
@@ -7966,7 +7966,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * SourceCodeInfo location.
                  * @member {Array.<google.protobuf.SourceCodeInfo.ILocation>} location
@@ -7974,7 +7974,7 @@
                  * @instance
                  */
                 SourceCodeInfo.prototype.location = $util.emptyArray;
-
+    
                 /**
                  * Creates a new SourceCodeInfo instance using the specified properties.
                  * @function create
@@ -7986,7 +7986,7 @@
                 SourceCodeInfo.create = function create(properties) {
                     return new SourceCodeInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified SourceCodeInfo message. Does not implicitly {@link google.protobuf.SourceCodeInfo.verify|verify} messages.
                  * @function encode
@@ -8004,7 +8004,7 @@
                             $root.google.protobuf.SourceCodeInfo.Location.encode(message.location[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified SourceCodeInfo message, length delimited. Does not implicitly {@link google.protobuf.SourceCodeInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -8017,7 +8017,7 @@
                 SourceCodeInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a SourceCodeInfo message from the specified reader or buffer.
                  * @function decode
@@ -8048,7 +8048,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a SourceCodeInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -8064,7 +8064,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a SourceCodeInfo message.
                  * @function verify
@@ -8087,7 +8087,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a SourceCodeInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -8112,7 +8112,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a SourceCodeInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -8135,7 +8135,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this SourceCodeInfo to JSON.
                  * @function toJSON
@@ -8146,9 +8146,9 @@
                 SourceCodeInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 SourceCodeInfo.Location = (function() {
-
+    
                     /**
                      * Properties of a Location.
                      * @memberof google.protobuf.SourceCodeInfo
@@ -8159,7 +8159,7 @@
                      * @property {string|null} [trailingComments] Location trailingComments
                      * @property {Array.<string>|null} [leadingDetachedComments] Location leadingDetachedComments
                      */
-
+    
                     /**
                      * Constructs a new Location.
                      * @memberof google.protobuf.SourceCodeInfo
@@ -8177,7 +8177,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Location path.
                      * @member {Array.<number>} path
@@ -8185,7 +8185,7 @@
                      * @instance
                      */
                     Location.prototype.path = $util.emptyArray;
-
+    
                     /**
                      * Location span.
                      * @member {Array.<number>} span
@@ -8193,7 +8193,7 @@
                      * @instance
                      */
                     Location.prototype.span = $util.emptyArray;
-
+    
                     /**
                      * Location leadingComments.
                      * @member {string} leadingComments
@@ -8201,7 +8201,7 @@
                      * @instance
                      */
                     Location.prototype.leadingComments = "";
-
+    
                     /**
                      * Location trailingComments.
                      * @member {string} trailingComments
@@ -8209,7 +8209,7 @@
                      * @instance
                      */
                     Location.prototype.trailingComments = "";
-
+    
                     /**
                      * Location leadingDetachedComments.
                      * @member {Array.<string>} leadingDetachedComments
@@ -8217,7 +8217,7 @@
                      * @instance
                      */
                     Location.prototype.leadingDetachedComments = $util.emptyArray;
-
+    
                     /**
                      * Creates a new Location instance using the specified properties.
                      * @function create
@@ -8229,7 +8229,7 @@
                     Location.create = function create(properties) {
                         return new Location(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Location message. Does not implicitly {@link google.protobuf.SourceCodeInfo.Location.verify|verify} messages.
                      * @function encode
@@ -8263,7 +8263,7 @@
                                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.leadingDetachedComments[i]);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Location message, length delimited. Does not implicitly {@link google.protobuf.SourceCodeInfo.Location.verify|verify} messages.
                      * @function encodeDelimited
@@ -8276,7 +8276,7 @@
                     Location.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Location message from the specified reader or buffer.
                      * @function decode
@@ -8333,7 +8333,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Location message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -8349,7 +8349,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Location message.
                      * @function verify
@@ -8390,7 +8390,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Location message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -8430,7 +8430,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Location message. Also converts values to other types if specified.
                      * @function toObject
@@ -8474,7 +8474,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this Location to JSON.
                      * @function toJSON
@@ -8485,22 +8485,22 @@
                     Location.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Location;
                 })();
-
+    
                 return SourceCodeInfo;
             })();
-
+    
             protobuf.GeneratedCodeInfo = (function() {
-
+    
                 /**
                  * Properties of a GeneratedCodeInfo.
                  * @memberof google.protobuf
                  * @interface IGeneratedCodeInfo
                  * @property {Array.<google.protobuf.GeneratedCodeInfo.IAnnotation>|null} [annotation] GeneratedCodeInfo annotation
                  */
-
+    
                 /**
                  * Constructs a new GeneratedCodeInfo.
                  * @memberof google.protobuf
@@ -8516,7 +8516,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * GeneratedCodeInfo annotation.
                  * @member {Array.<google.protobuf.GeneratedCodeInfo.IAnnotation>} annotation
@@ -8524,7 +8524,7 @@
                  * @instance
                  */
                 GeneratedCodeInfo.prototype.annotation = $util.emptyArray;
-
+    
                 /**
                  * Creates a new GeneratedCodeInfo instance using the specified properties.
                  * @function create
@@ -8536,7 +8536,7 @@
                 GeneratedCodeInfo.create = function create(properties) {
                     return new GeneratedCodeInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified GeneratedCodeInfo message. Does not implicitly {@link google.protobuf.GeneratedCodeInfo.verify|verify} messages.
                  * @function encode
@@ -8554,7 +8554,7 @@
                             $root.google.protobuf.GeneratedCodeInfo.Annotation.encode(message.annotation[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified GeneratedCodeInfo message, length delimited. Does not implicitly {@link google.protobuf.GeneratedCodeInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -8567,7 +8567,7 @@
                 GeneratedCodeInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a GeneratedCodeInfo message from the specified reader or buffer.
                  * @function decode
@@ -8598,7 +8598,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a GeneratedCodeInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -8614,7 +8614,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a GeneratedCodeInfo message.
                  * @function verify
@@ -8637,7 +8637,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a GeneratedCodeInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -8662,7 +8662,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a GeneratedCodeInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -8685,7 +8685,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this GeneratedCodeInfo to JSON.
                  * @function toJSON
@@ -8696,9 +8696,9 @@
                 GeneratedCodeInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 GeneratedCodeInfo.Annotation = (function() {
-
+    
                     /**
                      * Properties of an Annotation.
                      * @memberof google.protobuf.GeneratedCodeInfo
@@ -8708,7 +8708,7 @@
                      * @property {number|null} [begin] Annotation begin
                      * @property {number|null} [end] Annotation end
                      */
-
+    
                     /**
                      * Constructs a new Annotation.
                      * @memberof google.protobuf.GeneratedCodeInfo
@@ -8724,7 +8724,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Annotation path.
                      * @member {Array.<number>} path
@@ -8732,7 +8732,7 @@
                      * @instance
                      */
                     Annotation.prototype.path = $util.emptyArray;
-
+    
                     /**
                      * Annotation sourceFile.
                      * @member {string} sourceFile
@@ -8740,7 +8740,7 @@
                      * @instance
                      */
                     Annotation.prototype.sourceFile = "";
-
+    
                     /**
                      * Annotation begin.
                      * @member {number} begin
@@ -8748,7 +8748,7 @@
                      * @instance
                      */
                     Annotation.prototype.begin = 0;
-
+    
                     /**
                      * Annotation end.
                      * @member {number} end
@@ -8756,7 +8756,7 @@
                      * @instance
                      */
                     Annotation.prototype.end = 0;
-
+    
                     /**
                      * Creates a new Annotation instance using the specified properties.
                      * @function create
@@ -8768,7 +8768,7 @@
                     Annotation.create = function create(properties) {
                         return new Annotation(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Annotation message. Does not implicitly {@link google.protobuf.GeneratedCodeInfo.Annotation.verify|verify} messages.
                      * @function encode
@@ -8795,7 +8795,7 @@
                             writer.uint32(/* id 4, wireType 0 =*/32).int32(message.end);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Annotation message, length delimited. Does not implicitly {@link google.protobuf.GeneratedCodeInfo.Annotation.verify|verify} messages.
                      * @function encodeDelimited
@@ -8808,7 +8808,7 @@
                     Annotation.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an Annotation message from the specified reader or buffer.
                      * @function decode
@@ -8853,7 +8853,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an Annotation message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -8869,7 +8869,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an Annotation message.
                      * @function verify
@@ -8899,7 +8899,7 @@
                                 return "end: integer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates an Annotation message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -8927,7 +8927,7 @@
                             message.end = object.end | 0;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an Annotation message. Also converts values to other types if specified.
                      * @function toObject
@@ -8961,7 +8961,7 @@
                             object.end = message.end;
                         return object;
                     };
-
+    
                     /**
                      * Converts this Annotation to JSON.
                      * @function toJSON
@@ -8972,15 +8972,15 @@
                     Annotation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Annotation;
                 })();
-
+    
                 return GeneratedCodeInfo;
             })();
-
+    
             protobuf.Any = (function() {
-
+    
                 /**
                  * Properties of an Any.
                  * @memberof google.protobuf
@@ -8988,7 +8988,7 @@
                  * @property {string|null} [type_url] Any type_url
                  * @property {Uint8Array|null} [value] Any value
                  */
-
+    
                 /**
                  * Constructs a new Any.
                  * @memberof google.protobuf
@@ -9003,7 +9003,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Any type_url.
                  * @member {string} type_url
@@ -9011,7 +9011,7 @@
                  * @instance
                  */
                 Any.prototype.type_url = "";
-
+    
                 /**
                  * Any value.
                  * @member {Uint8Array} value
@@ -9019,7 +9019,7 @@
                  * @instance
                  */
                 Any.prototype.value = $util.newBuffer([]);
-
+    
                 /**
                  * Creates a new Any instance using the specified properties.
                  * @function create
@@ -9031,7 +9031,7 @@
                 Any.create = function create(properties) {
                     return new Any(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Any message. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
                  * @function encode
@@ -9050,7 +9050,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.value);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Any message, length delimited. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
                  * @function encodeDelimited
@@ -9063,7 +9063,7 @@
                 Any.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an Any message from the specified reader or buffer.
                  * @function decode
@@ -9095,7 +9095,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an Any message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -9111,7 +9111,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an Any message.
                  * @function verify
@@ -9131,7 +9131,7 @@
                             return "value: buffer expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates an Any message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -9153,7 +9153,7 @@
                             message.value = object.value;
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an Any message. Also converts values to other types if specified.
                  * @function toObject
@@ -9183,7 +9183,7 @@
                         object.value = options.bytes === String ? $util.base64.encode(message.value, 0, message.value.length) : options.bytes === Array ? Array.prototype.slice.call(message.value) : message.value;
                     return object;
                 };
-
+    
                 /**
                  * Converts this Any to JSON.
                  * @function toJSON
@@ -9194,18 +9194,18 @@
                 Any.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Any;
             })();
-
+    
             protobuf.Empty = (function() {
-
+    
                 /**
                  * Properties of an Empty.
                  * @memberof google.protobuf
                  * @interface IEmpty
                  */
-
+    
                 /**
                  * Constructs a new Empty.
                  * @memberof google.protobuf
@@ -9220,7 +9220,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Creates a new Empty instance using the specified properties.
                  * @function create
@@ -9232,7 +9232,7 @@
                 Empty.create = function create(properties) {
                     return new Empty(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Empty message. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
                  * @function encode
@@ -9247,7 +9247,7 @@
                         writer = $Writer.create();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Empty message, length delimited. Does not implicitly {@link google.protobuf.Empty.verify|verify} messages.
                  * @function encodeDelimited
@@ -9260,7 +9260,7 @@
                 Empty.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an Empty message from the specified reader or buffer.
                  * @function decode
@@ -9286,7 +9286,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an Empty message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -9302,7 +9302,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an Empty message.
                  * @function verify
@@ -9316,7 +9316,7 @@
                         return "object expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates an Empty message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -9330,7 +9330,7 @@
                         return object;
                     return new $root.google.protobuf.Empty();
                 };
-
+    
                 /**
                  * Creates a plain object from an Empty message. Also converts values to other types if specified.
                  * @function toObject
@@ -9343,7 +9343,7 @@
                 Empty.toObject = function toObject() {
                     return {};
                 };
-
+    
                 /**
                  * Converts this Empty to JSON.
                  * @function toJSON
@@ -9354,19 +9354,19 @@
                 Empty.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Empty;
             })();
-
+    
             protobuf.FieldMask = (function() {
-
+    
                 /**
                  * Properties of a FieldMask.
                  * @memberof google.protobuf
                  * @interface IFieldMask
                  * @property {Array.<string>|null} [paths] FieldMask paths
                  */
-
+    
                 /**
                  * Constructs a new FieldMask.
                  * @memberof google.protobuf
@@ -9382,7 +9382,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * FieldMask paths.
                  * @member {Array.<string>} paths
@@ -9390,7 +9390,7 @@
                  * @instance
                  */
                 FieldMask.prototype.paths = $util.emptyArray;
-
+    
                 /**
                  * Creates a new FieldMask instance using the specified properties.
                  * @function create
@@ -9402,7 +9402,7 @@
                 FieldMask.create = function create(properties) {
                     return new FieldMask(properties);
                 };
-
+    
                 /**
                  * Encodes the specified FieldMask message. Does not implicitly {@link google.protobuf.FieldMask.verify|verify} messages.
                  * @function encode
@@ -9420,7 +9420,7 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.paths[i]);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified FieldMask message, length delimited. Does not implicitly {@link google.protobuf.FieldMask.verify|verify} messages.
                  * @function encodeDelimited
@@ -9433,7 +9433,7 @@
                 FieldMask.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a FieldMask message from the specified reader or buffer.
                  * @function decode
@@ -9464,7 +9464,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a FieldMask message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -9480,7 +9480,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a FieldMask message.
                  * @function verify
@@ -9501,7 +9501,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a FieldMask message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -9523,7 +9523,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a FieldMask message. Also converts values to other types if specified.
                  * @function toObject
@@ -9546,7 +9546,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this FieldMask to JSON.
                  * @function toJSON
@@ -9557,12 +9557,12 @@
                 FieldMask.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return FieldMask;
             })();
-
+    
             protobuf.Timestamp = (function() {
-
+    
                 /**
                  * Properties of a Timestamp.
                  * @memberof google.protobuf
@@ -9570,7 +9570,7 @@
                  * @property {number|Long|null} [seconds] Timestamp seconds
                  * @property {number|null} [nanos] Timestamp nanos
                  */
-
+    
                 /**
                  * Constructs a new Timestamp.
                  * @memberof google.protobuf
@@ -9585,7 +9585,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Timestamp seconds.
                  * @member {number|Long} seconds
@@ -9593,7 +9593,7 @@
                  * @instance
                  */
                 Timestamp.prototype.seconds = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                 /**
                  * Timestamp nanos.
                  * @member {number} nanos
@@ -9601,7 +9601,7 @@
                  * @instance
                  */
                 Timestamp.prototype.nanos = 0;
-
+    
                 /**
                  * Creates a new Timestamp instance using the specified properties.
                  * @function create
@@ -9613,7 +9613,7 @@
                 Timestamp.create = function create(properties) {
                     return new Timestamp(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Timestamp message. Does not implicitly {@link google.protobuf.Timestamp.verify|verify} messages.
                  * @function encode
@@ -9632,7 +9632,7 @@
                         writer.uint32(/* id 2, wireType 0 =*/16).int32(message.nanos);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Timestamp message, length delimited. Does not implicitly {@link google.protobuf.Timestamp.verify|verify} messages.
                  * @function encodeDelimited
@@ -9645,7 +9645,7 @@
                 Timestamp.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Timestamp message from the specified reader or buffer.
                  * @function decode
@@ -9677,7 +9677,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Timestamp message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -9693,7 +9693,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Timestamp message.
                  * @function verify
@@ -9713,7 +9713,7 @@
                             return "nanos: integer expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a Timestamp message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -9739,7 +9739,7 @@
                         message.nanos = object.nanos | 0;
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Timestamp message. Also converts values to other types if specified.
                  * @function toObject
@@ -9770,7 +9770,7 @@
                         object.nanos = message.nanos;
                     return object;
                 };
-
+    
                 /**
                  * Converts this Timestamp to JSON.
                  * @function toJSON
@@ -9781,19 +9781,19 @@
                 Timestamp.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Timestamp;
             })();
-
+    
             protobuf.Struct = (function() {
-
+    
                 /**
                  * Properties of a Struct.
                  * @memberof google.protobuf
                  * @interface IStruct
                  * @property {Object.<string,google.protobuf.IValue>|null} [fields] Struct fields
                  */
-
+    
                 /**
                  * Constructs a new Struct.
                  * @memberof google.protobuf
@@ -9809,7 +9809,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Struct fields.
                  * @member {Object.<string,google.protobuf.IValue>} fields
@@ -9817,7 +9817,7 @@
                  * @instance
                  */
                 Struct.prototype.fields = $util.emptyObject;
-
+    
                 /**
                  * Creates a new Struct instance using the specified properties.
                  * @function create
@@ -9829,7 +9829,7 @@
                 Struct.create = function create(properties) {
                     return new Struct(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Struct message. Does not implicitly {@link google.protobuf.Struct.verify|verify} messages.
                  * @function encode
@@ -9849,7 +9849,7 @@
                         }
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Struct message, length delimited. Does not implicitly {@link google.protobuf.Struct.verify|verify} messages.
                  * @function encodeDelimited
@@ -9862,7 +9862,7 @@
                 Struct.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Struct message from the specified reader or buffer.
                  * @function decode
@@ -9910,7 +9910,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Struct message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -9926,7 +9926,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Struct message.
                  * @function verify
@@ -9950,7 +9950,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a Struct message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -9975,7 +9975,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Struct message. Also converts values to other types if specified.
                  * @function toObject
@@ -9999,7 +9999,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this Struct to JSON.
                  * @function toJSON
@@ -10010,12 +10010,12 @@
                 Struct.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Struct;
             })();
-
+    
             protobuf.Value = (function() {
-
+    
                 /**
                  * Properties of a Value.
                  * @memberof google.protobuf
@@ -10027,7 +10027,7 @@
                  * @property {google.protobuf.IStruct|null} [structValue] Value structValue
                  * @property {google.protobuf.IListValue|null} [listValue] Value listValue
                  */
-
+    
                 /**
                  * Constructs a new Value.
                  * @memberof google.protobuf
@@ -10042,7 +10042,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Value nullValue.
                  * @member {google.protobuf.NullValue} nullValue
@@ -10050,7 +10050,7 @@
                  * @instance
                  */
                 Value.prototype.nullValue = 0;
-
+    
                 /**
                  * Value numberValue.
                  * @member {number} numberValue
@@ -10058,7 +10058,7 @@
                  * @instance
                  */
                 Value.prototype.numberValue = 0;
-
+    
                 /**
                  * Value stringValue.
                  * @member {string} stringValue
@@ -10066,7 +10066,7 @@
                  * @instance
                  */
                 Value.prototype.stringValue = "";
-
+    
                 /**
                  * Value boolValue.
                  * @member {boolean} boolValue
@@ -10074,7 +10074,7 @@
                  * @instance
                  */
                 Value.prototype.boolValue = false;
-
+    
                 /**
                  * Value structValue.
                  * @member {google.protobuf.IStruct|null|undefined} structValue
@@ -10082,7 +10082,7 @@
                  * @instance
                  */
                 Value.prototype.structValue = null;
-
+    
                 /**
                  * Value listValue.
                  * @member {google.protobuf.IListValue|null|undefined} listValue
@@ -10090,10 +10090,10 @@
                  * @instance
                  */
                 Value.prototype.listValue = null;
-
+    
                 // OneOf field names bound to virtual getters and setters
                 var $oneOfFields;
-
+    
                 /**
                  * Value kind.
                  * @member {"nullValue"|"numberValue"|"stringValue"|"boolValue"|"structValue"|"listValue"|undefined} kind
@@ -10104,7 +10104,7 @@
                     get: $util.oneOfGetter($oneOfFields = ["nullValue", "numberValue", "stringValue", "boolValue", "structValue", "listValue"]),
                     set: $util.oneOfSetter($oneOfFields)
                 });
-
+    
                 /**
                  * Creates a new Value instance using the specified properties.
                  * @function create
@@ -10116,7 +10116,7 @@
                 Value.create = function create(properties) {
                     return new Value(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Value message. Does not implicitly {@link google.protobuf.Value.verify|verify} messages.
                  * @function encode
@@ -10143,7 +10143,7 @@
                         $root.google.protobuf.ListValue.encode(message.listValue, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Value message, length delimited. Does not implicitly {@link google.protobuf.Value.verify|verify} messages.
                  * @function encodeDelimited
@@ -10156,7 +10156,7 @@
                 Value.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Value message from the specified reader or buffer.
                  * @function decode
@@ -10200,7 +10200,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Value message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -10216,7 +10216,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Value message.
                  * @function verify
@@ -10281,7 +10281,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a Value message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -10318,7 +10318,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Value message. Also converts values to other types if specified.
                  * @function toObject
@@ -10364,7 +10364,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this Value to JSON.
                  * @function toJSON
@@ -10375,10 +10375,10 @@
                 Value.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Value;
             })();
-
+    
             /**
              * NullValue enum.
              * @name google.protobuf.NullValue
@@ -10390,16 +10390,16 @@
                 values[valuesById[0] = "NULL_VALUE"] = 0;
                 return values;
             })();
-
+    
             protobuf.ListValue = (function() {
-
+    
                 /**
                  * Properties of a ListValue.
                  * @memberof google.protobuf
                  * @interface IListValue
                  * @property {Array.<google.protobuf.IValue>|null} [values] ListValue values
                  */
-
+    
                 /**
                  * Constructs a new ListValue.
                  * @memberof google.protobuf
@@ -10415,7 +10415,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ListValue values.
                  * @member {Array.<google.protobuf.IValue>} values
@@ -10423,7 +10423,7 @@
                  * @instance
                  */
                 ListValue.prototype.values = $util.emptyArray;
-
+    
                 /**
                  * Creates a new ListValue instance using the specified properties.
                  * @function create
@@ -10435,7 +10435,7 @@
                 ListValue.create = function create(properties) {
                     return new ListValue(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ListValue message. Does not implicitly {@link google.protobuf.ListValue.verify|verify} messages.
                  * @function encode
@@ -10453,7 +10453,7 @@
                             $root.google.protobuf.Value.encode(message.values[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ListValue message, length delimited. Does not implicitly {@link google.protobuf.ListValue.verify|verify} messages.
                  * @function encodeDelimited
@@ -10466,7 +10466,7 @@
                 ListValue.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ListValue message from the specified reader or buffer.
                  * @function decode
@@ -10497,7 +10497,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ListValue message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -10513,7 +10513,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ListValue message.
                  * @function verify
@@ -10536,7 +10536,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a ListValue message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -10561,7 +10561,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ListValue message. Also converts values to other types if specified.
                  * @function toObject
@@ -10584,7 +10584,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this ListValue to JSON.
                  * @function toJSON
@@ -10595,31 +10595,31 @@
                 ListValue.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ListValue;
             })();
-
+    
             return protobuf;
         })();
-
+    
         google.rpc = (function() {
-
+    
             /**
              * Namespace rpc.
              * @memberof google
              * @namespace
              */
             var rpc = {};
-
+    
             rpc.RetryInfo = (function() {
-
+    
                 /**
                  * Properties of a RetryInfo.
                  * @memberof google.rpc
                  * @interface IRetryInfo
                  * @property {google.protobuf.IDuration|null} [retryDelay] RetryInfo retryDelay
                  */
-
+    
                 /**
                  * Constructs a new RetryInfo.
                  * @memberof google.rpc
@@ -10634,7 +10634,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * RetryInfo retryDelay.
                  * @member {google.protobuf.IDuration|null|undefined} retryDelay
@@ -10642,7 +10642,7 @@
                  * @instance
                  */
                 RetryInfo.prototype.retryDelay = null;
-
+    
                 /**
                  * Creates a new RetryInfo instance using the specified properties.
                  * @function create
@@ -10654,7 +10654,7 @@
                 RetryInfo.create = function create(properties) {
                     return new RetryInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified RetryInfo message. Does not implicitly {@link google.rpc.RetryInfo.verify|verify} messages.
                  * @function encode
@@ -10671,7 +10671,7 @@
                         $root.google.protobuf.Duration.encode(message.retryDelay, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified RetryInfo message, length delimited. Does not implicitly {@link google.rpc.RetryInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -10684,7 +10684,7 @@
                 RetryInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a RetryInfo message from the specified reader or buffer.
                  * @function decode
@@ -10713,7 +10713,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a RetryInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -10729,7 +10729,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a RetryInfo message.
                  * @function verify
@@ -10748,7 +10748,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a RetryInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -10768,7 +10768,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a RetryInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -10788,7 +10788,7 @@
                         object.retryDelay = $root.google.protobuf.Duration.toObject(message.retryDelay, options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this RetryInfo to JSON.
                  * @function toJSON
@@ -10799,12 +10799,12 @@
                 RetryInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return RetryInfo;
             })();
-
+    
             rpc.DebugInfo = (function() {
-
+    
                 /**
                  * Properties of a DebugInfo.
                  * @memberof google.rpc
@@ -10812,7 +10812,7 @@
                  * @property {Array.<string>|null} [stackEntries] DebugInfo stackEntries
                  * @property {string|null} [detail] DebugInfo detail
                  */
-
+    
                 /**
                  * Constructs a new DebugInfo.
                  * @memberof google.rpc
@@ -10828,7 +10828,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * DebugInfo stackEntries.
                  * @member {Array.<string>} stackEntries
@@ -10836,7 +10836,7 @@
                  * @instance
                  */
                 DebugInfo.prototype.stackEntries = $util.emptyArray;
-
+    
                 /**
                  * DebugInfo detail.
                  * @member {string} detail
@@ -10844,7 +10844,7 @@
                  * @instance
                  */
                 DebugInfo.prototype.detail = "";
-
+    
                 /**
                  * Creates a new DebugInfo instance using the specified properties.
                  * @function create
@@ -10856,7 +10856,7 @@
                 DebugInfo.create = function create(properties) {
                     return new DebugInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified DebugInfo message. Does not implicitly {@link google.rpc.DebugInfo.verify|verify} messages.
                  * @function encode
@@ -10876,7 +10876,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.detail);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified DebugInfo message, length delimited. Does not implicitly {@link google.rpc.DebugInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -10889,7 +10889,7 @@
                 DebugInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a DebugInfo message from the specified reader or buffer.
                  * @function decode
@@ -10923,7 +10923,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a DebugInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -10939,7 +10939,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a DebugInfo message.
                  * @function verify
@@ -10963,7 +10963,7 @@
                             return "detail: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a DebugInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -10987,7 +10987,7 @@
                         message.detail = String(object.detail);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a DebugInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -11014,7 +11014,7 @@
                         object.detail = message.detail;
                     return object;
                 };
-
+    
                 /**
                  * Converts this DebugInfo to JSON.
                  * @function toJSON
@@ -11025,19 +11025,19 @@
                 DebugInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return DebugInfo;
             })();
-
+    
             rpc.QuotaFailure = (function() {
-
+    
                 /**
                  * Properties of a QuotaFailure.
                  * @memberof google.rpc
                  * @interface IQuotaFailure
                  * @property {Array.<google.rpc.QuotaFailure.IViolation>|null} [violations] QuotaFailure violations
                  */
-
+    
                 /**
                  * Constructs a new QuotaFailure.
                  * @memberof google.rpc
@@ -11053,7 +11053,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * QuotaFailure violations.
                  * @member {Array.<google.rpc.QuotaFailure.IViolation>} violations
@@ -11061,7 +11061,7 @@
                  * @instance
                  */
                 QuotaFailure.prototype.violations = $util.emptyArray;
-
+    
                 /**
                  * Creates a new QuotaFailure instance using the specified properties.
                  * @function create
@@ -11073,7 +11073,7 @@
                 QuotaFailure.create = function create(properties) {
                     return new QuotaFailure(properties);
                 };
-
+    
                 /**
                  * Encodes the specified QuotaFailure message. Does not implicitly {@link google.rpc.QuotaFailure.verify|verify} messages.
                  * @function encode
@@ -11091,7 +11091,7 @@
                             $root.google.rpc.QuotaFailure.Violation.encode(message.violations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified QuotaFailure message, length delimited. Does not implicitly {@link google.rpc.QuotaFailure.verify|verify} messages.
                  * @function encodeDelimited
@@ -11104,7 +11104,7 @@
                 QuotaFailure.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a QuotaFailure message from the specified reader or buffer.
                  * @function decode
@@ -11135,7 +11135,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a QuotaFailure message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -11151,7 +11151,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a QuotaFailure message.
                  * @function verify
@@ -11174,7 +11174,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a QuotaFailure message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -11199,7 +11199,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a QuotaFailure message. Also converts values to other types if specified.
                  * @function toObject
@@ -11222,7 +11222,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this QuotaFailure to JSON.
                  * @function toJSON
@@ -11233,9 +11233,9 @@
                 QuotaFailure.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 QuotaFailure.Violation = (function() {
-
+    
                     /**
                      * Properties of a Violation.
                      * @memberof google.rpc.QuotaFailure
@@ -11243,7 +11243,7 @@
                      * @property {string|null} [subject] Violation subject
                      * @property {string|null} [description] Violation description
                      */
-
+    
                     /**
                      * Constructs a new Violation.
                      * @memberof google.rpc.QuotaFailure
@@ -11258,7 +11258,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Violation subject.
                      * @member {string} subject
@@ -11266,7 +11266,7 @@
                      * @instance
                      */
                     Violation.prototype.subject = "";
-
+    
                     /**
                      * Violation description.
                      * @member {string} description
@@ -11274,7 +11274,7 @@
                      * @instance
                      */
                     Violation.prototype.description = "";
-
+    
                     /**
                      * Creates a new Violation instance using the specified properties.
                      * @function create
@@ -11286,7 +11286,7 @@
                     Violation.create = function create(properties) {
                         return new Violation(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Violation message. Does not implicitly {@link google.rpc.QuotaFailure.Violation.verify|verify} messages.
                      * @function encode
@@ -11305,7 +11305,7 @@
                             writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Violation message, length delimited. Does not implicitly {@link google.rpc.QuotaFailure.Violation.verify|verify} messages.
                      * @function encodeDelimited
@@ -11318,7 +11318,7 @@
                     Violation.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Violation message from the specified reader or buffer.
                      * @function decode
@@ -11350,7 +11350,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Violation message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -11366,7 +11366,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Violation message.
                      * @function verify
@@ -11386,7 +11386,7 @@
                                 return "description: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a Violation message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -11405,7 +11405,7 @@
                             message.description = String(object.description);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Violation message. Also converts values to other types if specified.
                      * @function toObject
@@ -11429,7 +11429,7 @@
                             object.description = message.description;
                         return object;
                     };
-
+    
                     /**
                      * Converts this Violation to JSON.
                      * @function toJSON
@@ -11440,22 +11440,22 @@
                     Violation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Violation;
                 })();
-
+    
                 return QuotaFailure;
             })();
-
+    
             rpc.BadRequest = (function() {
-
+    
                 /**
                  * Properties of a BadRequest.
                  * @memberof google.rpc
                  * @interface IBadRequest
                  * @property {Array.<google.rpc.BadRequest.IFieldViolation>|null} [fieldViolations] BadRequest fieldViolations
                  */
-
+    
                 /**
                  * Constructs a new BadRequest.
                  * @memberof google.rpc
@@ -11471,7 +11471,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * BadRequest fieldViolations.
                  * @member {Array.<google.rpc.BadRequest.IFieldViolation>} fieldViolations
@@ -11479,7 +11479,7 @@
                  * @instance
                  */
                 BadRequest.prototype.fieldViolations = $util.emptyArray;
-
+    
                 /**
                  * Creates a new BadRequest instance using the specified properties.
                  * @function create
@@ -11491,7 +11491,7 @@
                 BadRequest.create = function create(properties) {
                     return new BadRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified BadRequest message. Does not implicitly {@link google.rpc.BadRequest.verify|verify} messages.
                  * @function encode
@@ -11509,7 +11509,7 @@
                             $root.google.rpc.BadRequest.FieldViolation.encode(message.fieldViolations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified BadRequest message, length delimited. Does not implicitly {@link google.rpc.BadRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -11522,7 +11522,7 @@
                 BadRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a BadRequest message from the specified reader or buffer.
                  * @function decode
@@ -11553,7 +11553,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a BadRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -11569,7 +11569,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a BadRequest message.
                  * @function verify
@@ -11592,7 +11592,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a BadRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -11617,7 +11617,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a BadRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -11640,7 +11640,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this BadRequest to JSON.
                  * @function toJSON
@@ -11651,9 +11651,9 @@
                 BadRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 BadRequest.FieldViolation = (function() {
-
+    
                     /**
                      * Properties of a FieldViolation.
                      * @memberof google.rpc.BadRequest
@@ -11661,7 +11661,7 @@
                      * @property {string|null} [field] FieldViolation field
                      * @property {string|null} [description] FieldViolation description
                      */
-
+    
                     /**
                      * Constructs a new FieldViolation.
                      * @memberof google.rpc.BadRequest
@@ -11676,7 +11676,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * FieldViolation field.
                      * @member {string} field
@@ -11684,7 +11684,7 @@
                      * @instance
                      */
                     FieldViolation.prototype.field = "";
-
+    
                     /**
                      * FieldViolation description.
                      * @member {string} description
@@ -11692,7 +11692,7 @@
                      * @instance
                      */
                     FieldViolation.prototype.description = "";
-
+    
                     /**
                      * Creates a new FieldViolation instance using the specified properties.
                      * @function create
@@ -11704,7 +11704,7 @@
                     FieldViolation.create = function create(properties) {
                         return new FieldViolation(properties);
                     };
-
+    
                     /**
                      * Encodes the specified FieldViolation message. Does not implicitly {@link google.rpc.BadRequest.FieldViolation.verify|verify} messages.
                      * @function encode
@@ -11723,7 +11723,7 @@
                             writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified FieldViolation message, length delimited. Does not implicitly {@link google.rpc.BadRequest.FieldViolation.verify|verify} messages.
                      * @function encodeDelimited
@@ -11736,7 +11736,7 @@
                     FieldViolation.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a FieldViolation message from the specified reader or buffer.
                      * @function decode
@@ -11768,7 +11768,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a FieldViolation message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -11784,7 +11784,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a FieldViolation message.
                      * @function verify
@@ -11804,7 +11804,7 @@
                                 return "description: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a FieldViolation message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -11823,7 +11823,7 @@
                             message.description = String(object.description);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a FieldViolation message. Also converts values to other types if specified.
                      * @function toObject
@@ -11847,7 +11847,7 @@
                             object.description = message.description;
                         return object;
                     };
-
+    
                     /**
                      * Converts this FieldViolation to JSON.
                      * @function toJSON
@@ -11858,15 +11858,15 @@
                     FieldViolation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return FieldViolation;
                 })();
-
+    
                 return BadRequest;
             })();
-
+    
             rpc.RequestInfo = (function() {
-
+    
                 /**
                  * Properties of a RequestInfo.
                  * @memberof google.rpc
@@ -11874,7 +11874,7 @@
                  * @property {string|null} [requestId] RequestInfo requestId
                  * @property {string|null} [servingData] RequestInfo servingData
                  */
-
+    
                 /**
                  * Constructs a new RequestInfo.
                  * @memberof google.rpc
@@ -11889,7 +11889,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * RequestInfo requestId.
                  * @member {string} requestId
@@ -11897,7 +11897,7 @@
                  * @instance
                  */
                 RequestInfo.prototype.requestId = "";
-
+    
                 /**
                  * RequestInfo servingData.
                  * @member {string} servingData
@@ -11905,7 +11905,7 @@
                  * @instance
                  */
                 RequestInfo.prototype.servingData = "";
-
+    
                 /**
                  * Creates a new RequestInfo instance using the specified properties.
                  * @function create
@@ -11917,7 +11917,7 @@
                 RequestInfo.create = function create(properties) {
                     return new RequestInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified RequestInfo message. Does not implicitly {@link google.rpc.RequestInfo.verify|verify} messages.
                  * @function encode
@@ -11936,7 +11936,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.servingData);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified RequestInfo message, length delimited. Does not implicitly {@link google.rpc.RequestInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -11949,7 +11949,7 @@
                 RequestInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a RequestInfo message from the specified reader or buffer.
                  * @function decode
@@ -11981,7 +11981,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a RequestInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -11997,7 +11997,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a RequestInfo message.
                  * @function verify
@@ -12017,7 +12017,7 @@
                             return "servingData: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a RequestInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -12036,7 +12036,7 @@
                         message.servingData = String(object.servingData);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a RequestInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -12060,7 +12060,7 @@
                         object.servingData = message.servingData;
                     return object;
                 };
-
+    
                 /**
                  * Converts this RequestInfo to JSON.
                  * @function toJSON
@@ -12071,12 +12071,12 @@
                 RequestInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return RequestInfo;
             })();
-
+    
             rpc.ResourceInfo = (function() {
-
+    
                 /**
                  * Properties of a ResourceInfo.
                  * @memberof google.rpc
@@ -12086,7 +12086,7 @@
                  * @property {string|null} [owner] ResourceInfo owner
                  * @property {string|null} [description] ResourceInfo description
                  */
-
+    
                 /**
                  * Constructs a new ResourceInfo.
                  * @memberof google.rpc
@@ -12101,7 +12101,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ResourceInfo resourceType.
                  * @member {string} resourceType
@@ -12109,7 +12109,7 @@
                  * @instance
                  */
                 ResourceInfo.prototype.resourceType = "";
-
+    
                 /**
                  * ResourceInfo resourceName.
                  * @member {string} resourceName
@@ -12117,7 +12117,7 @@
                  * @instance
                  */
                 ResourceInfo.prototype.resourceName = "";
-
+    
                 /**
                  * ResourceInfo owner.
                  * @member {string} owner
@@ -12125,7 +12125,7 @@
                  * @instance
                  */
                 ResourceInfo.prototype.owner = "";
-
+    
                 /**
                  * ResourceInfo description.
                  * @member {string} description
@@ -12133,7 +12133,7 @@
                  * @instance
                  */
                 ResourceInfo.prototype.description = "";
-
+    
                 /**
                  * Creates a new ResourceInfo instance using the specified properties.
                  * @function create
@@ -12145,7 +12145,7 @@
                 ResourceInfo.create = function create(properties) {
                     return new ResourceInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ResourceInfo message. Does not implicitly {@link google.rpc.ResourceInfo.verify|verify} messages.
                  * @function encode
@@ -12168,7 +12168,7 @@
                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.description);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ResourceInfo message, length delimited. Does not implicitly {@link google.rpc.ResourceInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -12181,7 +12181,7 @@
                 ResourceInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ResourceInfo message from the specified reader or buffer.
                  * @function decode
@@ -12219,7 +12219,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ResourceInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -12235,7 +12235,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ResourceInfo message.
                  * @function verify
@@ -12261,7 +12261,7 @@
                             return "description: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a ResourceInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -12284,7 +12284,7 @@
                         message.description = String(object.description);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ResourceInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -12314,7 +12314,7 @@
                         object.description = message.description;
                     return object;
                 };
-
+    
                 /**
                  * Converts this ResourceInfo to JSON.
                  * @function toJSON
@@ -12325,19 +12325,19 @@
                 ResourceInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ResourceInfo;
             })();
-
+    
             rpc.Help = (function() {
-
+    
                 /**
                  * Properties of a Help.
                  * @memberof google.rpc
                  * @interface IHelp
                  * @property {Array.<google.rpc.Help.ILink>|null} [links] Help links
                  */
-
+    
                 /**
                  * Constructs a new Help.
                  * @memberof google.rpc
@@ -12353,7 +12353,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Help links.
                  * @member {Array.<google.rpc.Help.ILink>} links
@@ -12361,7 +12361,7 @@
                  * @instance
                  */
                 Help.prototype.links = $util.emptyArray;
-
+    
                 /**
                  * Creates a new Help instance using the specified properties.
                  * @function create
@@ -12373,7 +12373,7 @@
                 Help.create = function create(properties) {
                     return new Help(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Help message. Does not implicitly {@link google.rpc.Help.verify|verify} messages.
                  * @function encode
@@ -12391,7 +12391,7 @@
                             $root.google.rpc.Help.Link.encode(message.links[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Help message, length delimited. Does not implicitly {@link google.rpc.Help.verify|verify} messages.
                  * @function encodeDelimited
@@ -12404,7 +12404,7 @@
                 Help.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Help message from the specified reader or buffer.
                  * @function decode
@@ -12435,7 +12435,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Help message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -12451,7 +12451,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Help message.
                  * @function verify
@@ -12474,7 +12474,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a Help message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -12499,7 +12499,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Help message. Also converts values to other types if specified.
                  * @function toObject
@@ -12522,7 +12522,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this Help to JSON.
                  * @function toJSON
@@ -12533,9 +12533,9 @@
                 Help.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 Help.Link = (function() {
-
+    
                     /**
                      * Properties of a Link.
                      * @memberof google.rpc.Help
@@ -12543,7 +12543,7 @@
                      * @property {string|null} [description] Link description
                      * @property {string|null} [url] Link url
                      */
-
+    
                     /**
                      * Constructs a new Link.
                      * @memberof google.rpc.Help
@@ -12558,7 +12558,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Link description.
                      * @member {string} description
@@ -12566,7 +12566,7 @@
                      * @instance
                      */
                     Link.prototype.description = "";
-
+    
                     /**
                      * Link url.
                      * @member {string} url
@@ -12574,7 +12574,7 @@
                      * @instance
                      */
                     Link.prototype.url = "";
-
+    
                     /**
                      * Creates a new Link instance using the specified properties.
                      * @function create
@@ -12586,7 +12586,7 @@
                     Link.create = function create(properties) {
                         return new Link(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Link message. Does not implicitly {@link google.rpc.Help.Link.verify|verify} messages.
                      * @function encode
@@ -12605,7 +12605,7 @@
                             writer.uint32(/* id 2, wireType 2 =*/18).string(message.url);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Link message, length delimited. Does not implicitly {@link google.rpc.Help.Link.verify|verify} messages.
                      * @function encodeDelimited
@@ -12618,7 +12618,7 @@
                     Link.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Link message from the specified reader or buffer.
                      * @function decode
@@ -12650,7 +12650,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Link message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -12666,7 +12666,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Link message.
                      * @function verify
@@ -12686,7 +12686,7 @@
                                 return "url: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a Link message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -12705,7 +12705,7 @@
                             message.url = String(object.url);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Link message. Also converts values to other types if specified.
                      * @function toObject
@@ -12729,7 +12729,7 @@
                             object.url = message.url;
                         return object;
                     };
-
+    
                     /**
                      * Converts this Link to JSON.
                      * @function toJSON
@@ -12740,15 +12740,15 @@
                     Link.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Link;
                 })();
-
+    
                 return Help;
             })();
-
+    
             rpc.LocalizedMessage = (function() {
-
+    
                 /**
                  * Properties of a LocalizedMessage.
                  * @memberof google.rpc
@@ -12756,7 +12756,7 @@
                  * @property {string|null} [locale] LocalizedMessage locale
                  * @property {string|null} [message] LocalizedMessage message
                  */
-
+    
                 /**
                  * Constructs a new LocalizedMessage.
                  * @memberof google.rpc
@@ -12771,7 +12771,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * LocalizedMessage locale.
                  * @member {string} locale
@@ -12779,7 +12779,7 @@
                  * @instance
                  */
                 LocalizedMessage.prototype.locale = "";
-
+    
                 /**
                  * LocalizedMessage message.
                  * @member {string} message
@@ -12787,7 +12787,7 @@
                  * @instance
                  */
                 LocalizedMessage.prototype.message = "";
-
+    
                 /**
                  * Creates a new LocalizedMessage instance using the specified properties.
                  * @function create
@@ -12799,7 +12799,7 @@
                 LocalizedMessage.create = function create(properties) {
                     return new LocalizedMessage(properties);
                 };
-
+    
                 /**
                  * Encodes the specified LocalizedMessage message. Does not implicitly {@link google.rpc.LocalizedMessage.verify|verify} messages.
                  * @function encode
@@ -12818,7 +12818,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.message);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified LocalizedMessage message, length delimited. Does not implicitly {@link google.rpc.LocalizedMessage.verify|verify} messages.
                  * @function encodeDelimited
@@ -12831,7 +12831,7 @@
                 LocalizedMessage.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a LocalizedMessage message from the specified reader or buffer.
                  * @function decode
@@ -12863,7 +12863,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a LocalizedMessage message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -12879,7 +12879,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a LocalizedMessage message.
                  * @function verify
@@ -12899,7 +12899,7 @@
                             return "message: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a LocalizedMessage message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -12918,7 +12918,7 @@
                         message.message = String(object.message);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a LocalizedMessage message. Also converts values to other types if specified.
                  * @function toObject
@@ -12942,7 +12942,7 @@
                         object.message = message.message;
                     return object;
                 };
-
+    
                 /**
                  * Converts this LocalizedMessage to JSON.
                  * @function toJSON
@@ -12953,12 +12953,12 @@
                 LocalizedMessage.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return LocalizedMessage;
             })();
-
+    
             rpc.Status = (function() {
-
+    
                 /**
                  * Properties of a Status.
                  * @memberof google.rpc
@@ -12967,7 +12967,7 @@
                  * @property {string|null} [message] Status message
                  * @property {Array.<google.protobuf.IAny>|null} [details] Status details
                  */
-
+    
                 /**
                  * Constructs a new Status.
                  * @memberof google.rpc
@@ -12983,7 +12983,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Status code.
                  * @member {number} code
@@ -12991,7 +12991,7 @@
                  * @instance
                  */
                 Status.prototype.code = 0;
-
+    
                 /**
                  * Status message.
                  * @member {string} message
@@ -12999,7 +12999,7 @@
                  * @instance
                  */
                 Status.prototype.message = "";
-
+    
                 /**
                  * Status details.
                  * @member {Array.<google.protobuf.IAny>} details
@@ -13007,7 +13007,7 @@
                  * @instance
                  */
                 Status.prototype.details = $util.emptyArray;
-
+    
                 /**
                  * Creates a new Status instance using the specified properties.
                  * @function create
@@ -13019,7 +13019,7 @@
                 Status.create = function create(properties) {
                     return new Status(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Status message. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
                  * @function encode
@@ -13041,7 +13041,7 @@
                             $root.google.protobuf.Any.encode(message.details[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Status message, length delimited. Does not implicitly {@link google.rpc.Status.verify|verify} messages.
                  * @function encodeDelimited
@@ -13054,7 +13054,7 @@
                 Status.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Status message from the specified reader or buffer.
                  * @function decode
@@ -13091,7 +13091,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Status message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -13107,7 +13107,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Status message.
                  * @function verify
@@ -13136,7 +13136,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a Status message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -13165,7 +13165,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Status message. Also converts values to other types if specified.
                  * @function toObject
@@ -13196,7 +13196,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this Status to JSON.
                  * @function toJSON
@@ -13207,51 +13207,51 @@
                 Status.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Status;
             })();
-
+    
             return rpc;
         })();
-
+    
         google.spanner = (function() {
-
+    
             /**
              * Namespace spanner.
              * @memberof google
              * @namespace
              */
             var spanner = {};
-
+    
             spanner.admin = (function() {
-
+    
                 /**
                  * Namespace admin.
                  * @memberof google.spanner
                  * @namespace
                  */
                 var admin = {};
-
+    
                 admin.database = (function() {
-
+    
                     /**
                      * Namespace database.
                      * @memberof google.spanner.admin
                      * @namespace
                      */
                     var database = {};
-
+    
                     database.v1 = (function() {
-
+    
                         /**
                          * Namespace v1.
                          * @memberof google.spanner.admin.database
                          * @namespace
                          */
                         var v1 = {};
-
+    
                         v1.Backup = (function() {
-
+    
                             /**
                              * Properties of a Backup.
                              * @memberof google.spanner.admin.database.v1
@@ -13266,7 +13266,7 @@
                              * @property {Array.<string>|null} [referencingDatabases] Backup referencingDatabases
                              * @property {google.spanner.admin.database.v1.IEncryptionInfo|null} [encryptionInfo] Backup encryptionInfo
                              */
-
+    
                             /**
                              * Constructs a new Backup.
                              * @memberof google.spanner.admin.database.v1
@@ -13282,7 +13282,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * Backup database.
                              * @member {string} database
@@ -13290,7 +13290,7 @@
                              * @instance
                              */
                             Backup.prototype.database = "";
-
+    
                             /**
                              * Backup versionTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} versionTime
@@ -13298,7 +13298,7 @@
                              * @instance
                              */
                             Backup.prototype.versionTime = null;
-
+    
                             /**
                              * Backup expireTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} expireTime
@@ -13306,7 +13306,7 @@
                              * @instance
                              */
                             Backup.prototype.expireTime = null;
-
+    
                             /**
                              * Backup name.
                              * @member {string} name
@@ -13314,7 +13314,7 @@
                              * @instance
                              */
                             Backup.prototype.name = "";
-
+    
                             /**
                              * Backup createTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} createTime
@@ -13322,7 +13322,7 @@
                              * @instance
                              */
                             Backup.prototype.createTime = null;
-
+    
                             /**
                              * Backup sizeBytes.
                              * @member {number|Long} sizeBytes
@@ -13330,7 +13330,7 @@
                              * @instance
                              */
                             Backup.prototype.sizeBytes = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                             /**
                              * Backup state.
                              * @member {google.spanner.admin.database.v1.Backup.State} state
@@ -13338,7 +13338,7 @@
                              * @instance
                              */
                             Backup.prototype.state = 0;
-
+    
                             /**
                              * Backup referencingDatabases.
                              * @member {Array.<string>} referencingDatabases
@@ -13346,7 +13346,7 @@
                              * @instance
                              */
                             Backup.prototype.referencingDatabases = $util.emptyArray;
-
+    
                             /**
                              * Backup encryptionInfo.
                              * @member {google.spanner.admin.database.v1.IEncryptionInfo|null|undefined} encryptionInfo
@@ -13354,7 +13354,7 @@
                              * @instance
                              */
                             Backup.prototype.encryptionInfo = null;
-
+    
                             /**
                              * Creates a new Backup instance using the specified properties.
                              * @function create
@@ -13366,7 +13366,7 @@
                             Backup.create = function create(properties) {
                                 return new Backup(properties);
                             };
-
+    
                             /**
                              * Encodes the specified Backup message. Does not implicitly {@link google.spanner.admin.database.v1.Backup.verify|verify} messages.
                              * @function encode
@@ -13400,7 +13400,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified Backup message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.Backup.verify|verify} messages.
                              * @function encodeDelimited
@@ -13413,7 +13413,7 @@
                             Backup.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a Backup message from the specified reader or buffer.
                              * @function decode
@@ -13468,7 +13468,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a Backup message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -13484,7 +13484,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a Backup message.
                              * @function verify
@@ -13543,7 +13543,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a Backup message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -13612,7 +13612,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a Backup message. Also converts values to other types if specified.
                              * @function toObject
@@ -13668,7 +13668,7 @@
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this Backup to JSON.
                              * @function toJSON
@@ -13679,7 +13679,7 @@
                             Backup.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * State enum.
                              * @name google.spanner.admin.database.v1.Backup.State
@@ -13695,12 +13695,12 @@
                                 values[valuesById[2] = "READY"] = 2;
                                 return values;
                             })();
-
+    
                             return Backup;
                         })();
-
+    
                         v1.CreateBackupRequest = (function() {
-
+    
                             /**
                              * Properties of a CreateBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -13710,7 +13710,7 @@
                              * @property {google.spanner.admin.database.v1.IBackup|null} [backup] CreateBackupRequest backup
                              * @property {google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null} [encryptionConfig] CreateBackupRequest encryptionConfig
                              */
-
+    
                             /**
                              * Constructs a new CreateBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -13725,7 +13725,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateBackupRequest parent.
                              * @member {string} parent
@@ -13733,7 +13733,7 @@
                              * @instance
                              */
                             CreateBackupRequest.prototype.parent = "";
-
+    
                             /**
                              * CreateBackupRequest backupId.
                              * @member {string} backupId
@@ -13741,7 +13741,7 @@
                              * @instance
                              */
                             CreateBackupRequest.prototype.backupId = "";
-
+    
                             /**
                              * CreateBackupRequest backup.
                              * @member {google.spanner.admin.database.v1.IBackup|null|undefined} backup
@@ -13749,7 +13749,7 @@
                              * @instance
                              */
                             CreateBackupRequest.prototype.backup = null;
-
+    
                             /**
                              * CreateBackupRequest encryptionConfig.
                              * @member {google.spanner.admin.database.v1.ICreateBackupEncryptionConfig|null|undefined} encryptionConfig
@@ -13757,7 +13757,7 @@
                              * @instance
                              */
                             CreateBackupRequest.prototype.encryptionConfig = null;
-
+    
                             /**
                              * Creates a new CreateBackupRequest instance using the specified properties.
                              * @function create
@@ -13769,7 +13769,7 @@
                             CreateBackupRequest.create = function create(properties) {
                                 return new CreateBackupRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupRequest.verify|verify} messages.
                              * @function encode
@@ -13792,7 +13792,7 @@
                                     $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -13805,7 +13805,7 @@
                             CreateBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateBackupRequest message from the specified reader or buffer.
                              * @function decode
@@ -13843,7 +13843,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateBackupRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -13859,7 +13859,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateBackupRequest message.
                              * @function verify
@@ -13889,7 +13889,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateBackupRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -13918,7 +13918,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateBackupRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -13948,7 +13948,7 @@
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.toObject(message.encryptionConfig, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateBackupRequest to JSON.
                              * @function toJSON
@@ -13959,12 +13959,12 @@
                             CreateBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateBackupRequest;
                         })();
-
+    
                         v1.CreateBackupMetadata = (function() {
-
+    
                             /**
                              * Properties of a CreateBackupMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -13974,7 +13974,7 @@
                              * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] CreateBackupMetadata progress
                              * @property {google.protobuf.ITimestamp|null} [cancelTime] CreateBackupMetadata cancelTime
                              */
-
+    
                             /**
                              * Constructs a new CreateBackupMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -13989,7 +13989,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateBackupMetadata name.
                              * @member {string} name
@@ -13997,7 +13997,7 @@
                              * @instance
                              */
                             CreateBackupMetadata.prototype.name = "";
-
+    
                             /**
                              * CreateBackupMetadata database.
                              * @member {string} database
@@ -14005,7 +14005,7 @@
                              * @instance
                              */
                             CreateBackupMetadata.prototype.database = "";
-
+    
                             /**
                              * CreateBackupMetadata progress.
                              * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
@@ -14013,7 +14013,7 @@
                              * @instance
                              */
                             CreateBackupMetadata.prototype.progress = null;
-
+    
                             /**
                              * CreateBackupMetadata cancelTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
@@ -14021,7 +14021,7 @@
                              * @instance
                              */
                             CreateBackupMetadata.prototype.cancelTime = null;
-
+    
                             /**
                              * Creates a new CreateBackupMetadata instance using the specified properties.
                              * @function create
@@ -14033,7 +14033,7 @@
                             CreateBackupMetadata.create = function create(properties) {
                                 return new CreateBackupMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupMetadata.verify|verify} messages.
                              * @function encode
@@ -14056,7 +14056,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -14069,7 +14069,7 @@
                             CreateBackupMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateBackupMetadata message from the specified reader or buffer.
                              * @function decode
@@ -14107,7 +14107,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateBackupMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -14123,7 +14123,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateBackupMetadata message.
                              * @function verify
@@ -14153,7 +14153,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateBackupMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -14182,7 +14182,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateBackupMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -14212,7 +14212,7 @@
                                     object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateBackupMetadata to JSON.
                              * @function toJSON
@@ -14223,12 +14223,12 @@
                             CreateBackupMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateBackupMetadata;
                         })();
-
+    
                         v1.UpdateBackupRequest = (function() {
-
+    
                             /**
                              * Properties of an UpdateBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14236,7 +14236,7 @@
                              * @property {google.spanner.admin.database.v1.IBackup|null} [backup] UpdateBackupRequest backup
                              * @property {google.protobuf.IFieldMask|null} [updateMask] UpdateBackupRequest updateMask
                              */
-
+    
                             /**
                              * Constructs a new UpdateBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14251,7 +14251,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * UpdateBackupRequest backup.
                              * @member {google.spanner.admin.database.v1.IBackup|null|undefined} backup
@@ -14259,7 +14259,7 @@
                              * @instance
                              */
                             UpdateBackupRequest.prototype.backup = null;
-
+    
                             /**
                              * UpdateBackupRequest updateMask.
                              * @member {google.protobuf.IFieldMask|null|undefined} updateMask
@@ -14267,7 +14267,7 @@
                              * @instance
                              */
                             UpdateBackupRequest.prototype.updateMask = null;
-
+    
                             /**
                              * Creates a new UpdateBackupRequest instance using the specified properties.
                              * @function create
@@ -14279,7 +14279,7 @@
                             UpdateBackupRequest.create = function create(properties) {
                                 return new UpdateBackupRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified UpdateBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupRequest.verify|verify} messages.
                              * @function encode
@@ -14298,7 +14298,7 @@
                                     $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified UpdateBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateBackupRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -14311,7 +14311,7 @@
                             UpdateBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an UpdateBackupRequest message from the specified reader or buffer.
                              * @function decode
@@ -14343,7 +14343,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an UpdateBackupRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -14359,7 +14359,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an UpdateBackupRequest message.
                              * @function verify
@@ -14383,7 +14383,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an UpdateBackupRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -14408,7 +14408,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an UpdateBackupRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -14432,7 +14432,7 @@
                                     object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this UpdateBackupRequest to JSON.
                              * @function toJSON
@@ -14443,19 +14443,19 @@
                             UpdateBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return UpdateBackupRequest;
                         })();
-
+    
                         v1.GetBackupRequest = (function() {
-
+    
                             /**
                              * Properties of a GetBackupRequest.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IGetBackupRequest
                              * @property {string|null} [name] GetBackupRequest name
                              */
-
+    
                             /**
                              * Constructs a new GetBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14470,7 +14470,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetBackupRequest name.
                              * @member {string} name
@@ -14478,7 +14478,7 @@
                              * @instance
                              */
                             GetBackupRequest.prototype.name = "";
-
+    
                             /**
                              * Creates a new GetBackupRequest instance using the specified properties.
                              * @function create
@@ -14490,7 +14490,7 @@
                             GetBackupRequest.create = function create(properties) {
                                 return new GetBackupRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupRequest.verify|verify} messages.
                              * @function encode
@@ -14507,7 +14507,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetBackupRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -14520,7 +14520,7 @@
                             GetBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetBackupRequest message from the specified reader or buffer.
                              * @function decode
@@ -14549,7 +14549,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetBackupRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -14565,7 +14565,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetBackupRequest message.
                              * @function verify
@@ -14582,7 +14582,7 @@
                                         return "name: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetBackupRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -14599,7 +14599,7 @@
                                     message.name = String(object.name);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetBackupRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -14619,7 +14619,7 @@
                                     object.name = message.name;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetBackupRequest to JSON.
                              * @function toJSON
@@ -14630,19 +14630,19 @@
                             GetBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetBackupRequest;
                         })();
-
+    
                         v1.DeleteBackupRequest = (function() {
-
+    
                             /**
                              * Properties of a DeleteBackupRequest.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IDeleteBackupRequest
                              * @property {string|null} [name] DeleteBackupRequest name
                              */
-
+    
                             /**
                              * Constructs a new DeleteBackupRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14657,7 +14657,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * DeleteBackupRequest name.
                              * @member {string} name
@@ -14665,7 +14665,7 @@
                              * @instance
                              */
                             DeleteBackupRequest.prototype.name = "";
-
+    
                             /**
                              * Creates a new DeleteBackupRequest instance using the specified properties.
                              * @function create
@@ -14677,7 +14677,7 @@
                             DeleteBackupRequest.create = function create(properties) {
                                 return new DeleteBackupRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified DeleteBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupRequest.verify|verify} messages.
                              * @function encode
@@ -14694,7 +14694,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified DeleteBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DeleteBackupRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -14707,7 +14707,7 @@
                             DeleteBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a DeleteBackupRequest message from the specified reader or buffer.
                              * @function decode
@@ -14736,7 +14736,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a DeleteBackupRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -14752,7 +14752,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a DeleteBackupRequest message.
                              * @function verify
@@ -14769,7 +14769,7 @@
                                         return "name: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a DeleteBackupRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -14786,7 +14786,7 @@
                                     message.name = String(object.name);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a DeleteBackupRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -14806,7 +14806,7 @@
                                     object.name = message.name;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this DeleteBackupRequest to JSON.
                              * @function toJSON
@@ -14817,12 +14817,12 @@
                             DeleteBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return DeleteBackupRequest;
                         })();
-
+    
                         v1.ListBackupsRequest = (function() {
-
+    
                             /**
                              * Properties of a ListBackupsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14832,7 +14832,7 @@
                              * @property {number|null} [pageSize] ListBackupsRequest pageSize
                              * @property {string|null} [pageToken] ListBackupsRequest pageToken
                              */
-
+    
                             /**
                              * Constructs a new ListBackupsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -14847,7 +14847,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListBackupsRequest parent.
                              * @member {string} parent
@@ -14855,7 +14855,7 @@
                              * @instance
                              */
                             ListBackupsRequest.prototype.parent = "";
-
+    
                             /**
                              * ListBackupsRequest filter.
                              * @member {string} filter
@@ -14863,7 +14863,7 @@
                              * @instance
                              */
                             ListBackupsRequest.prototype.filter = "";
-
+    
                             /**
                              * ListBackupsRequest pageSize.
                              * @member {number} pageSize
@@ -14871,7 +14871,7 @@
                              * @instance
                              */
                             ListBackupsRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListBackupsRequest pageToken.
                              * @member {string} pageToken
@@ -14879,7 +14879,7 @@
                              * @instance
                              */
                             ListBackupsRequest.prototype.pageToken = "";
-
+    
                             /**
                              * Creates a new ListBackupsRequest instance using the specified properties.
                              * @function create
@@ -14891,7 +14891,7 @@
                             ListBackupsRequest.create = function create(properties) {
                                 return new ListBackupsRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsRequest.verify|verify} messages.
                              * @function encode
@@ -14914,7 +14914,7 @@
                                     writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -14927,7 +14927,7 @@
                             ListBackupsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListBackupsRequest message from the specified reader or buffer.
                              * @function decode
@@ -14965,7 +14965,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListBackupsRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -14981,7 +14981,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListBackupsRequest message.
                              * @function verify
@@ -15007,7 +15007,7 @@
                                         return "pageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListBackupsRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -15030,7 +15030,7 @@
                                     message.pageToken = String(object.pageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListBackupsRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -15060,7 +15060,7 @@
                                     object.pageToken = message.pageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListBackupsRequest to JSON.
                              * @function toJSON
@@ -15071,12 +15071,12 @@
                             ListBackupsRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListBackupsRequest;
                         })();
-
+    
                         v1.ListBackupsResponse = (function() {
-
+    
                             /**
                              * Properties of a ListBackupsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -15084,7 +15084,7 @@
                              * @property {Array.<google.spanner.admin.database.v1.IBackup>|null} [backups] ListBackupsResponse backups
                              * @property {string|null} [nextPageToken] ListBackupsResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListBackupsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -15100,7 +15100,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListBackupsResponse backups.
                              * @member {Array.<google.spanner.admin.database.v1.IBackup>} backups
@@ -15108,7 +15108,7 @@
                              * @instance
                              */
                             ListBackupsResponse.prototype.backups = $util.emptyArray;
-
+    
                             /**
                              * ListBackupsResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -15116,7 +15116,7 @@
                              * @instance
                              */
                             ListBackupsResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListBackupsResponse instance using the specified properties.
                              * @function create
@@ -15128,7 +15128,7 @@
                             ListBackupsResponse.create = function create(properties) {
                                 return new ListBackupsResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsResponse.verify|verify} messages.
                              * @function encode
@@ -15148,7 +15148,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupsResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -15161,7 +15161,7 @@
                             ListBackupsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListBackupsResponse message from the specified reader or buffer.
                              * @function decode
@@ -15195,7 +15195,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListBackupsResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -15211,7 +15211,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListBackupsResponse message.
                              * @function verify
@@ -15237,7 +15237,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListBackupsResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -15264,7 +15264,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListBackupsResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -15291,7 +15291,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListBackupsResponse to JSON.
                              * @function toJSON
@@ -15302,12 +15302,12 @@
                             ListBackupsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListBackupsResponse;
                         })();
-
+    
                         v1.ListBackupOperationsRequest = (function() {
-
+    
                             /**
                              * Properties of a ListBackupOperationsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -15317,7 +15317,7 @@
                              * @property {number|null} [pageSize] ListBackupOperationsRequest pageSize
                              * @property {string|null} [pageToken] ListBackupOperationsRequest pageToken
                              */
-
+    
                             /**
                              * Constructs a new ListBackupOperationsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -15332,7 +15332,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListBackupOperationsRequest parent.
                              * @member {string} parent
@@ -15340,7 +15340,7 @@
                              * @instance
                              */
                             ListBackupOperationsRequest.prototype.parent = "";
-
+    
                             /**
                              * ListBackupOperationsRequest filter.
                              * @member {string} filter
@@ -15348,7 +15348,7 @@
                              * @instance
                              */
                             ListBackupOperationsRequest.prototype.filter = "";
-
+    
                             /**
                              * ListBackupOperationsRequest pageSize.
                              * @member {number} pageSize
@@ -15356,7 +15356,7 @@
                              * @instance
                              */
                             ListBackupOperationsRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListBackupOperationsRequest pageToken.
                              * @member {string} pageToken
@@ -15364,7 +15364,7 @@
                              * @instance
                              */
                             ListBackupOperationsRequest.prototype.pageToken = "";
-
+    
                             /**
                              * Creates a new ListBackupOperationsRequest instance using the specified properties.
                              * @function create
@@ -15376,7 +15376,7 @@
                             ListBackupOperationsRequest.create = function create(properties) {
                                 return new ListBackupOperationsRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupOperationsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsRequest.verify|verify} messages.
                              * @function encode
@@ -15399,7 +15399,7 @@
                                     writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -15412,7 +15412,7 @@
                             ListBackupOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListBackupOperationsRequest message from the specified reader or buffer.
                              * @function decode
@@ -15450,7 +15450,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListBackupOperationsRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -15466,7 +15466,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListBackupOperationsRequest message.
                              * @function verify
@@ -15492,7 +15492,7 @@
                                         return "pageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListBackupOperationsRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -15515,7 +15515,7 @@
                                     message.pageToken = String(object.pageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListBackupOperationsRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -15545,7 +15545,7 @@
                                     object.pageToken = message.pageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListBackupOperationsRequest to JSON.
                              * @function toJSON
@@ -15556,12 +15556,12 @@
                             ListBackupOperationsRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListBackupOperationsRequest;
                         })();
-
+    
                         v1.ListBackupOperationsResponse = (function() {
-
+    
                             /**
                              * Properties of a ListBackupOperationsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -15569,7 +15569,7 @@
                              * @property {Array.<google.longrunning.IOperation>|null} [operations] ListBackupOperationsResponse operations
                              * @property {string|null} [nextPageToken] ListBackupOperationsResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListBackupOperationsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -15585,7 +15585,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListBackupOperationsResponse operations.
                              * @member {Array.<google.longrunning.IOperation>} operations
@@ -15593,7 +15593,7 @@
                              * @instance
                              */
                             ListBackupOperationsResponse.prototype.operations = $util.emptyArray;
-
+    
                             /**
                              * ListBackupOperationsResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -15601,7 +15601,7 @@
                              * @instance
                              */
                             ListBackupOperationsResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListBackupOperationsResponse instance using the specified properties.
                              * @function create
@@ -15613,7 +15613,7 @@
                             ListBackupOperationsResponse.create = function create(properties) {
                                 return new ListBackupOperationsResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupOperationsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.verify|verify} messages.
                              * @function encode
@@ -15633,7 +15633,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListBackupOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -15646,7 +15646,7 @@
                             ListBackupOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListBackupOperationsResponse message from the specified reader or buffer.
                              * @function decode
@@ -15680,7 +15680,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListBackupOperationsResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -15696,7 +15696,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListBackupOperationsResponse message.
                              * @function verify
@@ -15722,7 +15722,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListBackupOperationsResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -15749,7 +15749,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListBackupOperationsResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -15776,7 +15776,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListBackupOperationsResponse to JSON.
                              * @function toJSON
@@ -15787,12 +15787,12 @@
                             ListBackupOperationsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListBackupOperationsResponse;
                         })();
-
+    
                         v1.BackupInfo = (function() {
-
+    
                             /**
                              * Properties of a BackupInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -15802,7 +15802,7 @@
                              * @property {google.protobuf.ITimestamp|null} [createTime] BackupInfo createTime
                              * @property {string|null} [sourceDatabase] BackupInfo sourceDatabase
                              */
-
+    
                             /**
                              * Constructs a new BackupInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -15817,7 +15817,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * BackupInfo backup.
                              * @member {string} backup
@@ -15825,7 +15825,7 @@
                              * @instance
                              */
                             BackupInfo.prototype.backup = "";
-
+    
                             /**
                              * BackupInfo versionTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} versionTime
@@ -15833,7 +15833,7 @@
                              * @instance
                              */
                             BackupInfo.prototype.versionTime = null;
-
+    
                             /**
                              * BackupInfo createTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} createTime
@@ -15841,7 +15841,7 @@
                              * @instance
                              */
                             BackupInfo.prototype.createTime = null;
-
+    
                             /**
                              * BackupInfo sourceDatabase.
                              * @member {string} sourceDatabase
@@ -15849,7 +15849,7 @@
                              * @instance
                              */
                             BackupInfo.prototype.sourceDatabase = "";
-
+    
                             /**
                              * Creates a new BackupInfo instance using the specified properties.
                              * @function create
@@ -15861,7 +15861,7 @@
                             BackupInfo.create = function create(properties) {
                                 return new BackupInfo(properties);
                             };
-
+    
                             /**
                              * Encodes the specified BackupInfo message. Does not implicitly {@link google.spanner.admin.database.v1.BackupInfo.verify|verify} messages.
                              * @function encode
@@ -15884,7 +15884,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified BackupInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.BackupInfo.verify|verify} messages.
                              * @function encodeDelimited
@@ -15897,7 +15897,7 @@
                             BackupInfo.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a BackupInfo message from the specified reader or buffer.
                              * @function decode
@@ -15935,7 +15935,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a BackupInfo message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -15951,7 +15951,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a BackupInfo message.
                              * @function verify
@@ -15981,7 +15981,7 @@
                                         return "sourceDatabase: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a BackupInfo message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -16010,7 +16010,7 @@
                                     message.sourceDatabase = String(object.sourceDatabase);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a BackupInfo message. Also converts values to other types if specified.
                              * @function toObject
@@ -16040,7 +16040,7 @@
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this BackupInfo to JSON.
                              * @function toJSON
@@ -16051,12 +16051,12 @@
                             BackupInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return BackupInfo;
                         })();
-
+    
                         v1.CreateBackupEncryptionConfig = (function() {
-
+    
                             /**
                              * Properties of a CreateBackupEncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
@@ -16064,7 +16064,7 @@
                              * @property {google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType|null} [encryptionType] CreateBackupEncryptionConfig encryptionType
                              * @property {string|null} [kmsKeyName] CreateBackupEncryptionConfig kmsKeyName
                              */
-
+    
                             /**
                              * Constructs a new CreateBackupEncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
@@ -16079,7 +16079,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateBackupEncryptionConfig encryptionType.
                              * @member {google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType} encryptionType
@@ -16087,7 +16087,7 @@
                              * @instance
                              */
                             CreateBackupEncryptionConfig.prototype.encryptionType = 0;
-
+    
                             /**
                              * CreateBackupEncryptionConfig kmsKeyName.
                              * @member {string} kmsKeyName
@@ -16095,7 +16095,7 @@
                              * @instance
                              */
                             CreateBackupEncryptionConfig.prototype.kmsKeyName = "";
-
+    
                             /**
                              * Creates a new CreateBackupEncryptionConfig instance using the specified properties.
                              * @function create
@@ -16107,7 +16107,7 @@
                             CreateBackupEncryptionConfig.create = function create(properties) {
                                 return new CreateBackupEncryptionConfig(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.verify|verify} messages.
                              * @function encode
@@ -16126,7 +16126,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.kmsKeyName);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateBackupEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.verify|verify} messages.
                              * @function encodeDelimited
@@ -16139,7 +16139,7 @@
                             CreateBackupEncryptionConfig.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateBackupEncryptionConfig message from the specified reader or buffer.
                              * @function decode
@@ -16171,7 +16171,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateBackupEncryptionConfig message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -16187,7 +16187,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateBackupEncryptionConfig message.
                              * @function verify
@@ -16214,7 +16214,7 @@
                                         return "kmsKeyName: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateBackupEncryptionConfig message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -16249,7 +16249,7 @@
                                     message.kmsKeyName = String(object.kmsKeyName);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateBackupEncryptionConfig message. Also converts values to other types if specified.
                              * @function toObject
@@ -16273,7 +16273,7 @@
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateBackupEncryptionConfig to JSON.
                              * @function toJSON
@@ -16284,7 +16284,7 @@
                             CreateBackupEncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * EncryptionType enum.
                              * @name google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType
@@ -16302,12 +16302,12 @@
                                 values[valuesById[3] = "CUSTOMER_MANAGED_ENCRYPTION"] = 3;
                                 return values;
                             })();
-
+    
                             return CreateBackupEncryptionConfig;
                         })();
-
+    
                         v1.OperationProgress = (function() {
-
+    
                             /**
                              * Properties of an OperationProgress.
                              * @memberof google.spanner.admin.database.v1
@@ -16316,7 +16316,7 @@
                              * @property {google.protobuf.ITimestamp|null} [startTime] OperationProgress startTime
                              * @property {google.protobuf.ITimestamp|null} [endTime] OperationProgress endTime
                              */
-
+    
                             /**
                              * Constructs a new OperationProgress.
                              * @memberof google.spanner.admin.database.v1
@@ -16331,7 +16331,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * OperationProgress progressPercent.
                              * @member {number} progressPercent
@@ -16339,7 +16339,7 @@
                              * @instance
                              */
                             OperationProgress.prototype.progressPercent = 0;
-
+    
                             /**
                              * OperationProgress startTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} startTime
@@ -16347,7 +16347,7 @@
                              * @instance
                              */
                             OperationProgress.prototype.startTime = null;
-
+    
                             /**
                              * OperationProgress endTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} endTime
@@ -16355,7 +16355,7 @@
                              * @instance
                              */
                             OperationProgress.prototype.endTime = null;
-
+    
                             /**
                              * Creates a new OperationProgress instance using the specified properties.
                              * @function create
@@ -16367,7 +16367,7 @@
                             OperationProgress.create = function create(properties) {
                                 return new OperationProgress(properties);
                             };
-
+    
                             /**
                              * Encodes the specified OperationProgress message. Does not implicitly {@link google.spanner.admin.database.v1.OperationProgress.verify|verify} messages.
                              * @function encode
@@ -16388,7 +16388,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified OperationProgress message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.OperationProgress.verify|verify} messages.
                              * @function encodeDelimited
@@ -16401,7 +16401,7 @@
                             OperationProgress.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an OperationProgress message from the specified reader or buffer.
                              * @function decode
@@ -16436,7 +16436,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an OperationProgress message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -16452,7 +16452,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an OperationProgress message.
                              * @function verify
@@ -16479,7 +16479,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an OperationProgress message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -16506,7 +16506,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an OperationProgress message. Also converts values to other types if specified.
                              * @function toObject
@@ -16533,7 +16533,7 @@
                                     object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this OperationProgress to JSON.
                              * @function toJSON
@@ -16544,19 +16544,19 @@
                             OperationProgress.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return OperationProgress;
                         })();
-
+    
                         v1.EncryptionConfig = (function() {
-
+    
                             /**
                              * Properties of an EncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IEncryptionConfig
                              * @property {string|null} [kmsKeyName] EncryptionConfig kmsKeyName
                              */
-
+    
                             /**
                              * Constructs a new EncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
@@ -16571,7 +16571,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * EncryptionConfig kmsKeyName.
                              * @member {string} kmsKeyName
@@ -16579,7 +16579,7 @@
                              * @instance
                              */
                             EncryptionConfig.prototype.kmsKeyName = "";
-
+    
                             /**
                              * Creates a new EncryptionConfig instance using the specified properties.
                              * @function create
@@ -16591,7 +16591,7 @@
                             EncryptionConfig.create = function create(properties) {
                                 return new EncryptionConfig(properties);
                             };
-
+    
                             /**
                              * Encodes the specified EncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionConfig.verify|verify} messages.
                              * @function encode
@@ -16608,7 +16608,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.kmsKeyName);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified EncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionConfig.verify|verify} messages.
                              * @function encodeDelimited
@@ -16621,7 +16621,7 @@
                             EncryptionConfig.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an EncryptionConfig message from the specified reader or buffer.
                              * @function decode
@@ -16650,7 +16650,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an EncryptionConfig message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -16666,7 +16666,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an EncryptionConfig message.
                              * @function verify
@@ -16683,7 +16683,7 @@
                                         return "kmsKeyName: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates an EncryptionConfig message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -16700,7 +16700,7 @@
                                     message.kmsKeyName = String(object.kmsKeyName);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an EncryptionConfig message. Also converts values to other types if specified.
                              * @function toObject
@@ -16720,7 +16720,7 @@
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this EncryptionConfig to JSON.
                              * @function toJSON
@@ -16731,12 +16731,12 @@
                             EncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return EncryptionConfig;
                         })();
-
+    
                         v1.EncryptionInfo = (function() {
-
+    
                             /**
                              * Properties of an EncryptionInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -16745,7 +16745,7 @@
                              * @property {google.rpc.IStatus|null} [encryptionStatus] EncryptionInfo encryptionStatus
                              * @property {string|null} [kmsKeyVersion] EncryptionInfo kmsKeyVersion
                              */
-
+    
                             /**
                              * Constructs a new EncryptionInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -16760,7 +16760,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * EncryptionInfo encryptionType.
                              * @member {google.spanner.admin.database.v1.EncryptionInfo.Type} encryptionType
@@ -16768,7 +16768,7 @@
                              * @instance
                              */
                             EncryptionInfo.prototype.encryptionType = 0;
-
+    
                             /**
                              * EncryptionInfo encryptionStatus.
                              * @member {google.rpc.IStatus|null|undefined} encryptionStatus
@@ -16776,7 +16776,7 @@
                              * @instance
                              */
                             EncryptionInfo.prototype.encryptionStatus = null;
-
+    
                             /**
                              * EncryptionInfo kmsKeyVersion.
                              * @member {string} kmsKeyVersion
@@ -16784,7 +16784,7 @@
                              * @instance
                              */
                             EncryptionInfo.prototype.kmsKeyVersion = "";
-
+    
                             /**
                              * Creates a new EncryptionInfo instance using the specified properties.
                              * @function create
@@ -16796,7 +16796,7 @@
                             EncryptionInfo.create = function create(properties) {
                                 return new EncryptionInfo(properties);
                             };
-
+    
                             /**
                              * Encodes the specified EncryptionInfo message. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionInfo.verify|verify} messages.
                              * @function encode
@@ -16817,7 +16817,7 @@
                                     $root.google.rpc.Status.encode(message.encryptionStatus, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified EncryptionInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.EncryptionInfo.verify|verify} messages.
                              * @function encodeDelimited
@@ -16830,7 +16830,7 @@
                             EncryptionInfo.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an EncryptionInfo message from the specified reader or buffer.
                              * @function decode
@@ -16865,7 +16865,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an EncryptionInfo message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -16881,7 +16881,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an EncryptionInfo message.
                              * @function verify
@@ -16912,7 +16912,7 @@
                                         return "kmsKeyVersion: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates an EncryptionInfo message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -16948,7 +16948,7 @@
                                     message.kmsKeyVersion = String(object.kmsKeyVersion);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an EncryptionInfo message. Also converts values to other types if specified.
                              * @function toObject
@@ -16975,7 +16975,7 @@
                                     object.encryptionStatus = $root.google.rpc.Status.toObject(message.encryptionStatus, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this EncryptionInfo to JSON.
                              * @function toJSON
@@ -16986,7 +16986,7 @@
                             EncryptionInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * Type enum.
                              * @name google.spanner.admin.database.v1.EncryptionInfo.Type
@@ -17002,12 +17002,12 @@
                                 values[valuesById[2] = "CUSTOMER_MANAGED_ENCRYPTION"] = 2;
                                 return values;
                             })();
-
+    
                             return EncryptionInfo;
                         })();
-
+    
                         v1.DatabaseAdmin = (function() {
-
+    
                             /**
                              * Constructs a new DatabaseAdmin service.
                              * @memberof google.spanner.admin.database.v1
@@ -17021,9 +17021,9 @@
                             function DatabaseAdmin(rpcImpl, requestDelimited, responseDelimited) {
                                 $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
                             }
-
+    
                             (DatabaseAdmin.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = DatabaseAdmin;
-
+    
                             /**
                              * Creates new DatabaseAdmin service using the specified rpc implementation.
                              * @function create
@@ -17037,7 +17037,7 @@
                             DatabaseAdmin.create = function create(rpcImpl, requestDelimited, responseDelimited) {
                                 return new this(rpcImpl, requestDelimited, responseDelimited);
                             };
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabases}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17046,7 +17046,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.ListDatabasesResponse} [response] ListDatabasesResponse
                              */
-
+    
                             /**
                              * Calls ListDatabases.
                              * @function listDatabases
@@ -17060,7 +17060,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.listDatabases = function listDatabases(request, callback) {
                                 return this.rpcCall(listDatabases, $root.google.spanner.admin.database.v1.ListDatabasesRequest, $root.google.spanner.admin.database.v1.ListDatabasesResponse, request, callback);
                             }, "name", { value: "ListDatabases" });
-
+    
                             /**
                              * Calls ListDatabases.
                              * @function listDatabases
@@ -17070,7 +17070,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.ListDatabasesResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17079,7 +17079,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls CreateDatabase.
                              * @function createDatabase
@@ -17093,7 +17093,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.createDatabase = function createDatabase(request, callback) {
                                 return this.rpcCall(createDatabase, $root.google.spanner.admin.database.v1.CreateDatabaseRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "CreateDatabase" });
-
+    
                             /**
                              * Calls CreateDatabase.
                              * @function createDatabase
@@ -17103,7 +17103,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17112,7 +17112,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.Database} [response] Database
                              */
-
+    
                             /**
                              * Calls GetDatabase.
                              * @function getDatabase
@@ -17126,7 +17126,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.getDatabase = function getDatabase(request, callback) {
                                 return this.rpcCall(getDatabase, $root.google.spanner.admin.database.v1.GetDatabaseRequest, $root.google.spanner.admin.database.v1.Database, request, callback);
                             }, "name", { value: "GetDatabase" });
-
+    
                             /**
                              * Calls GetDatabase.
                              * @function getDatabase
@@ -17136,7 +17136,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.Database>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateDatabaseDdl}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17145,7 +17145,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls UpdateDatabaseDdl.
                              * @function updateDatabaseDdl
@@ -17159,7 +17159,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.updateDatabaseDdl = function updateDatabaseDdl(request, callback) {
                                 return this.rpcCall(updateDatabaseDdl, $root.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "UpdateDatabaseDdl" });
-
+    
                             /**
                              * Calls UpdateDatabaseDdl.
                              * @function updateDatabaseDdl
@@ -17169,7 +17169,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#dropDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17178,7 +17178,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.protobuf.Empty} [response] Empty
                              */
-
+    
                             /**
                              * Calls DropDatabase.
                              * @function dropDatabase
@@ -17192,7 +17192,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.dropDatabase = function dropDatabase(request, callback) {
                                 return this.rpcCall(dropDatabase, $root.google.spanner.admin.database.v1.DropDatabaseRequest, $root.google.protobuf.Empty, request, callback);
                             }, "name", { value: "DropDatabase" });
-
+    
                             /**
                              * Calls DropDatabase.
                              * @function dropDatabase
@@ -17202,7 +17202,7 @@
                              * @returns {Promise<google.protobuf.Empty>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabaseDdl}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17211,7 +17211,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.GetDatabaseDdlResponse} [response] GetDatabaseDdlResponse
                              */
-
+    
                             /**
                              * Calls GetDatabaseDdl.
                              * @function getDatabaseDdl
@@ -17225,7 +17225,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.getDatabaseDdl = function getDatabaseDdl(request, callback) {
                                 return this.rpcCall(getDatabaseDdl, $root.google.spanner.admin.database.v1.GetDatabaseDdlRequest, $root.google.spanner.admin.database.v1.GetDatabaseDdlResponse, request, callback);
                             }, "name", { value: "GetDatabaseDdl" });
-
+    
                             /**
                              * Calls GetDatabaseDdl.
                              * @function getDatabaseDdl
@@ -17235,7 +17235,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.GetDatabaseDdlResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#setIamPolicy}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17244,7 +17244,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.Policy} [response] Policy
                              */
-
+    
                             /**
                              * Calls SetIamPolicy.
                              * @function setIamPolicy
@@ -17258,7 +17258,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.setIamPolicy = function setIamPolicy(request, callback) {
                                 return this.rpcCall(setIamPolicy, $root.google.iam.v1.SetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                             }, "name", { value: "SetIamPolicy" });
-
+    
                             /**
                              * Calls SetIamPolicy.
                              * @function setIamPolicy
@@ -17268,7 +17268,7 @@
                              * @returns {Promise<google.iam.v1.Policy>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getIamPolicy}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17277,7 +17277,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.Policy} [response] Policy
                              */
-
+    
                             /**
                              * Calls GetIamPolicy.
                              * @function getIamPolicy
@@ -17291,7 +17291,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.getIamPolicy = function getIamPolicy(request, callback) {
                                 return this.rpcCall(getIamPolicy, $root.google.iam.v1.GetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                             }, "name", { value: "GetIamPolicy" });
-
+    
                             /**
                              * Calls GetIamPolicy.
                              * @function getIamPolicy
@@ -17301,7 +17301,7 @@
                              * @returns {Promise<google.iam.v1.Policy>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#testIamPermissions}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17310,7 +17310,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.TestIamPermissionsResponse} [response] TestIamPermissionsResponse
                              */
-
+    
                             /**
                              * Calls TestIamPermissions.
                              * @function testIamPermissions
@@ -17324,7 +17324,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.testIamPermissions = function testIamPermissions(request, callback) {
                                 return this.rpcCall(testIamPermissions, $root.google.iam.v1.TestIamPermissionsRequest, $root.google.iam.v1.TestIamPermissionsResponse, request, callback);
                             }, "name", { value: "TestIamPermissions" });
-
+    
                             /**
                              * Calls TestIamPermissions.
                              * @function testIamPermissions
@@ -17334,7 +17334,7 @@
                              * @returns {Promise<google.iam.v1.TestIamPermissionsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17343,7 +17343,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls CreateBackup.
                              * @function createBackup
@@ -17357,7 +17357,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.createBackup = function createBackup(request, callback) {
                                 return this.rpcCall(createBackup, $root.google.spanner.admin.database.v1.CreateBackupRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "CreateBackup" });
-
+    
                             /**
                              * Calls CreateBackup.
                              * @function createBackup
@@ -17367,7 +17367,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17376,7 +17376,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.Backup} [response] Backup
                              */
-
+    
                             /**
                              * Calls GetBackup.
                              * @function getBackup
@@ -17390,7 +17390,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.getBackup = function getBackup(request, callback) {
                                 return this.rpcCall(getBackup, $root.google.spanner.admin.database.v1.GetBackupRequest, $root.google.spanner.admin.database.v1.Backup, request, callback);
                             }, "name", { value: "GetBackup" });
-
+    
                             /**
                              * Calls GetBackup.
                              * @function getBackup
@@ -17400,7 +17400,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.Backup>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17409,7 +17409,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.Backup} [response] Backup
                              */
-
+    
                             /**
                              * Calls UpdateBackup.
                              * @function updateBackup
@@ -17423,7 +17423,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.updateBackup = function updateBackup(request, callback) {
                                 return this.rpcCall(updateBackup, $root.google.spanner.admin.database.v1.UpdateBackupRequest, $root.google.spanner.admin.database.v1.Backup, request, callback);
                             }, "name", { value: "UpdateBackup" });
-
+    
                             /**
                              * Calls UpdateBackup.
                              * @function updateBackup
@@ -17433,7 +17433,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.Backup>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#deleteBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17442,7 +17442,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.protobuf.Empty} [response] Empty
                              */
-
+    
                             /**
                              * Calls DeleteBackup.
                              * @function deleteBackup
@@ -17456,7 +17456,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.deleteBackup = function deleteBackup(request, callback) {
                                 return this.rpcCall(deleteBackup, $root.google.spanner.admin.database.v1.DeleteBackupRequest, $root.google.protobuf.Empty, request, callback);
                             }, "name", { value: "DeleteBackup" });
-
+    
                             /**
                              * Calls DeleteBackup.
                              * @function deleteBackup
@@ -17466,7 +17466,7 @@
                              * @returns {Promise<google.protobuf.Empty>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackups}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17475,7 +17475,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.ListBackupsResponse} [response] ListBackupsResponse
                              */
-
+    
                             /**
                              * Calls ListBackups.
                              * @function listBackups
@@ -17489,7 +17489,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.listBackups = function listBackups(request, callback) {
                                 return this.rpcCall(listBackups, $root.google.spanner.admin.database.v1.ListBackupsRequest, $root.google.spanner.admin.database.v1.ListBackupsResponse, request, callback);
                             }, "name", { value: "ListBackups" });
-
+    
                             /**
                              * Calls ListBackups.
                              * @function listBackups
@@ -17499,7 +17499,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.ListBackupsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#restoreDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17508,7 +17508,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls RestoreDatabase.
                              * @function restoreDatabase
@@ -17522,7 +17522,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.restoreDatabase = function restoreDatabase(request, callback) {
                                 return this.rpcCall(restoreDatabase, $root.google.spanner.admin.database.v1.RestoreDatabaseRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "RestoreDatabase" });
-
+    
                             /**
                              * Calls RestoreDatabase.
                              * @function restoreDatabase
@@ -17532,7 +17532,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseOperations}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17541,7 +17541,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.ListDatabaseOperationsResponse} [response] ListDatabaseOperationsResponse
                              */
-
+    
                             /**
                              * Calls ListDatabaseOperations.
                              * @function listDatabaseOperations
@@ -17555,7 +17555,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.listDatabaseOperations = function listDatabaseOperations(request, callback) {
                                 return this.rpcCall(listDatabaseOperations, $root.google.spanner.admin.database.v1.ListDatabaseOperationsRequest, $root.google.spanner.admin.database.v1.ListDatabaseOperationsResponse, request, callback);
                             }, "name", { value: "ListDatabaseOperations" });
-
+    
                             /**
                              * Calls ListDatabaseOperations.
                              * @function listDatabaseOperations
@@ -17565,7 +17565,7 @@
                              * @returns {Promise<google.spanner.admin.database.v1.ListDatabaseOperationsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackupOperations}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
@@ -17574,7 +17574,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.database.v1.ListBackupOperationsResponse} [response] ListBackupOperationsResponse
                              */
-
+    
                             /**
                              * Calls ListBackupOperations.
                              * @function listBackupOperations
@@ -17588,7 +17588,7 @@
                             Object.defineProperty(DatabaseAdmin.prototype.listBackupOperations = function listBackupOperations(request, callback) {
                                 return this.rpcCall(listBackupOperations, $root.google.spanner.admin.database.v1.ListBackupOperationsRequest, $root.google.spanner.admin.database.v1.ListBackupOperationsResponse, request, callback);
                             }, "name", { value: "ListBackupOperations" });
-
+    
                             /**
                              * Calls ListBackupOperations.
                              * @function listBackupOperations
@@ -17598,12 +17598,12 @@
                              * @returns {Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             return DatabaseAdmin;
                         })();
-
+    
                         v1.RestoreInfo = (function() {
-
+    
                             /**
                              * Properties of a RestoreInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -17611,7 +17611,7 @@
                              * @property {google.spanner.admin.database.v1.RestoreSourceType|null} [sourceType] RestoreInfo sourceType
                              * @property {google.spanner.admin.database.v1.IBackupInfo|null} [backupInfo] RestoreInfo backupInfo
                              */
-
+    
                             /**
                              * Constructs a new RestoreInfo.
                              * @memberof google.spanner.admin.database.v1
@@ -17626,7 +17626,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * RestoreInfo sourceType.
                              * @member {google.spanner.admin.database.v1.RestoreSourceType} sourceType
@@ -17634,7 +17634,7 @@
                              * @instance
                              */
                             RestoreInfo.prototype.sourceType = 0;
-
+    
                             /**
                              * RestoreInfo backupInfo.
                              * @member {google.spanner.admin.database.v1.IBackupInfo|null|undefined} backupInfo
@@ -17642,10 +17642,10 @@
                              * @instance
                              */
                             RestoreInfo.prototype.backupInfo = null;
-
+    
                             // OneOf field names bound to virtual getters and setters
                             var $oneOfFields;
-
+    
                             /**
                              * RestoreInfo sourceInfo.
                              * @member {"backupInfo"|undefined} sourceInfo
@@ -17656,7 +17656,7 @@
                                 get: $util.oneOfGetter($oneOfFields = ["backupInfo"]),
                                 set: $util.oneOfSetter($oneOfFields)
                             });
-
+    
                             /**
                              * Creates a new RestoreInfo instance using the specified properties.
                              * @function create
@@ -17668,7 +17668,7 @@
                             RestoreInfo.create = function create(properties) {
                                 return new RestoreInfo(properties);
                             };
-
+    
                             /**
                              * Encodes the specified RestoreInfo message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreInfo.verify|verify} messages.
                              * @function encode
@@ -17687,7 +17687,7 @@
                                     $root.google.spanner.admin.database.v1.BackupInfo.encode(message.backupInfo, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified RestoreInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreInfo.verify|verify} messages.
                              * @function encodeDelimited
@@ -17700,7 +17700,7 @@
                             RestoreInfo.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a RestoreInfo message from the specified reader or buffer.
                              * @function decode
@@ -17732,7 +17732,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a RestoreInfo message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -17748,7 +17748,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a RestoreInfo message.
                              * @function verify
@@ -17779,7 +17779,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a RestoreInfo message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -17809,7 +17809,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a RestoreInfo message. Also converts values to other types if specified.
                              * @function toObject
@@ -17834,7 +17834,7 @@
                                 }
                                 return object;
                             };
-
+    
                             /**
                              * Converts this RestoreInfo to JSON.
                              * @function toJSON
@@ -17845,12 +17845,12 @@
                             RestoreInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return RestoreInfo;
                         })();
-
+    
                         v1.Database = (function() {
-
+    
                             /**
                              * Properties of a Database.
                              * @memberof google.spanner.admin.database.v1
@@ -17864,7 +17864,7 @@
                              * @property {string|null} [versionRetentionPeriod] Database versionRetentionPeriod
                              * @property {google.protobuf.ITimestamp|null} [earliestVersionTime] Database earliestVersionTime
                              */
-
+    
                             /**
                              * Constructs a new Database.
                              * @memberof google.spanner.admin.database.v1
@@ -17880,7 +17880,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * Database name.
                              * @member {string} name
@@ -17888,7 +17888,7 @@
                              * @instance
                              */
                             Database.prototype.name = "";
-
+    
                             /**
                              * Database state.
                              * @member {google.spanner.admin.database.v1.Database.State} state
@@ -17896,7 +17896,7 @@
                              * @instance
                              */
                             Database.prototype.state = 0;
-
+    
                             /**
                              * Database createTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} createTime
@@ -17904,7 +17904,7 @@
                              * @instance
                              */
                             Database.prototype.createTime = null;
-
+    
                             /**
                              * Database restoreInfo.
                              * @member {google.spanner.admin.database.v1.IRestoreInfo|null|undefined} restoreInfo
@@ -17912,7 +17912,7 @@
                              * @instance
                              */
                             Database.prototype.restoreInfo = null;
-
+    
                             /**
                              * Database encryptionConfig.
                              * @member {google.spanner.admin.database.v1.IEncryptionConfig|null|undefined} encryptionConfig
@@ -17920,7 +17920,7 @@
                              * @instance
                              */
                             Database.prototype.encryptionConfig = null;
-
+    
                             /**
                              * Database encryptionInfo.
                              * @member {Array.<google.spanner.admin.database.v1.IEncryptionInfo>} encryptionInfo
@@ -17928,7 +17928,7 @@
                              * @instance
                              */
                             Database.prototype.encryptionInfo = $util.emptyArray;
-
+    
                             /**
                              * Database versionRetentionPeriod.
                              * @member {string} versionRetentionPeriod
@@ -17936,7 +17936,7 @@
                              * @instance
                              */
                             Database.prototype.versionRetentionPeriod = "";
-
+    
                             /**
                              * Database earliestVersionTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} earliestVersionTime
@@ -17944,7 +17944,7 @@
                              * @instance
                              */
                             Database.prototype.earliestVersionTime = null;
-
+    
                             /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
@@ -17956,7 +17956,7 @@
                             Database.create = function create(properties) {
                                 return new Database(properties);
                             };
-
+    
                             /**
                              * Encodes the specified Database message. Does not implicitly {@link google.spanner.admin.database.v1.Database.verify|verify} messages.
                              * @function encode
@@ -17988,7 +17988,7 @@
                                         $root.google.spanner.admin.database.v1.EncryptionInfo.encode(message.encryptionInfo[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified Database message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.Database.verify|verify} messages.
                              * @function encodeDelimited
@@ -18001,7 +18001,7 @@
                             Database.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a Database message from the specified reader or buffer.
                              * @function decode
@@ -18053,7 +18053,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a Database message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -18069,7 +18069,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a Database message.
                              * @function verify
@@ -18128,7 +18128,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a Database message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -18195,7 +18195,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a Database message. Also converts values to other types if specified.
                              * @function toObject
@@ -18241,7 +18241,7 @@
                                 }
                                 return object;
                             };
-
+    
                             /**
                              * Converts this Database to JSON.
                              * @function toJSON
@@ -18252,7 +18252,7 @@
                             Database.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * State enum.
                              * @name google.spanner.admin.database.v1.Database.State
@@ -18270,12 +18270,12 @@
                                 values[valuesById[3] = "READY_OPTIMIZING"] = 3;
                                 return values;
                             })();
-
+    
                             return Database;
                         })();
-
+    
                         v1.ListDatabasesRequest = (function() {
-
+    
                             /**
                              * Properties of a ListDatabasesRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -18284,7 +18284,7 @@
                              * @property {number|null} [pageSize] ListDatabasesRequest pageSize
                              * @property {string|null} [pageToken] ListDatabasesRequest pageToken
                              */
-
+    
                             /**
                              * Constructs a new ListDatabasesRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -18299,7 +18299,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListDatabasesRequest parent.
                              * @member {string} parent
@@ -18307,7 +18307,7 @@
                              * @instance
                              */
                             ListDatabasesRequest.prototype.parent = "";
-
+    
                             /**
                              * ListDatabasesRequest pageSize.
                              * @member {number} pageSize
@@ -18315,7 +18315,7 @@
                              * @instance
                              */
                             ListDatabasesRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListDatabasesRequest pageToken.
                              * @member {string} pageToken
@@ -18323,7 +18323,7 @@
                              * @instance
                              */
                             ListDatabasesRequest.prototype.pageToken = "";
-
+    
                             /**
                              * Creates a new ListDatabasesRequest instance using the specified properties.
                              * @function create
@@ -18335,7 +18335,7 @@
                             ListDatabasesRequest.create = function create(properties) {
                                 return new ListDatabasesRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabasesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesRequest.verify|verify} messages.
                              * @function encode
@@ -18356,7 +18356,7 @@
                                     writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabasesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -18369,7 +18369,7 @@
                             ListDatabasesRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListDatabasesRequest message from the specified reader or buffer.
                              * @function decode
@@ -18404,7 +18404,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListDatabasesRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -18420,7 +18420,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListDatabasesRequest message.
                              * @function verify
@@ -18443,7 +18443,7 @@
                                         return "pageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListDatabasesRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -18464,7 +18464,7 @@
                                     message.pageToken = String(object.pageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListDatabasesRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -18491,7 +18491,7 @@
                                     object.pageToken = message.pageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListDatabasesRequest to JSON.
                              * @function toJSON
@@ -18502,12 +18502,12 @@
                             ListDatabasesRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListDatabasesRequest;
                         })();
-
+    
                         v1.ListDatabasesResponse = (function() {
-
+    
                             /**
                              * Properties of a ListDatabasesResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -18515,7 +18515,7 @@
                              * @property {Array.<google.spanner.admin.database.v1.IDatabase>|null} [databases] ListDatabasesResponse databases
                              * @property {string|null} [nextPageToken] ListDatabasesResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListDatabasesResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -18531,7 +18531,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListDatabasesResponse databases.
                              * @member {Array.<google.spanner.admin.database.v1.IDatabase>} databases
@@ -18539,7 +18539,7 @@
                              * @instance
                              */
                             ListDatabasesResponse.prototype.databases = $util.emptyArray;
-
+    
                             /**
                              * ListDatabasesResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -18547,7 +18547,7 @@
                              * @instance
                              */
                             ListDatabasesResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListDatabasesResponse instance using the specified properties.
                              * @function create
@@ -18559,7 +18559,7 @@
                             ListDatabasesResponse.create = function create(properties) {
                                 return new ListDatabasesResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabasesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesResponse.verify|verify} messages.
                              * @function encode
@@ -18579,7 +18579,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabasesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabasesResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -18592,7 +18592,7 @@
                             ListDatabasesResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListDatabasesResponse message from the specified reader or buffer.
                              * @function decode
@@ -18626,7 +18626,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListDatabasesResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -18642,7 +18642,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListDatabasesResponse message.
                              * @function verify
@@ -18668,7 +18668,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListDatabasesResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -18695,7 +18695,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListDatabasesResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -18722,7 +18722,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListDatabasesResponse to JSON.
                              * @function toJSON
@@ -18733,12 +18733,12 @@
                             ListDatabasesResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListDatabasesResponse;
                         })();
-
+    
                         v1.CreateDatabaseRequest = (function() {
-
+    
                             /**
                              * Properties of a CreateDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -18748,7 +18748,7 @@
                              * @property {Array.<string>|null} [extraStatements] CreateDatabaseRequest extraStatements
                              * @property {google.spanner.admin.database.v1.IEncryptionConfig|null} [encryptionConfig] CreateDatabaseRequest encryptionConfig
                              */
-
+    
                             /**
                              * Constructs a new CreateDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -18764,7 +18764,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateDatabaseRequest parent.
                              * @member {string} parent
@@ -18772,7 +18772,7 @@
                              * @instance
                              */
                             CreateDatabaseRequest.prototype.parent = "";
-
+    
                             /**
                              * CreateDatabaseRequest createStatement.
                              * @member {string} createStatement
@@ -18780,7 +18780,7 @@
                              * @instance
                              */
                             CreateDatabaseRequest.prototype.createStatement = "";
-
+    
                             /**
                              * CreateDatabaseRequest extraStatements.
                              * @member {Array.<string>} extraStatements
@@ -18788,7 +18788,7 @@
                              * @instance
                              */
                             CreateDatabaseRequest.prototype.extraStatements = $util.emptyArray;
-
+    
                             /**
                              * CreateDatabaseRequest encryptionConfig.
                              * @member {google.spanner.admin.database.v1.IEncryptionConfig|null|undefined} encryptionConfig
@@ -18796,7 +18796,7 @@
                              * @instance
                              */
                             CreateDatabaseRequest.prototype.encryptionConfig = null;
-
+    
                             /**
                              * Creates a new CreateDatabaseRequest instance using the specified properties.
                              * @function create
@@ -18808,7 +18808,7 @@
                             CreateDatabaseRequest.create = function create(properties) {
                                 return new CreateDatabaseRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseRequest.verify|verify} messages.
                              * @function encode
@@ -18832,7 +18832,7 @@
                                     $root.google.spanner.admin.database.v1.EncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -18845,7 +18845,7 @@
                             CreateDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateDatabaseRequest message from the specified reader or buffer.
                              * @function decode
@@ -18885,7 +18885,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateDatabaseRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -18901,7 +18901,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateDatabaseRequest message.
                              * @function verify
@@ -18933,7 +18933,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateDatabaseRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -18964,7 +18964,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateDatabaseRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -18998,7 +18998,7 @@
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.toObject(message.encryptionConfig, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateDatabaseRequest to JSON.
                              * @function toJSON
@@ -19009,19 +19009,19 @@
                             CreateDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateDatabaseRequest;
                         })();
-
+    
                         v1.CreateDatabaseMetadata = (function() {
-
+    
                             /**
                              * Properties of a CreateDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
                              * @interface ICreateDatabaseMetadata
                              * @property {string|null} [database] CreateDatabaseMetadata database
                              */
-
+    
                             /**
                              * Constructs a new CreateDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -19036,7 +19036,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateDatabaseMetadata database.
                              * @member {string} database
@@ -19044,7 +19044,7 @@
                              * @instance
                              */
                             CreateDatabaseMetadata.prototype.database = "";
-
+    
                             /**
                              * Creates a new CreateDatabaseMetadata instance using the specified properties.
                              * @function create
@@ -19056,7 +19056,7 @@
                             CreateDatabaseMetadata.create = function create(properties) {
                                 return new CreateDatabaseMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseMetadata.verify|verify} messages.
                              * @function encode
@@ -19073,7 +19073,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.database);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CreateDatabaseMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -19086,7 +19086,7 @@
                             CreateDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateDatabaseMetadata message from the specified reader or buffer.
                              * @function decode
@@ -19115,7 +19115,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateDatabaseMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -19131,7 +19131,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateDatabaseMetadata message.
                              * @function verify
@@ -19148,7 +19148,7 @@
                                         return "database: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -19165,7 +19165,7 @@
                                     message.database = String(object.database);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateDatabaseMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -19185,7 +19185,7 @@
                                     object.database = message.database;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateDatabaseMetadata to JSON.
                              * @function toJSON
@@ -19196,19 +19196,19 @@
                             CreateDatabaseMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateDatabaseMetadata;
                         })();
-
+    
                         v1.GetDatabaseRequest = (function() {
-
+    
                             /**
                              * Properties of a GetDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IGetDatabaseRequest
                              * @property {string|null} [name] GetDatabaseRequest name
                              */
-
+    
                             /**
                              * Constructs a new GetDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -19223,7 +19223,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetDatabaseRequest name.
                              * @member {string} name
@@ -19231,7 +19231,7 @@
                              * @instance
                              */
                             GetDatabaseRequest.prototype.name = "";
-
+    
                             /**
                              * Creates a new GetDatabaseRequest instance using the specified properties.
                              * @function create
@@ -19243,7 +19243,7 @@
                             GetDatabaseRequest.create = function create(properties) {
                                 return new GetDatabaseRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseRequest.verify|verify} messages.
                              * @function encode
@@ -19260,7 +19260,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -19273,7 +19273,7 @@
                             GetDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseRequest message from the specified reader or buffer.
                              * @function decode
@@ -19302,7 +19302,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -19318,7 +19318,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetDatabaseRequest message.
                              * @function verify
@@ -19335,7 +19335,7 @@
                                         return "name: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetDatabaseRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -19352,7 +19352,7 @@
                                     message.name = String(object.name);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetDatabaseRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -19372,7 +19372,7 @@
                                     object.name = message.name;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetDatabaseRequest to JSON.
                              * @function toJSON
@@ -19383,12 +19383,12 @@
                             GetDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetDatabaseRequest;
                         })();
-
+    
                         v1.UpdateDatabaseDdlRequest = (function() {
-
+    
                             /**
                              * Properties of an UpdateDatabaseDdlRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -19397,7 +19397,7 @@
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlRequest statements
                              * @property {string|null} [operationId] UpdateDatabaseDdlRequest operationId
                              */
-
+    
                             /**
                              * Constructs a new UpdateDatabaseDdlRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -19413,7 +19413,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * UpdateDatabaseDdlRequest database.
                              * @member {string} database
@@ -19421,7 +19421,7 @@
                              * @instance
                              */
                             UpdateDatabaseDdlRequest.prototype.database = "";
-
+    
                             /**
                              * UpdateDatabaseDdlRequest statements.
                              * @member {Array.<string>} statements
@@ -19429,7 +19429,7 @@
                              * @instance
                              */
                             UpdateDatabaseDdlRequest.prototype.statements = $util.emptyArray;
-
+    
                             /**
                              * UpdateDatabaseDdlRequest operationId.
                              * @member {string} operationId
@@ -19437,7 +19437,7 @@
                              * @instance
                              */
                             UpdateDatabaseDdlRequest.prototype.operationId = "";
-
+    
                             /**
                              * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
                              * @function create
@@ -19449,7 +19449,7 @@
                             UpdateDatabaseDdlRequest.create = function create(properties) {
                                 return new UpdateDatabaseDdlRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified UpdateDatabaseDdlRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.verify|verify} messages.
                              * @function encode
@@ -19471,7 +19471,7 @@
                                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.operationId);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified UpdateDatabaseDdlRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -19484,7 +19484,7 @@
                             UpdateDatabaseDdlRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an UpdateDatabaseDdlRequest message from the specified reader or buffer.
                              * @function decode
@@ -19521,7 +19521,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an UpdateDatabaseDdlRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -19537,7 +19537,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an UpdateDatabaseDdlRequest message.
                              * @function verify
@@ -19564,7 +19564,7 @@
                                         return "operationId: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates an UpdateDatabaseDdlRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -19590,7 +19590,7 @@
                                     message.operationId = String(object.operationId);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an UpdateDatabaseDdlRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -19621,7 +19621,7 @@
                                     object.operationId = message.operationId;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this UpdateDatabaseDdlRequest to JSON.
                              * @function toJSON
@@ -19632,12 +19632,12 @@
                             UpdateDatabaseDdlRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return UpdateDatabaseDdlRequest;
                         })();
-
+    
                         v1.UpdateDatabaseDdlMetadata = (function() {
-
+    
                             /**
                              * Properties of an UpdateDatabaseDdlMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -19645,8 +19645,9 @@
                              * @property {string|null} [database] UpdateDatabaseDdlMetadata database
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlMetadata statements
                              * @property {Array.<google.protobuf.ITimestamp>|null} [commitTimestamps] UpdateDatabaseDdlMetadata commitTimestamps
+                             * @property {boolean|null} [throttled] UpdateDatabaseDdlMetadata throttled
                              */
-
+    
                             /**
                              * Constructs a new UpdateDatabaseDdlMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -19663,7 +19664,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * UpdateDatabaseDdlMetadata database.
                              * @member {string} database
@@ -19671,7 +19672,7 @@
                              * @instance
                              */
                             UpdateDatabaseDdlMetadata.prototype.database = "";
-
+    
                             /**
                              * UpdateDatabaseDdlMetadata statements.
                              * @member {Array.<string>} statements
@@ -19679,7 +19680,7 @@
                              * @instance
                              */
                             UpdateDatabaseDdlMetadata.prototype.statements = $util.emptyArray;
-
+    
                             /**
                              * UpdateDatabaseDdlMetadata commitTimestamps.
                              * @member {Array.<google.protobuf.ITimestamp>} commitTimestamps
@@ -19687,7 +19688,15 @@
                              * @instance
                              */
                             UpdateDatabaseDdlMetadata.prototype.commitTimestamps = $util.emptyArray;
-
+    
+                            /**
+                             * UpdateDatabaseDdlMetadata throttled.
+                             * @member {boolean} throttled
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseDdlMetadata.prototype.throttled = false;
+    
                             /**
                              * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
                              * @function create
@@ -19699,7 +19708,7 @@
                             UpdateDatabaseDdlMetadata.create = function create(properties) {
                                 return new UpdateDatabaseDdlMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified UpdateDatabaseDdlMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.verify|verify} messages.
                              * @function encode
@@ -19720,9 +19729,11 @@
                                 if (message.commitTimestamps != null && message.commitTimestamps.length)
                                     for (var i = 0; i < message.commitTimestamps.length; ++i)
                                         $root.google.protobuf.Timestamp.encode(message.commitTimestamps[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.throttled != null && Object.hasOwnProperty.call(message, "throttled"))
+                                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.throttled);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified UpdateDatabaseDdlMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -19735,7 +19746,7 @@
                             UpdateDatabaseDdlMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an UpdateDatabaseDdlMetadata message from the specified reader or buffer.
                              * @function decode
@@ -19767,6 +19778,9 @@
                                             message.commitTimestamps = [];
                                         message.commitTimestamps.push($root.google.protobuf.Timestamp.decode(reader, reader.uint32()));
                                         break;
+                                    case 4:
+                                        message.throttled = reader.bool();
+                                        break;
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -19774,7 +19788,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an UpdateDatabaseDdlMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -19790,7 +19804,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an UpdateDatabaseDdlMetadata message.
                              * @function verify
@@ -19821,9 +19835,12 @@
                                             return "commitTimestamps." + error;
                                     }
                                 }
+                                if (message.throttled != null && message.hasOwnProperty("throttled"))
+                                    if (typeof message.throttled !== "boolean")
+                                        return "throttled: boolean expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates an UpdateDatabaseDdlMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -19855,9 +19872,11 @@
                                         message.commitTimestamps[i] = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamps[i]);
                                     }
                                 }
+                                if (object.throttled != null)
+                                    message.throttled = Boolean(object.throttled);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an UpdateDatabaseDdlMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -19875,8 +19894,10 @@
                                     object.statements = [];
                                     object.commitTimestamps = [];
                                 }
-                                if (options.defaults)
+                                if (options.defaults) {
                                     object.database = "";
+                                    object.throttled = false;
+                                }
                                 if (message.database != null && message.hasOwnProperty("database"))
                                     object.database = message.database;
                                 if (message.statements && message.statements.length) {
@@ -19889,9 +19910,11 @@
                                     for (var j = 0; j < message.commitTimestamps.length; ++j)
                                         object.commitTimestamps[j] = $root.google.protobuf.Timestamp.toObject(message.commitTimestamps[j], options);
                                 }
+                                if (message.throttled != null && message.hasOwnProperty("throttled"))
+                                    object.throttled = message.throttled;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this UpdateDatabaseDdlMetadata to JSON.
                              * @function toJSON
@@ -19902,19 +19925,19 @@
                             UpdateDatabaseDdlMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return UpdateDatabaseDdlMetadata;
                         })();
-
+    
                         v1.DropDatabaseRequest = (function() {
-
+    
                             /**
                              * Properties of a DropDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IDropDatabaseRequest
                              * @property {string|null} [database] DropDatabaseRequest database
                              */
-
+    
                             /**
                              * Constructs a new DropDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -19929,7 +19952,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * DropDatabaseRequest database.
                              * @member {string} database
@@ -19937,7 +19960,7 @@
                              * @instance
                              */
                             DropDatabaseRequest.prototype.database = "";
-
+    
                             /**
                              * Creates a new DropDatabaseRequest instance using the specified properties.
                              * @function create
@@ -19949,7 +19972,7 @@
                             DropDatabaseRequest.create = function create(properties) {
                                 return new DropDatabaseRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified DropDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.DropDatabaseRequest.verify|verify} messages.
                              * @function encode
@@ -19966,7 +19989,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.database);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified DropDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DropDatabaseRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -19979,7 +20002,7 @@
                             DropDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a DropDatabaseRequest message from the specified reader or buffer.
                              * @function decode
@@ -20008,7 +20031,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a DropDatabaseRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -20024,7 +20047,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a DropDatabaseRequest message.
                              * @function verify
@@ -20041,7 +20064,7 @@
                                         return "database: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a DropDatabaseRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -20058,7 +20081,7 @@
                                     message.database = String(object.database);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a DropDatabaseRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -20078,7 +20101,7 @@
                                     object.database = message.database;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this DropDatabaseRequest to JSON.
                              * @function toJSON
@@ -20089,19 +20112,19 @@
                             DropDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return DropDatabaseRequest;
                         })();
-
+    
                         v1.GetDatabaseDdlRequest = (function() {
-
+    
                             /**
                              * Properties of a GetDatabaseDdlRequest.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IGetDatabaseDdlRequest
                              * @property {string|null} [database] GetDatabaseDdlRequest database
                              */
-
+    
                             /**
                              * Constructs a new GetDatabaseDdlRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -20116,7 +20139,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetDatabaseDdlRequest database.
                              * @member {string} database
@@ -20124,7 +20147,7 @@
                              * @instance
                              */
                             GetDatabaseDdlRequest.prototype.database = "";
-
+    
                             /**
                              * Creates a new GetDatabaseDdlRequest instance using the specified properties.
                              * @function create
@@ -20136,7 +20159,7 @@
                             GetDatabaseDdlRequest.create = function create(properties) {
                                 return new GetDatabaseDdlRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseDdlRequest message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlRequest.verify|verify} messages.
                              * @function encode
@@ -20153,7 +20176,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.database);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseDdlRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -20166,7 +20189,7 @@
                             GetDatabaseDdlRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseDdlRequest message from the specified reader or buffer.
                              * @function decode
@@ -20195,7 +20218,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseDdlRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -20211,7 +20234,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetDatabaseDdlRequest message.
                              * @function verify
@@ -20228,7 +20251,7 @@
                                         return "database: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetDatabaseDdlRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -20245,7 +20268,7 @@
                                     message.database = String(object.database);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetDatabaseDdlRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -20265,7 +20288,7 @@
                                     object.database = message.database;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetDatabaseDdlRequest to JSON.
                              * @function toJSON
@@ -20276,19 +20299,19 @@
                             GetDatabaseDdlRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetDatabaseDdlRequest;
                         })();
-
+    
                         v1.GetDatabaseDdlResponse = (function() {
-
+    
                             /**
                              * Properties of a GetDatabaseDdlResponse.
                              * @memberof google.spanner.admin.database.v1
                              * @interface IGetDatabaseDdlResponse
                              * @property {Array.<string>|null} [statements] GetDatabaseDdlResponse statements
                              */
-
+    
                             /**
                              * Constructs a new GetDatabaseDdlResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -20304,7 +20327,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetDatabaseDdlResponse statements.
                              * @member {Array.<string>} statements
@@ -20312,7 +20335,7 @@
                              * @instance
                              */
                             GetDatabaseDdlResponse.prototype.statements = $util.emptyArray;
-
+    
                             /**
                              * Creates a new GetDatabaseDdlResponse instance using the specified properties.
                              * @function create
@@ -20324,7 +20347,7 @@
                             GetDatabaseDdlResponse.create = function create(properties) {
                                 return new GetDatabaseDdlResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseDdlResponse message. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlResponse.verify|verify} messages.
                              * @function encode
@@ -20342,7 +20365,7 @@
                                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.statements[i]);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetDatabaseDdlResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.GetDatabaseDdlResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -20355,7 +20378,7 @@
                             GetDatabaseDdlResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseDdlResponse message from the specified reader or buffer.
                              * @function decode
@@ -20386,7 +20409,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetDatabaseDdlResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -20402,7 +20425,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetDatabaseDdlResponse message.
                              * @function verify
@@ -20423,7 +20446,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetDatabaseDdlResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -20445,7 +20468,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetDatabaseDdlResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -20468,7 +20491,7 @@
                                 }
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetDatabaseDdlResponse to JSON.
                              * @function toJSON
@@ -20479,12 +20502,12 @@
                             GetDatabaseDdlResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetDatabaseDdlResponse;
                         })();
-
+    
                         v1.ListDatabaseOperationsRequest = (function() {
-
+    
                             /**
                              * Properties of a ListDatabaseOperationsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -20494,7 +20517,7 @@
                              * @property {number|null} [pageSize] ListDatabaseOperationsRequest pageSize
                              * @property {string|null} [pageToken] ListDatabaseOperationsRequest pageToken
                              */
-
+    
                             /**
                              * Constructs a new ListDatabaseOperationsRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -20509,7 +20532,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListDatabaseOperationsRequest parent.
                              * @member {string} parent
@@ -20517,7 +20540,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsRequest.prototype.parent = "";
-
+    
                             /**
                              * ListDatabaseOperationsRequest filter.
                              * @member {string} filter
@@ -20525,7 +20548,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsRequest.prototype.filter = "";
-
+    
                             /**
                              * ListDatabaseOperationsRequest pageSize.
                              * @member {number} pageSize
@@ -20533,7 +20556,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListDatabaseOperationsRequest pageToken.
                              * @member {string} pageToken
@@ -20541,7 +20564,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsRequest.prototype.pageToken = "";
-
+    
                             /**
                              * Creates a new ListDatabaseOperationsRequest instance using the specified properties.
                              * @function create
@@ -20553,7 +20576,7 @@
                             ListDatabaseOperationsRequest.create = function create(properties) {
                                 return new ListDatabaseOperationsRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabaseOperationsRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsRequest.verify|verify} messages.
                              * @function encode
@@ -20576,7 +20599,7 @@
                                     writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabaseOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -20589,7 +20612,7 @@
                             ListDatabaseOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListDatabaseOperationsRequest message from the specified reader or buffer.
                              * @function decode
@@ -20627,7 +20650,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListDatabaseOperationsRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -20643,7 +20666,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListDatabaseOperationsRequest message.
                              * @function verify
@@ -20669,7 +20692,7 @@
                                         return "pageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListDatabaseOperationsRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -20692,7 +20715,7 @@
                                     message.pageToken = String(object.pageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListDatabaseOperationsRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -20722,7 +20745,7 @@
                                     object.pageToken = message.pageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListDatabaseOperationsRequest to JSON.
                              * @function toJSON
@@ -20733,12 +20756,12 @@
                             ListDatabaseOperationsRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListDatabaseOperationsRequest;
                         })();
-
+    
                         v1.ListDatabaseOperationsResponse = (function() {
-
+    
                             /**
                              * Properties of a ListDatabaseOperationsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -20746,7 +20769,7 @@
                              * @property {Array.<google.longrunning.IOperation>|null} [operations] ListDatabaseOperationsResponse operations
                              * @property {string|null} [nextPageToken] ListDatabaseOperationsResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListDatabaseOperationsResponse.
                              * @memberof google.spanner.admin.database.v1
@@ -20762,7 +20785,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListDatabaseOperationsResponse operations.
                              * @member {Array.<google.longrunning.IOperation>} operations
@@ -20770,7 +20793,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsResponse.prototype.operations = $util.emptyArray;
-
+    
                             /**
                              * ListDatabaseOperationsResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -20778,7 +20801,7 @@
                              * @instance
                              */
                             ListDatabaseOperationsResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListDatabaseOperationsResponse instance using the specified properties.
                              * @function create
@@ -20790,7 +20813,7 @@
                             ListDatabaseOperationsResponse.create = function create(properties) {
                                 return new ListDatabaseOperationsResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabaseOperationsResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.verify|verify} messages.
                              * @function encode
@@ -20810,7 +20833,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListDatabaseOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -20823,7 +20846,7 @@
                             ListDatabaseOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListDatabaseOperationsResponse message from the specified reader or buffer.
                              * @function decode
@@ -20857,7 +20880,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListDatabaseOperationsResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -20873,7 +20896,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListDatabaseOperationsResponse message.
                              * @function verify
@@ -20899,7 +20922,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListDatabaseOperationsResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -20926,7 +20949,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListDatabaseOperationsResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -20953,7 +20976,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListDatabaseOperationsResponse to JSON.
                              * @function toJSON
@@ -20964,12 +20987,12 @@
                             ListDatabaseOperationsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListDatabaseOperationsResponse;
                         })();
-
+    
                         v1.RestoreDatabaseRequest = (function() {
-
+    
                             /**
                              * Properties of a RestoreDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -20979,7 +21002,7 @@
                              * @property {string|null} [backup] RestoreDatabaseRequest backup
                              * @property {google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null} [encryptionConfig] RestoreDatabaseRequest encryptionConfig
                              */
-
+    
                             /**
                              * Constructs a new RestoreDatabaseRequest.
                              * @memberof google.spanner.admin.database.v1
@@ -20994,7 +21017,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * RestoreDatabaseRequest parent.
                              * @member {string} parent
@@ -21002,7 +21025,7 @@
                              * @instance
                              */
                             RestoreDatabaseRequest.prototype.parent = "";
-
+    
                             /**
                              * RestoreDatabaseRequest databaseId.
                              * @member {string} databaseId
@@ -21010,7 +21033,7 @@
                              * @instance
                              */
                             RestoreDatabaseRequest.prototype.databaseId = "";
-
+    
                             /**
                              * RestoreDatabaseRequest backup.
                              * @member {string} backup
@@ -21018,7 +21041,7 @@
                              * @instance
                              */
                             RestoreDatabaseRequest.prototype.backup = "";
-
+    
                             /**
                              * RestoreDatabaseRequest encryptionConfig.
                              * @member {google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null|undefined} encryptionConfig
@@ -21026,10 +21049,10 @@
                              * @instance
                              */
                             RestoreDatabaseRequest.prototype.encryptionConfig = null;
-
+    
                             // OneOf field names bound to virtual getters and setters
                             var $oneOfFields;
-
+    
                             /**
                              * RestoreDatabaseRequest source.
                              * @member {"backup"|undefined} source
@@ -21040,7 +21063,7 @@
                                 get: $util.oneOfGetter($oneOfFields = ["backup"]),
                                 set: $util.oneOfSetter($oneOfFields)
                             });
-
+    
                             /**
                              * Creates a new RestoreDatabaseRequest instance using the specified properties.
                              * @function create
@@ -21052,7 +21075,7 @@
                             RestoreDatabaseRequest.create = function create(properties) {
                                 return new RestoreDatabaseRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseRequest.verify|verify} messages.
                              * @function encode
@@ -21075,7 +21098,7 @@
                                     $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -21088,7 +21111,7 @@
                             RestoreDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseRequest message from the specified reader or buffer.
                              * @function decode
@@ -21126,7 +21149,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -21142,7 +21165,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a RestoreDatabaseRequest message.
                              * @function verify
@@ -21173,7 +21196,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a RestoreDatabaseRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -21199,7 +21222,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a RestoreDatabaseRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -21231,7 +21254,7 @@
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.toObject(message.encryptionConfig, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this RestoreDatabaseRequest to JSON.
                              * @function toJSON
@@ -21242,12 +21265,12 @@
                             RestoreDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return RestoreDatabaseRequest;
                         })();
-
+    
                         v1.RestoreDatabaseEncryptionConfig = (function() {
-
+    
                             /**
                              * Properties of a RestoreDatabaseEncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
@@ -21255,7 +21278,7 @@
                              * @property {google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType|null} [encryptionType] RestoreDatabaseEncryptionConfig encryptionType
                              * @property {string|null} [kmsKeyName] RestoreDatabaseEncryptionConfig kmsKeyName
                              */
-
+    
                             /**
                              * Constructs a new RestoreDatabaseEncryptionConfig.
                              * @memberof google.spanner.admin.database.v1
@@ -21270,7 +21293,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * RestoreDatabaseEncryptionConfig encryptionType.
                              * @member {google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType} encryptionType
@@ -21278,7 +21301,7 @@
                              * @instance
                              */
                             RestoreDatabaseEncryptionConfig.prototype.encryptionType = 0;
-
+    
                             /**
                              * RestoreDatabaseEncryptionConfig kmsKeyName.
                              * @member {string} kmsKeyName
@@ -21286,7 +21309,7 @@
                              * @instance
                              */
                             RestoreDatabaseEncryptionConfig.prototype.kmsKeyName = "";
-
+    
                             /**
                              * Creates a new RestoreDatabaseEncryptionConfig instance using the specified properties.
                              * @function create
@@ -21298,7 +21321,7 @@
                             RestoreDatabaseEncryptionConfig.create = function create(properties) {
                                 return new RestoreDatabaseEncryptionConfig(properties);
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.verify|verify} messages.
                              * @function encode
@@ -21317,7 +21340,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.kmsKeyName);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.verify|verify} messages.
                              * @function encodeDelimited
@@ -21330,7 +21353,7 @@
                             RestoreDatabaseEncryptionConfig.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseEncryptionConfig message from the specified reader or buffer.
                              * @function decode
@@ -21362,7 +21385,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseEncryptionConfig message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -21378,7 +21401,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a RestoreDatabaseEncryptionConfig message.
                              * @function verify
@@ -21405,7 +21428,7 @@
                                         return "kmsKeyName: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a RestoreDatabaseEncryptionConfig message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -21440,7 +21463,7 @@
                                     message.kmsKeyName = String(object.kmsKeyName);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a RestoreDatabaseEncryptionConfig message. Also converts values to other types if specified.
                              * @function toObject
@@ -21464,7 +21487,7 @@
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this RestoreDatabaseEncryptionConfig to JSON.
                              * @function toJSON
@@ -21475,7 +21498,7 @@
                             RestoreDatabaseEncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * EncryptionType enum.
                              * @name google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType
@@ -21493,12 +21516,12 @@
                                 values[valuesById[3] = "CUSTOMER_MANAGED_ENCRYPTION"] = 3;
                                 return values;
                             })();
-
+    
                             return RestoreDatabaseEncryptionConfig;
                         })();
-
+    
                         v1.RestoreDatabaseMetadata = (function() {
-
+    
                             /**
                              * Properties of a RestoreDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -21510,7 +21533,7 @@
                              * @property {google.protobuf.ITimestamp|null} [cancelTime] RestoreDatabaseMetadata cancelTime
                              * @property {string|null} [optimizeDatabaseOperationName] RestoreDatabaseMetadata optimizeDatabaseOperationName
                              */
-
+    
                             /**
                              * Constructs a new RestoreDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -21525,7 +21548,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * RestoreDatabaseMetadata name.
                              * @member {string} name
@@ -21533,7 +21556,7 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.name = "";
-
+    
                             /**
                              * RestoreDatabaseMetadata sourceType.
                              * @member {google.spanner.admin.database.v1.RestoreSourceType} sourceType
@@ -21541,7 +21564,7 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.sourceType = 0;
-
+    
                             /**
                              * RestoreDatabaseMetadata backupInfo.
                              * @member {google.spanner.admin.database.v1.IBackupInfo|null|undefined} backupInfo
@@ -21549,7 +21572,7 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.backupInfo = null;
-
+    
                             /**
                              * RestoreDatabaseMetadata progress.
                              * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
@@ -21557,7 +21580,7 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.progress = null;
-
+    
                             /**
                              * RestoreDatabaseMetadata cancelTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
@@ -21565,7 +21588,7 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.cancelTime = null;
-
+    
                             /**
                              * RestoreDatabaseMetadata optimizeDatabaseOperationName.
                              * @member {string} optimizeDatabaseOperationName
@@ -21573,10 +21596,10 @@
                              * @instance
                              */
                             RestoreDatabaseMetadata.prototype.optimizeDatabaseOperationName = "";
-
+    
                             // OneOf field names bound to virtual getters and setters
                             var $oneOfFields;
-
+    
                             /**
                              * RestoreDatabaseMetadata sourceInfo.
                              * @member {"backupInfo"|undefined} sourceInfo
@@ -21587,7 +21610,7 @@
                                 get: $util.oneOfGetter($oneOfFields = ["backupInfo"]),
                                 set: $util.oneOfSetter($oneOfFields)
                             });
-
+    
                             /**
                              * Creates a new RestoreDatabaseMetadata instance using the specified properties.
                              * @function create
@@ -21599,7 +21622,7 @@
                             RestoreDatabaseMetadata.create = function create(properties) {
                                 return new RestoreDatabaseMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata.verify|verify} messages.
                              * @function encode
@@ -21626,7 +21649,7 @@
                                     writer.uint32(/* id 6, wireType 2 =*/50).string(message.optimizeDatabaseOperationName);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified RestoreDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -21639,7 +21662,7 @@
                             RestoreDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseMetadata message from the specified reader or buffer.
                              * @function decode
@@ -21683,7 +21706,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a RestoreDatabaseMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -21699,7 +21722,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a RestoreDatabaseMetadata message.
                              * @function verify
@@ -21746,7 +21769,7 @@
                                         return "optimizeDatabaseOperationName: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a RestoreDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -21790,7 +21813,7 @@
                                     message.optimizeDatabaseOperationName = String(object.optimizeDatabaseOperationName);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a RestoreDatabaseMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -21828,7 +21851,7 @@
                                     object.optimizeDatabaseOperationName = message.optimizeDatabaseOperationName;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this RestoreDatabaseMetadata to JSON.
                              * @function toJSON
@@ -21839,12 +21862,12 @@
                             RestoreDatabaseMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return RestoreDatabaseMetadata;
                         })();
-
+    
                         v1.OptimizeRestoredDatabaseMetadata = (function() {
-
+    
                             /**
                              * Properties of an OptimizeRestoredDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -21852,7 +21875,7 @@
                              * @property {string|null} [name] OptimizeRestoredDatabaseMetadata name
                              * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] OptimizeRestoredDatabaseMetadata progress
                              */
-
+    
                             /**
                              * Constructs a new OptimizeRestoredDatabaseMetadata.
                              * @memberof google.spanner.admin.database.v1
@@ -21867,7 +21890,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * OptimizeRestoredDatabaseMetadata name.
                              * @member {string} name
@@ -21875,7 +21898,7 @@
                              * @instance
                              */
                             OptimizeRestoredDatabaseMetadata.prototype.name = "";
-
+    
                             /**
                              * OptimizeRestoredDatabaseMetadata progress.
                              * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
@@ -21883,7 +21906,7 @@
                              * @instance
                              */
                             OptimizeRestoredDatabaseMetadata.prototype.progress = null;
-
+    
                             /**
                              * Creates a new OptimizeRestoredDatabaseMetadata instance using the specified properties.
                              * @function create
@@ -21895,7 +21918,7 @@
                             OptimizeRestoredDatabaseMetadata.create = function create(properties) {
                                 return new OptimizeRestoredDatabaseMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified OptimizeRestoredDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
                              * @function encode
@@ -21914,7 +21937,7 @@
                                     $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified OptimizeRestoredDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -21927,7 +21950,7 @@
                             OptimizeRestoredDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer.
                              * @function decode
@@ -21959,7 +21982,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an OptimizeRestoredDatabaseMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -21975,7 +21998,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an OptimizeRestoredDatabaseMetadata message.
                              * @function verify
@@ -21997,7 +22020,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an OptimizeRestoredDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -22019,7 +22042,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an OptimizeRestoredDatabaseMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -22043,7 +22066,7 @@
                                     object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this OptimizeRestoredDatabaseMetadata to JSON.
                              * @function toJSON
@@ -22054,10 +22077,10 @@
                             OptimizeRestoredDatabaseMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return OptimizeRestoredDatabaseMetadata;
                         })();
-
+    
                         /**
                          * RestoreSourceType enum.
                          * @name google.spanner.admin.database.v1.RestoreSourceType
@@ -22071,33 +22094,33 @@
                             values[valuesById[1] = "BACKUP"] = 1;
                             return values;
                         })();
-
+    
                         return v1;
                     })();
-
+    
                     return database;
                 })();
-
+    
                 admin.instance = (function() {
-
+    
                     /**
                      * Namespace instance.
                      * @memberof google.spanner.admin
                      * @namespace
                      */
                     var instance = {};
-
+    
                     instance.v1 = (function() {
-
+    
                         /**
                          * Namespace v1.
                          * @memberof google.spanner.admin.instance
                          * @namespace
                          */
                         var v1 = {};
-
+    
                         v1.InstanceAdmin = (function() {
-
+    
                             /**
                              * Constructs a new InstanceAdmin service.
                              * @memberof google.spanner.admin.instance.v1
@@ -22111,9 +22134,9 @@
                             function InstanceAdmin(rpcImpl, requestDelimited, responseDelimited) {
                                 $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
                             }
-
+    
                             (InstanceAdmin.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = InstanceAdmin;
-
+    
                             /**
                              * Creates new InstanceAdmin service using the specified rpc implementation.
                              * @function create
@@ -22127,7 +22150,7 @@
                             InstanceAdmin.create = function create(rpcImpl, requestDelimited, responseDelimited) {
                                 return new this(rpcImpl, requestDelimited, responseDelimited);
                             };
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstanceConfigs}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22136,7 +22159,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.instance.v1.ListInstanceConfigsResponse} [response] ListInstanceConfigsResponse
                              */
-
+    
                             /**
                              * Calls ListInstanceConfigs.
                              * @function listInstanceConfigs
@@ -22150,7 +22173,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.listInstanceConfigs = function listInstanceConfigs(request, callback) {
                                 return this.rpcCall(listInstanceConfigs, $root.google.spanner.admin.instance.v1.ListInstanceConfigsRequest, $root.google.spanner.admin.instance.v1.ListInstanceConfigsResponse, request, callback);
                             }, "name", { value: "ListInstanceConfigs" });
-
+    
                             /**
                              * Calls ListInstanceConfigs.
                              * @function listInstanceConfigs
@@ -22160,7 +22183,7 @@
                              * @returns {Promise<google.spanner.admin.instance.v1.ListInstanceConfigsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstanceConfig}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22169,7 +22192,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.instance.v1.InstanceConfig} [response] InstanceConfig
                              */
-
+    
                             /**
                              * Calls GetInstanceConfig.
                              * @function getInstanceConfig
@@ -22183,7 +22206,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.getInstanceConfig = function getInstanceConfig(request, callback) {
                                 return this.rpcCall(getInstanceConfig, $root.google.spanner.admin.instance.v1.GetInstanceConfigRequest, $root.google.spanner.admin.instance.v1.InstanceConfig, request, callback);
                             }, "name", { value: "GetInstanceConfig" });
-
+    
                             /**
                              * Calls GetInstanceConfig.
                              * @function getInstanceConfig
@@ -22193,7 +22216,7 @@
                              * @returns {Promise<google.spanner.admin.instance.v1.InstanceConfig>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstances}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22202,7 +22225,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.instance.v1.ListInstancesResponse} [response] ListInstancesResponse
                              */
-
+    
                             /**
                              * Calls ListInstances.
                              * @function listInstances
@@ -22216,7 +22239,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.listInstances = function listInstances(request, callback) {
                                 return this.rpcCall(listInstances, $root.google.spanner.admin.instance.v1.ListInstancesRequest, $root.google.spanner.admin.instance.v1.ListInstancesResponse, request, callback);
                             }, "name", { value: "ListInstances" });
-
+    
                             /**
                              * Calls ListInstances.
                              * @function listInstances
@@ -22226,7 +22249,7 @@
                              * @returns {Promise<google.spanner.admin.instance.v1.ListInstancesResponse>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22235,7 +22258,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.spanner.admin.instance.v1.Instance} [response] Instance
                              */
-
+    
                             /**
                              * Calls GetInstance.
                              * @function getInstance
@@ -22249,7 +22272,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.getInstance = function getInstance(request, callback) {
                                 return this.rpcCall(getInstance, $root.google.spanner.admin.instance.v1.GetInstanceRequest, $root.google.spanner.admin.instance.v1.Instance, request, callback);
                             }, "name", { value: "GetInstance" });
-
+    
                             /**
                              * Calls GetInstance.
                              * @function getInstance
@@ -22259,7 +22282,7 @@
                              * @returns {Promise<google.spanner.admin.instance.v1.Instance>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#createInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22268,7 +22291,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls CreateInstance.
                              * @function createInstance
@@ -22282,7 +22305,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.createInstance = function createInstance(request, callback) {
                                 return this.rpcCall(createInstance, $root.google.spanner.admin.instance.v1.CreateInstanceRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "CreateInstance" });
-
+    
                             /**
                              * Calls CreateInstance.
                              * @function createInstance
@@ -22292,7 +22315,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#updateInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22301,7 +22324,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.longrunning.Operation} [response] Operation
                              */
-
+    
                             /**
                              * Calls UpdateInstance.
                              * @function updateInstance
@@ -22315,7 +22338,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.updateInstance = function updateInstance(request, callback) {
                                 return this.rpcCall(updateInstance, $root.google.spanner.admin.instance.v1.UpdateInstanceRequest, $root.google.longrunning.Operation, request, callback);
                             }, "name", { value: "UpdateInstance" });
-
+    
                             /**
                              * Calls UpdateInstance.
                              * @function updateInstance
@@ -22325,7 +22348,7 @@
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#deleteInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22334,7 +22357,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.protobuf.Empty} [response] Empty
                              */
-
+    
                             /**
                              * Calls DeleteInstance.
                              * @function deleteInstance
@@ -22348,7 +22371,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.deleteInstance = function deleteInstance(request, callback) {
                                 return this.rpcCall(deleteInstance, $root.google.spanner.admin.instance.v1.DeleteInstanceRequest, $root.google.protobuf.Empty, request, callback);
                             }, "name", { value: "DeleteInstance" });
-
+    
                             /**
                              * Calls DeleteInstance.
                              * @function deleteInstance
@@ -22358,7 +22381,7 @@
                              * @returns {Promise<google.protobuf.Empty>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#setIamPolicy}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22367,7 +22390,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.Policy} [response] Policy
                              */
-
+    
                             /**
                              * Calls SetIamPolicy.
                              * @function setIamPolicy
@@ -22381,7 +22404,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.setIamPolicy = function setIamPolicy(request, callback) {
                                 return this.rpcCall(setIamPolicy, $root.google.iam.v1.SetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                             }, "name", { value: "SetIamPolicy" });
-
+    
                             /**
                              * Calls SetIamPolicy.
                              * @function setIamPolicy
@@ -22391,7 +22414,7 @@
                              * @returns {Promise<google.iam.v1.Policy>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getIamPolicy}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22400,7 +22423,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.Policy} [response] Policy
                              */
-
+    
                             /**
                              * Calls GetIamPolicy.
                              * @function getIamPolicy
@@ -22414,7 +22437,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.getIamPolicy = function getIamPolicy(request, callback) {
                                 return this.rpcCall(getIamPolicy, $root.google.iam.v1.GetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                             }, "name", { value: "GetIamPolicy" });
-
+    
                             /**
                              * Calls GetIamPolicy.
                              * @function getIamPolicy
@@ -22424,7 +22447,7 @@
                              * @returns {Promise<google.iam.v1.Policy>} Promise
                              * @variation 2
                              */
-
+    
                             /**
                              * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#testIamPermissions}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
@@ -22433,7 +22456,7 @@
                              * @param {Error|null} error Error, if any
                              * @param {google.iam.v1.TestIamPermissionsResponse} [response] TestIamPermissionsResponse
                              */
-
+    
                             /**
                              * Calls TestIamPermissions.
                              * @function testIamPermissions
@@ -22447,7 +22470,7 @@
                             Object.defineProperty(InstanceAdmin.prototype.testIamPermissions = function testIamPermissions(request, callback) {
                                 return this.rpcCall(testIamPermissions, $root.google.iam.v1.TestIamPermissionsRequest, $root.google.iam.v1.TestIamPermissionsResponse, request, callback);
                             }, "name", { value: "TestIamPermissions" });
-
+    
                             /**
                              * Calls TestIamPermissions.
                              * @function testIamPermissions
@@ -22457,12 +22480,12 @@
                              * @returns {Promise<google.iam.v1.TestIamPermissionsResponse>} Promise
                              * @variation 2
                              */
-
+    
                             return InstanceAdmin;
                         })();
-
+    
                         v1.ReplicaInfo = (function() {
-
+    
                             /**
                              * Properties of a ReplicaInfo.
                              * @memberof google.spanner.admin.instance.v1
@@ -22471,7 +22494,7 @@
                              * @property {google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType|null} [type] ReplicaInfo type
                              * @property {boolean|null} [defaultLeaderLocation] ReplicaInfo defaultLeaderLocation
                              */
-
+    
                             /**
                              * Constructs a new ReplicaInfo.
                              * @memberof google.spanner.admin.instance.v1
@@ -22486,7 +22509,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ReplicaInfo location.
                              * @member {string} location
@@ -22494,7 +22517,7 @@
                              * @instance
                              */
                             ReplicaInfo.prototype.location = "";
-
+    
                             /**
                              * ReplicaInfo type.
                              * @member {google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType} type
@@ -22502,7 +22525,7 @@
                              * @instance
                              */
                             ReplicaInfo.prototype.type = 0;
-
+    
                             /**
                              * ReplicaInfo defaultLeaderLocation.
                              * @member {boolean} defaultLeaderLocation
@@ -22510,7 +22533,7 @@
                              * @instance
                              */
                             ReplicaInfo.prototype.defaultLeaderLocation = false;
-
+    
                             /**
                              * Creates a new ReplicaInfo instance using the specified properties.
                              * @function create
@@ -22522,7 +22545,7 @@
                             ReplicaInfo.create = function create(properties) {
                                 return new ReplicaInfo(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ReplicaInfo message. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaInfo.verify|verify} messages.
                              * @function encode
@@ -22543,7 +22566,7 @@
                                     writer.uint32(/* id 3, wireType 0 =*/24).bool(message.defaultLeaderLocation);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ReplicaInfo message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ReplicaInfo.verify|verify} messages.
                              * @function encodeDelimited
@@ -22556,7 +22579,7 @@
                             ReplicaInfo.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ReplicaInfo message from the specified reader or buffer.
                              * @function decode
@@ -22591,7 +22614,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ReplicaInfo message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -22607,7 +22630,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ReplicaInfo message.
                              * @function verify
@@ -22637,7 +22660,7 @@
                                         return "defaultLeaderLocation: boolean expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ReplicaInfo message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -22674,7 +22697,7 @@
                                     message.defaultLeaderLocation = Boolean(object.defaultLeaderLocation);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ReplicaInfo message. Also converts values to other types if specified.
                              * @function toObject
@@ -22701,7 +22724,7 @@
                                     object.defaultLeaderLocation = message.defaultLeaderLocation;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ReplicaInfo to JSON.
                              * @function toJSON
@@ -22712,7 +22735,7 @@
                             ReplicaInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * ReplicaType enum.
                              * @name google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType
@@ -22730,12 +22753,12 @@
                                 values[valuesById[3] = "WITNESS"] = 3;
                                 return values;
                             })();
-
+    
                             return ReplicaInfo;
                         })();
-
+    
                         v1.InstanceConfig = (function() {
-
+    
                             /**
                              * Properties of an InstanceConfig.
                              * @memberof google.spanner.admin.instance.v1
@@ -22744,7 +22767,7 @@
                              * @property {string|null} [displayName] InstanceConfig displayName
                              * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [replicas] InstanceConfig replicas
                              */
-
+    
                             /**
                              * Constructs a new InstanceConfig.
                              * @memberof google.spanner.admin.instance.v1
@@ -22760,7 +22783,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * InstanceConfig name.
                              * @member {string} name
@@ -22768,7 +22791,7 @@
                              * @instance
                              */
                             InstanceConfig.prototype.name = "";
-
+    
                             /**
                              * InstanceConfig displayName.
                              * @member {string} displayName
@@ -22776,7 +22799,7 @@
                              * @instance
                              */
                             InstanceConfig.prototype.displayName = "";
-
+    
                             /**
                              * InstanceConfig replicas.
                              * @member {Array.<google.spanner.admin.instance.v1.IReplicaInfo>} replicas
@@ -22784,7 +22807,7 @@
                              * @instance
                              */
                             InstanceConfig.prototype.replicas = $util.emptyArray;
-
+    
                             /**
                              * Creates a new InstanceConfig instance using the specified properties.
                              * @function create
@@ -22796,7 +22819,7 @@
                             InstanceConfig.create = function create(properties) {
                                 return new InstanceConfig(properties);
                             };
-
+    
                             /**
                              * Encodes the specified InstanceConfig message. Does not implicitly {@link google.spanner.admin.instance.v1.InstanceConfig.verify|verify} messages.
                              * @function encode
@@ -22818,7 +22841,7 @@
                                         $root.google.spanner.admin.instance.v1.ReplicaInfo.encode(message.replicas[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified InstanceConfig message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.InstanceConfig.verify|verify} messages.
                              * @function encodeDelimited
@@ -22831,7 +22854,7 @@
                             InstanceConfig.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an InstanceConfig message from the specified reader or buffer.
                              * @function decode
@@ -22868,7 +22891,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an InstanceConfig message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -22884,7 +22907,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an InstanceConfig message.
                              * @function verify
@@ -22913,7 +22936,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an InstanceConfig message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -22942,7 +22965,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an InstanceConfig message. Also converts values to other types if specified.
                              * @function toObject
@@ -22973,7 +22996,7 @@
                                 }
                                 return object;
                             };
-
+    
                             /**
                              * Converts this InstanceConfig to JSON.
                              * @function toJSON
@@ -22984,12 +23007,12 @@
                             InstanceConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return InstanceConfig;
                         })();
-
+    
                         v1.Instance = (function() {
-
+    
                             /**
                              * Properties of an Instance.
                              * @memberof google.spanner.admin.instance.v1
@@ -23002,7 +23025,7 @@
                              * @property {Object.<string,string>|null} [labels] Instance labels
                              * @property {Array.<string>|null} [endpointUris] Instance endpointUris
                              */
-
+    
                             /**
                              * Constructs a new Instance.
                              * @memberof google.spanner.admin.instance.v1
@@ -23019,7 +23042,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * Instance name.
                              * @member {string} name
@@ -23027,7 +23050,7 @@
                              * @instance
                              */
                             Instance.prototype.name = "";
-
+    
                             /**
                              * Instance config.
                              * @member {string} config
@@ -23035,7 +23058,7 @@
                              * @instance
                              */
                             Instance.prototype.config = "";
-
+    
                             /**
                              * Instance displayName.
                              * @member {string} displayName
@@ -23043,7 +23066,7 @@
                              * @instance
                              */
                             Instance.prototype.displayName = "";
-
+    
                             /**
                              * Instance nodeCount.
                              * @member {number} nodeCount
@@ -23051,7 +23074,7 @@
                              * @instance
                              */
                             Instance.prototype.nodeCount = 0;
-
+    
                             /**
                              * Instance state.
                              * @member {google.spanner.admin.instance.v1.Instance.State} state
@@ -23059,7 +23082,7 @@
                              * @instance
                              */
                             Instance.prototype.state = 0;
-
+    
                             /**
                              * Instance labels.
                              * @member {Object.<string,string>} labels
@@ -23067,7 +23090,7 @@
                              * @instance
                              */
                             Instance.prototype.labels = $util.emptyObject;
-
+    
                             /**
                              * Instance endpointUris.
                              * @member {Array.<string>} endpointUris
@@ -23075,7 +23098,7 @@
                              * @instance
                              */
                             Instance.prototype.endpointUris = $util.emptyArray;
-
+    
                             /**
                              * Creates a new Instance instance using the specified properties.
                              * @function create
@@ -23087,7 +23110,7 @@
                             Instance.create = function create(properties) {
                                 return new Instance(properties);
                             };
-
+    
                             /**
                              * Encodes the specified Instance message. Does not implicitly {@link google.spanner.admin.instance.v1.Instance.verify|verify} messages.
                              * @function encode
@@ -23118,7 +23141,7 @@
                                         writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUris[i]);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified Instance message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.Instance.verify|verify} messages.
                              * @function encodeDelimited
@@ -23131,7 +23154,7 @@
                             Instance.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an Instance message from the specified reader or buffer.
                              * @function decode
@@ -23199,7 +23222,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an Instance message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -23215,7 +23238,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an Instance message.
                              * @function verify
@@ -23265,7 +23288,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an Instance message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -23316,7 +23339,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an Instance message. Also converts values to other types if specified.
                              * @function toObject
@@ -23364,7 +23387,7 @@
                                 }
                                 return object;
                             };
-
+    
                             /**
                              * Converts this Instance to JSON.
                              * @function toJSON
@@ -23375,7 +23398,7 @@
                             Instance.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             /**
                              * State enum.
                              * @name google.spanner.admin.instance.v1.Instance.State
@@ -23391,12 +23414,12 @@
                                 values[valuesById[2] = "READY"] = 2;
                                 return values;
                             })();
-
+    
                             return Instance;
                         })();
-
+    
                         v1.ListInstanceConfigsRequest = (function() {
-
+    
                             /**
                              * Properties of a ListInstanceConfigsRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -23405,7 +23428,7 @@
                              * @property {number|null} [pageSize] ListInstanceConfigsRequest pageSize
                              * @property {string|null} [pageToken] ListInstanceConfigsRequest pageToken
                              */
-
+    
                             /**
                              * Constructs a new ListInstanceConfigsRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -23420,7 +23443,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListInstanceConfigsRequest parent.
                              * @member {string} parent
@@ -23428,7 +23451,7 @@
                              * @instance
                              */
                             ListInstanceConfigsRequest.prototype.parent = "";
-
+    
                             /**
                              * ListInstanceConfigsRequest pageSize.
                              * @member {number} pageSize
@@ -23436,7 +23459,7 @@
                              * @instance
                              */
                             ListInstanceConfigsRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListInstanceConfigsRequest pageToken.
                              * @member {string} pageToken
@@ -23444,7 +23467,7 @@
                              * @instance
                              */
                             ListInstanceConfigsRequest.prototype.pageToken = "";
-
+    
                             /**
                              * Creates a new ListInstanceConfigsRequest instance using the specified properties.
                              * @function create
@@ -23456,7 +23479,7 @@
                             ListInstanceConfigsRequest.create = function create(properties) {
                                 return new ListInstanceConfigsRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListInstanceConfigsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsRequest.verify|verify} messages.
                              * @function encode
@@ -23477,7 +23500,7 @@
                                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.pageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListInstanceConfigsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -23490,7 +23513,7 @@
                             ListInstanceConfigsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListInstanceConfigsRequest message from the specified reader or buffer.
                              * @function decode
@@ -23525,7 +23548,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListInstanceConfigsRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -23541,7 +23564,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListInstanceConfigsRequest message.
                              * @function verify
@@ -23564,7 +23587,7 @@
                                         return "pageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListInstanceConfigsRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -23585,7 +23608,7 @@
                                     message.pageToken = String(object.pageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListInstanceConfigsRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -23612,7 +23635,7 @@
                                     object.pageToken = message.pageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListInstanceConfigsRequest to JSON.
                              * @function toJSON
@@ -23623,12 +23646,12 @@
                             ListInstanceConfigsRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListInstanceConfigsRequest;
                         })();
-
+    
                         v1.ListInstanceConfigsResponse = (function() {
-
+    
                             /**
                              * Properties of a ListInstanceConfigsResponse.
                              * @memberof google.spanner.admin.instance.v1
@@ -23636,7 +23659,7 @@
                              * @property {Array.<google.spanner.admin.instance.v1.IInstanceConfig>|null} [instanceConfigs] ListInstanceConfigsResponse instanceConfigs
                              * @property {string|null} [nextPageToken] ListInstanceConfigsResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListInstanceConfigsResponse.
                              * @memberof google.spanner.admin.instance.v1
@@ -23652,7 +23675,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListInstanceConfigsResponse instanceConfigs.
                              * @member {Array.<google.spanner.admin.instance.v1.IInstanceConfig>} instanceConfigs
@@ -23660,7 +23683,7 @@
                              * @instance
                              */
                             ListInstanceConfigsResponse.prototype.instanceConfigs = $util.emptyArray;
-
+    
                             /**
                              * ListInstanceConfigsResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -23668,7 +23691,7 @@
                              * @instance
                              */
                             ListInstanceConfigsResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListInstanceConfigsResponse instance using the specified properties.
                              * @function create
@@ -23680,7 +23703,7 @@
                             ListInstanceConfigsResponse.create = function create(properties) {
                                 return new ListInstanceConfigsResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListInstanceConfigsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.verify|verify} messages.
                              * @function encode
@@ -23700,7 +23723,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListInstanceConfigsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -23713,7 +23736,7 @@
                             ListInstanceConfigsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListInstanceConfigsResponse message from the specified reader or buffer.
                              * @function decode
@@ -23747,7 +23770,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListInstanceConfigsResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -23763,7 +23786,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListInstanceConfigsResponse message.
                              * @function verify
@@ -23789,7 +23812,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListInstanceConfigsResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -23816,7 +23839,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListInstanceConfigsResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -23843,7 +23866,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListInstanceConfigsResponse to JSON.
                              * @function toJSON
@@ -23854,19 +23877,19 @@
                             ListInstanceConfigsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListInstanceConfigsResponse;
                         })();
-
+    
                         v1.GetInstanceConfigRequest = (function() {
-
+    
                             /**
                              * Properties of a GetInstanceConfigRequest.
                              * @memberof google.spanner.admin.instance.v1
                              * @interface IGetInstanceConfigRequest
                              * @property {string|null} [name] GetInstanceConfigRequest name
                              */
-
+    
                             /**
                              * Constructs a new GetInstanceConfigRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -23881,7 +23904,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetInstanceConfigRequest name.
                              * @member {string} name
@@ -23889,7 +23912,7 @@
                              * @instance
                              */
                             GetInstanceConfigRequest.prototype.name = "";
-
+    
                             /**
                              * Creates a new GetInstanceConfigRequest instance using the specified properties.
                              * @function create
@@ -23901,7 +23924,7 @@
                             GetInstanceConfigRequest.create = function create(properties) {
                                 return new GetInstanceConfigRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceConfigRequest.verify|verify} messages.
                              * @function encode
@@ -23918,7 +23941,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceConfigRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -23931,7 +23954,7 @@
                             GetInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetInstanceConfigRequest message from the specified reader or buffer.
                              * @function decode
@@ -23960,7 +23983,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetInstanceConfigRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -23976,7 +23999,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetInstanceConfigRequest message.
                              * @function verify
@@ -23993,7 +24016,7 @@
                                         return "name: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -24010,7 +24033,7 @@
                                     message.name = String(object.name);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetInstanceConfigRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -24030,7 +24053,7 @@
                                     object.name = message.name;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetInstanceConfigRequest to JSON.
                              * @function toJSON
@@ -24041,12 +24064,12 @@
                             GetInstanceConfigRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetInstanceConfigRequest;
                         })();
-
+    
                         v1.GetInstanceRequest = (function() {
-
+    
                             /**
                              * Properties of a GetInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24054,7 +24077,7 @@
                              * @property {string|null} [name] GetInstanceRequest name
                              * @property {google.protobuf.IFieldMask|null} [fieldMask] GetInstanceRequest fieldMask
                              */
-
+    
                             /**
                              * Constructs a new GetInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24069,7 +24092,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * GetInstanceRequest name.
                              * @member {string} name
@@ -24077,7 +24100,7 @@
                              * @instance
                              */
                             GetInstanceRequest.prototype.name = "";
-
+    
                             /**
                              * GetInstanceRequest fieldMask.
                              * @member {google.protobuf.IFieldMask|null|undefined} fieldMask
@@ -24085,7 +24108,7 @@
                              * @instance
                              */
                             GetInstanceRequest.prototype.fieldMask = null;
-
+    
                             /**
                              * Creates a new GetInstanceRequest instance using the specified properties.
                              * @function create
@@ -24097,7 +24120,7 @@
                             GetInstanceRequest.create = function create(properties) {
                                 return new GetInstanceRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified GetInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceRequest.verify|verify} messages.
                              * @function encode
@@ -24116,7 +24139,7 @@
                                     $root.google.protobuf.FieldMask.encode(message.fieldMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified GetInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstanceRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -24129,7 +24152,7 @@
                             GetInstanceRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a GetInstanceRequest message from the specified reader or buffer.
                              * @function decode
@@ -24161,7 +24184,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a GetInstanceRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -24177,7 +24200,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a GetInstanceRequest message.
                              * @function verify
@@ -24199,7 +24222,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a GetInstanceRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -24221,7 +24244,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a GetInstanceRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -24245,7 +24268,7 @@
                                     object.fieldMask = $root.google.protobuf.FieldMask.toObject(message.fieldMask, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this GetInstanceRequest to JSON.
                              * @function toJSON
@@ -24256,12 +24279,12 @@
                             GetInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return GetInstanceRequest;
                         })();
-
+    
                         v1.CreateInstanceRequest = (function() {
-
+    
                             /**
                              * Properties of a CreateInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24270,7 +24293,7 @@
                              * @property {string|null} [instanceId] CreateInstanceRequest instanceId
                              * @property {google.spanner.admin.instance.v1.IInstance|null} [instance] CreateInstanceRequest instance
                              */
-
+    
                             /**
                              * Constructs a new CreateInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24285,7 +24308,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateInstanceRequest parent.
                              * @member {string} parent
@@ -24293,7 +24316,7 @@
                              * @instance
                              */
                             CreateInstanceRequest.prototype.parent = "";
-
+    
                             /**
                              * CreateInstanceRequest instanceId.
                              * @member {string} instanceId
@@ -24301,7 +24324,7 @@
                              * @instance
                              */
                             CreateInstanceRequest.prototype.instanceId = "";
-
+    
                             /**
                              * CreateInstanceRequest instance.
                              * @member {google.spanner.admin.instance.v1.IInstance|null|undefined} instance
@@ -24309,7 +24332,7 @@
                              * @instance
                              */
                             CreateInstanceRequest.prototype.instance = null;
-
+    
                             /**
                              * Creates a new CreateInstanceRequest instance using the specified properties.
                              * @function create
@@ -24321,7 +24344,7 @@
                             CreateInstanceRequest.create = function create(properties) {
                                 return new CreateInstanceRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceRequest.verify|verify} messages.
                              * @function encode
@@ -24342,7 +24365,7 @@
                                     $root.google.spanner.admin.instance.v1.Instance.encode(message.instance, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -24355,7 +24378,7 @@
                             CreateInstanceRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateInstanceRequest message from the specified reader or buffer.
                              * @function decode
@@ -24390,7 +24413,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateInstanceRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -24406,7 +24429,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateInstanceRequest message.
                              * @function verify
@@ -24431,7 +24454,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateInstanceRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -24455,7 +24478,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateInstanceRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -24482,7 +24505,7 @@
                                     object.instance = $root.google.spanner.admin.instance.v1.Instance.toObject(message.instance, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateInstanceRequest to JSON.
                              * @function toJSON
@@ -24493,12 +24516,12 @@
                             CreateInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateInstanceRequest;
                         })();
-
+    
                         v1.ListInstancesRequest = (function() {
-
+    
                             /**
                              * Properties of a ListInstancesRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24508,7 +24531,7 @@
                              * @property {string|null} [pageToken] ListInstancesRequest pageToken
                              * @property {string|null} [filter] ListInstancesRequest filter
                              */
-
+    
                             /**
                              * Constructs a new ListInstancesRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24523,7 +24546,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListInstancesRequest parent.
                              * @member {string} parent
@@ -24531,7 +24554,7 @@
                              * @instance
                              */
                             ListInstancesRequest.prototype.parent = "";
-
+    
                             /**
                              * ListInstancesRequest pageSize.
                              * @member {number} pageSize
@@ -24539,7 +24562,7 @@
                              * @instance
                              */
                             ListInstancesRequest.prototype.pageSize = 0;
-
+    
                             /**
                              * ListInstancesRequest pageToken.
                              * @member {string} pageToken
@@ -24547,7 +24570,7 @@
                              * @instance
                              */
                             ListInstancesRequest.prototype.pageToken = "";
-
+    
                             /**
                              * ListInstancesRequest filter.
                              * @member {string} filter
@@ -24555,7 +24578,7 @@
                              * @instance
                              */
                             ListInstancesRequest.prototype.filter = "";
-
+    
                             /**
                              * Creates a new ListInstancesRequest instance using the specified properties.
                              * @function create
@@ -24567,7 +24590,7 @@
                             ListInstancesRequest.create = function create(properties) {
                                 return new ListInstancesRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListInstancesRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesRequest.verify|verify} messages.
                              * @function encode
@@ -24590,7 +24613,7 @@
                                     writer.uint32(/* id 4, wireType 2 =*/34).string(message.filter);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListInstancesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -24603,7 +24626,7 @@
                             ListInstancesRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListInstancesRequest message from the specified reader or buffer.
                              * @function decode
@@ -24641,7 +24664,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListInstancesRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -24657,7 +24680,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListInstancesRequest message.
                              * @function verify
@@ -24683,7 +24706,7 @@
                                         return "filter: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListInstancesRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -24706,7 +24729,7 @@
                                     message.filter = String(object.filter);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListInstancesRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -24736,7 +24759,7 @@
                                     object.filter = message.filter;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListInstancesRequest to JSON.
                              * @function toJSON
@@ -24747,12 +24770,12 @@
                             ListInstancesRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListInstancesRequest;
                         })();
-
+    
                         v1.ListInstancesResponse = (function() {
-
+    
                             /**
                              * Properties of a ListInstancesResponse.
                              * @memberof google.spanner.admin.instance.v1
@@ -24760,7 +24783,7 @@
                              * @property {Array.<google.spanner.admin.instance.v1.IInstance>|null} [instances] ListInstancesResponse instances
                              * @property {string|null} [nextPageToken] ListInstancesResponse nextPageToken
                              */
-
+    
                             /**
                              * Constructs a new ListInstancesResponse.
                              * @memberof google.spanner.admin.instance.v1
@@ -24776,7 +24799,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * ListInstancesResponse instances.
                              * @member {Array.<google.spanner.admin.instance.v1.IInstance>} instances
@@ -24784,7 +24807,7 @@
                              * @instance
                              */
                             ListInstancesResponse.prototype.instances = $util.emptyArray;
-
+    
                             /**
                              * ListInstancesResponse nextPageToken.
                              * @member {string} nextPageToken
@@ -24792,7 +24815,7 @@
                              * @instance
                              */
                             ListInstancesResponse.prototype.nextPageToken = "";
-
+    
                             /**
                              * Creates a new ListInstancesResponse instance using the specified properties.
                              * @function create
@@ -24804,7 +24827,7 @@
                             ListInstancesResponse.create = function create(properties) {
                                 return new ListInstancesResponse(properties);
                             };
-
+    
                             /**
                              * Encodes the specified ListInstancesResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesResponse.verify|verify} messages.
                              * @function encode
@@ -24824,7 +24847,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified ListInstancesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancesResponse.verify|verify} messages.
                              * @function encodeDelimited
@@ -24837,7 +24860,7 @@
                             ListInstancesResponse.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a ListInstancesResponse message from the specified reader or buffer.
                              * @function decode
@@ -24871,7 +24894,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a ListInstancesResponse message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -24887,7 +24910,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a ListInstancesResponse message.
                              * @function verify
@@ -24913,7 +24936,7 @@
                                         return "nextPageToken: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a ListInstancesResponse message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -24940,7 +24963,7 @@
                                     message.nextPageToken = String(object.nextPageToken);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a ListInstancesResponse message. Also converts values to other types if specified.
                              * @function toObject
@@ -24967,7 +24990,7 @@
                                     object.nextPageToken = message.nextPageToken;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this ListInstancesResponse to JSON.
                              * @function toJSON
@@ -24978,12 +25001,12 @@
                             ListInstancesResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return ListInstancesResponse;
                         })();
-
+    
                         v1.UpdateInstanceRequest = (function() {
-
+    
                             /**
                              * Properties of an UpdateInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -24991,7 +25014,7 @@
                              * @property {google.spanner.admin.instance.v1.IInstance|null} [instance] UpdateInstanceRequest instance
                              * @property {google.protobuf.IFieldMask|null} [fieldMask] UpdateInstanceRequest fieldMask
                              */
-
+    
                             /**
                              * Constructs a new UpdateInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -25006,7 +25029,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * UpdateInstanceRequest instance.
                              * @member {google.spanner.admin.instance.v1.IInstance|null|undefined} instance
@@ -25014,7 +25037,7 @@
                              * @instance
                              */
                             UpdateInstanceRequest.prototype.instance = null;
-
+    
                             /**
                              * UpdateInstanceRequest fieldMask.
                              * @member {google.protobuf.IFieldMask|null|undefined} fieldMask
@@ -25022,7 +25045,7 @@
                              * @instance
                              */
                             UpdateInstanceRequest.prototype.fieldMask = null;
-
+    
                             /**
                              * Creates a new UpdateInstanceRequest instance using the specified properties.
                              * @function create
@@ -25034,7 +25057,7 @@
                             UpdateInstanceRequest.create = function create(properties) {
                                 return new UpdateInstanceRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified UpdateInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.verify|verify} messages.
                              * @function encode
@@ -25053,7 +25076,7 @@
                                     $root.google.protobuf.FieldMask.encode(message.fieldMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified UpdateInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -25066,7 +25089,7 @@
                             UpdateInstanceRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an UpdateInstanceRequest message from the specified reader or buffer.
                              * @function decode
@@ -25098,7 +25121,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an UpdateInstanceRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -25114,7 +25137,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an UpdateInstanceRequest message.
                              * @function verify
@@ -25138,7 +25161,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an UpdateInstanceRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -25163,7 +25186,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an UpdateInstanceRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -25187,7 +25210,7 @@
                                     object.fieldMask = $root.google.protobuf.FieldMask.toObject(message.fieldMask, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this UpdateInstanceRequest to JSON.
                              * @function toJSON
@@ -25198,19 +25221,19 @@
                             UpdateInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return UpdateInstanceRequest;
                         })();
-
+    
                         v1.DeleteInstanceRequest = (function() {
-
+    
                             /**
                              * Properties of a DeleteInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
                              * @interface IDeleteInstanceRequest
                              * @property {string|null} [name] DeleteInstanceRequest name
                              */
-
+    
                             /**
                              * Constructs a new DeleteInstanceRequest.
                              * @memberof google.spanner.admin.instance.v1
@@ -25225,7 +25248,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * DeleteInstanceRequest name.
                              * @member {string} name
@@ -25233,7 +25256,7 @@
                              * @instance
                              */
                             DeleteInstanceRequest.prototype.name = "";
-
+    
                             /**
                              * Creates a new DeleteInstanceRequest instance using the specified properties.
                              * @function create
@@ -25245,7 +25268,7 @@
                             DeleteInstanceRequest.create = function create(properties) {
                                 return new DeleteInstanceRequest(properties);
                             };
-
+    
                             /**
                              * Encodes the specified DeleteInstanceRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceRequest.verify|verify} messages.
                              * @function encode
@@ -25262,7 +25285,7 @@
                                     writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified DeleteInstanceRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceRequest.verify|verify} messages.
                              * @function encodeDelimited
@@ -25275,7 +25298,7 @@
                             DeleteInstanceRequest.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a DeleteInstanceRequest message from the specified reader or buffer.
                              * @function decode
@@ -25304,7 +25327,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a DeleteInstanceRequest message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -25320,7 +25343,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a DeleteInstanceRequest message.
                              * @function verify
@@ -25337,7 +25360,7 @@
                                         return "name: string expected";
                                 return null;
                             };
-
+    
                             /**
                              * Creates a DeleteInstanceRequest message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -25354,7 +25377,7 @@
                                     message.name = String(object.name);
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a DeleteInstanceRequest message. Also converts values to other types if specified.
                              * @function toObject
@@ -25374,7 +25397,7 @@
                                     object.name = message.name;
                                 return object;
                             };
-
+    
                             /**
                              * Converts this DeleteInstanceRequest to JSON.
                              * @function toJSON
@@ -25385,12 +25408,12 @@
                             DeleteInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return DeleteInstanceRequest;
                         })();
-
+    
                         v1.CreateInstanceMetadata = (function() {
-
+    
                             /**
                              * Properties of a CreateInstanceMetadata.
                              * @memberof google.spanner.admin.instance.v1
@@ -25400,7 +25423,7 @@
                              * @property {google.protobuf.ITimestamp|null} [cancelTime] CreateInstanceMetadata cancelTime
                              * @property {google.protobuf.ITimestamp|null} [endTime] CreateInstanceMetadata endTime
                              */
-
+    
                             /**
                              * Constructs a new CreateInstanceMetadata.
                              * @memberof google.spanner.admin.instance.v1
@@ -25415,7 +25438,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * CreateInstanceMetadata instance.
                              * @member {google.spanner.admin.instance.v1.IInstance|null|undefined} instance
@@ -25423,7 +25446,7 @@
                              * @instance
                              */
                             CreateInstanceMetadata.prototype.instance = null;
-
+    
                             /**
                              * CreateInstanceMetadata startTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} startTime
@@ -25431,7 +25454,7 @@
                              * @instance
                              */
                             CreateInstanceMetadata.prototype.startTime = null;
-
+    
                             /**
                              * CreateInstanceMetadata cancelTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
@@ -25439,7 +25462,7 @@
                              * @instance
                              */
                             CreateInstanceMetadata.prototype.cancelTime = null;
-
+    
                             /**
                              * CreateInstanceMetadata endTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} endTime
@@ -25447,7 +25470,7 @@
                              * @instance
                              */
                             CreateInstanceMetadata.prototype.endTime = null;
-
+    
                             /**
                              * Creates a new CreateInstanceMetadata instance using the specified properties.
                              * @function create
@@ -25459,7 +25482,7 @@
                             CreateInstanceMetadata.create = function create(properties) {
                                 return new CreateInstanceMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified CreateInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceMetadata.verify|verify} messages.
                              * @function encode
@@ -25482,7 +25505,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified CreateInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -25495,7 +25518,7 @@
                             CreateInstanceMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes a CreateInstanceMetadata message from the specified reader or buffer.
                              * @function decode
@@ -25533,7 +25556,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes a CreateInstanceMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -25549,7 +25572,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies a CreateInstanceMetadata message.
                              * @function verify
@@ -25583,7 +25606,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates a CreateInstanceMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -25618,7 +25641,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from a CreateInstanceMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -25648,7 +25671,7 @@
                                     object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this CreateInstanceMetadata to JSON.
                              * @function toJSON
@@ -25659,12 +25682,12 @@
                             CreateInstanceMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return CreateInstanceMetadata;
                         })();
-
+    
                         v1.UpdateInstanceMetadata = (function() {
-
+    
                             /**
                              * Properties of an UpdateInstanceMetadata.
                              * @memberof google.spanner.admin.instance.v1
@@ -25674,7 +25697,7 @@
                              * @property {google.protobuf.ITimestamp|null} [cancelTime] UpdateInstanceMetadata cancelTime
                              * @property {google.protobuf.ITimestamp|null} [endTime] UpdateInstanceMetadata endTime
                              */
-
+    
                             /**
                              * Constructs a new UpdateInstanceMetadata.
                              * @memberof google.spanner.admin.instance.v1
@@ -25689,7 +25712,7 @@
                                         if (properties[keys[i]] != null)
                                             this[keys[i]] = properties[keys[i]];
                             }
-
+    
                             /**
                              * UpdateInstanceMetadata instance.
                              * @member {google.spanner.admin.instance.v1.IInstance|null|undefined} instance
@@ -25697,7 +25720,7 @@
                              * @instance
                              */
                             UpdateInstanceMetadata.prototype.instance = null;
-
+    
                             /**
                              * UpdateInstanceMetadata startTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} startTime
@@ -25705,7 +25728,7 @@
                              * @instance
                              */
                             UpdateInstanceMetadata.prototype.startTime = null;
-
+    
                             /**
                              * UpdateInstanceMetadata cancelTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
@@ -25713,7 +25736,7 @@
                              * @instance
                              */
                             UpdateInstanceMetadata.prototype.cancelTime = null;
-
+    
                             /**
                              * UpdateInstanceMetadata endTime.
                              * @member {google.protobuf.ITimestamp|null|undefined} endTime
@@ -25721,7 +25744,7 @@
                              * @instance
                              */
                             UpdateInstanceMetadata.prototype.endTime = null;
-
+    
                             /**
                              * Creates a new UpdateInstanceMetadata instance using the specified properties.
                              * @function create
@@ -25733,7 +25756,7 @@
                             UpdateInstanceMetadata.create = function create(properties) {
                                 return new UpdateInstanceMetadata(properties);
                             };
-
+    
                             /**
                              * Encodes the specified UpdateInstanceMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.verify|verify} messages.
                              * @function encode
@@ -25756,7 +25779,7 @@
                                     $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 return writer;
                             };
-
+    
                             /**
                              * Encodes the specified UpdateInstanceMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.verify|verify} messages.
                              * @function encodeDelimited
@@ -25769,7 +25792,7 @@
                             UpdateInstanceMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                                 return this.encode(message, writer).ldelim();
                             };
-
+    
                             /**
                              * Decodes an UpdateInstanceMetadata message from the specified reader or buffer.
                              * @function decode
@@ -25807,7 +25830,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Decodes an UpdateInstanceMetadata message from the specified reader or buffer, length delimited.
                              * @function decodeDelimited
@@ -25823,7 +25846,7 @@
                                     reader = new $Reader(reader);
                                 return this.decode(reader, reader.uint32());
                             };
-
+    
                             /**
                              * Verifies an UpdateInstanceMetadata message.
                              * @function verify
@@ -25857,7 +25880,7 @@
                                 }
                                 return null;
                             };
-
+    
                             /**
                              * Creates an UpdateInstanceMetadata message from a plain object. Also converts values to their respective internal types.
                              * @function fromObject
@@ -25892,7 +25915,7 @@
                                 }
                                 return message;
                             };
-
+    
                             /**
                              * Creates a plain object from an UpdateInstanceMetadata message. Also converts values to other types if specified.
                              * @function toObject
@@ -25922,7 +25945,7 @@
                                     object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
                                 return object;
                             };
-
+    
                             /**
                              * Converts this UpdateInstanceMetadata to JSON.
                              * @function toJSON
@@ -25933,30 +25956,30 @@
                             UpdateInstanceMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
-
+    
                             return UpdateInstanceMetadata;
                         })();
-
+    
                         return v1;
                     })();
-
+    
                     return instance;
                 })();
-
+    
                 return admin;
             })();
-
+    
             spanner.v1 = (function() {
-
+    
                 /**
                  * Namespace v1.
                  * @memberof google.spanner
                  * @namespace
                  */
                 var v1 = {};
-
+    
                 v1.KeyRange = (function() {
-
+    
                     /**
                      * Properties of a KeyRange.
                      * @memberof google.spanner.v1
@@ -25966,7 +25989,7 @@
                      * @property {google.protobuf.IListValue|null} [endClosed] KeyRange endClosed
                      * @property {google.protobuf.IListValue|null} [endOpen] KeyRange endOpen
                      */
-
+    
                     /**
                      * Constructs a new KeyRange.
                      * @memberof google.spanner.v1
@@ -25981,7 +26004,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * KeyRange startClosed.
                      * @member {google.protobuf.IListValue|null|undefined} startClosed
@@ -25989,7 +26012,7 @@
                      * @instance
                      */
                     KeyRange.prototype.startClosed = null;
-
+    
                     /**
                      * KeyRange startOpen.
                      * @member {google.protobuf.IListValue|null|undefined} startOpen
@@ -25997,7 +26020,7 @@
                      * @instance
                      */
                     KeyRange.prototype.startOpen = null;
-
+    
                     /**
                      * KeyRange endClosed.
                      * @member {google.protobuf.IListValue|null|undefined} endClosed
@@ -26005,7 +26028,7 @@
                      * @instance
                      */
                     KeyRange.prototype.endClosed = null;
-
+    
                     /**
                      * KeyRange endOpen.
                      * @member {google.protobuf.IListValue|null|undefined} endOpen
@@ -26013,10 +26036,10 @@
                      * @instance
                      */
                     KeyRange.prototype.endOpen = null;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * KeyRange startKeyType.
                      * @member {"startClosed"|"startOpen"|undefined} startKeyType
@@ -26027,7 +26050,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["startClosed", "startOpen"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * KeyRange endKeyType.
                      * @member {"endClosed"|"endOpen"|undefined} endKeyType
@@ -26038,7 +26061,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["endClosed", "endOpen"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new KeyRange instance using the specified properties.
                      * @function create
@@ -26050,7 +26073,7 @@
                     KeyRange.create = function create(properties) {
                         return new KeyRange(properties);
                     };
-
+    
                     /**
                      * Encodes the specified KeyRange message. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
                      * @function encode
@@ -26073,7 +26096,7 @@
                             $root.google.protobuf.ListValue.encode(message.endOpen, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified KeyRange message, length delimited. Does not implicitly {@link google.spanner.v1.KeyRange.verify|verify} messages.
                      * @function encodeDelimited
@@ -26086,7 +26109,7 @@
                     KeyRange.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a KeyRange message from the specified reader or buffer.
                      * @function decode
@@ -26124,7 +26147,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a KeyRange message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -26140,7 +26163,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a KeyRange message.
                      * @function verify
@@ -26191,7 +26214,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a KeyRange message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -26226,7 +26249,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a KeyRange message. Also converts values to other types if specified.
                      * @function toObject
@@ -26262,7 +26285,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this KeyRange to JSON.
                      * @function toJSON
@@ -26273,12 +26296,12 @@
                     KeyRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return KeyRange;
                 })();
-
+    
                 v1.KeySet = (function() {
-
+    
                     /**
                      * Properties of a KeySet.
                      * @memberof google.spanner.v1
@@ -26287,7 +26310,7 @@
                      * @property {Array.<google.spanner.v1.IKeyRange>|null} [ranges] KeySet ranges
                      * @property {boolean|null} [all] KeySet all
                      */
-
+    
                     /**
                      * Constructs a new KeySet.
                      * @memberof google.spanner.v1
@@ -26304,7 +26327,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * KeySet keys.
                      * @member {Array.<google.protobuf.IListValue>} keys
@@ -26312,7 +26335,7 @@
                      * @instance
                      */
                     KeySet.prototype.keys = $util.emptyArray;
-
+    
                     /**
                      * KeySet ranges.
                      * @member {Array.<google.spanner.v1.IKeyRange>} ranges
@@ -26320,7 +26343,7 @@
                      * @instance
                      */
                     KeySet.prototype.ranges = $util.emptyArray;
-
+    
                     /**
                      * KeySet all.
                      * @member {boolean} all
@@ -26328,7 +26351,7 @@
                      * @instance
                      */
                     KeySet.prototype.all = false;
-
+    
                     /**
                      * Creates a new KeySet instance using the specified properties.
                      * @function create
@@ -26340,7 +26363,7 @@
                     KeySet.create = function create(properties) {
                         return new KeySet(properties);
                     };
-
+    
                     /**
                      * Encodes the specified KeySet message. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
                      * @function encode
@@ -26363,7 +26386,7 @@
                             writer.uint32(/* id 3, wireType 0 =*/24).bool(message.all);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified KeySet message, length delimited. Does not implicitly {@link google.spanner.v1.KeySet.verify|verify} messages.
                      * @function encodeDelimited
@@ -26376,7 +26399,7 @@
                     KeySet.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a KeySet message from the specified reader or buffer.
                      * @function decode
@@ -26415,7 +26438,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a KeySet message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -26431,7 +26454,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a KeySet message.
                      * @function verify
@@ -26466,7 +26489,7 @@
                                 return "all: boolean expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a KeySet message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -26503,7 +26526,7 @@
                             message.all = Boolean(object.all);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a KeySet message. Also converts values to other types if specified.
                      * @function toObject
@@ -26537,7 +26560,7 @@
                             object.all = message.all;
                         return object;
                     };
-
+    
                     /**
                      * Converts this KeySet to JSON.
                      * @function toJSON
@@ -26548,12 +26571,12 @@
                     KeySet.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return KeySet;
                 })();
-
+    
                 v1.Mutation = (function() {
-
+    
                     /**
                      * Properties of a Mutation.
                      * @memberof google.spanner.v1
@@ -26564,7 +26587,7 @@
                      * @property {google.spanner.v1.Mutation.IWrite|null} [replace] Mutation replace
                      * @property {google.spanner.v1.Mutation.IDelete|null} ["delete"] Mutation delete
                      */
-
+    
                     /**
                      * Constructs a new Mutation.
                      * @memberof google.spanner.v1
@@ -26579,7 +26602,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Mutation insert.
                      * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insert
@@ -26587,7 +26610,7 @@
                      * @instance
                      */
                     Mutation.prototype.insert = null;
-
+    
                     /**
                      * Mutation update.
                      * @member {google.spanner.v1.Mutation.IWrite|null|undefined} update
@@ -26595,7 +26618,7 @@
                      * @instance
                      */
                     Mutation.prototype.update = null;
-
+    
                     /**
                      * Mutation insertOrUpdate.
                      * @member {google.spanner.v1.Mutation.IWrite|null|undefined} insertOrUpdate
@@ -26603,7 +26626,7 @@
                      * @instance
                      */
                     Mutation.prototype.insertOrUpdate = null;
-
+    
                     /**
                      * Mutation replace.
                      * @member {google.spanner.v1.Mutation.IWrite|null|undefined} replace
@@ -26611,7 +26634,7 @@
                      * @instance
                      */
                     Mutation.prototype.replace = null;
-
+    
                     /**
                      * Mutation delete.
                      * @member {google.spanner.v1.Mutation.IDelete|null|undefined} delete
@@ -26619,10 +26642,10 @@
                      * @instance
                      */
                     Mutation.prototype["delete"] = null;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * Mutation operation.
                      * @member {"insert"|"update"|"insertOrUpdate"|"replace"|"delete"|undefined} operation
@@ -26633,7 +26656,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["insert", "update", "insertOrUpdate", "replace", "delete"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new Mutation instance using the specified properties.
                      * @function create
@@ -26645,7 +26668,7 @@
                     Mutation.create = function create(properties) {
                         return new Mutation(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Mutation message. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
                      * @function encode
@@ -26670,7 +26693,7 @@
                             $root.google.spanner.v1.Mutation.Delete.encode(message["delete"], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Mutation message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.verify|verify} messages.
                      * @function encodeDelimited
@@ -26683,7 +26706,7 @@
                     Mutation.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Mutation message from the specified reader or buffer.
                      * @function decode
@@ -26724,7 +26747,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Mutation message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -26740,7 +26763,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Mutation message.
                      * @function verify
@@ -26803,7 +26826,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Mutation message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -26843,7 +26866,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Mutation message. Also converts values to other types if specified.
                      * @function toObject
@@ -26884,7 +26907,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this Mutation to JSON.
                      * @function toJSON
@@ -26895,9 +26918,9 @@
                     Mutation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     Mutation.Write = (function() {
-
+    
                         /**
                          * Properties of a Write.
                          * @memberof google.spanner.v1.Mutation
@@ -26906,7 +26929,7 @@
                          * @property {Array.<string>|null} [columns] Write columns
                          * @property {Array.<google.protobuf.IListValue>|null} [values] Write values
                          */
-
+    
                         /**
                          * Constructs a new Write.
                          * @memberof google.spanner.v1.Mutation
@@ -26923,7 +26946,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Write table.
                          * @member {string} table
@@ -26931,7 +26954,7 @@
                          * @instance
                          */
                         Write.prototype.table = "";
-
+    
                         /**
                          * Write columns.
                          * @member {Array.<string>} columns
@@ -26939,7 +26962,7 @@
                          * @instance
                          */
                         Write.prototype.columns = $util.emptyArray;
-
+    
                         /**
                          * Write values.
                          * @member {Array.<google.protobuf.IListValue>} values
@@ -26947,7 +26970,7 @@
                          * @instance
                          */
                         Write.prototype.values = $util.emptyArray;
-
+    
                         /**
                          * Creates a new Write instance using the specified properties.
                          * @function create
@@ -26959,7 +26982,7 @@
                         Write.create = function create(properties) {
                             return new Write(properties);
                         };
-
+    
                         /**
                          * Encodes the specified Write message. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
                          * @function encode
@@ -26982,7 +27005,7 @@
                                     $root.google.protobuf.ListValue.encode(message.values[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified Write message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Write.verify|verify} messages.
                          * @function encodeDelimited
@@ -26995,7 +27018,7 @@
                         Write.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a Write message from the specified reader or buffer.
                          * @function decode
@@ -27034,7 +27057,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a Write message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -27050,7 +27073,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a Write message.
                          * @function verify
@@ -27083,7 +27106,7 @@
                             }
                             return null;
                         };
-
+    
                         /**
                          * Creates a Write message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -27117,7 +27140,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a Write message. Also converts values to other types if specified.
                          * @function toObject
@@ -27151,7 +27174,7 @@
                             }
                             return object;
                         };
-
+    
                         /**
                          * Converts this Write to JSON.
                          * @function toJSON
@@ -27162,12 +27185,12 @@
                         Write.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return Write;
                     })();
-
+    
                     Mutation.Delete = (function() {
-
+    
                         /**
                          * Properties of a Delete.
                          * @memberof google.spanner.v1.Mutation
@@ -27175,7 +27198,7 @@
                          * @property {string|null} [table] Delete table
                          * @property {google.spanner.v1.IKeySet|null} [keySet] Delete keySet
                          */
-
+    
                         /**
                          * Constructs a new Delete.
                          * @memberof google.spanner.v1.Mutation
@@ -27190,7 +27213,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Delete table.
                          * @member {string} table
@@ -27198,7 +27221,7 @@
                          * @instance
                          */
                         Delete.prototype.table = "";
-
+    
                         /**
                          * Delete keySet.
                          * @member {google.spanner.v1.IKeySet|null|undefined} keySet
@@ -27206,7 +27229,7 @@
                          * @instance
                          */
                         Delete.prototype.keySet = null;
-
+    
                         /**
                          * Creates a new Delete instance using the specified properties.
                          * @function create
@@ -27218,7 +27241,7 @@
                         Delete.create = function create(properties) {
                             return new Delete(properties);
                         };
-
+    
                         /**
                          * Encodes the specified Delete message. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
                          * @function encode
@@ -27237,7 +27260,7 @@
                                 $root.google.spanner.v1.KeySet.encode(message.keySet, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified Delete message, length delimited. Does not implicitly {@link google.spanner.v1.Mutation.Delete.verify|verify} messages.
                          * @function encodeDelimited
@@ -27250,7 +27273,7 @@
                         Delete.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a Delete message from the specified reader or buffer.
                          * @function decode
@@ -27282,7 +27305,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a Delete message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -27298,7 +27321,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a Delete message.
                          * @function verify
@@ -27320,7 +27343,7 @@
                             }
                             return null;
                         };
-
+    
                         /**
                          * Creates a Delete message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -27342,7 +27365,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a Delete message. Also converts values to other types if specified.
                          * @function toObject
@@ -27366,7 +27389,7 @@
                                 object.keySet = $root.google.spanner.v1.KeySet.toObject(message.keySet, options);
                             return object;
                         };
-
+    
                         /**
                          * Converts this Delete to JSON.
                          * @function toJSON
@@ -27377,15 +27400,15 @@
                         Delete.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return Delete;
                     })();
-
+    
                     return Mutation;
                 })();
-
+    
                 v1.PlanNode = (function() {
-
+    
                     /**
                      * Properties of a PlanNode.
                      * @memberof google.spanner.v1
@@ -27398,7 +27421,7 @@
                      * @property {google.protobuf.IStruct|null} [metadata] PlanNode metadata
                      * @property {google.protobuf.IStruct|null} [executionStats] PlanNode executionStats
                      */
-
+    
                     /**
                      * Constructs a new PlanNode.
                      * @memberof google.spanner.v1
@@ -27414,7 +27437,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PlanNode index.
                      * @member {number} index
@@ -27422,7 +27445,7 @@
                      * @instance
                      */
                     PlanNode.prototype.index = 0;
-
+    
                     /**
                      * PlanNode kind.
                      * @member {google.spanner.v1.PlanNode.Kind} kind
@@ -27430,7 +27453,7 @@
                      * @instance
                      */
                     PlanNode.prototype.kind = 0;
-
+    
                     /**
                      * PlanNode displayName.
                      * @member {string} displayName
@@ -27438,7 +27461,7 @@
                      * @instance
                      */
                     PlanNode.prototype.displayName = "";
-
+    
                     /**
                      * PlanNode childLinks.
                      * @member {Array.<google.spanner.v1.PlanNode.IChildLink>} childLinks
@@ -27446,7 +27469,7 @@
                      * @instance
                      */
                     PlanNode.prototype.childLinks = $util.emptyArray;
-
+    
                     /**
                      * PlanNode shortRepresentation.
                      * @member {google.spanner.v1.PlanNode.IShortRepresentation|null|undefined} shortRepresentation
@@ -27454,7 +27477,7 @@
                      * @instance
                      */
                     PlanNode.prototype.shortRepresentation = null;
-
+    
                     /**
                      * PlanNode metadata.
                      * @member {google.protobuf.IStruct|null|undefined} metadata
@@ -27462,7 +27485,7 @@
                      * @instance
                      */
                     PlanNode.prototype.metadata = null;
-
+    
                     /**
                      * PlanNode executionStats.
                      * @member {google.protobuf.IStruct|null|undefined} executionStats
@@ -27470,7 +27493,7 @@
                      * @instance
                      */
                     PlanNode.prototype.executionStats = null;
-
+    
                     /**
                      * Creates a new PlanNode instance using the specified properties.
                      * @function create
@@ -27482,7 +27505,7 @@
                     PlanNode.create = function create(properties) {
                         return new PlanNode(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PlanNode message. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
                      * @function encode
@@ -27512,7 +27535,7 @@
                             $root.google.protobuf.Struct.encode(message.executionStats, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PlanNode message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.verify|verify} messages.
                      * @function encodeDelimited
@@ -27525,7 +27548,7 @@
                     PlanNode.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PlanNode message from the specified reader or buffer.
                      * @function decode
@@ -27574,7 +27597,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PlanNode message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -27590,7 +27613,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PlanNode message.
                      * @function verify
@@ -27643,7 +27666,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PlanNode message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -27701,7 +27724,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PlanNode message. Also converts values to other types if specified.
                      * @function toObject
@@ -27744,7 +27767,7 @@
                             object.executionStats = $root.google.protobuf.Struct.toObject(message.executionStats, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this PlanNode to JSON.
                      * @function toJSON
@@ -27755,9 +27778,9 @@
                     PlanNode.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     PlanNode.ChildLink = (function() {
-
+    
                         /**
                          * Properties of a ChildLink.
                          * @memberof google.spanner.v1.PlanNode
@@ -27766,7 +27789,7 @@
                          * @property {string|null} [type] ChildLink type
                          * @property {string|null} [variable] ChildLink variable
                          */
-
+    
                         /**
                          * Constructs a new ChildLink.
                          * @memberof google.spanner.v1.PlanNode
@@ -27781,7 +27804,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * ChildLink childIndex.
                          * @member {number} childIndex
@@ -27789,7 +27812,7 @@
                          * @instance
                          */
                         ChildLink.prototype.childIndex = 0;
-
+    
                         /**
                          * ChildLink type.
                          * @member {string} type
@@ -27797,7 +27820,7 @@
                          * @instance
                          */
                         ChildLink.prototype.type = "";
-
+    
                         /**
                          * ChildLink variable.
                          * @member {string} variable
@@ -27805,7 +27828,7 @@
                          * @instance
                          */
                         ChildLink.prototype.variable = "";
-
+    
                         /**
                          * Creates a new ChildLink instance using the specified properties.
                          * @function create
@@ -27817,7 +27840,7 @@
                         ChildLink.create = function create(properties) {
                             return new ChildLink(properties);
                         };
-
+    
                         /**
                          * Encodes the specified ChildLink message. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
                          * @function encode
@@ -27838,7 +27861,7 @@
                                 writer.uint32(/* id 3, wireType 2 =*/26).string(message.variable);
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified ChildLink message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ChildLink.verify|verify} messages.
                          * @function encodeDelimited
@@ -27851,7 +27874,7 @@
                         ChildLink.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a ChildLink message from the specified reader or buffer.
                          * @function decode
@@ -27886,7 +27909,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a ChildLink message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -27902,7 +27925,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a ChildLink message.
                          * @function verify
@@ -27925,7 +27948,7 @@
                                     return "variable: string expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a ChildLink message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -27946,7 +27969,7 @@
                                 message.variable = String(object.variable);
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a ChildLink message. Also converts values to other types if specified.
                          * @function toObject
@@ -27973,7 +27996,7 @@
                                 object.variable = message.variable;
                             return object;
                         };
-
+    
                         /**
                          * Converts this ChildLink to JSON.
                          * @function toJSON
@@ -27984,12 +28007,12 @@
                         ChildLink.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return ChildLink;
                     })();
-
+    
                     PlanNode.ShortRepresentation = (function() {
-
+    
                         /**
                          * Properties of a ShortRepresentation.
                          * @memberof google.spanner.v1.PlanNode
@@ -27997,7 +28020,7 @@
                          * @property {string|null} [description] ShortRepresentation description
                          * @property {Object.<string,number>|null} [subqueries] ShortRepresentation subqueries
                          */
-
+    
                         /**
                          * Constructs a new ShortRepresentation.
                          * @memberof google.spanner.v1.PlanNode
@@ -28013,7 +28036,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * ShortRepresentation description.
                          * @member {string} description
@@ -28021,7 +28044,7 @@
                          * @instance
                          */
                         ShortRepresentation.prototype.description = "";
-
+    
                         /**
                          * ShortRepresentation subqueries.
                          * @member {Object.<string,number>} subqueries
@@ -28029,7 +28052,7 @@
                          * @instance
                          */
                         ShortRepresentation.prototype.subqueries = $util.emptyObject;
-
+    
                         /**
                          * Creates a new ShortRepresentation instance using the specified properties.
                          * @function create
@@ -28041,7 +28064,7 @@
                         ShortRepresentation.create = function create(properties) {
                             return new ShortRepresentation(properties);
                         };
-
+    
                         /**
                          * Encodes the specified ShortRepresentation message. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
                          * @function encode
@@ -28061,7 +28084,7 @@
                                     writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 0 =*/16).int32(message.subqueries[keys[i]]).ldelim();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified ShortRepresentation message, length delimited. Does not implicitly {@link google.spanner.v1.PlanNode.ShortRepresentation.verify|verify} messages.
                          * @function encodeDelimited
@@ -28074,7 +28097,7 @@
                         ShortRepresentation.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a ShortRepresentation message from the specified reader or buffer.
                          * @function decode
@@ -28125,7 +28148,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a ShortRepresentation message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -28141,7 +28164,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a ShortRepresentation message.
                          * @function verify
@@ -28166,7 +28189,7 @@
                             }
                             return null;
                         };
-
+    
                         /**
                          * Creates a ShortRepresentation message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -28190,7 +28213,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a ShortRepresentation message. Also converts values to other types if specified.
                          * @function toObject
@@ -28218,7 +28241,7 @@
                             }
                             return object;
                         };
-
+    
                         /**
                          * Converts this ShortRepresentation to JSON.
                          * @function toJSON
@@ -28229,10 +28252,10 @@
                         ShortRepresentation.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return ShortRepresentation;
                     })();
-
+    
                     /**
                      * Kind enum.
                      * @name google.spanner.v1.PlanNode.Kind
@@ -28248,19 +28271,19 @@
                         values[valuesById[2] = "SCALAR"] = 2;
                         return values;
                     })();
-
+    
                     return PlanNode;
                 })();
-
+    
                 v1.QueryPlan = (function() {
-
+    
                     /**
                      * Properties of a QueryPlan.
                      * @memberof google.spanner.v1
                      * @interface IQueryPlan
                      * @property {Array.<google.spanner.v1.IPlanNode>|null} [planNodes] QueryPlan planNodes
                      */
-
+    
                     /**
                      * Constructs a new QueryPlan.
                      * @memberof google.spanner.v1
@@ -28276,7 +28299,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * QueryPlan planNodes.
                      * @member {Array.<google.spanner.v1.IPlanNode>} planNodes
@@ -28284,7 +28307,7 @@
                      * @instance
                      */
                     QueryPlan.prototype.planNodes = $util.emptyArray;
-
+    
                     /**
                      * Creates a new QueryPlan instance using the specified properties.
                      * @function create
@@ -28296,7 +28319,7 @@
                     QueryPlan.create = function create(properties) {
                         return new QueryPlan(properties);
                     };
-
+    
                     /**
                      * Encodes the specified QueryPlan message. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
                      * @function encode
@@ -28314,7 +28337,7 @@
                                 $root.google.spanner.v1.PlanNode.encode(message.planNodes[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified QueryPlan message, length delimited. Does not implicitly {@link google.spanner.v1.QueryPlan.verify|verify} messages.
                      * @function encodeDelimited
@@ -28327,7 +28350,7 @@
                     QueryPlan.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a QueryPlan message from the specified reader or buffer.
                      * @function decode
@@ -28358,7 +28381,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a QueryPlan message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -28374,7 +28397,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a QueryPlan message.
                      * @function verify
@@ -28397,7 +28420,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a QueryPlan message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -28422,7 +28445,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a QueryPlan message. Also converts values to other types if specified.
                      * @function toObject
@@ -28445,7 +28468,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this QueryPlan to JSON.
                      * @function toJSON
@@ -28456,12 +28479,12 @@
                     QueryPlan.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return QueryPlan;
                 })();
-
+    
                 v1.ResultSet = (function() {
-
+    
                     /**
                      * Properties of a ResultSet.
                      * @memberof google.spanner.v1
@@ -28470,7 +28493,7 @@
                      * @property {Array.<google.protobuf.IListValue>|null} [rows] ResultSet rows
                      * @property {google.spanner.v1.IResultSetStats|null} [stats] ResultSet stats
                      */
-
+    
                     /**
                      * Constructs a new ResultSet.
                      * @memberof google.spanner.v1
@@ -28486,7 +28509,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ResultSet metadata.
                      * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
@@ -28494,7 +28517,7 @@
                      * @instance
                      */
                     ResultSet.prototype.metadata = null;
-
+    
                     /**
                      * ResultSet rows.
                      * @member {Array.<google.protobuf.IListValue>} rows
@@ -28502,7 +28525,7 @@
                      * @instance
                      */
                     ResultSet.prototype.rows = $util.emptyArray;
-
+    
                     /**
                      * ResultSet stats.
                      * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
@@ -28510,7 +28533,7 @@
                      * @instance
                      */
                     ResultSet.prototype.stats = null;
-
+    
                     /**
                      * Creates a new ResultSet instance using the specified properties.
                      * @function create
@@ -28522,7 +28545,7 @@
                     ResultSet.create = function create(properties) {
                         return new ResultSet(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ResultSet message. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
                      * @function encode
@@ -28544,7 +28567,7 @@
                             $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSet.verify|verify} messages.
                      * @function encodeDelimited
@@ -28557,7 +28580,7 @@
                     ResultSet.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ResultSet message from the specified reader or buffer.
                      * @function decode
@@ -28594,7 +28617,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ResultSet message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -28610,7 +28633,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ResultSet message.
                      * @function verify
@@ -28643,7 +28666,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a ResultSet message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -28678,7 +28701,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ResultSet message. Also converts values to other types if specified.
                      * @function toObject
@@ -28709,7 +28732,7 @@
                             object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ResultSet to JSON.
                      * @function toJSON
@@ -28720,12 +28743,12 @@
                     ResultSet.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ResultSet;
                 })();
-
+    
                 v1.PartialResultSet = (function() {
-
+    
                     /**
                      * Properties of a PartialResultSet.
                      * @memberof google.spanner.v1
@@ -28736,7 +28759,7 @@
                      * @property {Uint8Array|null} [resumeToken] PartialResultSet resumeToken
                      * @property {google.spanner.v1.IResultSetStats|null} [stats] PartialResultSet stats
                      */
-
+    
                     /**
                      * Constructs a new PartialResultSet.
                      * @memberof google.spanner.v1
@@ -28752,7 +28775,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PartialResultSet metadata.
                      * @member {google.spanner.v1.IResultSetMetadata|null|undefined} metadata
@@ -28760,7 +28783,7 @@
                      * @instance
                      */
                     PartialResultSet.prototype.metadata = null;
-
+    
                     /**
                      * PartialResultSet values.
                      * @member {Array.<google.protobuf.IValue>} values
@@ -28768,7 +28791,7 @@
                      * @instance
                      */
                     PartialResultSet.prototype.values = $util.emptyArray;
-
+    
                     /**
                      * PartialResultSet chunkedValue.
                      * @member {boolean} chunkedValue
@@ -28776,7 +28799,7 @@
                      * @instance
                      */
                     PartialResultSet.prototype.chunkedValue = false;
-
+    
                     /**
                      * PartialResultSet resumeToken.
                      * @member {Uint8Array} resumeToken
@@ -28784,7 +28807,7 @@
                      * @instance
                      */
                     PartialResultSet.prototype.resumeToken = $util.newBuffer([]);
-
+    
                     /**
                      * PartialResultSet stats.
                      * @member {google.spanner.v1.IResultSetStats|null|undefined} stats
@@ -28792,7 +28815,7 @@
                      * @instance
                      */
                     PartialResultSet.prototype.stats = null;
-
+    
                     /**
                      * Creates a new PartialResultSet instance using the specified properties.
                      * @function create
@@ -28804,7 +28827,7 @@
                     PartialResultSet.create = function create(properties) {
                         return new PartialResultSet(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PartialResultSet message. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
                      * @function encode
@@ -28830,7 +28853,7 @@
                             $root.google.spanner.v1.ResultSetStats.encode(message.stats, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PartialResultSet message, length delimited. Does not implicitly {@link google.spanner.v1.PartialResultSet.verify|verify} messages.
                      * @function encodeDelimited
@@ -28843,7 +28866,7 @@
                     PartialResultSet.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PartialResultSet message from the specified reader or buffer.
                      * @function decode
@@ -28886,7 +28909,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PartialResultSet message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -28902,7 +28925,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PartialResultSet message.
                      * @function verify
@@ -28941,7 +28964,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PartialResultSet message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -28983,7 +29006,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PartialResultSet message. Also converts values to other types if specified.
                      * @function toObject
@@ -29026,7 +29049,7 @@
                             object.stats = $root.google.spanner.v1.ResultSetStats.toObject(message.stats, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this PartialResultSet to JSON.
                      * @function toJSON
@@ -29037,12 +29060,12 @@
                     PartialResultSet.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PartialResultSet;
                 })();
-
+    
                 v1.ResultSetMetadata = (function() {
-
+    
                     /**
                      * Properties of a ResultSetMetadata.
                      * @memberof google.spanner.v1
@@ -29050,7 +29073,7 @@
                      * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
                      * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
                      */
-
+    
                     /**
                      * Constructs a new ResultSetMetadata.
                      * @memberof google.spanner.v1
@@ -29065,7 +29088,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ResultSetMetadata rowType.
                      * @member {google.spanner.v1.IStructType|null|undefined} rowType
@@ -29073,7 +29096,7 @@
                      * @instance
                      */
                     ResultSetMetadata.prototype.rowType = null;
-
+    
                     /**
                      * ResultSetMetadata transaction.
                      * @member {google.spanner.v1.ITransaction|null|undefined} transaction
@@ -29081,7 +29104,7 @@
                      * @instance
                      */
                     ResultSetMetadata.prototype.transaction = null;
-
+    
                     /**
                      * Creates a new ResultSetMetadata instance using the specified properties.
                      * @function create
@@ -29093,7 +29116,7 @@
                     ResultSetMetadata.create = function create(properties) {
                         return new ResultSetMetadata(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ResultSetMetadata message. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
                      * @function encode
@@ -29112,7 +29135,7 @@
                             $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ResultSetMetadata message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetMetadata.verify|verify} messages.
                      * @function encodeDelimited
@@ -29125,7 +29148,7 @@
                     ResultSetMetadata.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ResultSetMetadata message from the specified reader or buffer.
                      * @function decode
@@ -29157,7 +29180,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ResultSetMetadata message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -29173,7 +29196,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ResultSetMetadata message.
                      * @function verify
@@ -29197,7 +29220,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a ResultSetMetadata message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -29222,7 +29245,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ResultSetMetadata message. Also converts values to other types if specified.
                      * @function toObject
@@ -29246,7 +29269,7 @@
                             object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ResultSetMetadata to JSON.
                      * @function toJSON
@@ -29257,12 +29280,12 @@
                     ResultSetMetadata.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ResultSetMetadata;
                 })();
-
+    
                 v1.ResultSetStats = (function() {
-
+    
                     /**
                      * Properties of a ResultSetStats.
                      * @memberof google.spanner.v1
@@ -29272,7 +29295,7 @@
                      * @property {number|Long|null} [rowCountExact] ResultSetStats rowCountExact
                      * @property {number|Long|null} [rowCountLowerBound] ResultSetStats rowCountLowerBound
                      */
-
+    
                     /**
                      * Constructs a new ResultSetStats.
                      * @memberof google.spanner.v1
@@ -29287,7 +29310,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ResultSetStats queryPlan.
                      * @member {google.spanner.v1.IQueryPlan|null|undefined} queryPlan
@@ -29295,7 +29318,7 @@
                      * @instance
                      */
                     ResultSetStats.prototype.queryPlan = null;
-
+    
                     /**
                      * ResultSetStats queryStats.
                      * @member {google.protobuf.IStruct|null|undefined} queryStats
@@ -29303,7 +29326,7 @@
                      * @instance
                      */
                     ResultSetStats.prototype.queryStats = null;
-
+    
                     /**
                      * ResultSetStats rowCountExact.
                      * @member {number|Long} rowCountExact
@@ -29311,7 +29334,7 @@
                      * @instance
                      */
                     ResultSetStats.prototype.rowCountExact = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     /**
                      * ResultSetStats rowCountLowerBound.
                      * @member {number|Long} rowCountLowerBound
@@ -29319,10 +29342,10 @@
                      * @instance
                      */
                     ResultSetStats.prototype.rowCountLowerBound = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * ResultSetStats rowCount.
                      * @member {"rowCountExact"|"rowCountLowerBound"|undefined} rowCount
@@ -29333,7 +29356,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["rowCountExact", "rowCountLowerBound"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new ResultSetStats instance using the specified properties.
                      * @function create
@@ -29345,7 +29368,7 @@
                     ResultSetStats.create = function create(properties) {
                         return new ResultSetStats(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ResultSetStats message. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
                      * @function encode
@@ -29368,7 +29391,7 @@
                             writer.uint32(/* id 4, wireType 0 =*/32).int64(message.rowCountLowerBound);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ResultSetStats message, length delimited. Does not implicitly {@link google.spanner.v1.ResultSetStats.verify|verify} messages.
                      * @function encodeDelimited
@@ -29381,7 +29404,7 @@
                     ResultSetStats.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ResultSetStats message from the specified reader or buffer.
                      * @function decode
@@ -29419,7 +29442,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ResultSetStats message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -29435,7 +29458,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ResultSetStats message.
                      * @function verify
@@ -29472,7 +29495,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a ResultSetStats message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -29515,7 +29538,7 @@
                                 message.rowCountLowerBound = new $util.LongBits(object.rowCountLowerBound.low >>> 0, object.rowCountLowerBound.high >>> 0).toNumber();
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ResultSetStats message. Also converts values to other types if specified.
                      * @function toObject
@@ -29555,7 +29578,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this ResultSetStats to JSON.
                      * @function toJSON
@@ -29566,12 +29589,12 @@
                     ResultSetStats.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ResultSetStats;
                 })();
-
+    
                 v1.TransactionOptions = (function() {
-
+    
                     /**
                      * Properties of a TransactionOptions.
                      * @memberof google.spanner.v1
@@ -29580,7 +29603,7 @@
                      * @property {google.spanner.v1.TransactionOptions.IPartitionedDml|null} [partitionedDml] TransactionOptions partitionedDml
                      * @property {google.spanner.v1.TransactionOptions.IReadOnly|null} [readOnly] TransactionOptions readOnly
                      */
-
+    
                     /**
                      * Constructs a new TransactionOptions.
                      * @memberof google.spanner.v1
@@ -29595,7 +29618,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * TransactionOptions readWrite.
                      * @member {google.spanner.v1.TransactionOptions.IReadWrite|null|undefined} readWrite
@@ -29603,7 +29626,7 @@
                      * @instance
                      */
                     TransactionOptions.prototype.readWrite = null;
-
+    
                     /**
                      * TransactionOptions partitionedDml.
                      * @member {google.spanner.v1.TransactionOptions.IPartitionedDml|null|undefined} partitionedDml
@@ -29611,7 +29634,7 @@
                      * @instance
                      */
                     TransactionOptions.prototype.partitionedDml = null;
-
+    
                     /**
                      * TransactionOptions readOnly.
                      * @member {google.spanner.v1.TransactionOptions.IReadOnly|null|undefined} readOnly
@@ -29619,10 +29642,10 @@
                      * @instance
                      */
                     TransactionOptions.prototype.readOnly = null;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * TransactionOptions mode.
                      * @member {"readWrite"|"partitionedDml"|"readOnly"|undefined} mode
@@ -29633,7 +29656,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["readWrite", "partitionedDml", "readOnly"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new TransactionOptions instance using the specified properties.
                      * @function create
@@ -29645,7 +29668,7 @@
                     TransactionOptions.create = function create(properties) {
                         return new TransactionOptions(properties);
                     };
-
+    
                     /**
                      * Encodes the specified TransactionOptions message. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
                      * @function encode
@@ -29666,7 +29689,7 @@
                             $root.google.spanner.v1.TransactionOptions.PartitionedDml.encode(message.partitionedDml, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified TransactionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.verify|verify} messages.
                      * @function encodeDelimited
@@ -29679,7 +29702,7 @@
                     TransactionOptions.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a TransactionOptions message from the specified reader or buffer.
                      * @function decode
@@ -29714,7 +29737,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a TransactionOptions message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -29730,7 +29753,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a TransactionOptions message.
                      * @function verify
@@ -29773,7 +29796,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a TransactionOptions message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -29803,7 +29826,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a TransactionOptions message. Also converts values to other types if specified.
                      * @function toObject
@@ -29834,7 +29857,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this TransactionOptions to JSON.
                      * @function toJSON
@@ -29845,15 +29868,15 @@
                     TransactionOptions.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     TransactionOptions.ReadWrite = (function() {
-
+    
                         /**
                          * Properties of a ReadWrite.
                          * @memberof google.spanner.v1.TransactionOptions
                          * @interface IReadWrite
                          */
-
+    
                         /**
                          * Constructs a new ReadWrite.
                          * @memberof google.spanner.v1.TransactionOptions
@@ -29868,7 +29891,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Creates a new ReadWrite instance using the specified properties.
                          * @function create
@@ -29880,7 +29903,7 @@
                         ReadWrite.create = function create(properties) {
                             return new ReadWrite(properties);
                         };
-
+    
                         /**
                          * Encodes the specified ReadWrite message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
                          * @function encode
@@ -29895,7 +29918,7 @@
                                 writer = $Writer.create();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified ReadWrite message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadWrite.verify|verify} messages.
                          * @function encodeDelimited
@@ -29908,7 +29931,7 @@
                         ReadWrite.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a ReadWrite message from the specified reader or buffer.
                          * @function decode
@@ -29934,7 +29957,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a ReadWrite message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -29950,7 +29973,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a ReadWrite message.
                          * @function verify
@@ -29964,7 +29987,7 @@
                                 return "object expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a ReadWrite message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -29978,7 +30001,7 @@
                                 return object;
                             return new $root.google.spanner.v1.TransactionOptions.ReadWrite();
                         };
-
+    
                         /**
                          * Creates a plain object from a ReadWrite message. Also converts values to other types if specified.
                          * @function toObject
@@ -29991,7 +30014,7 @@
                         ReadWrite.toObject = function toObject() {
                             return {};
                         };
-
+    
                         /**
                          * Converts this ReadWrite to JSON.
                          * @function toJSON
@@ -30002,18 +30025,18 @@
                         ReadWrite.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return ReadWrite;
                     })();
-
+    
                     TransactionOptions.PartitionedDml = (function() {
-
+    
                         /**
                          * Properties of a PartitionedDml.
                          * @memberof google.spanner.v1.TransactionOptions
                          * @interface IPartitionedDml
                          */
-
+    
                         /**
                          * Constructs a new PartitionedDml.
                          * @memberof google.spanner.v1.TransactionOptions
@@ -30028,7 +30051,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Creates a new PartitionedDml instance using the specified properties.
                          * @function create
@@ -30040,7 +30063,7 @@
                         PartitionedDml.create = function create(properties) {
                             return new PartitionedDml(properties);
                         };
-
+    
                         /**
                          * Encodes the specified PartitionedDml message. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
                          * @function encode
@@ -30055,7 +30078,7 @@
                                 writer = $Writer.create();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified PartitionedDml message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.PartitionedDml.verify|verify} messages.
                          * @function encodeDelimited
@@ -30068,7 +30091,7 @@
                         PartitionedDml.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a PartitionedDml message from the specified reader or buffer.
                          * @function decode
@@ -30094,7 +30117,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a PartitionedDml message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -30110,7 +30133,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a PartitionedDml message.
                          * @function verify
@@ -30124,7 +30147,7 @@
                                 return "object expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a PartitionedDml message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -30138,7 +30161,7 @@
                                 return object;
                             return new $root.google.spanner.v1.TransactionOptions.PartitionedDml();
                         };
-
+    
                         /**
                          * Creates a plain object from a PartitionedDml message. Also converts values to other types if specified.
                          * @function toObject
@@ -30151,7 +30174,7 @@
                         PartitionedDml.toObject = function toObject() {
                             return {};
                         };
-
+    
                         /**
                          * Converts this PartitionedDml to JSON.
                          * @function toJSON
@@ -30162,12 +30185,12 @@
                         PartitionedDml.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return PartitionedDml;
                     })();
-
+    
                     TransactionOptions.ReadOnly = (function() {
-
+    
                         /**
                          * Properties of a ReadOnly.
                          * @memberof google.spanner.v1.TransactionOptions
@@ -30179,7 +30202,7 @@
                          * @property {google.protobuf.IDuration|null} [exactStaleness] ReadOnly exactStaleness
                          * @property {boolean|null} [returnReadTimestamp] ReadOnly returnReadTimestamp
                          */
-
+    
                         /**
                          * Constructs a new ReadOnly.
                          * @memberof google.spanner.v1.TransactionOptions
@@ -30194,7 +30217,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * ReadOnly strong.
                          * @member {boolean} strong
@@ -30202,7 +30225,7 @@
                          * @instance
                          */
                         ReadOnly.prototype.strong = false;
-
+    
                         /**
                          * ReadOnly minReadTimestamp.
                          * @member {google.protobuf.ITimestamp|null|undefined} minReadTimestamp
@@ -30210,7 +30233,7 @@
                          * @instance
                          */
                         ReadOnly.prototype.minReadTimestamp = null;
-
+    
                         /**
                          * ReadOnly maxStaleness.
                          * @member {google.protobuf.IDuration|null|undefined} maxStaleness
@@ -30218,7 +30241,7 @@
                          * @instance
                          */
                         ReadOnly.prototype.maxStaleness = null;
-
+    
                         /**
                          * ReadOnly readTimestamp.
                          * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
@@ -30226,7 +30249,7 @@
                          * @instance
                          */
                         ReadOnly.prototype.readTimestamp = null;
-
+    
                         /**
                          * ReadOnly exactStaleness.
                          * @member {google.protobuf.IDuration|null|undefined} exactStaleness
@@ -30234,7 +30257,7 @@
                          * @instance
                          */
                         ReadOnly.prototype.exactStaleness = null;
-
+    
                         /**
                          * ReadOnly returnReadTimestamp.
                          * @member {boolean} returnReadTimestamp
@@ -30242,10 +30265,10 @@
                          * @instance
                          */
                         ReadOnly.prototype.returnReadTimestamp = false;
-
+    
                         // OneOf field names bound to virtual getters and setters
                         var $oneOfFields;
-
+    
                         /**
                          * ReadOnly timestampBound.
                          * @member {"strong"|"minReadTimestamp"|"maxStaleness"|"readTimestamp"|"exactStaleness"|undefined} timestampBound
@@ -30256,7 +30279,7 @@
                             get: $util.oneOfGetter($oneOfFields = ["strong", "minReadTimestamp", "maxStaleness", "readTimestamp", "exactStaleness"]),
                             set: $util.oneOfSetter($oneOfFields)
                         });
-
+    
                         /**
                          * Creates a new ReadOnly instance using the specified properties.
                          * @function create
@@ -30268,7 +30291,7 @@
                         ReadOnly.create = function create(properties) {
                             return new ReadOnly(properties);
                         };
-
+    
                         /**
                          * Encodes the specified ReadOnly message. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
                          * @function encode
@@ -30295,7 +30318,7 @@
                                 writer.uint32(/* id 6, wireType 0 =*/48).bool(message.returnReadTimestamp);
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified ReadOnly message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionOptions.ReadOnly.verify|verify} messages.
                          * @function encodeDelimited
@@ -30308,7 +30331,7 @@
                         ReadOnly.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a ReadOnly message from the specified reader or buffer.
                          * @function decode
@@ -30352,7 +30375,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a ReadOnly message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -30368,7 +30391,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a ReadOnly message.
                          * @function verify
@@ -30431,7 +30454,7 @@
                                     return "returnReadTimestamp: boolean expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a ReadOnly message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -30470,7 +30493,7 @@
                                 message.returnReadTimestamp = Boolean(object.returnReadTimestamp);
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a ReadOnly message. Also converts values to other types if specified.
                          * @function toObject
@@ -30515,7 +30538,7 @@
                                 object.returnReadTimestamp = message.returnReadTimestamp;
                             return object;
                         };
-
+    
                         /**
                          * Converts this ReadOnly to JSON.
                          * @function toJSON
@@ -30526,15 +30549,15 @@
                         ReadOnly.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return ReadOnly;
                     })();
-
+    
                     return TransactionOptions;
                 })();
-
+    
                 v1.Transaction = (function() {
-
+    
                     /**
                      * Properties of a Transaction.
                      * @memberof google.spanner.v1
@@ -30542,7 +30565,7 @@
                      * @property {Uint8Array|null} [id] Transaction id
                      * @property {google.protobuf.ITimestamp|null} [readTimestamp] Transaction readTimestamp
                      */
-
+    
                     /**
                      * Constructs a new Transaction.
                      * @memberof google.spanner.v1
@@ -30557,7 +30580,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Transaction id.
                      * @member {Uint8Array} id
@@ -30565,7 +30588,7 @@
                      * @instance
                      */
                     Transaction.prototype.id = $util.newBuffer([]);
-
+    
                     /**
                      * Transaction readTimestamp.
                      * @member {google.protobuf.ITimestamp|null|undefined} readTimestamp
@@ -30573,7 +30596,7 @@
                      * @instance
                      */
                     Transaction.prototype.readTimestamp = null;
-
+    
                     /**
                      * Creates a new Transaction instance using the specified properties.
                      * @function create
@@ -30585,7 +30608,7 @@
                     Transaction.create = function create(properties) {
                         return new Transaction(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Transaction message. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
                      * @function encode
@@ -30604,7 +30627,7 @@
                             $root.google.protobuf.Timestamp.encode(message.readTimestamp, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Transaction message, length delimited. Does not implicitly {@link google.spanner.v1.Transaction.verify|verify} messages.
                      * @function encodeDelimited
@@ -30617,7 +30640,7 @@
                     Transaction.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Transaction message from the specified reader or buffer.
                      * @function decode
@@ -30649,7 +30672,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Transaction message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -30665,7 +30688,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Transaction message.
                      * @function verify
@@ -30687,7 +30710,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -30712,7 +30735,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Transaction message. Also converts values to other types if specified.
                      * @function toObject
@@ -30742,7 +30765,7 @@
                             object.readTimestamp = $root.google.protobuf.Timestamp.toObject(message.readTimestamp, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this Transaction to JSON.
                      * @function toJSON
@@ -30753,12 +30776,12 @@
                     Transaction.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Transaction;
                 })();
-
+    
                 v1.TransactionSelector = (function() {
-
+    
                     /**
                      * Properties of a TransactionSelector.
                      * @memberof google.spanner.v1
@@ -30767,7 +30790,7 @@
                      * @property {Uint8Array|null} [id] TransactionSelector id
                      * @property {google.spanner.v1.ITransactionOptions|null} [begin] TransactionSelector begin
                      */
-
+    
                     /**
                      * Constructs a new TransactionSelector.
                      * @memberof google.spanner.v1
@@ -30782,7 +30805,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * TransactionSelector singleUse.
                      * @member {google.spanner.v1.ITransactionOptions|null|undefined} singleUse
@@ -30790,7 +30813,7 @@
                      * @instance
                      */
                     TransactionSelector.prototype.singleUse = null;
-
+    
                     /**
                      * TransactionSelector id.
                      * @member {Uint8Array} id
@@ -30798,7 +30821,7 @@
                      * @instance
                      */
                     TransactionSelector.prototype.id = $util.newBuffer([]);
-
+    
                     /**
                      * TransactionSelector begin.
                      * @member {google.spanner.v1.ITransactionOptions|null|undefined} begin
@@ -30806,10 +30829,10 @@
                      * @instance
                      */
                     TransactionSelector.prototype.begin = null;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * TransactionSelector selector.
                      * @member {"singleUse"|"id"|"begin"|undefined} selector
@@ -30820,7 +30843,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["singleUse", "id", "begin"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new TransactionSelector instance using the specified properties.
                      * @function create
@@ -30832,7 +30855,7 @@
                     TransactionSelector.create = function create(properties) {
                         return new TransactionSelector(properties);
                     };
-
+    
                     /**
                      * Encodes the specified TransactionSelector message. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
                      * @function encode
@@ -30853,7 +30876,7 @@
                             $root.google.spanner.v1.TransactionOptions.encode(message.begin, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified TransactionSelector message, length delimited. Does not implicitly {@link google.spanner.v1.TransactionSelector.verify|verify} messages.
                      * @function encodeDelimited
@@ -30866,7 +30889,7 @@
                     TransactionSelector.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a TransactionSelector message from the specified reader or buffer.
                      * @function decode
@@ -30901,7 +30924,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a TransactionSelector message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -30917,7 +30940,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a TransactionSelector message.
                      * @function verify
@@ -30957,7 +30980,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a TransactionSelector message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -30987,7 +31010,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a TransactionSelector message. Also converts values to other types if specified.
                      * @function toObject
@@ -31018,7 +31041,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this TransactionSelector to JSON.
                      * @function toJSON
@@ -31029,12 +31052,12 @@
                     TransactionSelector.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return TransactionSelector;
                 })();
-
+    
                 v1.Type = (function() {
-
+    
                     /**
                      * Properties of a Type.
                      * @memberof google.spanner.v1
@@ -31043,7 +31066,7 @@
                      * @property {google.spanner.v1.IType|null} [arrayElementType] Type arrayElementType
                      * @property {google.spanner.v1.IStructType|null} [structType] Type structType
                      */
-
+    
                     /**
                      * Constructs a new Type.
                      * @memberof google.spanner.v1
@@ -31058,7 +31081,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Type code.
                      * @member {google.spanner.v1.TypeCode} code
@@ -31066,7 +31089,7 @@
                      * @instance
                      */
                     Type.prototype.code = 0;
-
+    
                     /**
                      * Type arrayElementType.
                      * @member {google.spanner.v1.IType|null|undefined} arrayElementType
@@ -31074,7 +31097,7 @@
                      * @instance
                      */
                     Type.prototype.arrayElementType = null;
-
+    
                     /**
                      * Type structType.
                      * @member {google.spanner.v1.IStructType|null|undefined} structType
@@ -31082,7 +31105,7 @@
                      * @instance
                      */
                     Type.prototype.structType = null;
-
+    
                     /**
                      * Creates a new Type instance using the specified properties.
                      * @function create
@@ -31094,7 +31117,7 @@
                     Type.create = function create(properties) {
                         return new Type(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Type message. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
                      * @function encode
@@ -31115,7 +31138,7 @@
                             $root.google.spanner.v1.StructType.encode(message.structType, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Type message, length delimited. Does not implicitly {@link google.spanner.v1.Type.verify|verify} messages.
                      * @function encodeDelimited
@@ -31128,7 +31151,7 @@
                     Type.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Type message from the specified reader or buffer.
                      * @function decode
@@ -31163,7 +31186,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Type message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -31179,7 +31202,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Type message.
                      * @function verify
@@ -31220,7 +31243,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Type message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -31291,7 +31314,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Type message. Also converts values to other types if specified.
                      * @function toObject
@@ -31318,7 +31341,7 @@
                             object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this Type to JSON.
                      * @function toJSON
@@ -31329,19 +31352,19 @@
                     Type.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Type;
                 })();
-
+    
                 v1.StructType = (function() {
-
+    
                     /**
                      * Properties of a StructType.
                      * @memberof google.spanner.v1
                      * @interface IStructType
                      * @property {Array.<google.spanner.v1.StructType.IField>|null} [fields] StructType fields
                      */
-
+    
                     /**
                      * Constructs a new StructType.
                      * @memberof google.spanner.v1
@@ -31357,7 +31380,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * StructType fields.
                      * @member {Array.<google.spanner.v1.StructType.IField>} fields
@@ -31365,7 +31388,7 @@
                      * @instance
                      */
                     StructType.prototype.fields = $util.emptyArray;
-
+    
                     /**
                      * Creates a new StructType instance using the specified properties.
                      * @function create
@@ -31377,7 +31400,7 @@
                     StructType.create = function create(properties) {
                         return new StructType(properties);
                     };
-
+    
                     /**
                      * Encodes the specified StructType message. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
                      * @function encode
@@ -31395,7 +31418,7 @@
                                 $root.google.spanner.v1.StructType.Field.encode(message.fields[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified StructType message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.verify|verify} messages.
                      * @function encodeDelimited
@@ -31408,7 +31431,7 @@
                     StructType.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a StructType message from the specified reader or buffer.
                      * @function decode
@@ -31439,7 +31462,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a StructType message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -31455,7 +31478,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a StructType message.
                      * @function verify
@@ -31478,7 +31501,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a StructType message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -31503,7 +31526,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a StructType message. Also converts values to other types if specified.
                      * @function toObject
@@ -31526,7 +31549,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this StructType to JSON.
                      * @function toJSON
@@ -31537,9 +31560,9 @@
                     StructType.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     StructType.Field = (function() {
-
+    
                         /**
                          * Properties of a Field.
                          * @memberof google.spanner.v1.StructType
@@ -31547,7 +31570,7 @@
                          * @property {string|null} [name] Field name
                          * @property {google.spanner.v1.IType|null} [type] Field type
                          */
-
+    
                         /**
                          * Constructs a new Field.
                          * @memberof google.spanner.v1.StructType
@@ -31562,7 +31585,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Field name.
                          * @member {string} name
@@ -31570,7 +31593,7 @@
                          * @instance
                          */
                         Field.prototype.name = "";
-
+    
                         /**
                          * Field type.
                          * @member {google.spanner.v1.IType|null|undefined} type
@@ -31578,7 +31601,7 @@
                          * @instance
                          */
                         Field.prototype.type = null;
-
+    
                         /**
                          * Creates a new Field instance using the specified properties.
                          * @function create
@@ -31590,7 +31613,7 @@
                         Field.create = function create(properties) {
                             return new Field(properties);
                         };
-
+    
                         /**
                          * Encodes the specified Field message. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
                          * @function encode
@@ -31609,7 +31632,7 @@
                                 $root.google.spanner.v1.Type.encode(message.type, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified Field message, length delimited. Does not implicitly {@link google.spanner.v1.StructType.Field.verify|verify} messages.
                          * @function encodeDelimited
@@ -31622,7 +31645,7 @@
                         Field.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a Field message from the specified reader or buffer.
                          * @function decode
@@ -31654,7 +31677,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a Field message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -31670,7 +31693,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a Field message.
                          * @function verify
@@ -31692,7 +31715,7 @@
                             }
                             return null;
                         };
-
+    
                         /**
                          * Creates a Field message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -31714,7 +31737,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a Field message. Also converts values to other types if specified.
                          * @function toObject
@@ -31738,7 +31761,7 @@
                                 object.type = $root.google.spanner.v1.Type.toObject(message.type, options);
                             return object;
                         };
-
+    
                         /**
                          * Converts this Field to JSON.
                          * @function toJSON
@@ -31749,13 +31772,13 @@
                         Field.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return Field;
                     })();
-
+    
                     return StructType;
                 })();
-
+    
                 /**
                  * TypeCode enum.
                  * @name google.spanner.v1.TypeCode
@@ -31787,9 +31810,9 @@
                     values[valuesById[10] = "NUMERIC"] = 10;
                     return values;
                 })();
-
+    
                 v1.Spanner = (function() {
-
+    
                     /**
                      * Constructs a new Spanner service.
                      * @memberof google.spanner.v1
@@ -31803,9 +31826,9 @@
                     function Spanner(rpcImpl, requestDelimited, responseDelimited) {
                         $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
                     }
-
+    
                     (Spanner.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Spanner;
-
+    
                     /**
                      * Creates new Spanner service using the specified rpc implementation.
                      * @function create
@@ -31819,7 +31842,7 @@
                     Spanner.create = function create(rpcImpl, requestDelimited, responseDelimited) {
                         return new this(rpcImpl, requestDelimited, responseDelimited);
                     };
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#createSession}.
                      * @memberof google.spanner.v1.Spanner
@@ -31828,7 +31851,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.Session} [response] Session
                      */
-
+    
                     /**
                      * Calls CreateSession.
                      * @function createSession
@@ -31842,7 +31865,7 @@
                     Object.defineProperty(Spanner.prototype.createSession = function createSession(request, callback) {
                         return this.rpcCall(createSession, $root.google.spanner.v1.CreateSessionRequest, $root.google.spanner.v1.Session, request, callback);
                     }, "name", { value: "CreateSession" });
-
+    
                     /**
                      * Calls CreateSession.
                      * @function createSession
@@ -31852,7 +31875,7 @@
                      * @returns {Promise<google.spanner.v1.Session>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#batchCreateSessions}.
                      * @memberof google.spanner.v1.Spanner
@@ -31861,7 +31884,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.BatchCreateSessionsResponse} [response] BatchCreateSessionsResponse
                      */
-
+    
                     /**
                      * Calls BatchCreateSessions.
                      * @function batchCreateSessions
@@ -31875,7 +31898,7 @@
                     Object.defineProperty(Spanner.prototype.batchCreateSessions = function batchCreateSessions(request, callback) {
                         return this.rpcCall(batchCreateSessions, $root.google.spanner.v1.BatchCreateSessionsRequest, $root.google.spanner.v1.BatchCreateSessionsResponse, request, callback);
                     }, "name", { value: "BatchCreateSessions" });
-
+    
                     /**
                      * Calls BatchCreateSessions.
                      * @function batchCreateSessions
@@ -31885,7 +31908,7 @@
                      * @returns {Promise<google.spanner.v1.BatchCreateSessionsResponse>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#getSession}.
                      * @memberof google.spanner.v1.Spanner
@@ -31894,7 +31917,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.Session} [response] Session
                      */
-
+    
                     /**
                      * Calls GetSession.
                      * @function getSession
@@ -31908,7 +31931,7 @@
                     Object.defineProperty(Spanner.prototype.getSession = function getSession(request, callback) {
                         return this.rpcCall(getSession, $root.google.spanner.v1.GetSessionRequest, $root.google.spanner.v1.Session, request, callback);
                     }, "name", { value: "GetSession" });
-
+    
                     /**
                      * Calls GetSession.
                      * @function getSession
@@ -31918,7 +31941,7 @@
                      * @returns {Promise<google.spanner.v1.Session>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#listSessions}.
                      * @memberof google.spanner.v1.Spanner
@@ -31927,7 +31950,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.ListSessionsResponse} [response] ListSessionsResponse
                      */
-
+    
                     /**
                      * Calls ListSessions.
                      * @function listSessions
@@ -31941,7 +31964,7 @@
                     Object.defineProperty(Spanner.prototype.listSessions = function listSessions(request, callback) {
                         return this.rpcCall(listSessions, $root.google.spanner.v1.ListSessionsRequest, $root.google.spanner.v1.ListSessionsResponse, request, callback);
                     }, "name", { value: "ListSessions" });
-
+    
                     /**
                      * Calls ListSessions.
                      * @function listSessions
@@ -31951,7 +31974,7 @@
                      * @returns {Promise<google.spanner.v1.ListSessionsResponse>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#deleteSession}.
                      * @memberof google.spanner.v1.Spanner
@@ -31960,7 +31983,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.protobuf.Empty} [response] Empty
                      */
-
+    
                     /**
                      * Calls DeleteSession.
                      * @function deleteSession
@@ -31974,7 +31997,7 @@
                     Object.defineProperty(Spanner.prototype.deleteSession = function deleteSession(request, callback) {
                         return this.rpcCall(deleteSession, $root.google.spanner.v1.DeleteSessionRequest, $root.google.protobuf.Empty, request, callback);
                     }, "name", { value: "DeleteSession" });
-
+    
                     /**
                      * Calls DeleteSession.
                      * @function deleteSession
@@ -31984,7 +32007,7 @@
                      * @returns {Promise<google.protobuf.Empty>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#executeSql}.
                      * @memberof google.spanner.v1.Spanner
@@ -31993,7 +32016,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.ResultSet} [response] ResultSet
                      */
-
+    
                     /**
                      * Calls ExecuteSql.
                      * @function executeSql
@@ -32007,7 +32030,7 @@
                     Object.defineProperty(Spanner.prototype.executeSql = function executeSql(request, callback) {
                         return this.rpcCall(executeSql, $root.google.spanner.v1.ExecuteSqlRequest, $root.google.spanner.v1.ResultSet, request, callback);
                     }, "name", { value: "ExecuteSql" });
-
+    
                     /**
                      * Calls ExecuteSql.
                      * @function executeSql
@@ -32017,7 +32040,7 @@
                      * @returns {Promise<google.spanner.v1.ResultSet>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#executeStreamingSql}.
                      * @memberof google.spanner.v1.Spanner
@@ -32026,7 +32049,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.PartialResultSet} [response] PartialResultSet
                      */
-
+    
                     /**
                      * Calls ExecuteStreamingSql.
                      * @function executeStreamingSql
@@ -32040,7 +32063,7 @@
                     Object.defineProperty(Spanner.prototype.executeStreamingSql = function executeStreamingSql(request, callback) {
                         return this.rpcCall(executeStreamingSql, $root.google.spanner.v1.ExecuteSqlRequest, $root.google.spanner.v1.PartialResultSet, request, callback);
                     }, "name", { value: "ExecuteStreamingSql" });
-
+    
                     /**
                      * Calls ExecuteStreamingSql.
                      * @function executeStreamingSql
@@ -32050,7 +32073,7 @@
                      * @returns {Promise<google.spanner.v1.PartialResultSet>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#executeBatchDml}.
                      * @memberof google.spanner.v1.Spanner
@@ -32059,7 +32082,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.ExecuteBatchDmlResponse} [response] ExecuteBatchDmlResponse
                      */
-
+    
                     /**
                      * Calls ExecuteBatchDml.
                      * @function executeBatchDml
@@ -32073,7 +32096,7 @@
                     Object.defineProperty(Spanner.prototype.executeBatchDml = function executeBatchDml(request, callback) {
                         return this.rpcCall(executeBatchDml, $root.google.spanner.v1.ExecuteBatchDmlRequest, $root.google.spanner.v1.ExecuteBatchDmlResponse, request, callback);
                     }, "name", { value: "ExecuteBatchDml" });
-
+    
                     /**
                      * Calls ExecuteBatchDml.
                      * @function executeBatchDml
@@ -32083,7 +32106,7 @@
                      * @returns {Promise<google.spanner.v1.ExecuteBatchDmlResponse>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#read}.
                      * @memberof google.spanner.v1.Spanner
@@ -32092,7 +32115,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.ResultSet} [response] ResultSet
                      */
-
+    
                     /**
                      * Calls Read.
                      * @function read
@@ -32106,7 +32129,7 @@
                     Object.defineProperty(Spanner.prototype.read = function read(request, callback) {
                         return this.rpcCall(read, $root.google.spanner.v1.ReadRequest, $root.google.spanner.v1.ResultSet, request, callback);
                     }, "name", { value: "Read" });
-
+    
                     /**
                      * Calls Read.
                      * @function read
@@ -32116,7 +32139,7 @@
                      * @returns {Promise<google.spanner.v1.ResultSet>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#streamingRead}.
                      * @memberof google.spanner.v1.Spanner
@@ -32125,7 +32148,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.PartialResultSet} [response] PartialResultSet
                      */
-
+    
                     /**
                      * Calls StreamingRead.
                      * @function streamingRead
@@ -32139,7 +32162,7 @@
                     Object.defineProperty(Spanner.prototype.streamingRead = function streamingRead(request, callback) {
                         return this.rpcCall(streamingRead, $root.google.spanner.v1.ReadRequest, $root.google.spanner.v1.PartialResultSet, request, callback);
                     }, "name", { value: "StreamingRead" });
-
+    
                     /**
                      * Calls StreamingRead.
                      * @function streamingRead
@@ -32149,7 +32172,7 @@
                      * @returns {Promise<google.spanner.v1.PartialResultSet>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#beginTransaction}.
                      * @memberof google.spanner.v1.Spanner
@@ -32158,7 +32181,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.Transaction} [response] Transaction
                      */
-
+    
                     /**
                      * Calls BeginTransaction.
                      * @function beginTransaction
@@ -32172,7 +32195,7 @@
                     Object.defineProperty(Spanner.prototype.beginTransaction = function beginTransaction(request, callback) {
                         return this.rpcCall(beginTransaction, $root.google.spanner.v1.BeginTransactionRequest, $root.google.spanner.v1.Transaction, request, callback);
                     }, "name", { value: "BeginTransaction" });
-
+    
                     /**
                      * Calls BeginTransaction.
                      * @function beginTransaction
@@ -32182,7 +32205,7 @@
                      * @returns {Promise<google.spanner.v1.Transaction>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#commit}.
                      * @memberof google.spanner.v1.Spanner
@@ -32191,7 +32214,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.CommitResponse} [response] CommitResponse
                      */
-
+    
                     /**
                      * Calls Commit.
                      * @function commit
@@ -32205,7 +32228,7 @@
                     Object.defineProperty(Spanner.prototype.commit = function commit(request, callback) {
                         return this.rpcCall(commit, $root.google.spanner.v1.CommitRequest, $root.google.spanner.v1.CommitResponse, request, callback);
                     }, "name", { value: "Commit" });
-
+    
                     /**
                      * Calls Commit.
                      * @function commit
@@ -32215,7 +32238,7 @@
                      * @returns {Promise<google.spanner.v1.CommitResponse>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#rollback}.
                      * @memberof google.spanner.v1.Spanner
@@ -32224,7 +32247,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.protobuf.Empty} [response] Empty
                      */
-
+    
                     /**
                      * Calls Rollback.
                      * @function rollback
@@ -32238,7 +32261,7 @@
                     Object.defineProperty(Spanner.prototype.rollback = function rollback(request, callback) {
                         return this.rpcCall(rollback, $root.google.spanner.v1.RollbackRequest, $root.google.protobuf.Empty, request, callback);
                     }, "name", { value: "Rollback" });
-
+    
                     /**
                      * Calls Rollback.
                      * @function rollback
@@ -32248,7 +32271,7 @@
                      * @returns {Promise<google.protobuf.Empty>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#partitionQuery}.
                      * @memberof google.spanner.v1.Spanner
@@ -32257,7 +32280,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.PartitionResponse} [response] PartitionResponse
                      */
-
+    
                     /**
                      * Calls PartitionQuery.
                      * @function partitionQuery
@@ -32271,7 +32294,7 @@
                     Object.defineProperty(Spanner.prototype.partitionQuery = function partitionQuery(request, callback) {
                         return this.rpcCall(partitionQuery, $root.google.spanner.v1.PartitionQueryRequest, $root.google.spanner.v1.PartitionResponse, request, callback);
                     }, "name", { value: "PartitionQuery" });
-
+    
                     /**
                      * Calls PartitionQuery.
                      * @function partitionQuery
@@ -32281,7 +32304,7 @@
                      * @returns {Promise<google.spanner.v1.PartitionResponse>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.spanner.v1.Spanner#partitionRead}.
                      * @memberof google.spanner.v1.Spanner
@@ -32290,7 +32313,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.spanner.v1.PartitionResponse} [response] PartitionResponse
                      */
-
+    
                     /**
                      * Calls PartitionRead.
                      * @function partitionRead
@@ -32304,7 +32327,7 @@
                     Object.defineProperty(Spanner.prototype.partitionRead = function partitionRead(request, callback) {
                         return this.rpcCall(partitionRead, $root.google.spanner.v1.PartitionReadRequest, $root.google.spanner.v1.PartitionResponse, request, callback);
                     }, "name", { value: "PartitionRead" });
-
+    
                     /**
                      * Calls PartitionRead.
                      * @function partitionRead
@@ -32314,12 +32337,12 @@
                      * @returns {Promise<google.spanner.v1.PartitionResponse>} Promise
                      * @variation 2
                      */
-
+    
                     return Spanner;
                 })();
-
+    
                 v1.CreateSessionRequest = (function() {
-
+    
                     /**
                      * Properties of a CreateSessionRequest.
                      * @memberof google.spanner.v1
@@ -32327,7 +32350,7 @@
                      * @property {string|null} [database] CreateSessionRequest database
                      * @property {google.spanner.v1.ISession|null} [session] CreateSessionRequest session
                      */
-
+    
                     /**
                      * Constructs a new CreateSessionRequest.
                      * @memberof google.spanner.v1
@@ -32342,7 +32365,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * CreateSessionRequest database.
                      * @member {string} database
@@ -32350,7 +32373,7 @@
                      * @instance
                      */
                     CreateSessionRequest.prototype.database = "";
-
+    
                     /**
                      * CreateSessionRequest session.
                      * @member {google.spanner.v1.ISession|null|undefined} session
@@ -32358,7 +32381,7 @@
                      * @instance
                      */
                     CreateSessionRequest.prototype.session = null;
-
+    
                     /**
                      * Creates a new CreateSessionRequest instance using the specified properties.
                      * @function create
@@ -32370,7 +32393,7 @@
                     CreateSessionRequest.create = function create(properties) {
                         return new CreateSessionRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified CreateSessionRequest message. Does not implicitly {@link google.spanner.v1.CreateSessionRequest.verify|verify} messages.
                      * @function encode
@@ -32389,7 +32412,7 @@
                             $root.google.spanner.v1.Session.encode(message.session, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified CreateSessionRequest message, length delimited. Does not implicitly {@link google.spanner.v1.CreateSessionRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -32402,7 +32425,7 @@
                     CreateSessionRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a CreateSessionRequest message from the specified reader or buffer.
                      * @function decode
@@ -32434,7 +32457,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a CreateSessionRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -32450,7 +32473,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a CreateSessionRequest message.
                      * @function verify
@@ -32472,7 +32495,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a CreateSessionRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -32494,7 +32517,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a CreateSessionRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -32518,7 +32541,7 @@
                             object.session = $root.google.spanner.v1.Session.toObject(message.session, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this CreateSessionRequest to JSON.
                      * @function toJSON
@@ -32529,12 +32552,12 @@
                     CreateSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return CreateSessionRequest;
                 })();
-
+    
                 v1.BatchCreateSessionsRequest = (function() {
-
+    
                     /**
                      * Properties of a BatchCreateSessionsRequest.
                      * @memberof google.spanner.v1
@@ -32543,7 +32566,7 @@
                      * @property {google.spanner.v1.ISession|null} [sessionTemplate] BatchCreateSessionsRequest sessionTemplate
                      * @property {number|null} [sessionCount] BatchCreateSessionsRequest sessionCount
                      */
-
+    
                     /**
                      * Constructs a new BatchCreateSessionsRequest.
                      * @memberof google.spanner.v1
@@ -32558,7 +32581,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * BatchCreateSessionsRequest database.
                      * @member {string} database
@@ -32566,7 +32589,7 @@
                      * @instance
                      */
                     BatchCreateSessionsRequest.prototype.database = "";
-
+    
                     /**
                      * BatchCreateSessionsRequest sessionTemplate.
                      * @member {google.spanner.v1.ISession|null|undefined} sessionTemplate
@@ -32574,7 +32597,7 @@
                      * @instance
                      */
                     BatchCreateSessionsRequest.prototype.sessionTemplate = null;
-
+    
                     /**
                      * BatchCreateSessionsRequest sessionCount.
                      * @member {number} sessionCount
@@ -32582,7 +32605,7 @@
                      * @instance
                      */
                     BatchCreateSessionsRequest.prototype.sessionCount = 0;
-
+    
                     /**
                      * Creates a new BatchCreateSessionsRequest instance using the specified properties.
                      * @function create
@@ -32594,7 +32617,7 @@
                     BatchCreateSessionsRequest.create = function create(properties) {
                         return new BatchCreateSessionsRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified BatchCreateSessionsRequest message. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsRequest.verify|verify} messages.
                      * @function encode
@@ -32615,7 +32638,7 @@
                             writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sessionCount);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified BatchCreateSessionsRequest message, length delimited. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -32628,7 +32651,7 @@
                     BatchCreateSessionsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a BatchCreateSessionsRequest message from the specified reader or buffer.
                      * @function decode
@@ -32663,7 +32686,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a BatchCreateSessionsRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -32679,7 +32702,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a BatchCreateSessionsRequest message.
                      * @function verify
@@ -32704,7 +32727,7 @@
                                 return "sessionCount: integer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a BatchCreateSessionsRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -32728,7 +32751,7 @@
                             message.sessionCount = object.sessionCount | 0;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a BatchCreateSessionsRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -32755,7 +32778,7 @@
                             object.sessionCount = message.sessionCount;
                         return object;
                     };
-
+    
                     /**
                      * Converts this BatchCreateSessionsRequest to JSON.
                      * @function toJSON
@@ -32766,19 +32789,19 @@
                     BatchCreateSessionsRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return BatchCreateSessionsRequest;
                 })();
-
+    
                 v1.BatchCreateSessionsResponse = (function() {
-
+    
                     /**
                      * Properties of a BatchCreateSessionsResponse.
                      * @memberof google.spanner.v1
                      * @interface IBatchCreateSessionsResponse
                      * @property {Array.<google.spanner.v1.ISession>|null} [session] BatchCreateSessionsResponse session
                      */
-
+    
                     /**
                      * Constructs a new BatchCreateSessionsResponse.
                      * @memberof google.spanner.v1
@@ -32794,7 +32817,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * BatchCreateSessionsResponse session.
                      * @member {Array.<google.spanner.v1.ISession>} session
@@ -32802,7 +32825,7 @@
                      * @instance
                      */
                     BatchCreateSessionsResponse.prototype.session = $util.emptyArray;
-
+    
                     /**
                      * Creates a new BatchCreateSessionsResponse instance using the specified properties.
                      * @function create
@@ -32814,7 +32837,7 @@
                     BatchCreateSessionsResponse.create = function create(properties) {
                         return new BatchCreateSessionsResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified BatchCreateSessionsResponse message. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsResponse.verify|verify} messages.
                      * @function encode
@@ -32832,7 +32855,7 @@
                                 $root.google.spanner.v1.Session.encode(message.session[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified BatchCreateSessionsResponse message, length delimited. Does not implicitly {@link google.spanner.v1.BatchCreateSessionsResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -32845,7 +32868,7 @@
                     BatchCreateSessionsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a BatchCreateSessionsResponse message from the specified reader or buffer.
                      * @function decode
@@ -32876,7 +32899,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a BatchCreateSessionsResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -32892,7 +32915,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a BatchCreateSessionsResponse message.
                      * @function verify
@@ -32915,7 +32938,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a BatchCreateSessionsResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -32940,7 +32963,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a BatchCreateSessionsResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -32963,7 +32986,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this BatchCreateSessionsResponse to JSON.
                      * @function toJSON
@@ -32974,12 +32997,12 @@
                     BatchCreateSessionsResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return BatchCreateSessionsResponse;
                 })();
-
+    
                 v1.Session = (function() {
-
+    
                     /**
                      * Properties of a Session.
                      * @memberof google.spanner.v1
@@ -32989,7 +33012,7 @@
                      * @property {google.protobuf.ITimestamp|null} [createTime] Session createTime
                      * @property {google.protobuf.ITimestamp|null} [approximateLastUseTime] Session approximateLastUseTime
                      */
-
+    
                     /**
                      * Constructs a new Session.
                      * @memberof google.spanner.v1
@@ -33005,7 +33028,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Session name.
                      * @member {string} name
@@ -33013,7 +33036,7 @@
                      * @instance
                      */
                     Session.prototype.name = "";
-
+    
                     /**
                      * Session labels.
                      * @member {Object.<string,string>} labels
@@ -33021,7 +33044,7 @@
                      * @instance
                      */
                     Session.prototype.labels = $util.emptyObject;
-
+    
                     /**
                      * Session createTime.
                      * @member {google.protobuf.ITimestamp|null|undefined} createTime
@@ -33029,7 +33052,7 @@
                      * @instance
                      */
                     Session.prototype.createTime = null;
-
+    
                     /**
                      * Session approximateLastUseTime.
                      * @member {google.protobuf.ITimestamp|null|undefined} approximateLastUseTime
@@ -33037,7 +33060,7 @@
                      * @instance
                      */
                     Session.prototype.approximateLastUseTime = null;
-
+    
                     /**
                      * Creates a new Session instance using the specified properties.
                      * @function create
@@ -33049,7 +33072,7 @@
                     Session.create = function create(properties) {
                         return new Session(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Session message. Does not implicitly {@link google.spanner.v1.Session.verify|verify} messages.
                      * @function encode
@@ -33073,7 +33096,7 @@
                             $root.google.protobuf.Timestamp.encode(message.approximateLastUseTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Session message, length delimited. Does not implicitly {@link google.spanner.v1.Session.verify|verify} messages.
                      * @function encodeDelimited
@@ -33086,7 +33109,7 @@
                     Session.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Session message from the specified reader or buffer.
                      * @function decode
@@ -33143,7 +33166,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Session message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -33159,7 +33182,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Session message.
                      * @function verify
@@ -33194,7 +33217,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Session message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -33228,7 +33251,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Session message. Also converts values to other types if specified.
                      * @function toObject
@@ -33263,7 +33286,7 @@
                             object.approximateLastUseTime = $root.google.protobuf.Timestamp.toObject(message.approximateLastUseTime, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this Session to JSON.
                      * @function toJSON
@@ -33274,19 +33297,19 @@
                     Session.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Session;
                 })();
-
+    
                 v1.GetSessionRequest = (function() {
-
+    
                     /**
                      * Properties of a GetSessionRequest.
                      * @memberof google.spanner.v1
                      * @interface IGetSessionRequest
                      * @property {string|null} [name] GetSessionRequest name
                      */
-
+    
                     /**
                      * Constructs a new GetSessionRequest.
                      * @memberof google.spanner.v1
@@ -33301,7 +33324,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * GetSessionRequest name.
                      * @member {string} name
@@ -33309,7 +33332,7 @@
                      * @instance
                      */
                     GetSessionRequest.prototype.name = "";
-
+    
                     /**
                      * Creates a new GetSessionRequest instance using the specified properties.
                      * @function create
@@ -33321,7 +33344,7 @@
                     GetSessionRequest.create = function create(properties) {
                         return new GetSessionRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified GetSessionRequest message. Does not implicitly {@link google.spanner.v1.GetSessionRequest.verify|verify} messages.
                      * @function encode
@@ -33338,7 +33361,7 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified GetSessionRequest message, length delimited. Does not implicitly {@link google.spanner.v1.GetSessionRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -33351,7 +33374,7 @@
                     GetSessionRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a GetSessionRequest message from the specified reader or buffer.
                      * @function decode
@@ -33380,7 +33403,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a GetSessionRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -33396,7 +33419,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a GetSessionRequest message.
                      * @function verify
@@ -33413,7 +33436,7 @@
                                 return "name: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a GetSessionRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -33430,7 +33453,7 @@
                             message.name = String(object.name);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a GetSessionRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -33450,7 +33473,7 @@
                             object.name = message.name;
                         return object;
                     };
-
+    
                     /**
                      * Converts this GetSessionRequest to JSON.
                      * @function toJSON
@@ -33461,12 +33484,12 @@
                     GetSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return GetSessionRequest;
                 })();
-
+    
                 v1.ListSessionsRequest = (function() {
-
+    
                     /**
                      * Properties of a ListSessionsRequest.
                      * @memberof google.spanner.v1
@@ -33476,7 +33499,7 @@
                      * @property {string|null} [pageToken] ListSessionsRequest pageToken
                      * @property {string|null} [filter] ListSessionsRequest filter
                      */
-
+    
                     /**
                      * Constructs a new ListSessionsRequest.
                      * @memberof google.spanner.v1
@@ -33491,7 +33514,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ListSessionsRequest database.
                      * @member {string} database
@@ -33499,7 +33522,7 @@
                      * @instance
                      */
                     ListSessionsRequest.prototype.database = "";
-
+    
                     /**
                      * ListSessionsRequest pageSize.
                      * @member {number} pageSize
@@ -33507,7 +33530,7 @@
                      * @instance
                      */
                     ListSessionsRequest.prototype.pageSize = 0;
-
+    
                     /**
                      * ListSessionsRequest pageToken.
                      * @member {string} pageToken
@@ -33515,7 +33538,7 @@
                      * @instance
                      */
                     ListSessionsRequest.prototype.pageToken = "";
-
+    
                     /**
                      * ListSessionsRequest filter.
                      * @member {string} filter
@@ -33523,7 +33546,7 @@
                      * @instance
                      */
                     ListSessionsRequest.prototype.filter = "";
-
+    
                     /**
                      * Creates a new ListSessionsRequest instance using the specified properties.
                      * @function create
@@ -33535,7 +33558,7 @@
                     ListSessionsRequest.create = function create(properties) {
                         return new ListSessionsRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ListSessionsRequest message. Does not implicitly {@link google.spanner.v1.ListSessionsRequest.verify|verify} messages.
                      * @function encode
@@ -33558,7 +33581,7 @@
                             writer.uint32(/* id 4, wireType 2 =*/34).string(message.filter);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ListSessionsRequest message, length delimited. Does not implicitly {@link google.spanner.v1.ListSessionsRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -33571,7 +33594,7 @@
                     ListSessionsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ListSessionsRequest message from the specified reader or buffer.
                      * @function decode
@@ -33609,7 +33632,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ListSessionsRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -33625,7 +33648,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ListSessionsRequest message.
                      * @function verify
@@ -33651,7 +33674,7 @@
                                 return "filter: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a ListSessionsRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -33674,7 +33697,7 @@
                             message.filter = String(object.filter);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ListSessionsRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -33704,7 +33727,7 @@
                             object.filter = message.filter;
                         return object;
                     };
-
+    
                     /**
                      * Converts this ListSessionsRequest to JSON.
                      * @function toJSON
@@ -33715,12 +33738,12 @@
                     ListSessionsRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ListSessionsRequest;
                 })();
-
+    
                 v1.ListSessionsResponse = (function() {
-
+    
                     /**
                      * Properties of a ListSessionsResponse.
                      * @memberof google.spanner.v1
@@ -33728,7 +33751,7 @@
                      * @property {Array.<google.spanner.v1.ISession>|null} [sessions] ListSessionsResponse sessions
                      * @property {string|null} [nextPageToken] ListSessionsResponse nextPageToken
                      */
-
+    
                     /**
                      * Constructs a new ListSessionsResponse.
                      * @memberof google.spanner.v1
@@ -33744,7 +33767,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ListSessionsResponse sessions.
                      * @member {Array.<google.spanner.v1.ISession>} sessions
@@ -33752,7 +33775,7 @@
                      * @instance
                      */
                     ListSessionsResponse.prototype.sessions = $util.emptyArray;
-
+    
                     /**
                      * ListSessionsResponse nextPageToken.
                      * @member {string} nextPageToken
@@ -33760,7 +33783,7 @@
                      * @instance
                      */
                     ListSessionsResponse.prototype.nextPageToken = "";
-
+    
                     /**
                      * Creates a new ListSessionsResponse instance using the specified properties.
                      * @function create
@@ -33772,7 +33795,7 @@
                     ListSessionsResponse.create = function create(properties) {
                         return new ListSessionsResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ListSessionsResponse message. Does not implicitly {@link google.spanner.v1.ListSessionsResponse.verify|verify} messages.
                      * @function encode
@@ -33792,7 +33815,7 @@
                             writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ListSessionsResponse message, length delimited. Does not implicitly {@link google.spanner.v1.ListSessionsResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -33805,7 +33828,7 @@
                     ListSessionsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ListSessionsResponse message from the specified reader or buffer.
                      * @function decode
@@ -33839,7 +33862,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ListSessionsResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -33855,7 +33878,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ListSessionsResponse message.
                      * @function verify
@@ -33881,7 +33904,7 @@
                                 return "nextPageToken: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a ListSessionsResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -33908,7 +33931,7 @@
                             message.nextPageToken = String(object.nextPageToken);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ListSessionsResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -33935,7 +33958,7 @@
                             object.nextPageToken = message.nextPageToken;
                         return object;
                     };
-
+    
                     /**
                      * Converts this ListSessionsResponse to JSON.
                      * @function toJSON
@@ -33946,19 +33969,19 @@
                     ListSessionsResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ListSessionsResponse;
                 })();
-
+    
                 v1.DeleteSessionRequest = (function() {
-
+    
                     /**
                      * Properties of a DeleteSessionRequest.
                      * @memberof google.spanner.v1
                      * @interface IDeleteSessionRequest
                      * @property {string|null} [name] DeleteSessionRequest name
                      */
-
+    
                     /**
                      * Constructs a new DeleteSessionRequest.
                      * @memberof google.spanner.v1
@@ -33973,7 +33996,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * DeleteSessionRequest name.
                      * @member {string} name
@@ -33981,7 +34004,7 @@
                      * @instance
                      */
                     DeleteSessionRequest.prototype.name = "";
-
+    
                     /**
                      * Creates a new DeleteSessionRequest instance using the specified properties.
                      * @function create
@@ -33993,7 +34016,7 @@
                     DeleteSessionRequest.create = function create(properties) {
                         return new DeleteSessionRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified DeleteSessionRequest message. Does not implicitly {@link google.spanner.v1.DeleteSessionRequest.verify|verify} messages.
                      * @function encode
@@ -34010,7 +34033,7 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified DeleteSessionRequest message, length delimited. Does not implicitly {@link google.spanner.v1.DeleteSessionRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -34023,7 +34046,7 @@
                     DeleteSessionRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a DeleteSessionRequest message from the specified reader or buffer.
                      * @function decode
@@ -34052,7 +34075,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a DeleteSessionRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -34068,7 +34091,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a DeleteSessionRequest message.
                      * @function verify
@@ -34085,7 +34108,7 @@
                                 return "name: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a DeleteSessionRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -34102,7 +34125,7 @@
                             message.name = String(object.name);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a DeleteSessionRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -34122,7 +34145,7 @@
                             object.name = message.name;
                         return object;
                     };
-
+    
                     /**
                      * Converts this DeleteSessionRequest to JSON.
                      * @function toJSON
@@ -34133,240 +34156,12 @@
                     DeleteSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return DeleteSessionRequest;
                 })();
-
-                v1.RequestOptions = (function() {
-
-                    /**
-                     * Properties of a RequestOptions.
-                     * @memberof google.spanner.v1
-                     * @interface IRequestOptions
-                     * @property {google.spanner.v1.RequestOptions.Priority|null} [priority] RequestOptions priority
-                     */
-
-                    /**
-                     * Constructs a new RequestOptions.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a RequestOptions.
-                     * @implements IRequestOptions
-                     * @constructor
-                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
-                     */
-                    function RequestOptions(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-
-                    /**
-                     * RequestOptions priority.
-                     * @member {google.spanner.v1.RequestOptions.Priority} priority
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @instance
-                     */
-                    RequestOptions.prototype.priority = 0;
-
-                    /**
-                     * Creates a new RequestOptions instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
-                     * @returns {google.spanner.v1.RequestOptions} RequestOptions instance
-                     */
-                    RequestOptions.create = function create(properties) {
-                        return new RequestOptions(properties);
-                    };
-
-                    /**
-                     * Encodes the specified RequestOptions message. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    RequestOptions.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.priority != null && Object.hasOwnProperty.call(message, "priority"))
-                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.priority);
-                        return writer;
-                    };
-
-                    /**
-                     * Encodes the specified RequestOptions message, length delimited. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    RequestOptions.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-
-                    /**
-                     * Decodes a RequestOptions message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    RequestOptions.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.RequestOptions();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.priority = reader.int32();
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-
-                    /**
-                     * Decodes a RequestOptions message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    RequestOptions.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-
-                    /**
-                     * Verifies a RequestOptions message.
-                     * @function verify
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    RequestOptions.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.priority != null && message.hasOwnProperty("priority"))
-                            switch (message.priority) {
-                            default:
-                                return "priority: enum value expected";
-                            case 0:
-                            case 1:
-                            case 2:
-                            case 3:
-                                break;
-                            }
-                        return null;
-                    };
-
-                    /**
-                     * Creates a RequestOptions message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
-                     */
-                    RequestOptions.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.RequestOptions)
-                            return object;
-                        var message = new $root.google.spanner.v1.RequestOptions();
-                        switch (object.priority) {
-                        case "PRIORITY_UNSPECIFIED":
-                        case 0:
-                            message.priority = 0;
-                            break;
-                        case "PRIORITY_LOW":
-                        case 1:
-                            message.priority = 1;
-                            break;
-                        case "PRIORITY_MEDIUM":
-                        case 2:
-                            message.priority = 2;
-                            break;
-                        case "PRIORITY_HIGH":
-                        case 3:
-                            message.priority = 3;
-                            break;
-                        }
-                        return message;
-                    };
-
-                    /**
-                     * Creates a plain object from a RequestOptions message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @static
-                     * @param {google.spanner.v1.RequestOptions} message RequestOptions
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    RequestOptions.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults)
-                            object.priority = options.enums === String ? "PRIORITY_UNSPECIFIED" : 0;
-                        if (message.priority != null && message.hasOwnProperty("priority"))
-                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
-                        return object;
-                    };
-
-                    /**
-                     * Converts this RequestOptions to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.RequestOptions
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    RequestOptions.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-
-                    /**
-                     * Priority enum.
-                     * @name google.spanner.v1.RequestOptions.Priority
-                     * @enum {number}
-                     * @property {number} PRIORITY_UNSPECIFIED=0 PRIORITY_UNSPECIFIED value
-                     * @property {number} PRIORITY_LOW=1 PRIORITY_LOW value
-                     * @property {number} PRIORITY_MEDIUM=2 PRIORITY_MEDIUM value
-                     * @property {number} PRIORITY_HIGH=3 PRIORITY_HIGH value
-                     */
-                    RequestOptions.Priority = (function() {
-                        var valuesById = {}, values = Object.create(valuesById);
-                        values[valuesById[0] = "PRIORITY_UNSPECIFIED"] = 0;
-                        values[valuesById[1] = "PRIORITY_LOW"] = 1;
-                        values[valuesById[2] = "PRIORITY_MEDIUM"] = 2;
-                        values[valuesById[3] = "PRIORITY_HIGH"] = 3;
-                        return values;
-                    })();
-
-                    return RequestOptions;
-                })();
-
+    
                 v1.ExecuteSqlRequest = (function() {
-
+    
                     /**
                      * Properties of an ExecuteSqlRequest.
                      * @memberof google.spanner.v1
@@ -34381,9 +34176,8 @@
                      * @property {Uint8Array|null} [partitionToken] ExecuteSqlRequest partitionToken
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
                      * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
-                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteSqlRequest requestOptions
                      */
-
+    
                     /**
                      * Constructs a new ExecuteSqlRequest.
                      * @memberof google.spanner.v1
@@ -34399,7 +34193,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ExecuteSqlRequest session.
                      * @member {string} session
@@ -34407,7 +34201,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.session = "";
-
+    
                     /**
                      * ExecuteSqlRequest transaction.
                      * @member {google.spanner.v1.ITransactionSelector|null|undefined} transaction
@@ -34415,7 +34209,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.transaction = null;
-
+    
                     /**
                      * ExecuteSqlRequest sql.
                      * @member {string} sql
@@ -34423,7 +34217,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.sql = "";
-
+    
                     /**
                      * ExecuteSqlRequest params.
                      * @member {google.protobuf.IStruct|null|undefined} params
@@ -34431,7 +34225,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.params = null;
-
+    
                     /**
                      * ExecuteSqlRequest paramTypes.
                      * @member {Object.<string,google.spanner.v1.IType>} paramTypes
@@ -34439,7 +34233,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.paramTypes = $util.emptyObject;
-
+    
                     /**
                      * ExecuteSqlRequest resumeToken.
                      * @member {Uint8Array} resumeToken
@@ -34447,7 +34241,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.resumeToken = $util.newBuffer([]);
-
+    
                     /**
                      * ExecuteSqlRequest queryMode.
                      * @member {google.spanner.v1.ExecuteSqlRequest.QueryMode} queryMode
@@ -34455,7 +34249,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.queryMode = 0;
-
+    
                     /**
                      * ExecuteSqlRequest partitionToken.
                      * @member {Uint8Array} partitionToken
@@ -34463,7 +34257,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.partitionToken = $util.newBuffer([]);
-
+    
                     /**
                      * ExecuteSqlRequest seqno.
                      * @member {number|Long} seqno
@@ -34471,7 +34265,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.seqno = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     /**
                      * ExecuteSqlRequest queryOptions.
                      * @member {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null|undefined} queryOptions
@@ -34479,15 +34273,7 @@
                      * @instance
                      */
                     ExecuteSqlRequest.prototype.queryOptions = null;
-
-                    /**
-                     * ExecuteSqlRequest requestOptions.
-                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
-                     * @memberof google.spanner.v1.ExecuteSqlRequest
-                     * @instance
-                     */
-                    ExecuteSqlRequest.prototype.requestOptions = null;
-
+    
                     /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
@@ -34499,7 +34285,7 @@
                     ExecuteSqlRequest.create = function create(properties) {
                         return new ExecuteSqlRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteSqlRequest message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.verify|verify} messages.
                      * @function encode
@@ -34535,11 +34321,9 @@
                             writer.uint32(/* id 9, wireType 0 =*/72).int64(message.seqno);
                         if (message.queryOptions != null && Object.hasOwnProperty.call(message, "queryOptions"))
                             $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
-                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
-                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteSqlRequest message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -34552,7 +34336,7 @@
                     ExecuteSqlRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an ExecuteSqlRequest message from the specified reader or buffer.
                      * @function decode
@@ -34620,9 +34404,6 @@
                             case 10:
                                 message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
                                 break;
-                            case 11:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -34630,7 +34411,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an ExecuteSqlRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -34646,7 +34427,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an ExecuteSqlRequest message.
                      * @function verify
@@ -34707,14 +34488,9 @@
                             if (error)
                                 return "queryOptions." + error;
                         }
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
-                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
-                            if (error)
-                                return "requestOptions." + error;
-                        }
                         return null;
                     };
-
+    
                     /**
                      * Creates an ExecuteSqlRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -34789,14 +34565,9 @@
                                 throw TypeError(".google.spanner.v1.ExecuteSqlRequest.queryOptions: object expected");
                             message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.fromObject(object.queryOptions);
                         }
-                        if (object.requestOptions != null) {
-                            if (typeof object.requestOptions !== "object")
-                                throw TypeError(".google.spanner.v1.ExecuteSqlRequest.requestOptions: object expected");
-                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
-                        }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an ExecuteSqlRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -34838,7 +34609,6 @@
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
                             object.queryOptions = null;
-                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -34867,11 +34637,9 @@
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
                         if (message.queryOptions != null && message.hasOwnProperty("queryOptions"))
                             object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
-                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ExecuteSqlRequest to JSON.
                      * @function toJSON
@@ -34882,9 +34650,9 @@
                     ExecuteSqlRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     ExecuteSqlRequest.QueryOptions = (function() {
-
+    
                         /**
                          * Properties of a QueryOptions.
                          * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -34892,7 +34660,7 @@
                          * @property {string|null} [optimizerVersion] QueryOptions optimizerVersion
                          * @property {string|null} [optimizerStatisticsPackage] QueryOptions optimizerStatisticsPackage
                          */
-
+    
                         /**
                          * Constructs a new QueryOptions.
                          * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -34907,7 +34675,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * QueryOptions optimizerVersion.
                          * @member {string} optimizerVersion
@@ -34915,7 +34683,7 @@
                          * @instance
                          */
                         QueryOptions.prototype.optimizerVersion = "";
-
+    
                         /**
                          * QueryOptions optimizerStatisticsPackage.
                          * @member {string} optimizerStatisticsPackage
@@ -34923,7 +34691,7 @@
                          * @instance
                          */
                         QueryOptions.prototype.optimizerStatisticsPackage = "";
-
+    
                         /**
                          * Creates a new QueryOptions instance using the specified properties.
                          * @function create
@@ -34935,7 +34703,7 @@
                         QueryOptions.create = function create(properties) {
                             return new QueryOptions(properties);
                         };
-
+    
                         /**
                          * Encodes the specified QueryOptions message. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
                          * @function encode
@@ -34954,7 +34722,7 @@
                                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.optimizerStatisticsPackage);
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified QueryOptions message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteSqlRequest.QueryOptions.verify|verify} messages.
                          * @function encodeDelimited
@@ -34967,7 +34735,7 @@
                         QueryOptions.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a QueryOptions message from the specified reader or buffer.
                          * @function decode
@@ -34999,7 +34767,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a QueryOptions message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -35015,7 +34783,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a QueryOptions message.
                          * @function verify
@@ -35035,7 +34803,7 @@
                                     return "optimizerStatisticsPackage: string expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a QueryOptions message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -35054,7 +34822,7 @@
                                 message.optimizerStatisticsPackage = String(object.optimizerStatisticsPackage);
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a QueryOptions message. Also converts values to other types if specified.
                          * @function toObject
@@ -35078,7 +34846,7 @@
                                 object.optimizerStatisticsPackage = message.optimizerStatisticsPackage;
                             return object;
                         };
-
+    
                         /**
                          * Converts this QueryOptions to JSON.
                          * @function toJSON
@@ -35089,10 +34857,10 @@
                         QueryOptions.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return QueryOptions;
                     })();
-
+    
                     /**
                      * QueryMode enum.
                      * @name google.spanner.v1.ExecuteSqlRequest.QueryMode
@@ -35108,12 +34876,12 @@
                         values[valuesById[2] = "PROFILE"] = 2;
                         return values;
                     })();
-
+    
                     return ExecuteSqlRequest;
                 })();
-
+    
                 v1.ExecuteBatchDmlRequest = (function() {
-
+    
                     /**
                      * Properties of an ExecuteBatchDmlRequest.
                      * @memberof google.spanner.v1
@@ -35122,9 +34890,8 @@
                      * @property {google.spanner.v1.ITransactionSelector|null} [transaction] ExecuteBatchDmlRequest transaction
                      * @property {Array.<google.spanner.v1.ExecuteBatchDmlRequest.IStatement>|null} [statements] ExecuteBatchDmlRequest statements
                      * @property {number|Long|null} [seqno] ExecuteBatchDmlRequest seqno
-                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteBatchDmlRequest requestOptions
                      */
-
+    
                     /**
                      * Constructs a new ExecuteBatchDmlRequest.
                      * @memberof google.spanner.v1
@@ -35140,7 +34907,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ExecuteBatchDmlRequest session.
                      * @member {string} session
@@ -35148,7 +34915,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlRequest.prototype.session = "";
-
+    
                     /**
                      * ExecuteBatchDmlRequest transaction.
                      * @member {google.spanner.v1.ITransactionSelector|null|undefined} transaction
@@ -35156,7 +34923,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlRequest.prototype.transaction = null;
-
+    
                     /**
                      * ExecuteBatchDmlRequest statements.
                      * @member {Array.<google.spanner.v1.ExecuteBatchDmlRequest.IStatement>} statements
@@ -35164,7 +34931,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlRequest.prototype.statements = $util.emptyArray;
-
+    
                     /**
                      * ExecuteBatchDmlRequest seqno.
                      * @member {number|Long} seqno
@@ -35172,15 +34939,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlRequest.prototype.seqno = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
-                    /**
-                     * ExecuteBatchDmlRequest requestOptions.
-                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
-                     * @memberof google.spanner.v1.ExecuteBatchDmlRequest
-                     * @instance
-                     */
-                    ExecuteBatchDmlRequest.prototype.requestOptions = null;
-
+    
                     /**
                      * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
                      * @function create
@@ -35192,7 +34951,7 @@
                     ExecuteBatchDmlRequest.create = function create(properties) {
                         return new ExecuteBatchDmlRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteBatchDmlRequest message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.verify|verify} messages.
                      * @function encode
@@ -35214,11 +34973,9 @@
                                 $root.google.spanner.v1.ExecuteBatchDmlRequest.Statement.encode(message.statements[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.seqno != null && Object.hasOwnProperty.call(message, "seqno"))
                             writer.uint32(/* id 4, wireType 0 =*/32).int64(message.seqno);
-                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
-                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteBatchDmlRequest message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -35231,7 +34988,7 @@
                     ExecuteBatchDmlRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an ExecuteBatchDmlRequest message from the specified reader or buffer.
                      * @function decode
@@ -35264,9 +35021,6 @@
                             case 4:
                                 message.seqno = reader.int64();
                                 break;
-                            case 5:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35274,7 +35028,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an ExecuteBatchDmlRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -35290,7 +35044,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an ExecuteBatchDmlRequest message.
                      * @function verify
@@ -35322,14 +35076,9 @@
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
                             if (!$util.isInteger(message.seqno) && !(message.seqno && $util.isInteger(message.seqno.low) && $util.isInteger(message.seqno.high)))
                                 return "seqno: integer|Long expected";
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
-                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
-                            if (error)
-                                return "requestOptions." + error;
-                        }
                         return null;
                     };
-
+    
                     /**
                      * Creates an ExecuteBatchDmlRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -35368,14 +35117,9 @@
                                 message.seqno = object.seqno;
                             else if (typeof object.seqno === "object")
                                 message.seqno = new $util.LongBits(object.seqno.low >>> 0, object.seqno.high >>> 0).toNumber();
-                        if (object.requestOptions != null) {
-                            if (typeof object.requestOptions !== "object")
-                                throw TypeError(".google.spanner.v1.ExecuteBatchDmlRequest.requestOptions: object expected");
-                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
-                        }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an ExecuteBatchDmlRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -35399,7 +35143,6 @@
                                 object.seqno = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
-                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -35415,11 +35158,9 @@
                                 object.seqno = options.longs === String ? String(message.seqno) : message.seqno;
                             else
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
-                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ExecuteBatchDmlRequest to JSON.
                      * @function toJSON
@@ -35430,9 +35171,9 @@
                     ExecuteBatchDmlRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     ExecuteBatchDmlRequest.Statement = (function() {
-
+    
                         /**
                          * Properties of a Statement.
                          * @memberof google.spanner.v1.ExecuteBatchDmlRequest
@@ -35441,7 +35182,7 @@
                          * @property {google.protobuf.IStruct|null} [params] Statement params
                          * @property {Object.<string,google.spanner.v1.IType>|null} [paramTypes] Statement paramTypes
                          */
-
+    
                         /**
                          * Constructs a new Statement.
                          * @memberof google.spanner.v1.ExecuteBatchDmlRequest
@@ -35457,7 +35198,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * Statement sql.
                          * @member {string} sql
@@ -35465,7 +35206,7 @@
                          * @instance
                          */
                         Statement.prototype.sql = "";
-
+    
                         /**
                          * Statement params.
                          * @member {google.protobuf.IStruct|null|undefined} params
@@ -35473,7 +35214,7 @@
                          * @instance
                          */
                         Statement.prototype.params = null;
-
+    
                         /**
                          * Statement paramTypes.
                          * @member {Object.<string,google.spanner.v1.IType>} paramTypes
@@ -35481,7 +35222,7 @@
                          * @instance
                          */
                         Statement.prototype.paramTypes = $util.emptyObject;
-
+    
                         /**
                          * Creates a new Statement instance using the specified properties.
                          * @function create
@@ -35493,7 +35234,7 @@
                         Statement.create = function create(properties) {
                             return new Statement(properties);
                         };
-
+    
                         /**
                          * Encodes the specified Statement message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.Statement.verify|verify} messages.
                          * @function encode
@@ -35517,7 +35258,7 @@
                                 }
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified Statement message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlRequest.Statement.verify|verify} messages.
                          * @function encodeDelimited
@@ -35530,7 +35271,7 @@
                         Statement.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a Statement message from the specified reader or buffer.
                          * @function decode
@@ -35584,7 +35325,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a Statement message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -35600,7 +35341,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a Statement message.
                          * @function verify
@@ -35632,7 +35373,7 @@
                             }
                             return null;
                         };
-
+    
                         /**
                          * Creates a Statement message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -35664,7 +35405,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a Statement message. Also converts values to other types if specified.
                          * @function toObject
@@ -35696,7 +35437,7 @@
                             }
                             return object;
                         };
-
+    
                         /**
                          * Converts this Statement to JSON.
                          * @function toJSON
@@ -35707,15 +35448,15 @@
                         Statement.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return Statement;
                     })();
-
+    
                     return ExecuteBatchDmlRequest;
                 })();
-
+    
                 v1.ExecuteBatchDmlResponse = (function() {
-
+    
                     /**
                      * Properties of an ExecuteBatchDmlResponse.
                      * @memberof google.spanner.v1
@@ -35723,7 +35464,7 @@
                      * @property {Array.<google.spanner.v1.IResultSet>|null} [resultSets] ExecuteBatchDmlResponse resultSets
                      * @property {google.rpc.IStatus|null} [status] ExecuteBatchDmlResponse status
                      */
-
+    
                     /**
                      * Constructs a new ExecuteBatchDmlResponse.
                      * @memberof google.spanner.v1
@@ -35739,7 +35480,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ExecuteBatchDmlResponse resultSets.
                      * @member {Array.<google.spanner.v1.IResultSet>} resultSets
@@ -35747,7 +35488,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlResponse.prototype.resultSets = $util.emptyArray;
-
+    
                     /**
                      * ExecuteBatchDmlResponse status.
                      * @member {google.rpc.IStatus|null|undefined} status
@@ -35755,7 +35496,7 @@
                      * @instance
                      */
                     ExecuteBatchDmlResponse.prototype.status = null;
-
+    
                     /**
                      * Creates a new ExecuteBatchDmlResponse instance using the specified properties.
                      * @function create
@@ -35767,7 +35508,7 @@
                     ExecuteBatchDmlResponse.create = function create(properties) {
                         return new ExecuteBatchDmlResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteBatchDmlResponse message. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlResponse.verify|verify} messages.
                      * @function encode
@@ -35787,7 +35528,7 @@
                             $root.google.rpc.Status.encode(message.status, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ExecuteBatchDmlResponse message, length delimited. Does not implicitly {@link google.spanner.v1.ExecuteBatchDmlResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -35800,7 +35541,7 @@
                     ExecuteBatchDmlResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an ExecuteBatchDmlResponse message from the specified reader or buffer.
                      * @function decode
@@ -35834,7 +35575,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an ExecuteBatchDmlResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -35850,7 +35591,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an ExecuteBatchDmlResponse message.
                      * @function verify
@@ -35878,7 +35619,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates an ExecuteBatchDmlResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -35908,7 +35649,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an ExecuteBatchDmlResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -35935,7 +35676,7 @@
                             object.status = $root.google.rpc.Status.toObject(message.status, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ExecuteBatchDmlResponse to JSON.
                      * @function toJSON
@@ -35946,12 +35687,12 @@
                     ExecuteBatchDmlResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ExecuteBatchDmlResponse;
                 })();
-
+    
                 v1.PartitionOptions = (function() {
-
+    
                     /**
                      * Properties of a PartitionOptions.
                      * @memberof google.spanner.v1
@@ -35959,7 +35700,7 @@
                      * @property {number|Long|null} [partitionSizeBytes] PartitionOptions partitionSizeBytes
                      * @property {number|Long|null} [maxPartitions] PartitionOptions maxPartitions
                      */
-
+    
                     /**
                      * Constructs a new PartitionOptions.
                      * @memberof google.spanner.v1
@@ -35974,7 +35715,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PartitionOptions partitionSizeBytes.
                      * @member {number|Long} partitionSizeBytes
@@ -35982,7 +35723,7 @@
                      * @instance
                      */
                     PartitionOptions.prototype.partitionSizeBytes = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     /**
                      * PartitionOptions maxPartitions.
                      * @member {number|Long} maxPartitions
@@ -35990,7 +35731,7 @@
                      * @instance
                      */
                     PartitionOptions.prototype.maxPartitions = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     /**
                      * Creates a new PartitionOptions instance using the specified properties.
                      * @function create
@@ -36002,7 +35743,7 @@
                     PartitionOptions.create = function create(properties) {
                         return new PartitionOptions(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PartitionOptions message. Does not implicitly {@link google.spanner.v1.PartitionOptions.verify|verify} messages.
                      * @function encode
@@ -36021,7 +35762,7 @@
                             writer.uint32(/* id 2, wireType 0 =*/16).int64(message.maxPartitions);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PartitionOptions message, length delimited. Does not implicitly {@link google.spanner.v1.PartitionOptions.verify|verify} messages.
                      * @function encodeDelimited
@@ -36034,7 +35775,7 @@
                     PartitionOptions.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PartitionOptions message from the specified reader or buffer.
                      * @function decode
@@ -36066,7 +35807,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PartitionOptions message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -36082,7 +35823,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PartitionOptions message.
                      * @function verify
@@ -36102,7 +35843,7 @@
                                 return "maxPartitions: integer|Long expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a PartitionOptions message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -36135,7 +35876,7 @@
                                 message.maxPartitions = new $util.LongBits(object.maxPartitions.low >>> 0, object.maxPartitions.high >>> 0).toNumber();
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PartitionOptions message. Also converts values to other types if specified.
                      * @function toObject
@@ -36173,7 +35914,7 @@
                                 object.maxPartitions = options.longs === String ? $util.Long.prototype.toString.call(message.maxPartitions) : options.longs === Number ? new $util.LongBits(message.maxPartitions.low >>> 0, message.maxPartitions.high >>> 0).toNumber() : message.maxPartitions;
                         return object;
                     };
-
+    
                     /**
                      * Converts this PartitionOptions to JSON.
                      * @function toJSON
@@ -36184,12 +35925,12 @@
                     PartitionOptions.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PartitionOptions;
                 })();
-
+    
                 v1.PartitionQueryRequest = (function() {
-
+    
                     /**
                      * Properties of a PartitionQueryRequest.
                      * @memberof google.spanner.v1
@@ -36201,7 +35942,7 @@
                      * @property {Object.<string,google.spanner.v1.IType>|null} [paramTypes] PartitionQueryRequest paramTypes
                      * @property {google.spanner.v1.IPartitionOptions|null} [partitionOptions] PartitionQueryRequest partitionOptions
                      */
-
+    
                     /**
                      * Constructs a new PartitionQueryRequest.
                      * @memberof google.spanner.v1
@@ -36217,7 +35958,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PartitionQueryRequest session.
                      * @member {string} session
@@ -36225,7 +35966,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.session = "";
-
+    
                     /**
                      * PartitionQueryRequest transaction.
                      * @member {google.spanner.v1.ITransactionSelector|null|undefined} transaction
@@ -36233,7 +35974,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.transaction = null;
-
+    
                     /**
                      * PartitionQueryRequest sql.
                      * @member {string} sql
@@ -36241,7 +35982,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.sql = "";
-
+    
                     /**
                      * PartitionQueryRequest params.
                      * @member {google.protobuf.IStruct|null|undefined} params
@@ -36249,7 +35990,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.params = null;
-
+    
                     /**
                      * PartitionQueryRequest paramTypes.
                      * @member {Object.<string,google.spanner.v1.IType>} paramTypes
@@ -36257,7 +35998,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.paramTypes = $util.emptyObject;
-
+    
                     /**
                      * PartitionQueryRequest partitionOptions.
                      * @member {google.spanner.v1.IPartitionOptions|null|undefined} partitionOptions
@@ -36265,7 +36006,7 @@
                      * @instance
                      */
                     PartitionQueryRequest.prototype.partitionOptions = null;
-
+    
                     /**
                      * Creates a new PartitionQueryRequest instance using the specified properties.
                      * @function create
@@ -36277,7 +36018,7 @@
                     PartitionQueryRequest.create = function create(properties) {
                         return new PartitionQueryRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PartitionQueryRequest message. Does not implicitly {@link google.spanner.v1.PartitionQueryRequest.verify|verify} messages.
                      * @function encode
@@ -36307,7 +36048,7 @@
                             $root.google.spanner.v1.PartitionOptions.encode(message.partitionOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PartitionQueryRequest message, length delimited. Does not implicitly {@link google.spanner.v1.PartitionQueryRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -36320,7 +36061,7 @@
                     PartitionQueryRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PartitionQueryRequest message from the specified reader or buffer.
                      * @function decode
@@ -36383,7 +36124,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PartitionQueryRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -36399,7 +36140,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PartitionQueryRequest message.
                      * @function verify
@@ -36444,7 +36185,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PartitionQueryRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -36488,7 +36229,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PartitionQueryRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -36529,7 +36270,7 @@
                             object.partitionOptions = $root.google.spanner.v1.PartitionOptions.toObject(message.partitionOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this PartitionQueryRequest to JSON.
                      * @function toJSON
@@ -36540,12 +36281,12 @@
                     PartitionQueryRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PartitionQueryRequest;
                 })();
-
+    
                 v1.PartitionReadRequest = (function() {
-
+    
                     /**
                      * Properties of a PartitionReadRequest.
                      * @memberof google.spanner.v1
@@ -36558,7 +36299,7 @@
                      * @property {google.spanner.v1.IKeySet|null} [keySet] PartitionReadRequest keySet
                      * @property {google.spanner.v1.IPartitionOptions|null} [partitionOptions] PartitionReadRequest partitionOptions
                      */
-
+    
                     /**
                      * Constructs a new PartitionReadRequest.
                      * @memberof google.spanner.v1
@@ -36574,7 +36315,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PartitionReadRequest session.
                      * @member {string} session
@@ -36582,7 +36323,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.session = "";
-
+    
                     /**
                      * PartitionReadRequest transaction.
                      * @member {google.spanner.v1.ITransactionSelector|null|undefined} transaction
@@ -36590,7 +36331,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.transaction = null;
-
+    
                     /**
                      * PartitionReadRequest table.
                      * @member {string} table
@@ -36598,7 +36339,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.table = "";
-
+    
                     /**
                      * PartitionReadRequest index.
                      * @member {string} index
@@ -36606,7 +36347,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.index = "";
-
+    
                     /**
                      * PartitionReadRequest columns.
                      * @member {Array.<string>} columns
@@ -36614,7 +36355,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.columns = $util.emptyArray;
-
+    
                     /**
                      * PartitionReadRequest keySet.
                      * @member {google.spanner.v1.IKeySet|null|undefined} keySet
@@ -36622,7 +36363,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.keySet = null;
-
+    
                     /**
                      * PartitionReadRequest partitionOptions.
                      * @member {google.spanner.v1.IPartitionOptions|null|undefined} partitionOptions
@@ -36630,7 +36371,7 @@
                      * @instance
                      */
                     PartitionReadRequest.prototype.partitionOptions = null;
-
+    
                     /**
                      * Creates a new PartitionReadRequest instance using the specified properties.
                      * @function create
@@ -36642,7 +36383,7 @@
                     PartitionReadRequest.create = function create(properties) {
                         return new PartitionReadRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PartitionReadRequest message. Does not implicitly {@link google.spanner.v1.PartitionReadRequest.verify|verify} messages.
                      * @function encode
@@ -36672,7 +36413,7 @@
                             $root.google.spanner.v1.PartitionOptions.encode(message.partitionOptions, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PartitionReadRequest message, length delimited. Does not implicitly {@link google.spanner.v1.PartitionReadRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -36685,7 +36426,7 @@
                     PartitionReadRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PartitionReadRequest message from the specified reader or buffer.
                      * @function decode
@@ -36734,7 +36475,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PartitionReadRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -36750,7 +36491,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PartitionReadRequest message.
                      * @function verify
@@ -36795,7 +36536,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PartitionReadRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -36838,7 +36579,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PartitionReadRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -36881,7 +36622,7 @@
                             object.partitionOptions = $root.google.spanner.v1.PartitionOptions.toObject(message.partitionOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this PartitionReadRequest to JSON.
                      * @function toJSON
@@ -36892,19 +36633,19 @@
                     PartitionReadRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PartitionReadRequest;
                 })();
-
+    
                 v1.Partition = (function() {
-
+    
                     /**
                      * Properties of a Partition.
                      * @memberof google.spanner.v1
                      * @interface IPartition
                      * @property {Uint8Array|null} [partitionToken] Partition partitionToken
                      */
-
+    
                     /**
                      * Constructs a new Partition.
                      * @memberof google.spanner.v1
@@ -36919,7 +36660,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Partition partitionToken.
                      * @member {Uint8Array} partitionToken
@@ -36927,7 +36668,7 @@
                      * @instance
                      */
                     Partition.prototype.partitionToken = $util.newBuffer([]);
-
+    
                     /**
                      * Creates a new Partition instance using the specified properties.
                      * @function create
@@ -36939,7 +36680,7 @@
                     Partition.create = function create(properties) {
                         return new Partition(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Partition message. Does not implicitly {@link google.spanner.v1.Partition.verify|verify} messages.
                      * @function encode
@@ -36956,7 +36697,7 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.partitionToken);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Partition message, length delimited. Does not implicitly {@link google.spanner.v1.Partition.verify|verify} messages.
                      * @function encodeDelimited
@@ -36969,7 +36710,7 @@
                     Partition.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Partition message from the specified reader or buffer.
                      * @function decode
@@ -36998,7 +36739,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Partition message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -37014,7 +36755,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Partition message.
                      * @function verify
@@ -37031,7 +36772,7 @@
                                 return "partitionToken: buffer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a Partition message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -37051,7 +36792,7 @@
                                 message.partitionToken = object.partitionToken;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Partition message. Also converts values to other types if specified.
                      * @function toObject
@@ -37077,7 +36818,7 @@
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         return object;
                     };
-
+    
                     /**
                      * Converts this Partition to JSON.
                      * @function toJSON
@@ -37088,12 +36829,12 @@
                     Partition.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Partition;
                 })();
-
+    
                 v1.PartitionResponse = (function() {
-
+    
                     /**
                      * Properties of a PartitionResponse.
                      * @memberof google.spanner.v1
@@ -37101,7 +36842,7 @@
                      * @property {Array.<google.spanner.v1.IPartition>|null} [partitions] PartitionResponse partitions
                      * @property {google.spanner.v1.ITransaction|null} [transaction] PartitionResponse transaction
                      */
-
+    
                     /**
                      * Constructs a new PartitionResponse.
                      * @memberof google.spanner.v1
@@ -37117,7 +36858,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PartitionResponse partitions.
                      * @member {Array.<google.spanner.v1.IPartition>} partitions
@@ -37125,7 +36866,7 @@
                      * @instance
                      */
                     PartitionResponse.prototype.partitions = $util.emptyArray;
-
+    
                     /**
                      * PartitionResponse transaction.
                      * @member {google.spanner.v1.ITransaction|null|undefined} transaction
@@ -37133,7 +36874,7 @@
                      * @instance
                      */
                     PartitionResponse.prototype.transaction = null;
-
+    
                     /**
                      * Creates a new PartitionResponse instance using the specified properties.
                      * @function create
@@ -37145,7 +36886,7 @@
                     PartitionResponse.create = function create(properties) {
                         return new PartitionResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PartitionResponse message. Does not implicitly {@link google.spanner.v1.PartitionResponse.verify|verify} messages.
                      * @function encode
@@ -37165,7 +36906,7 @@
                             $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PartitionResponse message, length delimited. Does not implicitly {@link google.spanner.v1.PartitionResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -37178,7 +36919,7 @@
                     PartitionResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PartitionResponse message from the specified reader or buffer.
                      * @function decode
@@ -37212,7 +36953,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PartitionResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -37228,7 +36969,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PartitionResponse message.
                      * @function verify
@@ -37256,7 +36997,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PartitionResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -37286,7 +37027,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PartitionResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -37313,7 +37054,7 @@
                             object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this PartitionResponse to JSON.
                      * @function toJSON
@@ -37324,12 +37065,12 @@
                     PartitionResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PartitionResponse;
                 })();
-
+    
                 v1.ReadRequest = (function() {
-
+    
                     /**
                      * Properties of a ReadRequest.
                      * @memberof google.spanner.v1
@@ -37343,9 +37084,8 @@
                      * @property {number|Long|null} [limit] ReadRequest limit
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
-                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
                      */
-
+    
                     /**
                      * Constructs a new ReadRequest.
                      * @memberof google.spanner.v1
@@ -37361,7 +37101,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * ReadRequest session.
                      * @member {string} session
@@ -37369,7 +37109,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.session = "";
-
+    
                     /**
                      * ReadRequest transaction.
                      * @member {google.spanner.v1.ITransactionSelector|null|undefined} transaction
@@ -37377,7 +37117,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.transaction = null;
-
+    
                     /**
                      * ReadRequest table.
                      * @member {string} table
@@ -37385,7 +37125,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.table = "";
-
+    
                     /**
                      * ReadRequest index.
                      * @member {string} index
@@ -37393,7 +37133,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.index = "";
-
+    
                     /**
                      * ReadRequest columns.
                      * @member {Array.<string>} columns
@@ -37401,7 +37141,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.columns = $util.emptyArray;
-
+    
                     /**
                      * ReadRequest keySet.
                      * @member {google.spanner.v1.IKeySet|null|undefined} keySet
@@ -37409,7 +37149,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.keySet = null;
-
+    
                     /**
                      * ReadRequest limit.
                      * @member {number|Long} limit
@@ -37417,7 +37157,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.limit = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                     /**
                      * ReadRequest resumeToken.
                      * @member {Uint8Array} resumeToken
@@ -37425,7 +37165,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.resumeToken = $util.newBuffer([]);
-
+    
                     /**
                      * ReadRequest partitionToken.
                      * @member {Uint8Array} partitionToken
@@ -37433,15 +37173,7 @@
                      * @instance
                      */
                     ReadRequest.prototype.partitionToken = $util.newBuffer([]);
-
-                    /**
-                     * ReadRequest requestOptions.
-                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
-                     * @memberof google.spanner.v1.ReadRequest
-                     * @instance
-                     */
-                    ReadRequest.prototype.requestOptions = null;
-
+    
                     /**
                      * Creates a new ReadRequest instance using the specified properties.
                      * @function create
@@ -37453,7 +37185,7 @@
                     ReadRequest.create = function create(properties) {
                         return new ReadRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified ReadRequest message. Does not implicitly {@link google.spanner.v1.ReadRequest.verify|verify} messages.
                      * @function encode
@@ -37485,11 +37217,9 @@
                             writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.resumeToken);
                         if (message.partitionToken != null && Object.hasOwnProperty.call(message, "partitionToken"))
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
-                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
-                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified ReadRequest message, length delimited. Does not implicitly {@link google.spanner.v1.ReadRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -37502,7 +37232,7 @@
                     ReadRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a ReadRequest message from the specified reader or buffer.
                      * @function decode
@@ -37550,9 +37280,6 @@
                             case 10:
                                 message.partitionToken = reader.bytes();
                                 break;
-                            case 11:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -37560,7 +37287,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a ReadRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -37576,7 +37303,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a ReadRequest message.
                      * @function verify
@@ -37623,14 +37350,9 @@
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             if (!(message.partitionToken && typeof message.partitionToken.length === "number" || $util.isString(message.partitionToken)))
                                 return "partitionToken: buffer expected";
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
-                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
-                            if (error)
-                                return "requestOptions." + error;
-                        }
                         return null;
                     };
-
+    
                     /**
                      * Creates a ReadRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -37685,14 +37407,9 @@
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
                             else if (object.partitionToken.length)
                                 message.partitionToken = object.partitionToken;
-                        if (object.requestOptions != null) {
-                            if (typeof object.requestOptions !== "object")
-                                throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
-                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
-                        }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a ReadRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -37733,7 +37450,6 @@
                                 if (options.bytes !== Array)
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
-                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -37759,11 +37475,9 @@
                             object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
-                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this ReadRequest to JSON.
                      * @function toJSON
@@ -37774,21 +37488,20 @@
                     ReadRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return ReadRequest;
                 })();
-
+    
                 v1.BeginTransactionRequest = (function() {
-
+    
                     /**
                      * Properties of a BeginTransactionRequest.
                      * @memberof google.spanner.v1
                      * @interface IBeginTransactionRequest
                      * @property {string|null} [session] BeginTransactionRequest session
                      * @property {google.spanner.v1.ITransactionOptions|null} [options] BeginTransactionRequest options
-                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] BeginTransactionRequest requestOptions
                      */
-
+    
                     /**
                      * Constructs a new BeginTransactionRequest.
                      * @memberof google.spanner.v1
@@ -37803,7 +37516,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * BeginTransactionRequest session.
                      * @member {string} session
@@ -37811,7 +37524,7 @@
                      * @instance
                      */
                     BeginTransactionRequest.prototype.session = "";
-
+    
                     /**
                      * BeginTransactionRequest options.
                      * @member {google.spanner.v1.ITransactionOptions|null|undefined} options
@@ -37819,15 +37532,7 @@
                      * @instance
                      */
                     BeginTransactionRequest.prototype.options = null;
-
-                    /**
-                     * BeginTransactionRequest requestOptions.
-                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
-                     * @memberof google.spanner.v1.BeginTransactionRequest
-                     * @instance
-                     */
-                    BeginTransactionRequest.prototype.requestOptions = null;
-
+    
                     /**
                      * Creates a new BeginTransactionRequest instance using the specified properties.
                      * @function create
@@ -37839,7 +37544,7 @@
                     BeginTransactionRequest.create = function create(properties) {
                         return new BeginTransactionRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified BeginTransactionRequest message. Does not implicitly {@link google.spanner.v1.BeginTransactionRequest.verify|verify} messages.
                      * @function encode
@@ -37856,11 +37561,9 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.session);
                         if (message.options != null && Object.hasOwnProperty.call(message, "options"))
                             $root.google.spanner.v1.TransactionOptions.encode(message.options, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
-                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified BeginTransactionRequest message, length delimited. Does not implicitly {@link google.spanner.v1.BeginTransactionRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -37873,7 +37576,7 @@
                     BeginTransactionRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a BeginTransactionRequest message from the specified reader or buffer.
                      * @function decode
@@ -37898,9 +37601,6 @@
                             case 2:
                                 message.options = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
                                 break;
-                            case 3:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -37908,7 +37608,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a BeginTransactionRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -37924,7 +37624,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a BeginTransactionRequest message.
                      * @function verify
@@ -37944,14 +37644,9 @@
                             if (error)
                                 return "options." + error;
                         }
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
-                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
-                            if (error)
-                                return "requestOptions." + error;
-                        }
                         return null;
                     };
-
+    
                     /**
                      * Creates a BeginTransactionRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -37971,14 +37666,9 @@
                                 throw TypeError(".google.spanner.v1.BeginTransactionRequest.options: object expected");
                             message.options = $root.google.spanner.v1.TransactionOptions.fromObject(object.options);
                         }
-                        if (object.requestOptions != null) {
-                            if (typeof object.requestOptions !== "object")
-                                throw TypeError(".google.spanner.v1.BeginTransactionRequest.requestOptions: object expected");
-                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
-                        }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a BeginTransactionRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -37995,17 +37685,14 @@
                         if (options.defaults) {
                             object.session = "";
                             object.options = null;
-                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
                         if (message.options != null && message.hasOwnProperty("options"))
                             object.options = $root.google.spanner.v1.TransactionOptions.toObject(message.options, options);
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
-                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this BeginTransactionRequest to JSON.
                      * @function toJSON
@@ -38016,12 +37703,12 @@
                     BeginTransactionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return BeginTransactionRequest;
                 })();
-
+    
                 v1.CommitRequest = (function() {
-
+    
                     /**
                      * Properties of a CommitRequest.
                      * @memberof google.spanner.v1
@@ -38030,10 +37717,9 @@
                      * @property {Uint8Array|null} [transactionId] CommitRequest transactionId
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
-                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] CommitRequest requestOptions
                      * @property {boolean|null} [returnCommitStats] CommitRequest returnCommitStats
                      */
-
+    
                     /**
                      * Constructs a new CommitRequest.
                      * @memberof google.spanner.v1
@@ -38049,7 +37735,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * CommitRequest session.
                      * @member {string} session
@@ -38057,7 +37743,7 @@
                      * @instance
                      */
                     CommitRequest.prototype.session = "";
-
+    
                     /**
                      * CommitRequest transactionId.
                      * @member {Uint8Array} transactionId
@@ -38065,7 +37751,7 @@
                      * @instance
                      */
                     CommitRequest.prototype.transactionId = $util.newBuffer([]);
-
+    
                     /**
                      * CommitRequest singleUseTransaction.
                      * @member {google.spanner.v1.ITransactionOptions|null|undefined} singleUseTransaction
@@ -38073,7 +37759,7 @@
                      * @instance
                      */
                     CommitRequest.prototype.singleUseTransaction = null;
-
+    
                     /**
                      * CommitRequest mutations.
                      * @member {Array.<google.spanner.v1.IMutation>} mutations
@@ -38081,15 +37767,7 @@
                      * @instance
                      */
                     CommitRequest.prototype.mutations = $util.emptyArray;
-
-                    /**
-                     * CommitRequest requestOptions.
-                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
-                     * @memberof google.spanner.v1.CommitRequest
-                     * @instance
-                     */
-                    CommitRequest.prototype.requestOptions = null;
-
+    
                     /**
                      * CommitRequest returnCommitStats.
                      * @member {boolean} returnCommitStats
@@ -38097,10 +37775,10 @@
                      * @instance
                      */
                     CommitRequest.prototype.returnCommitStats = false;
-
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
-
+    
                     /**
                      * CommitRequest transaction.
                      * @member {"transactionId"|"singleUseTransaction"|undefined} transaction
@@ -38111,7 +37789,7 @@
                         get: $util.oneOfGetter($oneOfFields = ["transactionId", "singleUseTransaction"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
-
+    
                     /**
                      * Creates a new CommitRequest instance using the specified properties.
                      * @function create
@@ -38123,7 +37801,7 @@
                     CommitRequest.create = function create(properties) {
                         return new CommitRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified CommitRequest message. Does not implicitly {@link google.spanner.v1.CommitRequest.verify|verify} messages.
                      * @function encode
@@ -38147,11 +37825,9 @@
                                 $root.google.spanner.v1.Mutation.encode(message.mutations[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         if (message.returnCommitStats != null && Object.hasOwnProperty.call(message, "returnCommitStats"))
                             writer.uint32(/* id 5, wireType 0 =*/40).bool(message.returnCommitStats);
-                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
-                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified CommitRequest message, length delimited. Does not implicitly {@link google.spanner.v1.CommitRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -38164,7 +37840,7 @@
                     CommitRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a CommitRequest message from the specified reader or buffer.
                      * @function decode
@@ -38200,9 +37876,6 @@
                             case 5:
                                 message.returnCommitStats = reader.bool();
                                 break;
-                            case 6:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -38210,7 +37883,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a CommitRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -38226,7 +37899,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a CommitRequest message.
                      * @function verify
@@ -38266,17 +37939,12 @@
                                     return "mutations." + error;
                             }
                         }
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
-                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
-                            if (error)
-                                return "requestOptions." + error;
-                        }
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             if (typeof message.returnCommitStats !== "boolean")
                                 return "returnCommitStats: boolean expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a CommitRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -38311,16 +37979,11 @@
                                 message.mutations[i] = $root.google.spanner.v1.Mutation.fromObject(object.mutations[i]);
                             }
                         }
-                        if (object.requestOptions != null) {
-                            if (typeof object.requestOptions !== "object")
-                                throw TypeError(".google.spanner.v1.CommitRequest.requestOptions: object expected");
-                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
-                        }
                         if (object.returnCommitStats != null)
                             message.returnCommitStats = Boolean(object.returnCommitStats);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a CommitRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -38338,7 +38001,6 @@
                             object.mutations = [];
                         if (options.defaults) {
                             object.session = "";
-                            object.requestOptions = null;
                             object.returnCommitStats = false;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
@@ -38358,13 +38020,11 @@
                             for (var j = 0; j < message.mutations.length; ++j)
                                 object.mutations[j] = $root.google.spanner.v1.Mutation.toObject(message.mutations[j], options);
                         }
-                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
-                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             object.returnCommitStats = message.returnCommitStats;
                         return object;
                     };
-
+    
                     /**
                      * Converts this CommitRequest to JSON.
                      * @function toJSON
@@ -38375,12 +38035,12 @@
                     CommitRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return CommitRequest;
                 })();
-
+    
                 v1.CommitResponse = (function() {
-
+    
                     /**
                      * Properties of a CommitResponse.
                      * @memberof google.spanner.v1
@@ -38388,7 +38048,7 @@
                      * @property {google.protobuf.ITimestamp|null} [commitTimestamp] CommitResponse commitTimestamp
                      * @property {google.spanner.v1.CommitResponse.ICommitStats|null} [commitStats] CommitResponse commitStats
                      */
-
+    
                     /**
                      * Constructs a new CommitResponse.
                      * @memberof google.spanner.v1
@@ -38403,7 +38063,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * CommitResponse commitTimestamp.
                      * @member {google.protobuf.ITimestamp|null|undefined} commitTimestamp
@@ -38411,7 +38071,7 @@
                      * @instance
                      */
                     CommitResponse.prototype.commitTimestamp = null;
-
+    
                     /**
                      * CommitResponse commitStats.
                      * @member {google.spanner.v1.CommitResponse.ICommitStats|null|undefined} commitStats
@@ -38419,7 +38079,7 @@
                      * @instance
                      */
                     CommitResponse.prototype.commitStats = null;
-
+    
                     /**
                      * Creates a new CommitResponse instance using the specified properties.
                      * @function create
@@ -38431,7 +38091,7 @@
                     CommitResponse.create = function create(properties) {
                         return new CommitResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified CommitResponse message. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
                      * @function encode
@@ -38450,7 +38110,7 @@
                             $root.google.spanner.v1.CommitResponse.CommitStats.encode(message.commitStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified CommitResponse message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -38463,7 +38123,7 @@
                     CommitResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a CommitResponse message from the specified reader or buffer.
                      * @function decode
@@ -38495,7 +38155,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a CommitResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -38511,7 +38171,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a CommitResponse message.
                      * @function verify
@@ -38535,7 +38195,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a CommitResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -38560,7 +38220,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a CommitResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -38584,7 +38244,7 @@
                             object.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.toObject(message.commitStats, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this CommitResponse to JSON.
                      * @function toJSON
@@ -38595,16 +38255,16 @@
                     CommitResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     CommitResponse.CommitStats = (function() {
-
+    
                         /**
                          * Properties of a CommitStats.
                          * @memberof google.spanner.v1.CommitResponse
                          * @interface ICommitStats
                          * @property {number|Long|null} [mutationCount] CommitStats mutationCount
                          */
-
+    
                         /**
                          * Constructs a new CommitStats.
                          * @memberof google.spanner.v1.CommitResponse
@@ -38619,7 +38279,7 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
-
+    
                         /**
                          * CommitStats mutationCount.
                          * @member {number|Long} mutationCount
@@ -38627,7 +38287,7 @@
                          * @instance
                          */
                         CommitStats.prototype.mutationCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
+    
                         /**
                          * Creates a new CommitStats instance using the specified properties.
                          * @function create
@@ -38639,7 +38299,7 @@
                         CommitStats.create = function create(properties) {
                             return new CommitStats(properties);
                         };
-
+    
                         /**
                          * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
                          * @function encode
@@ -38656,7 +38316,7 @@
                                 writer.uint32(/* id 1, wireType 0 =*/8).int64(message.mutationCount);
                             return writer;
                         };
-
+    
                         /**
                          * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
                          * @function encodeDelimited
@@ -38669,7 +38329,7 @@
                         CommitStats.encodeDelimited = function encodeDelimited(message, writer) {
                             return this.encode(message, writer).ldelim();
                         };
-
+    
                         /**
                          * Decodes a CommitStats message from the specified reader or buffer.
                          * @function decode
@@ -38698,7 +38358,7 @@
                             }
                             return message;
                         };
-
+    
                         /**
                          * Decodes a CommitStats message from the specified reader or buffer, length delimited.
                          * @function decodeDelimited
@@ -38714,7 +38374,7 @@
                                 reader = new $Reader(reader);
                             return this.decode(reader, reader.uint32());
                         };
-
+    
                         /**
                          * Verifies a CommitStats message.
                          * @function verify
@@ -38731,7 +38391,7 @@
                                     return "mutationCount: integer|Long expected";
                             return null;
                         };
-
+    
                         /**
                          * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
                          * @function fromObject
@@ -38755,7 +38415,7 @@
                                     message.mutationCount = new $util.LongBits(object.mutationCount.low >>> 0, object.mutationCount.high >>> 0).toNumber();
                             return message;
                         };
-
+    
                         /**
                          * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
                          * @function toObject
@@ -38782,7 +38442,7 @@
                                     object.mutationCount = options.longs === String ? $util.Long.prototype.toString.call(message.mutationCount) : options.longs === Number ? new $util.LongBits(message.mutationCount.low >>> 0, message.mutationCount.high >>> 0).toNumber() : message.mutationCount;
                             return object;
                         };
-
+    
                         /**
                          * Converts this CommitStats to JSON.
                          * @function toJSON
@@ -38793,15 +38453,15 @@
                         CommitStats.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
-
+    
                         return CommitStats;
                     })();
-
+    
                     return CommitResponse;
                 })();
-
+    
                 v1.RollbackRequest = (function() {
-
+    
                     /**
                      * Properties of a RollbackRequest.
                      * @memberof google.spanner.v1
@@ -38809,7 +38469,7 @@
                      * @property {string|null} [session] RollbackRequest session
                      * @property {Uint8Array|null} [transactionId] RollbackRequest transactionId
                      */
-
+    
                     /**
                      * Constructs a new RollbackRequest.
                      * @memberof google.spanner.v1
@@ -38824,7 +38484,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * RollbackRequest session.
                      * @member {string} session
@@ -38832,7 +38492,7 @@
                      * @instance
                      */
                     RollbackRequest.prototype.session = "";
-
+    
                     /**
                      * RollbackRequest transactionId.
                      * @member {Uint8Array} transactionId
@@ -38840,7 +38500,7 @@
                      * @instance
                      */
                     RollbackRequest.prototype.transactionId = $util.newBuffer([]);
-
+    
                     /**
                      * Creates a new RollbackRequest instance using the specified properties.
                      * @function create
@@ -38852,7 +38512,7 @@
                     RollbackRequest.create = function create(properties) {
                         return new RollbackRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified RollbackRequest message. Does not implicitly {@link google.spanner.v1.RollbackRequest.verify|verify} messages.
                      * @function encode
@@ -38871,7 +38531,7 @@
                             writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.transactionId);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified RollbackRequest message, length delimited. Does not implicitly {@link google.spanner.v1.RollbackRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -38884,7 +38544,7 @@
                     RollbackRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a RollbackRequest message from the specified reader or buffer.
                      * @function decode
@@ -38916,7 +38576,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a RollbackRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -38932,7 +38592,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a RollbackRequest message.
                      * @function verify
@@ -38952,7 +38612,7 @@
                                 return "transactionId: buffer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a RollbackRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -38974,7 +38634,7 @@
                                 message.transactionId = object.transactionId;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a RollbackRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -39004,7 +38664,7 @@
                             object.transactionId = options.bytes === String ? $util.base64.encode(message.transactionId, 0, message.transactionId.length) : options.bytes === Array ? Array.prototype.slice.call(message.transactionId) : message.transactionId;
                         return object;
                     };
-
+    
                     /**
                      * Converts this RollbackRequest to JSON.
                      * @function toJSON
@@ -39015,25 +38675,25 @@
                     RollbackRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return RollbackRequest;
                 })();
-
+    
                 return v1;
             })();
-
+    
             return spanner;
         })();
-
+    
         google.api = (function() {
-
+    
             /**
              * Namespace api.
              * @memberof google
              * @namespace
              */
             var api = {};
-
+    
             /**
              * FieldBehavior enum.
              * @name google.api.FieldBehavior
@@ -39057,9 +38717,9 @@
                 values[valuesById[6] = "UNORDERED_LIST"] = 6;
                 return values;
             })();
-
+    
             api.ResourceDescriptor = (function() {
-
+    
                 /**
                  * Properties of a ResourceDescriptor.
                  * @memberof google.api
@@ -39072,7 +38732,7 @@
                  * @property {string|null} [singular] ResourceDescriptor singular
                  * @property {Array.<google.api.ResourceDescriptor.Style>|null} [style] ResourceDescriptor style
                  */
-
+    
                 /**
                  * Constructs a new ResourceDescriptor.
                  * @memberof google.api
@@ -39089,7 +38749,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ResourceDescriptor type.
                  * @member {string} type
@@ -39097,7 +38757,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.type = "";
-
+    
                 /**
                  * ResourceDescriptor pattern.
                  * @member {Array.<string>} pattern
@@ -39105,7 +38765,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.pattern = $util.emptyArray;
-
+    
                 /**
                  * ResourceDescriptor nameField.
                  * @member {string} nameField
@@ -39113,7 +38773,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.nameField = "";
-
+    
                 /**
                  * ResourceDescriptor history.
                  * @member {google.api.ResourceDescriptor.History} history
@@ -39121,7 +38781,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.history = 0;
-
+    
                 /**
                  * ResourceDescriptor plural.
                  * @member {string} plural
@@ -39129,7 +38789,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.plural = "";
-
+    
                 /**
                  * ResourceDescriptor singular.
                  * @member {string} singular
@@ -39137,7 +38797,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.singular = "";
-
+    
                 /**
                  * ResourceDescriptor style.
                  * @member {Array.<google.api.ResourceDescriptor.Style>} style
@@ -39145,7 +38805,7 @@
                  * @instance
                  */
                 ResourceDescriptor.prototype.style = $util.emptyArray;
-
+    
                 /**
                  * Creates a new ResourceDescriptor instance using the specified properties.
                  * @function create
@@ -39157,7 +38817,7 @@
                 ResourceDescriptor.create = function create(properties) {
                     return new ResourceDescriptor(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ResourceDescriptor message. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
                  * @function encode
@@ -39191,7 +38851,7 @@
                     }
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ResourceDescriptor message, length delimited. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
                  * @function encodeDelimited
@@ -39204,7 +38864,7 @@
                 ResourceDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ResourceDescriptor message from the specified reader or buffer.
                  * @function decode
@@ -39260,7 +38920,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ResourceDescriptor message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -39276,7 +38936,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ResourceDescriptor message.
                  * @function verify
@@ -39330,7 +38990,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a ResourceDescriptor message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -39391,7 +39051,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ResourceDescriptor message. Also converts values to other types if specified.
                  * @function toObject
@@ -39438,7 +39098,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this ResourceDescriptor to JSON.
                  * @function toJSON
@@ -39449,7 +39109,7 @@
                 ResourceDescriptor.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 /**
                  * History enum.
                  * @name google.api.ResourceDescriptor.History
@@ -39465,7 +39125,7 @@
                     values[valuesById[2] = "FUTURE_MULTI_PATTERN"] = 2;
                     return values;
                 })();
-
+    
                 /**
                  * Style enum.
                  * @name google.api.ResourceDescriptor.Style
@@ -39479,12 +39139,12 @@
                     values[valuesById[1] = "DECLARATIVE_FRIENDLY"] = 1;
                     return values;
                 })();
-
+    
                 return ResourceDescriptor;
             })();
-
+    
             api.ResourceReference = (function() {
-
+    
                 /**
                  * Properties of a ResourceReference.
                  * @memberof google.api
@@ -39492,7 +39152,7 @@
                  * @property {string|null} [type] ResourceReference type
                  * @property {string|null} [childType] ResourceReference childType
                  */
-
+    
                 /**
                  * Constructs a new ResourceReference.
                  * @memberof google.api
@@ -39507,7 +39167,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ResourceReference type.
                  * @member {string} type
@@ -39515,7 +39175,7 @@
                  * @instance
                  */
                 ResourceReference.prototype.type = "";
-
+    
                 /**
                  * ResourceReference childType.
                  * @member {string} childType
@@ -39523,7 +39183,7 @@
                  * @instance
                  */
                 ResourceReference.prototype.childType = "";
-
+    
                 /**
                  * Creates a new ResourceReference instance using the specified properties.
                  * @function create
@@ -39535,7 +39195,7 @@
                 ResourceReference.create = function create(properties) {
                     return new ResourceReference(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ResourceReference message. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
                  * @function encode
@@ -39554,7 +39214,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.childType);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ResourceReference message, length delimited. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
                  * @function encodeDelimited
@@ -39567,7 +39227,7 @@
                 ResourceReference.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ResourceReference message from the specified reader or buffer.
                  * @function decode
@@ -39599,7 +39259,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ResourceReference message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -39615,7 +39275,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ResourceReference message.
                  * @function verify
@@ -39635,7 +39295,7 @@
                             return "childType: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a ResourceReference message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -39654,7 +39314,7 @@
                         message.childType = String(object.childType);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ResourceReference message. Also converts values to other types if specified.
                  * @function toObject
@@ -39678,7 +39338,7 @@
                         object.childType = message.childType;
                     return object;
                 };
-
+    
                 /**
                  * Converts this ResourceReference to JSON.
                  * @function toJSON
@@ -39689,12 +39349,12 @@
                 ResourceReference.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ResourceReference;
             })();
-
+    
             api.Http = (function() {
-
+    
                 /**
                  * Properties of a Http.
                  * @memberof google.api
@@ -39702,7 +39362,7 @@
                  * @property {Array.<google.api.IHttpRule>|null} [rules] Http rules
                  * @property {boolean|null} [fullyDecodeReservedExpansion] Http fullyDecodeReservedExpansion
                  */
-
+    
                 /**
                  * Constructs a new Http.
                  * @memberof google.api
@@ -39718,7 +39378,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Http rules.
                  * @member {Array.<google.api.IHttpRule>} rules
@@ -39726,7 +39386,7 @@
                  * @instance
                  */
                 Http.prototype.rules = $util.emptyArray;
-
+    
                 /**
                  * Http fullyDecodeReservedExpansion.
                  * @member {boolean} fullyDecodeReservedExpansion
@@ -39734,7 +39394,7 @@
                  * @instance
                  */
                 Http.prototype.fullyDecodeReservedExpansion = false;
-
+    
                 /**
                  * Creates a new Http instance using the specified properties.
                  * @function create
@@ -39746,7 +39406,7 @@
                 Http.create = function create(properties) {
                     return new Http(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Http message. Does not implicitly {@link google.api.Http.verify|verify} messages.
                  * @function encode
@@ -39766,7 +39426,7 @@
                         writer.uint32(/* id 2, wireType 0 =*/16).bool(message.fullyDecodeReservedExpansion);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Http message, length delimited. Does not implicitly {@link google.api.Http.verify|verify} messages.
                  * @function encodeDelimited
@@ -39779,7 +39439,7 @@
                 Http.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a Http message from the specified reader or buffer.
                  * @function decode
@@ -39813,7 +39473,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a Http message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -39829,7 +39489,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a Http message.
                  * @function verify
@@ -39855,7 +39515,7 @@
                             return "fullyDecodeReservedExpansion: boolean expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a Http message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -39882,7 +39542,7 @@
                         message.fullyDecodeReservedExpansion = Boolean(object.fullyDecodeReservedExpansion);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a Http message. Also converts values to other types if specified.
                  * @function toObject
@@ -39909,7 +39569,7 @@
                         object.fullyDecodeReservedExpansion = message.fullyDecodeReservedExpansion;
                     return object;
                 };
-
+    
                 /**
                  * Converts this Http to JSON.
                  * @function toJSON
@@ -39920,12 +39580,12 @@
                 Http.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Http;
             })();
-
+    
             api.HttpRule = (function() {
-
+    
                 /**
                  * Properties of a HttpRule.
                  * @memberof google.api
@@ -39941,7 +39601,7 @@
                  * @property {string|null} [responseBody] HttpRule responseBody
                  * @property {Array.<google.api.IHttpRule>|null} [additionalBindings] HttpRule additionalBindings
                  */
-
+    
                 /**
                  * Constructs a new HttpRule.
                  * @memberof google.api
@@ -39957,7 +39617,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * HttpRule selector.
                  * @member {string} selector
@@ -39965,7 +39625,7 @@
                  * @instance
                  */
                 HttpRule.prototype.selector = "";
-
+    
                 /**
                  * HttpRule get.
                  * @member {string} get
@@ -39973,7 +39633,7 @@
                  * @instance
                  */
                 HttpRule.prototype.get = "";
-
+    
                 /**
                  * HttpRule put.
                  * @member {string} put
@@ -39981,7 +39641,7 @@
                  * @instance
                  */
                 HttpRule.prototype.put = "";
-
+    
                 /**
                  * HttpRule post.
                  * @member {string} post
@@ -39989,7 +39649,7 @@
                  * @instance
                  */
                 HttpRule.prototype.post = "";
-
+    
                 /**
                  * HttpRule delete.
                  * @member {string} delete
@@ -39997,7 +39657,7 @@
                  * @instance
                  */
                 HttpRule.prototype["delete"] = "";
-
+    
                 /**
                  * HttpRule patch.
                  * @member {string} patch
@@ -40005,7 +39665,7 @@
                  * @instance
                  */
                 HttpRule.prototype.patch = "";
-
+    
                 /**
                  * HttpRule custom.
                  * @member {google.api.ICustomHttpPattern|null|undefined} custom
@@ -40013,7 +39673,7 @@
                  * @instance
                  */
                 HttpRule.prototype.custom = null;
-
+    
                 /**
                  * HttpRule body.
                  * @member {string} body
@@ -40021,7 +39681,7 @@
                  * @instance
                  */
                 HttpRule.prototype.body = "";
-
+    
                 /**
                  * HttpRule responseBody.
                  * @member {string} responseBody
@@ -40029,7 +39689,7 @@
                  * @instance
                  */
                 HttpRule.prototype.responseBody = "";
-
+    
                 /**
                  * HttpRule additionalBindings.
                  * @member {Array.<google.api.IHttpRule>} additionalBindings
@@ -40037,10 +39697,10 @@
                  * @instance
                  */
                 HttpRule.prototype.additionalBindings = $util.emptyArray;
-
+    
                 // OneOf field names bound to virtual getters and setters
                 var $oneOfFields;
-
+    
                 /**
                  * HttpRule pattern.
                  * @member {"get"|"put"|"post"|"delete"|"patch"|"custom"|undefined} pattern
@@ -40051,7 +39711,7 @@
                     get: $util.oneOfGetter($oneOfFields = ["get", "put", "post", "delete", "patch", "custom"]),
                     set: $util.oneOfSetter($oneOfFields)
                 });
-
+    
                 /**
                  * Creates a new HttpRule instance using the specified properties.
                  * @function create
@@ -40063,7 +39723,7 @@
                 HttpRule.create = function create(properties) {
                     return new HttpRule(properties);
                 };
-
+    
                 /**
                  * Encodes the specified HttpRule message. Does not implicitly {@link google.api.HttpRule.verify|verify} messages.
                  * @function encode
@@ -40099,7 +39759,7 @@
                         writer.uint32(/* id 12, wireType 2 =*/98).string(message.responseBody);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified HttpRule message, length delimited. Does not implicitly {@link google.api.HttpRule.verify|verify} messages.
                  * @function encodeDelimited
@@ -40112,7 +39772,7 @@
                 HttpRule.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a HttpRule message from the specified reader or buffer.
                  * @function decode
@@ -40170,7 +39830,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a HttpRule message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -40186,7 +39846,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a HttpRule message.
                  * @function verify
@@ -40262,7 +39922,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a HttpRule message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -40308,7 +39968,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a HttpRule message. Also converts values to other types if specified.
                  * @function toObject
@@ -40372,7 +40032,7 @@
                         object.responseBody = message.responseBody;
                     return object;
                 };
-
+    
                 /**
                  * Converts this HttpRule to JSON.
                  * @function toJSON
@@ -40383,12 +40043,12 @@
                 HttpRule.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return HttpRule;
             })();
-
+    
             api.CustomHttpPattern = (function() {
-
+    
                 /**
                  * Properties of a CustomHttpPattern.
                  * @memberof google.api
@@ -40396,7 +40056,7 @@
                  * @property {string|null} [kind] CustomHttpPattern kind
                  * @property {string|null} [path] CustomHttpPattern path
                  */
-
+    
                 /**
                  * Constructs a new CustomHttpPattern.
                  * @memberof google.api
@@ -40411,7 +40071,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * CustomHttpPattern kind.
                  * @member {string} kind
@@ -40419,7 +40079,7 @@
                  * @instance
                  */
                 CustomHttpPattern.prototype.kind = "";
-
+    
                 /**
                  * CustomHttpPattern path.
                  * @member {string} path
@@ -40427,7 +40087,7 @@
                  * @instance
                  */
                 CustomHttpPattern.prototype.path = "";
-
+    
                 /**
                  * Creates a new CustomHttpPattern instance using the specified properties.
                  * @function create
@@ -40439,7 +40099,7 @@
                 CustomHttpPattern.create = function create(properties) {
                     return new CustomHttpPattern(properties);
                 };
-
+    
                 /**
                  * Encodes the specified CustomHttpPattern message. Does not implicitly {@link google.api.CustomHttpPattern.verify|verify} messages.
                  * @function encode
@@ -40458,7 +40118,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.path);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified CustomHttpPattern message, length delimited. Does not implicitly {@link google.api.CustomHttpPattern.verify|verify} messages.
                  * @function encodeDelimited
@@ -40471,7 +40131,7 @@
                 CustomHttpPattern.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a CustomHttpPattern message from the specified reader or buffer.
                  * @function decode
@@ -40503,7 +40163,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a CustomHttpPattern message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -40519,7 +40179,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a CustomHttpPattern message.
                  * @function verify
@@ -40539,7 +40199,7 @@
                             return "path: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a CustomHttpPattern message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -40558,7 +40218,7 @@
                         message.path = String(object.path);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a CustomHttpPattern message. Also converts values to other types if specified.
                  * @function toObject
@@ -40582,7 +40242,7 @@
                         object.path = message.path;
                     return object;
                 };
-
+    
                 /**
                  * Converts this CustomHttpPattern to JSON.
                  * @function toJSON
@@ -40593,24 +40253,24 @@
                 CustomHttpPattern.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return CustomHttpPattern;
             })();
-
+    
             return api;
         })();
-
+    
         google.longrunning = (function() {
-
+    
             /**
              * Namespace longrunning.
              * @memberof google
              * @namespace
              */
             var longrunning = {};
-
+    
             longrunning.Operations = (function() {
-
+    
                 /**
                  * Constructs a new Operations service.
                  * @memberof google.longrunning
@@ -40624,9 +40284,9 @@
                 function Operations(rpcImpl, requestDelimited, responseDelimited) {
                     $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
                 }
-
+    
                 (Operations.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Operations;
-
+    
                 /**
                  * Creates new Operations service using the specified rpc implementation.
                  * @function create
@@ -40640,7 +40300,7 @@
                 Operations.create = function create(rpcImpl, requestDelimited, responseDelimited) {
                     return new this(rpcImpl, requestDelimited, responseDelimited);
                 };
-
+    
                 /**
                  * Callback as used by {@link google.longrunning.Operations#listOperations}.
                  * @memberof google.longrunning.Operations
@@ -40649,7 +40309,7 @@
                  * @param {Error|null} error Error, if any
                  * @param {google.longrunning.ListOperationsResponse} [response] ListOperationsResponse
                  */
-
+    
                 /**
                  * Calls ListOperations.
                  * @function listOperations
@@ -40663,7 +40323,7 @@
                 Object.defineProperty(Operations.prototype.listOperations = function listOperations(request, callback) {
                     return this.rpcCall(listOperations, $root.google.longrunning.ListOperationsRequest, $root.google.longrunning.ListOperationsResponse, request, callback);
                 }, "name", { value: "ListOperations" });
-
+    
                 /**
                  * Calls ListOperations.
                  * @function listOperations
@@ -40673,7 +40333,7 @@
                  * @returns {Promise<google.longrunning.ListOperationsResponse>} Promise
                  * @variation 2
                  */
-
+    
                 /**
                  * Callback as used by {@link google.longrunning.Operations#getOperation}.
                  * @memberof google.longrunning.Operations
@@ -40682,7 +40342,7 @@
                  * @param {Error|null} error Error, if any
                  * @param {google.longrunning.Operation} [response] Operation
                  */
-
+    
                 /**
                  * Calls GetOperation.
                  * @function getOperation
@@ -40696,7 +40356,7 @@
                 Object.defineProperty(Operations.prototype.getOperation = function getOperation(request, callback) {
                     return this.rpcCall(getOperation, $root.google.longrunning.GetOperationRequest, $root.google.longrunning.Operation, request, callback);
                 }, "name", { value: "GetOperation" });
-
+    
                 /**
                  * Calls GetOperation.
                  * @function getOperation
@@ -40706,7 +40366,7 @@
                  * @returns {Promise<google.longrunning.Operation>} Promise
                  * @variation 2
                  */
-
+    
                 /**
                  * Callback as used by {@link google.longrunning.Operations#deleteOperation}.
                  * @memberof google.longrunning.Operations
@@ -40715,7 +40375,7 @@
                  * @param {Error|null} error Error, if any
                  * @param {google.protobuf.Empty} [response] Empty
                  */
-
+    
                 /**
                  * Calls DeleteOperation.
                  * @function deleteOperation
@@ -40729,7 +40389,7 @@
                 Object.defineProperty(Operations.prototype.deleteOperation = function deleteOperation(request, callback) {
                     return this.rpcCall(deleteOperation, $root.google.longrunning.DeleteOperationRequest, $root.google.protobuf.Empty, request, callback);
                 }, "name", { value: "DeleteOperation" });
-
+    
                 /**
                  * Calls DeleteOperation.
                  * @function deleteOperation
@@ -40739,7 +40399,7 @@
                  * @returns {Promise<google.protobuf.Empty>} Promise
                  * @variation 2
                  */
-
+    
                 /**
                  * Callback as used by {@link google.longrunning.Operations#cancelOperation}.
                  * @memberof google.longrunning.Operations
@@ -40748,7 +40408,7 @@
                  * @param {Error|null} error Error, if any
                  * @param {google.protobuf.Empty} [response] Empty
                  */
-
+    
                 /**
                  * Calls CancelOperation.
                  * @function cancelOperation
@@ -40762,7 +40422,7 @@
                 Object.defineProperty(Operations.prototype.cancelOperation = function cancelOperation(request, callback) {
                     return this.rpcCall(cancelOperation, $root.google.longrunning.CancelOperationRequest, $root.google.protobuf.Empty, request, callback);
                 }, "name", { value: "CancelOperation" });
-
+    
                 /**
                  * Calls CancelOperation.
                  * @function cancelOperation
@@ -40772,7 +40432,7 @@
                  * @returns {Promise<google.protobuf.Empty>} Promise
                  * @variation 2
                  */
-
+    
                 /**
                  * Callback as used by {@link google.longrunning.Operations#waitOperation}.
                  * @memberof google.longrunning.Operations
@@ -40781,7 +40441,7 @@
                  * @param {Error|null} error Error, if any
                  * @param {google.longrunning.Operation} [response] Operation
                  */
-
+    
                 /**
                  * Calls WaitOperation.
                  * @function waitOperation
@@ -40795,7 +40455,7 @@
                 Object.defineProperty(Operations.prototype.waitOperation = function waitOperation(request, callback) {
                     return this.rpcCall(waitOperation, $root.google.longrunning.WaitOperationRequest, $root.google.longrunning.Operation, request, callback);
                 }, "name", { value: "WaitOperation" });
-
+    
                 /**
                  * Calls WaitOperation.
                  * @function waitOperation
@@ -40805,12 +40465,12 @@
                  * @returns {Promise<google.longrunning.Operation>} Promise
                  * @variation 2
                  */
-
+    
                 return Operations;
             })();
-
+    
             longrunning.Operation = (function() {
-
+    
                 /**
                  * Properties of an Operation.
                  * @memberof google.longrunning
@@ -40821,7 +40481,7 @@
                  * @property {google.rpc.IStatus|null} [error] Operation error
                  * @property {google.protobuf.IAny|null} [response] Operation response
                  */
-
+    
                 /**
                  * Constructs a new Operation.
                  * @memberof google.longrunning
@@ -40836,7 +40496,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Operation name.
                  * @member {string} name
@@ -40844,7 +40504,7 @@
                  * @instance
                  */
                 Operation.prototype.name = "";
-
+    
                 /**
                  * Operation metadata.
                  * @member {google.protobuf.IAny|null|undefined} metadata
@@ -40852,7 +40512,7 @@
                  * @instance
                  */
                 Operation.prototype.metadata = null;
-
+    
                 /**
                  * Operation done.
                  * @member {boolean} done
@@ -40860,7 +40520,7 @@
                  * @instance
                  */
                 Operation.prototype.done = false;
-
+    
                 /**
                  * Operation error.
                  * @member {google.rpc.IStatus|null|undefined} error
@@ -40868,7 +40528,7 @@
                  * @instance
                  */
                 Operation.prototype.error = null;
-
+    
                 /**
                  * Operation response.
                  * @member {google.protobuf.IAny|null|undefined} response
@@ -40876,10 +40536,10 @@
                  * @instance
                  */
                 Operation.prototype.response = null;
-
+    
                 // OneOf field names bound to virtual getters and setters
                 var $oneOfFields;
-
+    
                 /**
                  * Operation result.
                  * @member {"error"|"response"|undefined} result
@@ -40890,7 +40550,7 @@
                     get: $util.oneOfGetter($oneOfFields = ["error", "response"]),
                     set: $util.oneOfSetter($oneOfFields)
                 });
-
+    
                 /**
                  * Creates a new Operation instance using the specified properties.
                  * @function create
@@ -40902,7 +40562,7 @@
                 Operation.create = function create(properties) {
                     return new Operation(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Operation message. Does not implicitly {@link google.longrunning.Operation.verify|verify} messages.
                  * @function encode
@@ -40927,7 +40587,7 @@
                         $root.google.protobuf.Any.encode(message.response, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Operation message, length delimited. Does not implicitly {@link google.longrunning.Operation.verify|verify} messages.
                  * @function encodeDelimited
@@ -40940,7 +40600,7 @@
                 Operation.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an Operation message from the specified reader or buffer.
                  * @function decode
@@ -40981,7 +40641,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an Operation message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -40997,7 +40657,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an Operation message.
                  * @function verify
@@ -41041,7 +40701,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates an Operation message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -41075,7 +40735,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an Operation message. Also converts values to other types if specified.
                  * @function toObject
@@ -41112,7 +40772,7 @@
                     }
                     return object;
                 };
-
+    
                 /**
                  * Converts this Operation to JSON.
                  * @function toJSON
@@ -41123,19 +40783,19 @@
                 Operation.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Operation;
             })();
-
+    
             longrunning.GetOperationRequest = (function() {
-
+    
                 /**
                  * Properties of a GetOperationRequest.
                  * @memberof google.longrunning
                  * @interface IGetOperationRequest
                  * @property {string|null} [name] GetOperationRequest name
                  */
-
+    
                 /**
                  * Constructs a new GetOperationRequest.
                  * @memberof google.longrunning
@@ -41150,7 +40810,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * GetOperationRequest name.
                  * @member {string} name
@@ -41158,7 +40818,7 @@
                  * @instance
                  */
                 GetOperationRequest.prototype.name = "";
-
+    
                 /**
                  * Creates a new GetOperationRequest instance using the specified properties.
                  * @function create
@@ -41170,7 +40830,7 @@
                 GetOperationRequest.create = function create(properties) {
                     return new GetOperationRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified GetOperationRequest message. Does not implicitly {@link google.longrunning.GetOperationRequest.verify|verify} messages.
                  * @function encode
@@ -41187,7 +40847,7 @@
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified GetOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.GetOperationRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -41200,7 +40860,7 @@
                 GetOperationRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a GetOperationRequest message from the specified reader or buffer.
                  * @function decode
@@ -41229,7 +40889,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a GetOperationRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -41245,7 +40905,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a GetOperationRequest message.
                  * @function verify
@@ -41262,7 +40922,7 @@
                             return "name: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a GetOperationRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -41279,7 +40939,7 @@
                         message.name = String(object.name);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a GetOperationRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -41299,7 +40959,7 @@
                         object.name = message.name;
                     return object;
                 };
-
+    
                 /**
                  * Converts this GetOperationRequest to JSON.
                  * @function toJSON
@@ -41310,12 +40970,12 @@
                 GetOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return GetOperationRequest;
             })();
-
+    
             longrunning.ListOperationsRequest = (function() {
-
+    
                 /**
                  * Properties of a ListOperationsRequest.
                  * @memberof google.longrunning
@@ -41325,7 +40985,7 @@
                  * @property {number|null} [pageSize] ListOperationsRequest pageSize
                  * @property {string|null} [pageToken] ListOperationsRequest pageToken
                  */
-
+    
                 /**
                  * Constructs a new ListOperationsRequest.
                  * @memberof google.longrunning
@@ -41340,7 +41000,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ListOperationsRequest name.
                  * @member {string} name
@@ -41348,7 +41008,7 @@
                  * @instance
                  */
                 ListOperationsRequest.prototype.name = "";
-
+    
                 /**
                  * ListOperationsRequest filter.
                  * @member {string} filter
@@ -41356,7 +41016,7 @@
                  * @instance
                  */
                 ListOperationsRequest.prototype.filter = "";
-
+    
                 /**
                  * ListOperationsRequest pageSize.
                  * @member {number} pageSize
@@ -41364,7 +41024,7 @@
                  * @instance
                  */
                 ListOperationsRequest.prototype.pageSize = 0;
-
+    
                 /**
                  * ListOperationsRequest pageToken.
                  * @member {string} pageToken
@@ -41372,7 +41032,7 @@
                  * @instance
                  */
                 ListOperationsRequest.prototype.pageToken = "";
-
+    
                 /**
                  * Creates a new ListOperationsRequest instance using the specified properties.
                  * @function create
@@ -41384,7 +41044,7 @@
                 ListOperationsRequest.create = function create(properties) {
                     return new ListOperationsRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ListOperationsRequest message. Does not implicitly {@link google.longrunning.ListOperationsRequest.verify|verify} messages.
                  * @function encode
@@ -41407,7 +41067,7 @@
                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.name);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ListOperationsRequest message, length delimited. Does not implicitly {@link google.longrunning.ListOperationsRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -41420,7 +41080,7 @@
                 ListOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ListOperationsRequest message from the specified reader or buffer.
                  * @function decode
@@ -41458,7 +41118,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ListOperationsRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -41474,7 +41134,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ListOperationsRequest message.
                  * @function verify
@@ -41500,7 +41160,7 @@
                             return "pageToken: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a ListOperationsRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -41523,7 +41183,7 @@
                         message.pageToken = String(object.pageToken);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ListOperationsRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -41553,7 +41213,7 @@
                         object.name = message.name;
                     return object;
                 };
-
+    
                 /**
                  * Converts this ListOperationsRequest to JSON.
                  * @function toJSON
@@ -41564,12 +41224,12 @@
                 ListOperationsRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ListOperationsRequest;
             })();
-
+    
             longrunning.ListOperationsResponse = (function() {
-
+    
                 /**
                  * Properties of a ListOperationsResponse.
                  * @memberof google.longrunning
@@ -41577,7 +41237,7 @@
                  * @property {Array.<google.longrunning.IOperation>|null} [operations] ListOperationsResponse operations
                  * @property {string|null} [nextPageToken] ListOperationsResponse nextPageToken
                  */
-
+    
                 /**
                  * Constructs a new ListOperationsResponse.
                  * @memberof google.longrunning
@@ -41593,7 +41253,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * ListOperationsResponse operations.
                  * @member {Array.<google.longrunning.IOperation>} operations
@@ -41601,7 +41261,7 @@
                  * @instance
                  */
                 ListOperationsResponse.prototype.operations = $util.emptyArray;
-
+    
                 /**
                  * ListOperationsResponse nextPageToken.
                  * @member {string} nextPageToken
@@ -41609,7 +41269,7 @@
                  * @instance
                  */
                 ListOperationsResponse.prototype.nextPageToken = "";
-
+    
                 /**
                  * Creates a new ListOperationsResponse instance using the specified properties.
                  * @function create
@@ -41621,7 +41281,7 @@
                 ListOperationsResponse.create = function create(properties) {
                     return new ListOperationsResponse(properties);
                 };
-
+    
                 /**
                  * Encodes the specified ListOperationsResponse message. Does not implicitly {@link google.longrunning.ListOperationsResponse.verify|verify} messages.
                  * @function encode
@@ -41641,7 +41301,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified ListOperationsResponse message, length delimited. Does not implicitly {@link google.longrunning.ListOperationsResponse.verify|verify} messages.
                  * @function encodeDelimited
@@ -41654,7 +41314,7 @@
                 ListOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a ListOperationsResponse message from the specified reader or buffer.
                  * @function decode
@@ -41688,7 +41348,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a ListOperationsResponse message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -41704,7 +41364,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a ListOperationsResponse message.
                  * @function verify
@@ -41730,7 +41390,7 @@
                             return "nextPageToken: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a ListOperationsResponse message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -41757,7 +41417,7 @@
                         message.nextPageToken = String(object.nextPageToken);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a ListOperationsResponse message. Also converts values to other types if specified.
                  * @function toObject
@@ -41784,7 +41444,7 @@
                         object.nextPageToken = message.nextPageToken;
                     return object;
                 };
-
+    
                 /**
                  * Converts this ListOperationsResponse to JSON.
                  * @function toJSON
@@ -41795,19 +41455,19 @@
                 ListOperationsResponse.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return ListOperationsResponse;
             })();
-
+    
             longrunning.CancelOperationRequest = (function() {
-
+    
                 /**
                  * Properties of a CancelOperationRequest.
                  * @memberof google.longrunning
                  * @interface ICancelOperationRequest
                  * @property {string|null} [name] CancelOperationRequest name
                  */
-
+    
                 /**
                  * Constructs a new CancelOperationRequest.
                  * @memberof google.longrunning
@@ -41822,7 +41482,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * CancelOperationRequest name.
                  * @member {string} name
@@ -41830,7 +41490,7 @@
                  * @instance
                  */
                 CancelOperationRequest.prototype.name = "";
-
+    
                 /**
                  * Creates a new CancelOperationRequest instance using the specified properties.
                  * @function create
@@ -41842,7 +41502,7 @@
                 CancelOperationRequest.create = function create(properties) {
                     return new CancelOperationRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified CancelOperationRequest message. Does not implicitly {@link google.longrunning.CancelOperationRequest.verify|verify} messages.
                  * @function encode
@@ -41859,7 +41519,7 @@
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified CancelOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.CancelOperationRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -41872,7 +41532,7 @@
                 CancelOperationRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a CancelOperationRequest message from the specified reader or buffer.
                  * @function decode
@@ -41901,7 +41561,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a CancelOperationRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -41917,7 +41577,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a CancelOperationRequest message.
                  * @function verify
@@ -41934,7 +41594,7 @@
                             return "name: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a CancelOperationRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -41951,7 +41611,7 @@
                         message.name = String(object.name);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a CancelOperationRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -41971,7 +41631,7 @@
                         object.name = message.name;
                     return object;
                 };
-
+    
                 /**
                  * Converts this CancelOperationRequest to JSON.
                  * @function toJSON
@@ -41982,19 +41642,19 @@
                 CancelOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return CancelOperationRequest;
             })();
-
+    
             longrunning.DeleteOperationRequest = (function() {
-
+    
                 /**
                  * Properties of a DeleteOperationRequest.
                  * @memberof google.longrunning
                  * @interface IDeleteOperationRequest
                  * @property {string|null} [name] DeleteOperationRequest name
                  */
-
+    
                 /**
                  * Constructs a new DeleteOperationRequest.
                  * @memberof google.longrunning
@@ -42009,7 +41669,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * DeleteOperationRequest name.
                  * @member {string} name
@@ -42017,7 +41677,7 @@
                  * @instance
                  */
                 DeleteOperationRequest.prototype.name = "";
-
+    
                 /**
                  * Creates a new DeleteOperationRequest instance using the specified properties.
                  * @function create
@@ -42029,7 +41689,7 @@
                 DeleteOperationRequest.create = function create(properties) {
                     return new DeleteOperationRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified DeleteOperationRequest message. Does not implicitly {@link google.longrunning.DeleteOperationRequest.verify|verify} messages.
                  * @function encode
@@ -42046,7 +41706,7 @@
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified DeleteOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.DeleteOperationRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -42059,7 +41719,7 @@
                 DeleteOperationRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a DeleteOperationRequest message from the specified reader or buffer.
                  * @function decode
@@ -42088,7 +41748,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a DeleteOperationRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -42104,7 +41764,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a DeleteOperationRequest message.
                  * @function verify
@@ -42121,7 +41781,7 @@
                             return "name: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates a DeleteOperationRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -42138,7 +41798,7 @@
                         message.name = String(object.name);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a DeleteOperationRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -42158,7 +41818,7 @@
                         object.name = message.name;
                     return object;
                 };
-
+    
                 /**
                  * Converts this DeleteOperationRequest to JSON.
                  * @function toJSON
@@ -42169,12 +41829,12 @@
                 DeleteOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return DeleteOperationRequest;
             })();
-
+    
             longrunning.WaitOperationRequest = (function() {
-
+    
                 /**
                  * Properties of a WaitOperationRequest.
                  * @memberof google.longrunning
@@ -42182,7 +41842,7 @@
                  * @property {string|null} [name] WaitOperationRequest name
                  * @property {google.protobuf.IDuration|null} [timeout] WaitOperationRequest timeout
                  */
-
+    
                 /**
                  * Constructs a new WaitOperationRequest.
                  * @memberof google.longrunning
@@ -42197,7 +41857,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * WaitOperationRequest name.
                  * @member {string} name
@@ -42205,7 +41865,7 @@
                  * @instance
                  */
                 WaitOperationRequest.prototype.name = "";
-
+    
                 /**
                  * WaitOperationRequest timeout.
                  * @member {google.protobuf.IDuration|null|undefined} timeout
@@ -42213,7 +41873,7 @@
                  * @instance
                  */
                 WaitOperationRequest.prototype.timeout = null;
-
+    
                 /**
                  * Creates a new WaitOperationRequest instance using the specified properties.
                  * @function create
@@ -42225,7 +41885,7 @@
                 WaitOperationRequest.create = function create(properties) {
                     return new WaitOperationRequest(properties);
                 };
-
+    
                 /**
                  * Encodes the specified WaitOperationRequest message. Does not implicitly {@link google.longrunning.WaitOperationRequest.verify|verify} messages.
                  * @function encode
@@ -42244,7 +41904,7 @@
                         $root.google.protobuf.Duration.encode(message.timeout, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified WaitOperationRequest message, length delimited. Does not implicitly {@link google.longrunning.WaitOperationRequest.verify|verify} messages.
                  * @function encodeDelimited
@@ -42257,7 +41917,7 @@
                 WaitOperationRequest.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes a WaitOperationRequest message from the specified reader or buffer.
                  * @function decode
@@ -42289,7 +41949,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes a WaitOperationRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -42305,7 +41965,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies a WaitOperationRequest message.
                  * @function verify
@@ -42327,7 +41987,7 @@
                     }
                     return null;
                 };
-
+    
                 /**
                  * Creates a WaitOperationRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -42349,7 +42009,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from a WaitOperationRequest message. Also converts values to other types if specified.
                  * @function toObject
@@ -42373,7 +42033,7 @@
                         object.timeout = $root.google.protobuf.Duration.toObject(message.timeout, options);
                     return object;
                 };
-
+    
                 /**
                  * Converts this WaitOperationRequest to JSON.
                  * @function toJSON
@@ -42384,12 +42044,12 @@
                 WaitOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return WaitOperationRequest;
             })();
-
+    
             longrunning.OperationInfo = (function() {
-
+    
                 /**
                  * Properties of an OperationInfo.
                  * @memberof google.longrunning
@@ -42397,7 +42057,7 @@
                  * @property {string|null} [responseType] OperationInfo responseType
                  * @property {string|null} [metadataType] OperationInfo metadataType
                  */
-
+    
                 /**
                  * Constructs a new OperationInfo.
                  * @memberof google.longrunning
@@ -42412,7 +42072,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * OperationInfo responseType.
                  * @member {string} responseType
@@ -42420,7 +42080,7 @@
                  * @instance
                  */
                 OperationInfo.prototype.responseType = "";
-
+    
                 /**
                  * OperationInfo metadataType.
                  * @member {string} metadataType
@@ -42428,7 +42088,7 @@
                  * @instance
                  */
                 OperationInfo.prototype.metadataType = "";
-
+    
                 /**
                  * Creates a new OperationInfo instance using the specified properties.
                  * @function create
@@ -42440,7 +42100,7 @@
                 OperationInfo.create = function create(properties) {
                     return new OperationInfo(properties);
                 };
-
+    
                 /**
                  * Encodes the specified OperationInfo message. Does not implicitly {@link google.longrunning.OperationInfo.verify|verify} messages.
                  * @function encode
@@ -42459,7 +42119,7 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.metadataType);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified OperationInfo message, length delimited. Does not implicitly {@link google.longrunning.OperationInfo.verify|verify} messages.
                  * @function encodeDelimited
@@ -42472,7 +42132,7 @@
                 OperationInfo.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an OperationInfo message from the specified reader or buffer.
                  * @function decode
@@ -42504,7 +42164,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an OperationInfo message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -42520,7 +42180,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an OperationInfo message.
                  * @function verify
@@ -42540,7 +42200,7 @@
                             return "metadataType: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates an OperationInfo message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -42559,7 +42219,7 @@
                         message.metadataType = String(object.metadataType);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an OperationInfo message. Also converts values to other types if specified.
                  * @function toObject
@@ -42583,7 +42243,7 @@
                         object.metadataType = message.metadataType;
                     return object;
                 };
-
+    
                 /**
                  * Converts this OperationInfo to JSON.
                  * @function toJSON
@@ -42594,33 +42254,33 @@
                 OperationInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return OperationInfo;
             })();
-
+    
             return longrunning;
         })();
-
+    
         google.iam = (function() {
-
+    
             /**
              * Namespace iam.
              * @memberof google
              * @namespace
              */
             var iam = {};
-
+    
             iam.v1 = (function() {
-
+    
                 /**
                  * Namespace v1.
                  * @memberof google.iam
                  * @namespace
                  */
                 var v1 = {};
-
+    
                 v1.IAMPolicy = (function() {
-
+    
                     /**
                      * Constructs a new IAMPolicy service.
                      * @memberof google.iam.v1
@@ -42634,9 +42294,9 @@
                     function IAMPolicy(rpcImpl, requestDelimited, responseDelimited) {
                         $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
                     }
-
+    
                     (IAMPolicy.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = IAMPolicy;
-
+    
                     /**
                      * Creates new IAMPolicy service using the specified rpc implementation.
                      * @function create
@@ -42650,7 +42310,7 @@
                     IAMPolicy.create = function create(rpcImpl, requestDelimited, responseDelimited) {
                         return new this(rpcImpl, requestDelimited, responseDelimited);
                     };
-
+    
                     /**
                      * Callback as used by {@link google.iam.v1.IAMPolicy#setIamPolicy}.
                      * @memberof google.iam.v1.IAMPolicy
@@ -42659,7 +42319,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.iam.v1.Policy} [response] Policy
                      */
-
+    
                     /**
                      * Calls SetIamPolicy.
                      * @function setIamPolicy
@@ -42673,7 +42333,7 @@
                     Object.defineProperty(IAMPolicy.prototype.setIamPolicy = function setIamPolicy(request, callback) {
                         return this.rpcCall(setIamPolicy, $root.google.iam.v1.SetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                     }, "name", { value: "SetIamPolicy" });
-
+    
                     /**
                      * Calls SetIamPolicy.
                      * @function setIamPolicy
@@ -42683,7 +42343,7 @@
                      * @returns {Promise<google.iam.v1.Policy>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.iam.v1.IAMPolicy#getIamPolicy}.
                      * @memberof google.iam.v1.IAMPolicy
@@ -42692,7 +42352,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.iam.v1.Policy} [response] Policy
                      */
-
+    
                     /**
                      * Calls GetIamPolicy.
                      * @function getIamPolicy
@@ -42706,7 +42366,7 @@
                     Object.defineProperty(IAMPolicy.prototype.getIamPolicy = function getIamPolicy(request, callback) {
                         return this.rpcCall(getIamPolicy, $root.google.iam.v1.GetIamPolicyRequest, $root.google.iam.v1.Policy, request, callback);
                     }, "name", { value: "GetIamPolicy" });
-
+    
                     /**
                      * Calls GetIamPolicy.
                      * @function getIamPolicy
@@ -42716,7 +42376,7 @@
                      * @returns {Promise<google.iam.v1.Policy>} Promise
                      * @variation 2
                      */
-
+    
                     /**
                      * Callback as used by {@link google.iam.v1.IAMPolicy#testIamPermissions}.
                      * @memberof google.iam.v1.IAMPolicy
@@ -42725,7 +42385,7 @@
                      * @param {Error|null} error Error, if any
                      * @param {google.iam.v1.TestIamPermissionsResponse} [response] TestIamPermissionsResponse
                      */
-
+    
                     /**
                      * Calls TestIamPermissions.
                      * @function testIamPermissions
@@ -42739,7 +42399,7 @@
                     Object.defineProperty(IAMPolicy.prototype.testIamPermissions = function testIamPermissions(request, callback) {
                         return this.rpcCall(testIamPermissions, $root.google.iam.v1.TestIamPermissionsRequest, $root.google.iam.v1.TestIamPermissionsResponse, request, callback);
                     }, "name", { value: "TestIamPermissions" });
-
+    
                     /**
                      * Calls TestIamPermissions.
                      * @function testIamPermissions
@@ -42749,12 +42409,12 @@
                      * @returns {Promise<google.iam.v1.TestIamPermissionsResponse>} Promise
                      * @variation 2
                      */
-
+    
                     return IAMPolicy;
                 })();
-
+    
                 v1.SetIamPolicyRequest = (function() {
-
+    
                     /**
                      * Properties of a SetIamPolicyRequest.
                      * @memberof google.iam.v1
@@ -42762,7 +42422,7 @@
                      * @property {string|null} [resource] SetIamPolicyRequest resource
                      * @property {google.iam.v1.IPolicy|null} [policy] SetIamPolicyRequest policy
                      */
-
+    
                     /**
                      * Constructs a new SetIamPolicyRequest.
                      * @memberof google.iam.v1
@@ -42777,7 +42437,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * SetIamPolicyRequest resource.
                      * @member {string} resource
@@ -42785,7 +42445,7 @@
                      * @instance
                      */
                     SetIamPolicyRequest.prototype.resource = "";
-
+    
                     /**
                      * SetIamPolicyRequest policy.
                      * @member {google.iam.v1.IPolicy|null|undefined} policy
@@ -42793,7 +42453,7 @@
                      * @instance
                      */
                     SetIamPolicyRequest.prototype.policy = null;
-
+    
                     /**
                      * Creates a new SetIamPolicyRequest instance using the specified properties.
                      * @function create
@@ -42805,7 +42465,7 @@
                     SetIamPolicyRequest.create = function create(properties) {
                         return new SetIamPolicyRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified SetIamPolicyRequest message. Does not implicitly {@link google.iam.v1.SetIamPolicyRequest.verify|verify} messages.
                      * @function encode
@@ -42824,7 +42484,7 @@
                             $root.google.iam.v1.Policy.encode(message.policy, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified SetIamPolicyRequest message, length delimited. Does not implicitly {@link google.iam.v1.SetIamPolicyRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -42837,7 +42497,7 @@
                     SetIamPolicyRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a SetIamPolicyRequest message from the specified reader or buffer.
                      * @function decode
@@ -42869,7 +42529,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a SetIamPolicyRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -42885,7 +42545,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a SetIamPolicyRequest message.
                      * @function verify
@@ -42907,7 +42567,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a SetIamPolicyRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -42929,7 +42589,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a SetIamPolicyRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -42953,7 +42613,7 @@
                             object.policy = $root.google.iam.v1.Policy.toObject(message.policy, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this SetIamPolicyRequest to JSON.
                      * @function toJSON
@@ -42964,12 +42624,12 @@
                     SetIamPolicyRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return SetIamPolicyRequest;
                 })();
-
+    
                 v1.GetIamPolicyRequest = (function() {
-
+    
                     /**
                      * Properties of a GetIamPolicyRequest.
                      * @memberof google.iam.v1
@@ -42977,7 +42637,7 @@
                      * @property {string|null} [resource] GetIamPolicyRequest resource
                      * @property {google.iam.v1.IGetPolicyOptions|null} [options] GetIamPolicyRequest options
                      */
-
+    
                     /**
                      * Constructs a new GetIamPolicyRequest.
                      * @memberof google.iam.v1
@@ -42992,7 +42652,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * GetIamPolicyRequest resource.
                      * @member {string} resource
@@ -43000,7 +42660,7 @@
                      * @instance
                      */
                     GetIamPolicyRequest.prototype.resource = "";
-
+    
                     /**
                      * GetIamPolicyRequest options.
                      * @member {google.iam.v1.IGetPolicyOptions|null|undefined} options
@@ -43008,7 +42668,7 @@
                      * @instance
                      */
                     GetIamPolicyRequest.prototype.options = null;
-
+    
                     /**
                      * Creates a new GetIamPolicyRequest instance using the specified properties.
                      * @function create
@@ -43020,7 +42680,7 @@
                     GetIamPolicyRequest.create = function create(properties) {
                         return new GetIamPolicyRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified GetIamPolicyRequest message. Does not implicitly {@link google.iam.v1.GetIamPolicyRequest.verify|verify} messages.
                      * @function encode
@@ -43039,7 +42699,7 @@
                             $root.google.iam.v1.GetPolicyOptions.encode(message.options, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified GetIamPolicyRequest message, length delimited. Does not implicitly {@link google.iam.v1.GetIamPolicyRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -43052,7 +42712,7 @@
                     GetIamPolicyRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a GetIamPolicyRequest message from the specified reader or buffer.
                      * @function decode
@@ -43084,7 +42744,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a GetIamPolicyRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -43100,7 +42760,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a GetIamPolicyRequest message.
                      * @function verify
@@ -43122,7 +42782,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a GetIamPolicyRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -43144,7 +42804,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a GetIamPolicyRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -43168,7 +42828,7 @@
                             object.options = $root.google.iam.v1.GetPolicyOptions.toObject(message.options, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this GetIamPolicyRequest to JSON.
                      * @function toJSON
@@ -43179,12 +42839,12 @@
                     GetIamPolicyRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return GetIamPolicyRequest;
                 })();
-
+    
                 v1.TestIamPermissionsRequest = (function() {
-
+    
                     /**
                      * Properties of a TestIamPermissionsRequest.
                      * @memberof google.iam.v1
@@ -43192,7 +42852,7 @@
                      * @property {string|null} [resource] TestIamPermissionsRequest resource
                      * @property {Array.<string>|null} [permissions] TestIamPermissionsRequest permissions
                      */
-
+    
                     /**
                      * Constructs a new TestIamPermissionsRequest.
                      * @memberof google.iam.v1
@@ -43208,7 +42868,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * TestIamPermissionsRequest resource.
                      * @member {string} resource
@@ -43216,7 +42876,7 @@
                      * @instance
                      */
                     TestIamPermissionsRequest.prototype.resource = "";
-
+    
                     /**
                      * TestIamPermissionsRequest permissions.
                      * @member {Array.<string>} permissions
@@ -43224,7 +42884,7 @@
                      * @instance
                      */
                     TestIamPermissionsRequest.prototype.permissions = $util.emptyArray;
-
+    
                     /**
                      * Creates a new TestIamPermissionsRequest instance using the specified properties.
                      * @function create
@@ -43236,7 +42896,7 @@
                     TestIamPermissionsRequest.create = function create(properties) {
                         return new TestIamPermissionsRequest(properties);
                     };
-
+    
                     /**
                      * Encodes the specified TestIamPermissionsRequest message. Does not implicitly {@link google.iam.v1.TestIamPermissionsRequest.verify|verify} messages.
                      * @function encode
@@ -43256,7 +42916,7 @@
                                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.permissions[i]);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified TestIamPermissionsRequest message, length delimited. Does not implicitly {@link google.iam.v1.TestIamPermissionsRequest.verify|verify} messages.
                      * @function encodeDelimited
@@ -43269,7 +42929,7 @@
                     TestIamPermissionsRequest.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a TestIamPermissionsRequest message from the specified reader or buffer.
                      * @function decode
@@ -43303,7 +42963,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a TestIamPermissionsRequest message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -43319,7 +42979,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a TestIamPermissionsRequest message.
                      * @function verify
@@ -43343,7 +43003,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a TestIamPermissionsRequest message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -43367,7 +43027,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a TestIamPermissionsRequest message. Also converts values to other types if specified.
                      * @function toObject
@@ -43394,7 +43054,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this TestIamPermissionsRequest to JSON.
                      * @function toJSON
@@ -43405,19 +43065,19 @@
                     TestIamPermissionsRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return TestIamPermissionsRequest;
                 })();
-
+    
                 v1.TestIamPermissionsResponse = (function() {
-
+    
                     /**
                      * Properties of a TestIamPermissionsResponse.
                      * @memberof google.iam.v1
                      * @interface ITestIamPermissionsResponse
                      * @property {Array.<string>|null} [permissions] TestIamPermissionsResponse permissions
                      */
-
+    
                     /**
                      * Constructs a new TestIamPermissionsResponse.
                      * @memberof google.iam.v1
@@ -43433,7 +43093,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * TestIamPermissionsResponse permissions.
                      * @member {Array.<string>} permissions
@@ -43441,7 +43101,7 @@
                      * @instance
                      */
                     TestIamPermissionsResponse.prototype.permissions = $util.emptyArray;
-
+    
                     /**
                      * Creates a new TestIamPermissionsResponse instance using the specified properties.
                      * @function create
@@ -43453,7 +43113,7 @@
                     TestIamPermissionsResponse.create = function create(properties) {
                         return new TestIamPermissionsResponse(properties);
                     };
-
+    
                     /**
                      * Encodes the specified TestIamPermissionsResponse message. Does not implicitly {@link google.iam.v1.TestIamPermissionsResponse.verify|verify} messages.
                      * @function encode
@@ -43471,7 +43131,7 @@
                                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.permissions[i]);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified TestIamPermissionsResponse message, length delimited. Does not implicitly {@link google.iam.v1.TestIamPermissionsResponse.verify|verify} messages.
                      * @function encodeDelimited
@@ -43484,7 +43144,7 @@
                     TestIamPermissionsResponse.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a TestIamPermissionsResponse message from the specified reader or buffer.
                      * @function decode
@@ -43515,7 +43175,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a TestIamPermissionsResponse message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -43531,7 +43191,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a TestIamPermissionsResponse message.
                      * @function verify
@@ -43552,7 +43212,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a TestIamPermissionsResponse message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -43574,7 +43234,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a TestIamPermissionsResponse message. Also converts values to other types if specified.
                      * @function toObject
@@ -43597,7 +43257,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this TestIamPermissionsResponse to JSON.
                      * @function toJSON
@@ -43608,19 +43268,19 @@
                     TestIamPermissionsResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return TestIamPermissionsResponse;
                 })();
-
+    
                 v1.GetPolicyOptions = (function() {
-
+    
                     /**
                      * Properties of a GetPolicyOptions.
                      * @memberof google.iam.v1
                      * @interface IGetPolicyOptions
                      * @property {number|null} [requestedPolicyVersion] GetPolicyOptions requestedPolicyVersion
                      */
-
+    
                     /**
                      * Constructs a new GetPolicyOptions.
                      * @memberof google.iam.v1
@@ -43635,7 +43295,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * GetPolicyOptions requestedPolicyVersion.
                      * @member {number} requestedPolicyVersion
@@ -43643,7 +43303,7 @@
                      * @instance
                      */
                     GetPolicyOptions.prototype.requestedPolicyVersion = 0;
-
+    
                     /**
                      * Creates a new GetPolicyOptions instance using the specified properties.
                      * @function create
@@ -43655,7 +43315,7 @@
                     GetPolicyOptions.create = function create(properties) {
                         return new GetPolicyOptions(properties);
                     };
-
+    
                     /**
                      * Encodes the specified GetPolicyOptions message. Does not implicitly {@link google.iam.v1.GetPolicyOptions.verify|verify} messages.
                      * @function encode
@@ -43672,7 +43332,7 @@
                             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.requestedPolicyVersion);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified GetPolicyOptions message, length delimited. Does not implicitly {@link google.iam.v1.GetPolicyOptions.verify|verify} messages.
                      * @function encodeDelimited
@@ -43685,7 +43345,7 @@
                     GetPolicyOptions.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a GetPolicyOptions message from the specified reader or buffer.
                      * @function decode
@@ -43714,7 +43374,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a GetPolicyOptions message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -43730,7 +43390,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a GetPolicyOptions message.
                      * @function verify
@@ -43747,7 +43407,7 @@
                                 return "requestedPolicyVersion: integer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a GetPolicyOptions message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -43764,7 +43424,7 @@
                             message.requestedPolicyVersion = object.requestedPolicyVersion | 0;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a GetPolicyOptions message. Also converts values to other types if specified.
                      * @function toObject
@@ -43784,7 +43444,7 @@
                             object.requestedPolicyVersion = message.requestedPolicyVersion;
                         return object;
                     };
-
+    
                     /**
                      * Converts this GetPolicyOptions to JSON.
                      * @function toJSON
@@ -43795,12 +43455,12 @@
                     GetPolicyOptions.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return GetPolicyOptions;
                 })();
-
+    
                 v1.Policy = (function() {
-
+    
                     /**
                      * Properties of a Policy.
                      * @memberof google.iam.v1
@@ -43809,7 +43469,7 @@
                      * @property {Array.<google.iam.v1.IBinding>|null} [bindings] Policy bindings
                      * @property {Uint8Array|null} [etag] Policy etag
                      */
-
+    
                     /**
                      * Constructs a new Policy.
                      * @memberof google.iam.v1
@@ -43825,7 +43485,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Policy version.
                      * @member {number} version
@@ -43833,7 +43493,7 @@
                      * @instance
                      */
                     Policy.prototype.version = 0;
-
+    
                     /**
                      * Policy bindings.
                      * @member {Array.<google.iam.v1.IBinding>} bindings
@@ -43841,7 +43501,7 @@
                      * @instance
                      */
                     Policy.prototype.bindings = $util.emptyArray;
-
+    
                     /**
                      * Policy etag.
                      * @member {Uint8Array} etag
@@ -43849,7 +43509,7 @@
                      * @instance
                      */
                     Policy.prototype.etag = $util.newBuffer([]);
-
+    
                     /**
                      * Creates a new Policy instance using the specified properties.
                      * @function create
@@ -43861,7 +43521,7 @@
                     Policy.create = function create(properties) {
                         return new Policy(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Policy message. Does not implicitly {@link google.iam.v1.Policy.verify|verify} messages.
                      * @function encode
@@ -43883,7 +43543,7 @@
                                 $root.google.iam.v1.Binding.encode(message.bindings[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Policy message, length delimited. Does not implicitly {@link google.iam.v1.Policy.verify|verify} messages.
                      * @function encodeDelimited
@@ -43896,7 +43556,7 @@
                     Policy.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Policy message from the specified reader or buffer.
                      * @function decode
@@ -43933,7 +43593,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Policy message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -43949,7 +43609,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Policy message.
                      * @function verify
@@ -43978,7 +43638,7 @@
                                 return "etag: buffer expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates a Policy message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -44010,7 +43670,7 @@
                                 message.etag = object.etag;
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Policy message. Also converts values to other types if specified.
                      * @function toObject
@@ -44047,7 +43707,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this Policy to JSON.
                      * @function toJSON
@@ -44058,12 +43718,12 @@
                     Policy.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Policy;
                 })();
-
+    
                 v1.Binding = (function() {
-
+    
                     /**
                      * Properties of a Binding.
                      * @memberof google.iam.v1
@@ -44072,7 +43732,7 @@
                      * @property {Array.<string>|null} [members] Binding members
                      * @property {google.type.IExpr|null} [condition] Binding condition
                      */
-
+    
                     /**
                      * Constructs a new Binding.
                      * @memberof google.iam.v1
@@ -44088,7 +43748,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * Binding role.
                      * @member {string} role
@@ -44096,7 +43756,7 @@
                      * @instance
                      */
                     Binding.prototype.role = "";
-
+    
                     /**
                      * Binding members.
                      * @member {Array.<string>} members
@@ -44104,7 +43764,7 @@
                      * @instance
                      */
                     Binding.prototype.members = $util.emptyArray;
-
+    
                     /**
                      * Binding condition.
                      * @member {google.type.IExpr|null|undefined} condition
@@ -44112,7 +43772,7 @@
                      * @instance
                      */
                     Binding.prototype.condition = null;
-
+    
                     /**
                      * Creates a new Binding instance using the specified properties.
                      * @function create
@@ -44124,7 +43784,7 @@
                     Binding.create = function create(properties) {
                         return new Binding(properties);
                     };
-
+    
                     /**
                      * Encodes the specified Binding message. Does not implicitly {@link google.iam.v1.Binding.verify|verify} messages.
                      * @function encode
@@ -44146,7 +43806,7 @@
                             $root.google.type.Expr.encode(message.condition, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified Binding message, length delimited. Does not implicitly {@link google.iam.v1.Binding.verify|verify} messages.
                      * @function encodeDelimited
@@ -44159,7 +43819,7 @@
                     Binding.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a Binding message from the specified reader or buffer.
                      * @function decode
@@ -44196,7 +43856,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a Binding message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -44212,7 +43872,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a Binding message.
                      * @function verify
@@ -44241,7 +43901,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a Binding message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -44270,7 +43930,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a Binding message. Also converts values to other types if specified.
                      * @function toObject
@@ -44301,7 +43961,7 @@
                             object.condition = $root.google.type.Expr.toObject(message.condition, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this Binding to JSON.
                      * @function toJSON
@@ -44312,12 +43972,12 @@
                     Binding.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return Binding;
                 })();
-
+    
                 v1.PolicyDelta = (function() {
-
+    
                     /**
                      * Properties of a PolicyDelta.
                      * @memberof google.iam.v1
@@ -44325,7 +43985,7 @@
                      * @property {Array.<google.iam.v1.IBindingDelta>|null} [bindingDeltas] PolicyDelta bindingDeltas
                      * @property {Array.<google.iam.v1.IAuditConfigDelta>|null} [auditConfigDeltas] PolicyDelta auditConfigDeltas
                      */
-
+    
                     /**
                      * Constructs a new PolicyDelta.
                      * @memberof google.iam.v1
@@ -44342,7 +44002,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * PolicyDelta bindingDeltas.
                      * @member {Array.<google.iam.v1.IBindingDelta>} bindingDeltas
@@ -44350,7 +44010,7 @@
                      * @instance
                      */
                     PolicyDelta.prototype.bindingDeltas = $util.emptyArray;
-
+    
                     /**
                      * PolicyDelta auditConfigDeltas.
                      * @member {Array.<google.iam.v1.IAuditConfigDelta>} auditConfigDeltas
@@ -44358,7 +44018,7 @@
                      * @instance
                      */
                     PolicyDelta.prototype.auditConfigDeltas = $util.emptyArray;
-
+    
                     /**
                      * Creates a new PolicyDelta instance using the specified properties.
                      * @function create
@@ -44370,7 +44030,7 @@
                     PolicyDelta.create = function create(properties) {
                         return new PolicyDelta(properties);
                     };
-
+    
                     /**
                      * Encodes the specified PolicyDelta message. Does not implicitly {@link google.iam.v1.PolicyDelta.verify|verify} messages.
                      * @function encode
@@ -44391,7 +44051,7 @@
                                 $root.google.iam.v1.AuditConfigDelta.encode(message.auditConfigDeltas[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified PolicyDelta message, length delimited. Does not implicitly {@link google.iam.v1.PolicyDelta.verify|verify} messages.
                      * @function encodeDelimited
@@ -44404,7 +44064,7 @@
                     PolicyDelta.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a PolicyDelta message from the specified reader or buffer.
                      * @function decode
@@ -44440,7 +44100,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a PolicyDelta message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -44456,7 +44116,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a PolicyDelta message.
                      * @function verify
@@ -44488,7 +44148,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a PolicyDelta message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -44523,7 +44183,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a PolicyDelta message. Also converts values to other types if specified.
                      * @function toObject
@@ -44553,7 +44213,7 @@
                         }
                         return object;
                     };
-
+    
                     /**
                      * Converts this PolicyDelta to JSON.
                      * @function toJSON
@@ -44564,12 +44224,12 @@
                     PolicyDelta.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     return PolicyDelta;
                 })();
-
+    
                 v1.BindingDelta = (function() {
-
+    
                     /**
                      * Properties of a BindingDelta.
                      * @memberof google.iam.v1
@@ -44579,7 +44239,7 @@
                      * @property {string|null} [member] BindingDelta member
                      * @property {google.type.IExpr|null} [condition] BindingDelta condition
                      */
-
+    
                     /**
                      * Constructs a new BindingDelta.
                      * @memberof google.iam.v1
@@ -44594,7 +44254,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * BindingDelta action.
                      * @member {google.iam.v1.BindingDelta.Action} action
@@ -44602,7 +44262,7 @@
                      * @instance
                      */
                     BindingDelta.prototype.action = 0;
-
+    
                     /**
                      * BindingDelta role.
                      * @member {string} role
@@ -44610,7 +44270,7 @@
                      * @instance
                      */
                     BindingDelta.prototype.role = "";
-
+    
                     /**
                      * BindingDelta member.
                      * @member {string} member
@@ -44618,7 +44278,7 @@
                      * @instance
                      */
                     BindingDelta.prototype.member = "";
-
+    
                     /**
                      * BindingDelta condition.
                      * @member {google.type.IExpr|null|undefined} condition
@@ -44626,7 +44286,7 @@
                      * @instance
                      */
                     BindingDelta.prototype.condition = null;
-
+    
                     /**
                      * Creates a new BindingDelta instance using the specified properties.
                      * @function create
@@ -44638,7 +44298,7 @@
                     BindingDelta.create = function create(properties) {
                         return new BindingDelta(properties);
                     };
-
+    
                     /**
                      * Encodes the specified BindingDelta message. Does not implicitly {@link google.iam.v1.BindingDelta.verify|verify} messages.
                      * @function encode
@@ -44661,7 +44321,7 @@
                             $root.google.type.Expr.encode(message.condition, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified BindingDelta message, length delimited. Does not implicitly {@link google.iam.v1.BindingDelta.verify|verify} messages.
                      * @function encodeDelimited
@@ -44674,7 +44334,7 @@
                     BindingDelta.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes a BindingDelta message from the specified reader or buffer.
                      * @function decode
@@ -44712,7 +44372,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes a BindingDelta message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -44728,7 +44388,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies a BindingDelta message.
                      * @function verify
@@ -44762,7 +44422,7 @@
                         }
                         return null;
                     };
-
+    
                     /**
                      * Creates a BindingDelta message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -44800,7 +44460,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from a BindingDelta message. Also converts values to other types if specified.
                      * @function toObject
@@ -44830,7 +44490,7 @@
                             object.condition = $root.google.type.Expr.toObject(message.condition, options);
                         return object;
                     };
-
+    
                     /**
                      * Converts this BindingDelta to JSON.
                      * @function toJSON
@@ -44841,7 +44501,7 @@
                     BindingDelta.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     /**
                      * Action enum.
                      * @name google.iam.v1.BindingDelta.Action
@@ -44857,12 +44517,12 @@
                         values[valuesById[2] = "REMOVE"] = 2;
                         return values;
                     })();
-
+    
                     return BindingDelta;
                 })();
-
+    
                 v1.AuditConfigDelta = (function() {
-
+    
                     /**
                      * Properties of an AuditConfigDelta.
                      * @memberof google.iam.v1
@@ -44872,7 +44532,7 @@
                      * @property {string|null} [exemptedMember] AuditConfigDelta exemptedMember
                      * @property {string|null} [logType] AuditConfigDelta logType
                      */
-
+    
                     /**
                      * Constructs a new AuditConfigDelta.
                      * @memberof google.iam.v1
@@ -44887,7 +44547,7 @@
                                 if (properties[keys[i]] != null)
                                     this[keys[i]] = properties[keys[i]];
                     }
-
+    
                     /**
                      * AuditConfigDelta action.
                      * @member {google.iam.v1.AuditConfigDelta.Action} action
@@ -44895,7 +44555,7 @@
                      * @instance
                      */
                     AuditConfigDelta.prototype.action = 0;
-
+    
                     /**
                      * AuditConfigDelta service.
                      * @member {string} service
@@ -44903,7 +44563,7 @@
                      * @instance
                      */
                     AuditConfigDelta.prototype.service = "";
-
+    
                     /**
                      * AuditConfigDelta exemptedMember.
                      * @member {string} exemptedMember
@@ -44911,7 +44571,7 @@
                      * @instance
                      */
                     AuditConfigDelta.prototype.exemptedMember = "";
-
+    
                     /**
                      * AuditConfigDelta logType.
                      * @member {string} logType
@@ -44919,7 +44579,7 @@
                      * @instance
                      */
                     AuditConfigDelta.prototype.logType = "";
-
+    
                     /**
                      * Creates a new AuditConfigDelta instance using the specified properties.
                      * @function create
@@ -44931,7 +44591,7 @@
                     AuditConfigDelta.create = function create(properties) {
                         return new AuditConfigDelta(properties);
                     };
-
+    
                     /**
                      * Encodes the specified AuditConfigDelta message. Does not implicitly {@link google.iam.v1.AuditConfigDelta.verify|verify} messages.
                      * @function encode
@@ -44954,7 +44614,7 @@
                             writer.uint32(/* id 4, wireType 2 =*/34).string(message.logType);
                         return writer;
                     };
-
+    
                     /**
                      * Encodes the specified AuditConfigDelta message, length delimited. Does not implicitly {@link google.iam.v1.AuditConfigDelta.verify|verify} messages.
                      * @function encodeDelimited
@@ -44967,7 +44627,7 @@
                     AuditConfigDelta.encodeDelimited = function encodeDelimited(message, writer) {
                         return this.encode(message, writer).ldelim();
                     };
-
+    
                     /**
                      * Decodes an AuditConfigDelta message from the specified reader or buffer.
                      * @function decode
@@ -45005,7 +44665,7 @@
                         }
                         return message;
                     };
-
+    
                     /**
                      * Decodes an AuditConfigDelta message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
@@ -45021,7 +44681,7 @@
                             reader = new $Reader(reader);
                         return this.decode(reader, reader.uint32());
                     };
-
+    
                     /**
                      * Verifies an AuditConfigDelta message.
                      * @function verify
@@ -45053,7 +44713,7 @@
                                 return "logType: string expected";
                         return null;
                     };
-
+    
                     /**
                      * Creates an AuditConfigDelta message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
@@ -45088,7 +44748,7 @@
                             message.logType = String(object.logType);
                         return message;
                     };
-
+    
                     /**
                      * Creates a plain object from an AuditConfigDelta message. Also converts values to other types if specified.
                      * @function toObject
@@ -45118,7 +44778,7 @@
                             object.logType = message.logType;
                         return object;
                     };
-
+    
                     /**
                      * Converts this AuditConfigDelta to JSON.
                      * @function toJSON
@@ -45129,7 +44789,7 @@
                     AuditConfigDelta.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
-
+    
                     /**
                      * Action enum.
                      * @name google.iam.v1.AuditConfigDelta.Action
@@ -45145,27 +44805,27 @@
                         values[valuesById[2] = "REMOVE"] = 2;
                         return values;
                     })();
-
+    
                     return AuditConfigDelta;
                 })();
-
+    
                 return v1;
             })();
-
+    
             return iam;
         })();
-
+    
         google.type = (function() {
-
+    
             /**
              * Namespace type.
              * @memberof google
              * @namespace
              */
             var type = {};
-
+    
             type.Expr = (function() {
-
+    
                 /**
                  * Properties of an Expr.
                  * @memberof google.type
@@ -45175,7 +44835,7 @@
                  * @property {string|null} [description] Expr description
                  * @property {string|null} [location] Expr location
                  */
-
+    
                 /**
                  * Constructs a new Expr.
                  * @memberof google.type
@@ -45190,7 +44850,7 @@
                             if (properties[keys[i]] != null)
                                 this[keys[i]] = properties[keys[i]];
                 }
-
+    
                 /**
                  * Expr expression.
                  * @member {string} expression
@@ -45198,7 +44858,7 @@
                  * @instance
                  */
                 Expr.prototype.expression = "";
-
+    
                 /**
                  * Expr title.
                  * @member {string} title
@@ -45206,7 +44866,7 @@
                  * @instance
                  */
                 Expr.prototype.title = "";
-
+    
                 /**
                  * Expr description.
                  * @member {string} description
@@ -45214,7 +44874,7 @@
                  * @instance
                  */
                 Expr.prototype.description = "";
-
+    
                 /**
                  * Expr location.
                  * @member {string} location
@@ -45222,7 +44882,7 @@
                  * @instance
                  */
                 Expr.prototype.location = "";
-
+    
                 /**
                  * Creates a new Expr instance using the specified properties.
                  * @function create
@@ -45234,7 +44894,7 @@
                 Expr.create = function create(properties) {
                     return new Expr(properties);
                 };
-
+    
                 /**
                  * Encodes the specified Expr message. Does not implicitly {@link google.type.Expr.verify|verify} messages.
                  * @function encode
@@ -45257,7 +44917,7 @@
                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.location);
                     return writer;
                 };
-
+    
                 /**
                  * Encodes the specified Expr message, length delimited. Does not implicitly {@link google.type.Expr.verify|verify} messages.
                  * @function encodeDelimited
@@ -45270,7 +44930,7 @@
                 Expr.encodeDelimited = function encodeDelimited(message, writer) {
                     return this.encode(message, writer).ldelim();
                 };
-
+    
                 /**
                  * Decodes an Expr message from the specified reader or buffer.
                  * @function decode
@@ -45308,7 +44968,7 @@
                     }
                     return message;
                 };
-
+    
                 /**
                  * Decodes an Expr message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
@@ -45324,7 +44984,7 @@
                         reader = new $Reader(reader);
                     return this.decode(reader, reader.uint32());
                 };
-
+    
                 /**
                  * Verifies an Expr message.
                  * @function verify
@@ -45350,7 +45010,7 @@
                             return "location: string expected";
                     return null;
                 };
-
+    
                 /**
                  * Creates an Expr message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
@@ -45373,7 +45033,7 @@
                         message.location = String(object.location);
                     return message;
                 };
-
+    
                 /**
                  * Creates a plain object from an Expr message. Also converts values to other types if specified.
                  * @function toObject
@@ -45403,7 +45063,7 @@
                         object.location = message.location;
                     return object;
                 };
-
+    
                 /**
                  * Converts this Expr to JSON.
                  * @function toJSON
@@ -45414,13 +45074,13 @@
                 Expr.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
-
+    
                 return Expr;
             })();
-
+    
             return type;
         })();
-
+    
         return google;
     })();
 
