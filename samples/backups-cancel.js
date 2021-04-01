@@ -16,7 +16,7 @@
 'use strict';
 
 async function cancelBackup(instanceId, databaseId, backupId, projectId) {
-  // [START spanner_cancel_backup]
+  // [START spanner_cancel_backup_create]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -63,7 +63,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     // Close the database when finished.
     await database.close();
   }
-  // [END spanner_cancel_backup]
+  // [END spanner_cancel_backup_create]
 }
 
 module.exports.cancelBackup = cancelBackup;

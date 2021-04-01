@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -3277,6 +3277,82 @@ describe('v1.DatabaseAdminClient', () => {
         assert.strictEqual(result, 'backupValue');
         assert(
           (client.pathTemplates.backupPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+    });
+
+    describe('cryptoKey', () => {
+      const fakePath = '/rendered/path/cryptoKey';
+      const expectedParameters = {
+        project: 'projectValue',
+        location: 'locationValue',
+        key_ring: 'keyRingValue',
+        crypto_key: 'cryptoKeyValue',
+      };
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      client.pathTemplates.cryptoKeyPathTemplate.render = sinon
+        .stub()
+        .returns(fakePath);
+      client.pathTemplates.cryptoKeyPathTemplate.match = sinon
+        .stub()
+        .returns(expectedParameters);
+
+      it('cryptoKeyPath', () => {
+        const result = client.cryptoKeyPath(
+          'projectValue',
+          'locationValue',
+          'keyRingValue',
+          'cryptoKeyValue'
+        );
+        assert.strictEqual(result, fakePath);
+        assert(
+          (client.pathTemplates.cryptoKeyPathTemplate.render as SinonStub)
+            .getCall(-1)
+            .calledWith(expectedParameters)
+        );
+      });
+
+      it('matchProjectFromCryptoKeyName', () => {
+        const result = client.matchProjectFromCryptoKeyName(fakePath);
+        assert.strictEqual(result, 'projectValue');
+        assert(
+          (client.pathTemplates.cryptoKeyPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchLocationFromCryptoKeyName', () => {
+        const result = client.matchLocationFromCryptoKeyName(fakePath);
+        assert.strictEqual(result, 'locationValue');
+        assert(
+          (client.pathTemplates.cryptoKeyPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchKeyRingFromCryptoKeyName', () => {
+        const result = client.matchKeyRingFromCryptoKeyName(fakePath);
+        assert.strictEqual(result, 'keyRingValue');
+        assert(
+          (client.pathTemplates.cryptoKeyPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchCryptoKeyFromCryptoKeyName', () => {
+        const result = client.matchCryptoKeyFromCryptoKeyName(fakePath);
+        assert.strictEqual(result, 'cryptoKeyValue');
+        assert(
+          (client.pathTemplates.cryptoKeyPathTemplate.match as SinonStub)
             .getCall(-1)
             .calledWith(fakePath)
         );

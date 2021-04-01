@@ -15,6 +15,7 @@
 'use strict';
 
 const {Spanner} = require('@google-cloud/spanner');
+const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
 const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
@@ -44,8 +45,16 @@ const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
+const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
+const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
+const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
+const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
+const LOCATION_ID = 'regional-us-central1';
+const KEY_LOCATION_ID = 'us-central1';
+const KEY_RING_ID = 'test-key-ring-node';
+const KEY_ID = 'test-key';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -79,36 +88,23 @@ const delay = async test => {
 };
 
 async function deleteStaleInstances() {
-  const [instances] = await spanner.getInstances({
+  let [instances] = await spanner.getInstances({
     filter: `(labels.${LABEL}:true) OR (labels.cloud_spanner_samples:true)`,
   });
   const old = new Date();
-  old.setHours(-4);
+  old.setHours(old.getHours() - 4);
 
+  instances = instances.filter(instance => {
+    return (
+      instance.metadata.labels['created'] &&
+      new Date(parseInt(instance.metadata.labels['created']) * 1000) < old
+    );
+  });
+  const limit = pLimit(5);
   await Promise.all(
-    instances.map(async instance => {
-      const instanceName = instance.metadata.name;
-
-      const res = await spanner.auth.request({
-        url: `https://spanner.googleapis.com/v1/${instanceName}/operations`,
-      });
-      const operations = res.data.operations;
-
-      const delay = 500;
-      const limit = pLimit(5);
-
-      await Promise.all(
-        operations
-          .filter(operation => {
-            return operation.metadata['@type'].includes('CreateInstance');
-          })
-          .filter(operation => {
-            const instanceCreated = new Date(operation.metadata.startTime);
-            return instanceCreated < Math.round(old.getTime() / 1000);
-          })
-          .map(() => limit(() => setTimeout(deleteInstance, delay, instance)))
-      );
-    })
+    instances.map(instance =>
+      limit(() => setTimeout(deleteInstance, delay, instance))
+    )
   );
 }
 
@@ -116,6 +112,69 @@ async function deleteInstance(instance) {
   const [backups] = await instance.getBackups();
   await Promise.all(backups.map(backup => backup.delete(GAX_OPTIONS)));
   return instance.delete(GAX_OPTIONS);
+}
+
+async function getCryptoKey() {
+  const NOT_FOUND = 5;
+
+  // Instantiates a client.
+  const client = new KeyManagementServiceClient();
+
+  // Build the parent key ring name.
+  const keyRingName = client.keyRingPath(
+    PROJECT_ID,
+    KEY_LOCATION_ID,
+    KEY_RING_ID
+  );
+
+  // Get key ring.
+  try {
+    await client.getKeyRing({name: keyRingName});
+  } catch (err) {
+    // Create key ring if it doesn't exist.
+    if (err.code === NOT_FOUND) {
+      // Build the parent location name.
+      const locationName = client.locationPath(PROJECT_ID, KEY_LOCATION_ID);
+      await client.createKeyRing({
+        parent: locationName,
+        keyRingId: KEY_RING_ID,
+      });
+    } else {
+      throw err;
+    }
+  }
+
+  // Get key.
+  try {
+    // Build the key name
+    const keyName = client.cryptoKeyPath(
+      PROJECT_ID,
+      KEY_LOCATION_ID,
+      KEY_RING_ID,
+      KEY_ID
+    );
+    const [key] = await client.getCryptoKey({
+      name: keyName,
+    });
+    return key;
+  } catch (err) {
+    // Create key if it doesn't exist.
+    if (err.code === NOT_FOUND) {
+      const [key] = await client.createCryptoKey({
+        parent: keyRingName,
+        cryptoKeyId: KEY_ID,
+        cryptoKey: {
+          purpose: 'ENCRYPT_DECRYPT',
+          versionTemplate: {
+            algorithm: 'GOOGLE_SYMMETRIC_ENCRYPTION',
+          },
+        },
+      });
+      return key;
+    } else {
+      throw err;
+    }
+  }
 }
 
 describe('Spanner', () => {
@@ -126,7 +185,7 @@ describe('Spanner', () => {
 
     if (!INSTANCE_ALREADY_EXISTS) {
       const [, operation] = await instance.create({
-        config: 'regional-us-central1',
+        config: LOCATION_ID,
         nodes: 1,
         labels: {
           [LABEL]: 'true',
@@ -134,7 +193,7 @@ describe('Spanner', () => {
         },
         gaxOptions: GAX_OPTIONS,
       });
-      await operation.promise();
+      return operation.promise();
     } else {
       console.log(
         `Not creating temp instance, using + ${instance.formattedName_}...`
@@ -149,6 +208,7 @@ describe('Spanner', () => {
       // Make sure all backups are deleted before an instance can be deleted.
       await Promise.all([
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
       await instance.delete(GAX_OPTIONS);
@@ -156,7 +216,9 @@ describe('Spanner', () => {
       await Promise.all([
         instance.database(DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
+        instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
     }
@@ -187,6 +249,16 @@ describe('Spanner', () => {
     });
   });
 
+  // check that base instance was created
+  it('should have created an instance', async () => {
+    const [exists] = await instance.exists();
+    assert.strictEqual(
+      exists,
+      true,
+      'The main instance was not created successfully!'
+    );
+  });
+
   // create_database
   it('should create an example database', async () => {
     const output = execSync(
@@ -200,6 +272,39 @@ describe('Spanner', () => {
       output,
       new RegExp(`Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`)
     );
+  });
+
+  describe('encrypted database', () => {
+    after(async () => {
+      const instance = spanner.instance(INSTANCE_ID);
+      const encrypted_database = instance.database(ENCRYPTED_DATABASE_ID);
+      await encrypted_database.delete();
+    });
+
+    // create_database_with_encryption_key
+    it('should create a database with an encryption key', async () => {
+      const key = await getCryptoKey();
+
+      const output = execSync(
+        `${schemaCmd} createDatabaseWithEncryptionKey "${INSTANCE_ID}" "${ENCRYPTED_DATABASE_ID}" ${PROJECT_ID} "${key.name}"`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${ENCRYPTED_DATABASE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${ENCRYPTED_DATABASE_ID} on instance ${INSTANCE_ID}.`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Database encrypted with key ${key.name}.`)
+      );
+    });
   });
 
   describe('quickstart', () => {
@@ -411,18 +516,13 @@ describe('Spanner', () => {
     assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
   });
 
-  // create_query_partitions
-  it('should create query partitions', async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-    const database = instance.database(DATABASE_ID);
-    const [transaction] = await database.createBatchTransaction();
-    const identifier = JSON.stringify(transaction.identifier());
-
+  // batch_client
+  it('should create and execute query partitions', async () => {
     const output = execSync(
-      `${batchCmd} create-query-partitions ${INSTANCE_ID} ${DATABASE_ID} '${identifier}' ${PROJECT_ID}`
+      `${batchCmd} create-and-execute-query-partitions ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully created \d query partitions\./);
-    await transaction.close();
+    assert.match(output, /Successfully received \d from executed partitions\./);
   });
 
   // execute_partition
@@ -808,10 +908,32 @@ describe('Spanner', () => {
 
   // create_backup
   it('should create a backup of the database', async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    const query = {
+      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
+    };
+    const [rows] = await database.run(query);
+    const versionTime = rows[0].toJSON().Timestamp.toISOString();
+
     const output = execSync(
-      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} createBackup ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
     );
     assert.match(output, new RegExp(`Backup (.+)${BACKUP_ID} of size`));
+  });
+
+  // create_backup_with_encryption_key
+  it('should create an encrypted backup of the database', async () => {
+    const key = await getCryptoKey();
+
+    const output = execSync(
+      `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`)
+    );
+    assert.include(output, `using encryption key ${key.name}`);
   });
 
   // cancel_backup
@@ -834,16 +956,12 @@ describe('Spanner', () => {
     assert.include(output, 'Backups filtered by size:');
     assert.include(output, 'Ready backups filtered by create time:');
     assert.include(output, 'Get backups paginated:');
-    // BACKUP_ID should appear in each getBackups() call in the sample so it
-    // should appear 7 times.
     const count = (output.match(new RegExp(`${BACKUP_ID}`, 'g')) || []).length;
-    assert.equal(count, 7);
+    assert.equal(count, 14);
   });
 
   // list_backup_operations
-  // Skipped due to a backend issue with specifying a filter when calling
-  // ListBackupOperations.
-  it.skip('should list backup operations in the instance', async () => {
+  it('should list backup operations in the instance', async () => {
     const output = execSync(
       `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -878,7 +996,30 @@ describe('Spanner', () => {
       output,
       new RegExp(
         `Database (.+) was restored to ${RESTORE_DATABASE_ID} from backup ` +
-          `(.+)${BACKUP_ID}`
+          `(.+)${BACKUP_ID} with version time (.+)`
+      )
+    );
+  });
+
+  // restore_backup_with_encryption_key
+  it('should restore database from a backup using an encryption key', async function () {
+    // Restoring a backup can be a slow operation so the test may timeout and
+    // we'll have to retry.
+    this.retries(5);
+    // Delay the start of the test, if this is a retry.
+    await delay(this.test);
+
+    const key = await getCryptoKey();
+
+    const output = execSync(
+      `${backupsCmd} restoreBackupWithEncryptionKey ${INSTANCE_ID} ${ENCRYPTED_RESTORE_DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
+    );
+    assert.match(output, /Database restored from backup./);
+    assert.match(
+      output,
+      new RegExp(
+        `Database (.+) was restored to ${ENCRYPTED_RESTORE_DATABASE_ID} from backup ` +
+          `(.+)${ENCRYPTED_BACKUP_ID} using encryption key ${key.name}`
       )
     );
   });
@@ -923,5 +1064,34 @@ describe('Spanner', () => {
       `${dmlCmd} insertWithCustomTimeoutAndRetrySettings ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /record inserted./);
+  });
+
+  // get_commit_stats
+  it('should update rows in Albums example table and return CommitStats', async () => {
+    const output = execSync(
+      `${crudCmd} getCommitStats ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
+  });
+
+  // create_database_with_version_retention_period
+  it('should create a database with a version retention period', async () => {
+    const output = execSync(
+      `${schemaCmd} createDatabaseWithVersionRetentionPeriod "${INSTANCE_ID}" "${VERSION_RETENTION_DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Waiting for operation on ${VERSION_RETENTION_DATABASE_ID} to complete...`
+      )
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Created database ${VERSION_RETENTION_DATABASE_ID} with version retention period.`
+      )
+    );
+    assert.include(output, 'Version retention period: 1d');
+    assert.include(output, 'Earliest version time:');
   });
 });

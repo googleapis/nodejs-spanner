@@ -28,6 +28,8 @@ import * as bu from '../src/backup';
 import {GetMetadataResponse} from '../src/backup';
 import {grpc} from 'google-gax';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {google} from '../protos/protos';
+import EncryptionType = google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
 
 let promisified = false;
 // let callbackified = false;
@@ -84,6 +86,8 @@ describe('Backup', () => {
     INSTANCE.formattedName_ + '/backups/' + BACKUP_NAME;
   const BACKUP_EXPIRE_TIME = '2019-02-08T10:34:29.481145231Z';
   const EXP_BACKUP_EXPIRE_TIME = Spanner.timestamp(BACKUP_EXPIRE_TIME);
+  const BACKUP_VERSION_TIME = '2019-02-07T10:34:29.481145231Z';
+  const EXP_BACKUP_VERSION_TIME = Spanner.timestamp(BACKUP_VERSION_TIME);
 
   let backup: bu.Backup;
 
@@ -204,6 +208,27 @@ describe('Backup', () => {
       );
     });
 
+    it('should accept an encryption config', done => {
+      const encryptionConfig = {
+        encryptionType: EncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
+        kmsKeyName: 'some/key/path',
+      };
+
+      backup.request = config => {
+        assert.strictEqual(config.reqOpts.encryptionConfig, encryptionConfig);
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+          encryptionConfig,
+        },
+        assert.ifError
+      );
+    });
+
     it('should call Spanner.timestamp() with expireTime', done => {
       const spanner_timestamp_ = Spanner.timestamp;
 
@@ -227,6 +252,40 @@ describe('Backup', () => {
         {
           databasePath: DATABASE_FORMATTED_NAME,
           expireTime: BACKUP_EXPIRE_TIME,
+        },
+        assert.ifError
+      );
+    });
+
+    it('versionTime should not be set by default', done => {
+      backup.request = config => {
+        assert.strictEqual(config.reqOpts.backup.versionTime, undefined);
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+        },
+        assert.ifError
+      );
+    });
+
+    it('should make request with versionTime when provided', done => {
+      backup.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.backup.versionTime,
+          EXP_BACKUP_VERSION_TIME.toStruct()
+        );
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+          expireTime: BACKUP_EXPIRE_TIME,
+          versionTime: BACKUP_VERSION_TIME,
         },
         assert.ifError
       );

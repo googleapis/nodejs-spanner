@@ -85,9 +85,7 @@ export interface CreateDatabaseOptions
 export type GetDatabasesOptions = PagedOptions;
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
-export type DeleteInstanceCallback = NormalCallback<
-  instanceAdmin.protobuf.IEmpty
->;
+export type DeleteInstanceCallback = NormalCallback<instanceAdmin.protobuf.IEmpty>;
 
 export type ExistsInstanceCallback = NormalCallback<boolean>;
 export type GetDatabasesCallback = RequestCallback<

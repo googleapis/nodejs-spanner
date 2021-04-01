@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
 import {google} from '../../protos/protos';
 import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
@@ -28,6 +29,11 @@ const PROTO_PATH = 'spanner_instance_admin.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
 const PROTO_DIR =
   __dirname + '/../../../protos/google/spanner/admin/instance/v1';
+const GAX_PROTO_DIR = path.join(
+  path.dirname(require.resolve('google-gax')),
+  '..',
+  'protos'
+);
 
 /**
  * Load the Spanner Instance Admin service proto.
@@ -38,7 +44,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   enums: String,
   defaults: true,
   oneofs: true,
-  includeDirs: [IMPORT_PATH, PROTO_DIR],
+  includeDirs: [IMPORT_PATH, PROTO_DIR, GAX_PROTO_DIR],
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const instanceAdminProtoDescriptor =

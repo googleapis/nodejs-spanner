@@ -1070,9 +1070,7 @@ describe('Spanner', () => {
       );
     });
 
-    // Skipped due to a backend issue with specifying a filter when calling
-    // ListDatabaseOperations.
-    it.skip('should list database operations on an instance', async function () {
+    it('should list database operations on an instance', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1419,9 +1417,7 @@ describe('Spanner', () => {
       }
     });
 
-    // Skipped due to a backend issue with specifying a filter when calling
-    // ListBackupOperations.
-    it.skip('should list backup operations', async () => {
+    it('should list backup operations', async () => {
       // List operations and ensure operation for current backup exists.
       // Without a filter.
       const [operationsWithoutFilter] = await instance.getBackupOperations();
@@ -2037,6 +2033,27 @@ describe('Spanner', () => {
 
       it('should allow "SELECT 1" queries', done => {
         DATABASE.run('SELECT 1', done);
+      });
+
+      it('should return metadata', async () => {
+        const [rows, , metadata] = await DATABASE.run({
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+          params: {id: ID},
+        });
+        assert.strictEqual(rows.length, 1);
+        assert.deepStrictEqual(rows[0].toJSON(), EXPECTED_ROW);
+        assert.ok(metadata);
+        assert.strictEqual(metadata.rowType!.fields!.length, 10);
+        assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
+        assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
+        assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
+        assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
       });
 
       it('should fail invalid queries', done => {

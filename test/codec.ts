@@ -252,7 +252,7 @@ describe('codec', () => {
       assert.deepStrictEqual(json, {name: 'value'});
     });
 
-    it('should not return nameless values', () => {
+    it('should not return nameless values by default', () => {
       const row = [
         {
           value: 'value',
@@ -263,9 +263,24 @@ describe('codec', () => {
       assert.deepStrictEqual(json, {});
     });
 
+    it('should return nameless values when requested', () => {
+      const row = [
+        {
+          value: 'value',
+        },
+      ];
+
+      const json = codec.convertFieldsToJson(row, {includeNameless: true});
+      assert.deepStrictEqual(json, {_0: 'value'});
+    });
+
     describe('structs', () => {
       it('should not wrap structs by default', () => {
-        const options = {wrapNumbers: false, wrapStructs: false};
+        const options = {
+          wrapNumbers: false,
+          wrapStructs: false,
+          includeNameless: false,
+        };
         const fakeStructJson = {};
 
         const struct = new codec.Struct();

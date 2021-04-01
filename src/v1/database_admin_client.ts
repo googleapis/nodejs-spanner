@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
+/* global window */
 import * as gax from 'google-gax';
 import {
   Callback,
@@ -31,6 +32,11 @@ import * as path from 'path';
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+/**
+ * Client JSON configuration object, loaded from
+ * `src/v1/database_admin_client_config.json`.
+ * This file defines retry strategy and timeouts for all API methods in this library.
+ */
 import * as gapicConfig from './database_admin_client_config.json';
 import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
@@ -90,9 +96,9 @@ export class DatabaseAdminClient {
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
-   * @param {gax.ClientConfig} [options.clientConfig] - client configuration override.
-   *     TODO(@alexander-fenster): link to gax documentation.
-   * @param {boolean} fallback - Use HTTP fallback mode.
+   * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
+   *     Follows the structure of {@link gapicConfig}.
+   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
    *     In fallback mode, a special browser-compatible transport implementation is used
    *     instead of gRPC transport. In browser context (if the `window` object is defined)
    *     the fallback mode is enabled automatically; set `options.fallback` to `false`
@@ -105,7 +111,9 @@ export class DatabaseAdminClient {
       opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback = opts?.fallback ?? typeof window !== 'undefined';
+    const fallback =
+      opts?.fallback ??
+      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -167,6 +175,9 @@ export class DatabaseAdminClient {
     this.pathTemplates = {
       backupPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/backups/{backup}'
+      ),
+      cryptoKeyPathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}'
       ),
       databasePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
@@ -418,7 +429,7 @@ export class DatabaseAdminClient {
   // -------------------
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase,
@@ -428,7 +439,7 @@ export class DatabaseAdminClient {
   >;
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IDatabase,
       | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
@@ -468,7 +479,7 @@ export class DatabaseAdminClient {
   getDatabase(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IDatabase,
           | protos.google.spanner.admin.database.v1.IGetDatabaseRequest
@@ -491,12 +502,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -511,7 +522,7 @@ export class DatabaseAdminClient {
   }
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -521,7 +532,7 @@ export class DatabaseAdminClient {
   >;
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
@@ -562,7 +573,7 @@ export class DatabaseAdminClient {
   dropDatabase(
     request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           | protos.google.spanner.admin.database.v1.IDropDatabaseRequest
@@ -585,12 +596,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -605,7 +616,7 @@ export class DatabaseAdminClient {
   }
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
@@ -618,7 +629,7 @@ export class DatabaseAdminClient {
   >;
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
       | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
@@ -646,6 +657,8 @@ export class DatabaseAdminClient {
    *   The request object that will be sent.
    * @param {string} request.database
    *   Required. The database whose schema we wish to get.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>`
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -659,7 +672,7 @@ export class DatabaseAdminClient {
   getDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IGetDatabaseDdlResponse,
           | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
@@ -685,12 +698,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -705,7 +718,7 @@ export class DatabaseAdminClient {
   }
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -715,7 +728,7 @@ export class DatabaseAdminClient {
   >;
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -762,7 +775,7 @@ export class DatabaseAdminClient {
   setIamPolicy(
     request: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.ISetIamPolicyRequest | null | undefined,
@@ -781,12 +794,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -801,7 +814,7 @@ export class DatabaseAdminClient {
   }
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.IPolicy,
@@ -811,7 +824,7 @@ export class DatabaseAdminClient {
   >;
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -857,7 +870,7 @@ export class DatabaseAdminClient {
   getIamPolicy(
     request: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.IPolicy,
           protos.google.iam.v1.IGetIamPolicyRequest | null | undefined,
@@ -876,12 +889,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -896,7 +909,7 @@ export class DatabaseAdminClient {
   }
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
@@ -906,7 +919,7 @@ export class DatabaseAdminClient {
   >;
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -956,7 +969,7 @@ export class DatabaseAdminClient {
   testIamPermissions(
     request: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.iam.v1.ITestIamPermissionsResponse,
           protos.google.iam.v1.ITestIamPermissionsRequest | null | undefined,
@@ -975,12 +988,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -995,7 +1008,7 @@ export class DatabaseAdminClient {
   }
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1005,7 +1018,7 @@ export class DatabaseAdminClient {
   >;
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IBackup,
       | protos.google.spanner.admin.database.v1.IGetBackupRequest
@@ -1025,7 +1038,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Gets metadata on a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Gets metadata on a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1046,7 +1060,7 @@ export class DatabaseAdminClient {
   getBackup(
     request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IBackup,
           | protos.google.spanner.admin.database.v1.IGetBackupRequest
@@ -1069,12 +1083,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1089,7 +1103,7 @@ export class DatabaseAdminClient {
   }
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup,
@@ -1099,7 +1113,7 @@ export class DatabaseAdminClient {
   >;
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.spanner.admin.database.v1.IBackup,
       | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
@@ -1119,7 +1133,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Updates a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Updates a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1147,7 +1162,7 @@ export class DatabaseAdminClient {
   updateBackup(
     request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.spanner.admin.database.v1.IBackup,
           | protos.google.spanner.admin.database.v1.IUpdateBackupRequest
@@ -1170,12 +1185,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1190,7 +1205,7 @@ export class DatabaseAdminClient {
   }
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.protobuf.IEmpty,
@@ -1200,7 +1215,7 @@ export class DatabaseAdminClient {
   >;
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       protos.google.protobuf.IEmpty,
       | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
@@ -1220,7 +1235,8 @@ export class DatabaseAdminClient {
     >
   ): void;
   /**
-   * Deletes a pending or completed {@link google.spanner.admin.database.v1.Backup|Backup}.
+   * Deletes a pending or completed
+   * {@link google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1241,7 +1257,7 @@ export class DatabaseAdminClient {
   deleteBackup(
     request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           protos.google.protobuf.IEmpty,
           | protos.google.spanner.admin.database.v1.IDeleteBackupRequest
@@ -1264,12 +1280,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1285,7 +1301,7 @@ export class DatabaseAdminClient {
 
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1298,7 +1314,7 @@ export class DatabaseAdminClient {
   >;
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IDatabase,
@@ -1325,8 +1341,8 @@ export class DatabaseAdminClient {
    * have a name of the format `<database_name>/operations/<operation_id>` and
    * can be used to track preparation of the database. The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}. The
-   * {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
    * {@link google.spanner.admin.database.v1.Database|Database}, if successful.
    *
    * @param {Object} request
@@ -1345,6 +1361,10 @@ export class DatabaseAdminClient {
    *   database. Statements can create tables, indexes, etc. These
    *   statements execute atomically with the creation of the database:
    *   if there is an error in any statement, the database is not created.
+   * @param {google.spanner.admin.database.v1.EncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration for the database. If this field is
+   *   not specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   *   Google default encryption.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1361,7 +1381,7 @@ export class DatabaseAdminClient {
   createDatabase(
     request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IDatabase,
@@ -1389,12 +1409,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1446,7 +1466,7 @@ export class DatabaseAdminClient {
   }
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1459,7 +1479,7 @@ export class DatabaseAdminClient {
   >;
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.protobuf.IEmpty,
@@ -1487,7 +1507,8 @@ export class DatabaseAdminClient {
    * the format `<database_name>/operations/<operation_id>` and can be used to
    * track execution of the schema change(s). The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.  The operation has no response.
+   * {@link google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.
+   * The operation has no response.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1503,18 +1524,20 @@ export class DatabaseAdminClient {
    *
    *   Specifying an explicit operation ID simplifies determining
    *   whether the statements were executed in the event that the
-   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} call is replayed,
-   *   or the return value is otherwise lost: the {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database} and
-   *   `operation_id` fields can be combined to form the
+   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   call is replayed, or the return value is otherwise lost: the
+   *   {@link google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database}
+   *   and `operation_id` fields can be combined to form the
    *   {@link google.longrunning.Operation.name|name} of the resulting
-   *   {@link google.longrunning.Operation|longrunning.Operation}: `<database>/operations/<operation_id>`.
+   *   {@link google.longrunning.Operation|longrunning.Operation}:
+   *   `<database>/operations/<operation_id>`.
    *
    *   `operation_id` should be unique within the database, and must be
    *   a valid identifier: `{@link a-z0-9_|a-z}*`. Note that
    *   automatically-generated operation IDs always begin with an
    *   underscore. If the named operation already exists,
-   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} returns
-   *   `ALREADY_EXISTS`.
+   *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   returns `ALREADY_EXISTS`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1531,7 +1554,7 @@ export class DatabaseAdminClient {
   updateDatabaseDdl(
     request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.protobuf.IEmpty,
@@ -1559,12 +1582,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1616,7 +1639,7 @@ export class DatabaseAdminClient {
   }
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1629,7 +1652,7 @@ export class DatabaseAdminClient {
   >;
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IBackup,
@@ -1657,12 +1680,12 @@ export class DatabaseAdminClient {
    * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
    * and can be used to track creation of the backup. The
    * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}. The
-   * {@link google.longrunning.Operation.response|response} field type is
-   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
-   * creation and delete the backup.
-   * There can be only one pending backup creation per database. Backup creation
-   * of different databases can run concurrently.
+   * {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful.
+   * Cancelling the returned operation will stop the creation and delete the
+   * backup. There can be only one pending backup creation per database. Backup
+   * creation of different databases can run concurrently.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1679,6 +1702,12 @@ export class DatabaseAdminClient {
    *   `projects/<project>/instances/<instance>/backups/<backup_id>`.
    * @param {google.spanner.admin.database.v1.Backup} request.backup
    *   Required. The backup to create.
+   * @param {google.spanner.admin.database.v1.CreateBackupEncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration used to encrypt the backup. If this
+   *   field is not specified, the backup will use the same encryption
+   *   configuration as the database by default, namely
+   *   {@link google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_DATABASE_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1695,7 +1724,7 @@ export class DatabaseAdminClient {
   createBackup(
     request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IBackup,
@@ -1723,12 +1752,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1780,7 +1809,7 @@ export class DatabaseAdminClient {
   }
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       LROperation<
@@ -1793,7 +1822,7 @@ export class DatabaseAdminClient {
   >;
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: Callback<
       LROperation<
         protos.google.spanner.admin.database.v1.IDatabase,
@@ -1849,6 +1878,13 @@ export class DatabaseAdminClient {
    * @param {string} request.backup
    *   Name of the backup from which to restore.  Values are of the form
    *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig} [request.encryptionConfig]
+   *   Optional. An encryption configuration describing the encryption type and
+   *   key resources in Cloud KMS used to encrypt/decrypt the database to restore
+   *   to. If this field is not specified, the restored database will use the same
+   *   encryption configuration as the backup by default, namely
+   *   {@link google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1865,7 +1901,7 @@ export class DatabaseAdminClient {
   restoreDatabase(
     request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | Callback<
           LROperation<
             protos.google.spanner.admin.database.v1.IDatabase,
@@ -1893,12 +1929,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1950,7 +1986,7 @@ export class DatabaseAdminClient {
   }
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
@@ -1960,7 +1996,7 @@ export class DatabaseAdminClient {
   >;
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabasesRequest,
       | protos.google.spanner.admin.database.v1.IListDatabasesResponse
@@ -1992,8 +2028,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2010,7 +2047,7 @@ export class DatabaseAdminClient {
   listDatabases(
     request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListDatabasesRequest,
           | protos.google.spanner.admin.database.v1.IListDatabasesResponse
@@ -2033,12 +2070,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2064,8 +2101,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2080,7 +2118,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2114,8 +2152,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2134,7 +2173,7 @@ export class DatabaseAdminClient {
    */
   listDatabasesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase> {
     request = request || {};
     options = options || {};
@@ -2156,7 +2195,7 @@ export class DatabaseAdminClient {
   }
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.spanner.admin.database.v1.IBackup[],
@@ -2166,7 +2205,7 @@ export class DatabaseAdminClient {
   >;
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupsRequest,
       | protos.google.spanner.admin.database.v1.IListBackupsResponse
@@ -2204,13 +2243,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2235,9 +2277,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2254,7 +2297,7 @@ export class DatabaseAdminClient {
   listBackups(
     request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListBackupsRequest,
           | protos.google.spanner.admin.database.v1.IListBackupsResponse
@@ -2277,12 +2320,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2312,13 +2355,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2343,9 +2389,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2360,7 +2407,7 @@ export class DatabaseAdminClient {
    */
   listBackupsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2398,13 +2445,16 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
    *     * `state`
-   *     * `create_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
-   *     * `expire_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `create_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `expire_time`  (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
+   *     * `version_time` (and values are of the format YYYY-MM-DDTHH:MM:SSZ)
    *     * `size_bytes`
    *
    *   You can combine multiple expressions by enclosing each expression in
@@ -2429,9 +2479,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2450,7 +2501,7 @@ export class DatabaseAdminClient {
    */
   listBackupsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackup> {
     request = request || {};
     options = options || {};
@@ -2472,7 +2523,7 @@ export class DatabaseAdminClient {
   }
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -2482,7 +2533,7 @@ export class DatabaseAdminClient {
   >;
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
       | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
@@ -2531,7 +2582,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2545,13 +2598,14 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2563,8 +2617,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2581,7 +2636,7 @@ export class DatabaseAdminClient {
   listDatabaseOperations(
     request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
           | protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
@@ -2604,12 +2659,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2649,7 +2704,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2663,13 +2720,14 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2681,8 +2739,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2697,7 +2756,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -2741,7 +2800,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2755,13 +2816,14 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` <br/>
-   *       `(metadata.source_type:BACKUP) AND` <br/>
-   *       `(metadata.backup_info.backup:backup_howl) AND` <br/>
-   *       `(metadata.name:restored_howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata) AND` \
+   *       `(metadata.source_type:BACKUP) AND` \
+   *       `(metadata.backup_info.backup:backup_howl) AND` \
+   *       `(metadata.name:restored_howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2773,8 +2835,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2793,7 +2856,7 @@ export class DatabaseAdminClient {
    */
   listDatabaseOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -2815,7 +2878,7 @@ export class DatabaseAdminClient {
   }
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Promise<
     [
       protos.google.longrunning.IOperation[],
@@ -2825,7 +2888,7 @@ export class DatabaseAdminClient {
   >;
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options: gax.CallOptions,
+    options: CallOptions,
     callback: PaginationCallback<
       protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
       | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
@@ -2876,7 +2939,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -2892,11 +2957,12 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -2906,8 +2972,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2924,7 +2991,7 @@ export class DatabaseAdminClient {
   listBackupOperations(
     request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     optionsOrCallback?:
-      | gax.CallOptions
+      | CallOptions
       | PaginationCallback<
           protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
           | protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
@@ -2947,12 +3014,12 @@ export class DatabaseAdminClient {
     ]
   > | void {
     request = request || {};
-    let options: gax.CallOptions;
+    let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
     } else {
-      options = optionsOrCallback as gax.CallOptions;
+      options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -2988,7 +3055,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -3004,11 +3073,12 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3018,8 +3088,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -3034,7 +3105,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): Transform {
     request = request || {};
     options = options || {};
@@ -3078,7 +3149,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *     * `error` - Error associated with the long-running operation.
@@ -3094,11 +3167,12 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `metadata.database:prod` - The database the backup was taken from has
    *        a name containing the string "prod".
-   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` <br/>
-   *       `(metadata.name:howl) AND` <br/>
-   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` <br/>
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.name:howl) AND` \
+   *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3108,8 +3182,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -3128,7 +3203,7 @@ export class DatabaseAdminClient {
    */
   listBackupOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
-    options?: gax.CallOptions
+    options?: CallOptions
   ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
@@ -3199,6 +3274,77 @@ export class DatabaseAdminClient {
    */
   matchBackupFromBackupName(backupName: string) {
     return this.pathTemplates.backupPathTemplate.match(backupName).backup;
+  }
+
+  /**
+   * Return a fully-qualified cryptoKey resource name string.
+   *
+   * @param {string} project
+   * @param {string} location
+   * @param {string} key_ring
+   * @param {string} crypto_key
+   * @returns {string} Resource name string.
+   */
+  cryptoKeyPath(
+    project: string,
+    location: string,
+    keyRing: string,
+    cryptoKey: string
+  ) {
+    return this.pathTemplates.cryptoKeyPathTemplate.render({
+      project: project,
+      location: location,
+      key_ring: keyRing,
+      crypto_key: cryptoKey,
+    });
+  }
+
+  /**
+   * Parse the project from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .project;
+  }
+
+  /**
+   * Parse the location from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the location.
+   */
+  matchLocationFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .location;
+  }
+
+  /**
+   * Parse the key_ring from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the key_ring.
+   */
+  matchKeyRingFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .key_ring;
+  }
+
+  /**
+   * Parse the crypto_key from CryptoKey resource.
+   *
+   * @param {string} cryptoKeyName
+   *   A fully-qualified path representing CryptoKey resource.
+   * @returns {string} A string representing the crypto_key.
+   */
+  matchCryptoKeyFromCryptoKeyName(cryptoKeyName: string) {
+    return this.pathTemplates.cryptoKeyPathTemplate.match(cryptoKeyName)
+      .crypto_key;
   }
 
   /**

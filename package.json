@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "5.3.0",
+  "version": "5.6.1",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -62,7 +62,7 @@
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
-    "google-auth-library": "^6.0.0",
+    "google-auth-library": "^7.0.0",
     "google-gax": "^2.9.2",
     "grpc-gcp": "^0.3.2",
     "is": "^3.2.1",
@@ -78,7 +78,8 @@
   },
   "devDependencies": {
     "@grpc/proto-loader": "^0.5.1",
-    "@types/big.js": "^6.0.0",
+    "@microsoft/api-documenter": "^7.8.10",
+    "@microsoft/api-extractor": "^7.8.10",
     "@types/concat-stream": "^1.6.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
@@ -98,7 +99,7 @@
     "concat-stream": "^2.0.0",
     "dedent": "^0.7.0",
     "duplexify": "^4.1.1",
-    "execa": "^4.0.0",
+    "execa": "^5.0.0",
     "gts": "^2.0.0",
     "jsdoc": "^3.6.2",
     "jsdoc-fresh": "^1.0.1",
@@ -111,15 +112,13 @@
     "p-limit": "^3.0.1",
     "proxyquire": "^2.0.1",
     "retry-request": "^4.1.1",
-    "sinon": "^9.0.0",
+    "sinon": "^10.0.0",
     "stats-lite": "^2.1.1",
     "teeny-request": "^7.0.0",
     "time-span": "^4.0.0",
     "tmp": "^0.2.0",
     "typescript": "^3.8.3",
     "uuid": "^8.0.0",
-    "yargs": "^16.0.0",
-    "@microsoft/api-documenter": "^7.8.10",
-    "@microsoft/api-extractor": "^7.8.10"
+    "yargs": "^16.0.0"
   }
 }

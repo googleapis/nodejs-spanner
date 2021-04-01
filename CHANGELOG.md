@@ -4,6 +4,62 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.0...v5.6.1) (2021-03-30)
+
+
+### Bug Fixes
+
+* remove acquire timeout listener on return of session ([#1327](https://www.github.com/googleapis/nodejs-spanner/issues/1327)) ([72c7cce](https://www.github.com/googleapis/nodejs-spanner/commit/72c7cce0cc00631a0ce46cdb2bf66a0ee48d615b)), closes [#1324](https://www.github.com/googleapis/nodejs-spanner/issues/1324)
+
+## [5.6.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.5.0...v5.6.0) (2021-03-20)
+
+
+### Features
+
+* customer-managed encryption keys ([#1274](https://www.github.com/googleapis/nodejs-spanner/issues/1274)) ([51cabc7](https://www.github.com/googleapis/nodejs-spanner/commit/51cabc7a6d8c96a86acbbeea3a357c261248ddb4))
+
+
+### Bug Fixes
+
+* remove common protos ([#1320](https://www.github.com/googleapis/nodejs-spanner/issues/1320)) ([a73f9fc](https://www.github.com/googleapis/nodejs-spanner/commit/a73f9fc534019186e262a3e5ac6a78f156e7a56d))
+* run [spanner_batch_client] independently ([#1318](https://www.github.com/googleapis/nodejs-spanner/issues/1318)) ([3844ff8](https://www.github.com/googleapis/nodejs-spanner/commit/3844ff89cb53aeeefe7309ce82f31200a0de3ae2))
+
+## [5.5.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.4.0...v5.5.0) (2021-02-19)
+
+
+### Features
+
+* add option for returning Spanner commit stats ([#1297](https://www.github.com/googleapis/nodejs-spanner/issues/1297)) ([bc286e2](https://www.github.com/googleapis/nodejs-spanner/commit/bc286e24b1d6f83cd09bdaad2023e8347ab1d12e))
+* adds PITR fields to backup and database ([#1299](https://www.github.com/googleapis/nodejs-spanner/issues/1299)) ([d7556c8](https://www.github.com/googleapis/nodejs-spanner/commit/d7556c89b92e2a9ab65f1f928faf8c452bf24a7c))
+* adds style enumeration ([#1292](https://www.github.com/googleapis/nodejs-spanner/issues/1292)) ([dcf7013](https://www.github.com/googleapis/nodejs-spanner/commit/dcf7013907f8e232d0b99303a6d30be598944db9))
+* CommitStats in CommitResponse ([#1254](https://www.github.com/googleapis/nodejs-spanner/issues/1254)) ([e3730d2](https://www.github.com/googleapis/nodejs-spanner/commit/e3730d219fb395d1ce8416b1e7cdecb0c8ad995e))
+* Point In Time Recovery (PITR) ([#1250](https://www.github.com/googleapis/nodejs-spanner/issues/1250)) ([c53f677](https://www.github.com/googleapis/nodejs-spanner/commit/c53f677fe33ca5ed6fc65e8ee350f365d03a7642))
+* return ResultSetMetadata for query ([#1308](https://www.github.com/googleapis/nodejs-spanner/issues/1308)) ([6625ef2](https://www.github.com/googleapis/nodejs-spanner/commit/6625ef2168ade370596ffefe92fc75640cf9f6f1))
+
+
+### Bug Fixes
+
+* **deps:** update dependency google-auth-library to v7 ([#1305](https://www.github.com/googleapis/nodejs-spanner/issues/1305)) ([329c901](https://www.github.com/googleapis/nodejs-spanner/commit/329c901927885c6fd34f99c71abead15ff10f7d8))
+* **sample-test:** ensure instance is created before proceeding with tests ([#1291](https://www.github.com/googleapis/nodejs-spanner/issues/1291)) ([577357a](https://www.github.com/googleapis/nodejs-spanner/commit/577357ab8f8cdac70f5483312c7618c6e403fd26))
+* wrong gaxOptions argument in sample ([#1294](https://www.github.com/googleapis/nodejs-spanner/issues/1294)) ([8fec23a](https://www.github.com/googleapis/nodejs-spanner/commit/8fec23a28accbaa28cfb980bac406c50b1935e32))
+
+## [5.4.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.3.0...v5.4.0) (2020-12-02)
+
+
+### Features
+
+* support callbacks with database getRestoreInfo(), getState(), getOperations() ([#1230](https://www.github.com/googleapis/nodejs-spanner/issues/1230)) ([b56758b](https://www.github.com/googleapis/nodejs-spanner/commit/b56758b0e832c6471d14bd88b4580d21d5696fdd))
+
+
+### Bug Fixes
+
+* **browser:** check for fetch on window ([32ac608](https://www.github.com/googleapis/nodejs-spanner/commit/32ac6082383d5265f5022d97f23173e8786f4a82))
+* do not modify options object, use defaultScopes ([#1264](https://www.github.com/googleapis/nodejs-spanner/issues/1264)) ([6628c6a](https://www.github.com/googleapis/nodejs-spanner/commit/6628c6a81d427b8bb8bb1a42ae63f991b1cf73c9))
+* **deps:** update dependency big.js to v6 ([#1244](https://www.github.com/googleapis/nodejs-spanner/issues/1244)) ([259a51e](https://www.github.com/googleapis/nodejs-spanner/commit/259a51ee0726aa8f0b7717acd5253ecb77b16038))
+* do not create sessions after getDatabases call ([#1228](https://www.github.com/googleapis/nodejs-spanner/issues/1228)) ([53d5f37](https://www.github.com/googleapis/nodejs-spanner/commit/53d5f371d54c64dd095ac9ec721d05adf2c7d064))
+* **deps:** update dependency @google-cloud/precise-date to v2 ([#1240](https://www.github.com/googleapis/nodejs-spanner/issues/1240)) ([38dfec2](https://www.github.com/googleapis/nodejs-spanner/commit/38dfec22dd00f4d69750fc20e66c2395a9c6d3b3))
+* **deps:** update dependency yargs to v16 ([#1233](https://www.github.com/googleapis/nodejs-spanner/issues/1233)) ([75fd09a](https://www.github.com/googleapis/nodejs-spanner/commit/75fd09acb5a9a728a8b6403f44351e4b9b44b723))
+
 ## [5.3.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.2.1...v5.3.0) (2020-09-04)
 
 

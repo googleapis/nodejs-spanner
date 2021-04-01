@@ -15,18 +15,23 @@ and automatic, synchronous replication for high availability.
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
   * [Backups-cancel](#backups-cancel)
+  * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
   * [Backups-create](#backups-create)
   * [Backups-delete](#backups-delete)
   * [Backups-get-database-operations](#backups-get-database-operations)
   * [Backups-get-operations](#backups-get-operations)
   * [Backups-get](#backups-get)
+  * [Backups-restore-with-encryption-key](#backups-restore-with-encryption-key)
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
   * [Batch](#batch)
   * [CRUD](#crud)
+  * [Database-create-with-encryption-key](#database-create-with-encryption-key)
+  * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Datatypes](#datatypes)
   * [DML](#dml)
+  * [Get-commit-stats](#get-commit-stats)
   * [Indexing](#indexing)
   * [Instance](#instance)
   * [Numeric-add-column](#numeric-add-column)
@@ -64,6 +69,23 @@ __Usage:__
 
 
 `node samples/backups-cancel.js`
+
+
+-----
+
+
+
+
+### Backups-create-with-encryption-key
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-create-with-encryption-key.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-encryption-key.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-create-with-encryption-key.js`
 
 
 -----
@@ -156,6 +178,23 @@ __Usage:__
 
 
 
+### Backups-restore-with-encryption-key
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-restore-with-encryption-key.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore-with-encryption-key.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/backups-restore-with-encryption-key.js`
+
+
+-----
+
+
+
+
 ### Backups-restore
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-restore.js).
@@ -241,6 +280,40 @@ __Usage:__
 
 
 
+### Database-create-with-encryption-key
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-encryption-key.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-encryption-key.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-encryption-key.js`
+
+
+-----
+
+
+
+
+### Database-create-with-version-retention-period
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-version-retention-period.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-version-retention-period.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/database-create-with-version-retention-period.js`
+
+
+-----
+
+
+
+
 ### Datatypes
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/datatypes.js).
@@ -268,6 +341,23 @@ __Usage:__
 
 
 `node samples/dml.js`
+
+
+-----
+
+
+
+
+### Get-commit-stats
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-commit-stats.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-commit-stats.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/get-commit-stats.js`
 
 
 -----
