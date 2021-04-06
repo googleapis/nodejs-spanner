@@ -28,6 +28,7 @@ import {Database} from '../src/database';
 import {Session, types} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
+import {grpc} from 'google-gax';
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -501,6 +502,31 @@ describe('SessionPool', () => {
     it('should fill the pool', () => {
       sessionPool.open();
       assert.strictEqual(fillStub.callCount, 1);
+    });
+
+    it('should not trigger unhandled promise rejection', () => {
+      const error = {
+        code: grpc.status.PERMISSION_DENIED,
+        message: 'spanner.sessions.create',
+      } as grpc.ServiceError;
+
+      sandbox.restore();
+      sandbox.stub(sessionPool, '_fill').rejects(error);
+
+      const originalRejection = process.listeners('unhandledRejection').pop();
+      if (originalRejection) {
+        process.removeListener('unhandledRejection', originalRejection!);
+      }
+
+      process.once('unhandledRejection', err => {
+        assert.ifError(err);
+      });
+
+      sessionPool.open();
+
+      if (originalRejection) {
+        process.listeners('unhandledRejection').push(originalRejection!);
+      }
     });
   });
 
