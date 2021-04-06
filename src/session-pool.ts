@@ -248,9 +248,9 @@ export function isInstanceNotFoundError(
 }
 
 /**
- * Checks whether the given error is an 'Create session permission' error.
+ * Checks whether the given error is a 'Create session permission' error.
  * @param {Error} error The error to check.
- * @return {boolean} True if the error is an 'Create session permission' error, and otherwise false.
+ * @return {boolean} True if the error is a 'Create session permission' error, and otherwise false.
  */
 export function isCreateSessionPermissionError(
   error: grpc.ServiceError | undefined
@@ -259,6 +259,36 @@ export function isCreateSessionPermissionError(
     error !== undefined &&
     error.code === grpc.status.PERMISSION_DENIED &&
     error.message.includes('spanner.sessions.create')
+  );
+}
+
+/**
+ * Checks whether the given error is a 'Could not load the default credentials' error.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is a 'Could not load the default credentials' error, and otherwise false.
+ */
+export function isDefaultCredentialsNotSetError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.message.includes('Could not load the default credentials')
+  );
+}
+
+/**
+ * Checks whether the given error is a 'Project Id not set in Environment' error.
+ * @param {Error} error The error to check.
+ * @return {boolean} True if the error is a 'Project Id not set in Environment' error, and otherwise false.
+ */
+export function isProjectIdNotSetInEnvironmentError(
+  error: grpc.ServiceError | undefined
+): boolean {
+  return (
+    error !== undefined &&
+    error.message.includes(
+      'Unable to detect a Project Id in the current environment'
+    )
   );
 }
 
@@ -576,7 +606,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       if (
         isDatabaseNotFoundError(err) ||
         isInstanceNotFoundError(err) ||
-        isCreateSessionPermissionError(err)
+        isCreateSessionPermissionError(err) ||
+        isDefaultCredentialsNotSetError(err) ||
+        isProjectIdNotSetInEnvironmentError(err)
       ) {
         return;
       }
