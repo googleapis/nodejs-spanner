@@ -17,7 +17,8 @@
 async function main(instanceId, databaseId, projectId) {
   // TODO: Add start region tag here
   // Imports the Google Cloud client library.
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
+  const Priority = protos.google.spanner.v1.RequestOptions.Priority;
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -47,7 +48,7 @@ async function main(instanceId, databaseId, projectId) {
       const [rows] = await database.run({
         sql,
         requestOptions: {
-          priority: spanner.v1.RequestOptions.Priority.PRIORITY_LOW,
+          priority: Priority.PRIORITY_LOW,
         },
       });
 

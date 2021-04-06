@@ -61,7 +61,7 @@ export interface RequestOptions {
 }
 
 export interface CommitOptions {
-  requestOptions?: IRequestOptions;
+  requestOptions?: Omit<IRequestOptions, 'requestTag'>;
   returnCommitStats?: boolean;
   gaxOptions?: CallOptions;
 }
@@ -78,7 +78,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   partitionToken?: Uint8Array | string;
   seqno?: number;
   queryOptions?: IQueryOptions;
-  requestOptions?: IRequestOptions;
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
 }
 
 export interface KeyRange {
@@ -98,6 +98,7 @@ export interface ReadRequest extends RequestOptions {
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -130,7 +131,10 @@ export interface BatchUpdateCallback {
     response?: spannerClient.spanner.v1.ExecuteBatchDmlResponse
   ): void;
 }
-export type BatchUpdateOptions = CommitOptions;
+export interface BatchUpdateOptions {
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  gaxOptions?: CallOptions;
+}
 
 export type ReadCallback = NormalCallback<Rows>;
 

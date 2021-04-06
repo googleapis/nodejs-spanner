@@ -254,6 +254,9 @@ export class MockSpanner {
 
     this.executeBatchDml = this.executeBatchDml.bind(this);
     this.executeStreamingSql = this.executeStreamingSql.bind(this);
+
+    this.read = this.read.bind(this);
+    this.streamingRead = this.streamingRead.bind(this);
   }
 
   /**
