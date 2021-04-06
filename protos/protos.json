@@ -1064,6 +1064,50 @@
                 }
               }
             },
+            "ErrorInfo": {
+              "fields": {
+                "reason": {
+                  "type": "string",
+                  "id": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "id": 2
+                },
+                "metadata": {
+                  "keyType": "string",
+                  "type": "string",
+                  "id": 3
+                }
+              }
+            },
+            "PreconditionFailure": {
+              "fields": {
+                "violations": {
+                  "rule": "repeated",
+                  "type": "Violation",
+                  "id": 1
+                }
+              },
+              "nested": {
+                "Violation": {
+                  "fields": {
+                    "type": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "subject": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "description": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  }
+                }
+              }
+            },
             "BadRequest": {
               "fields": {
                 "fieldViolations": {
@@ -2676,7 +2720,10 @@
                             },
                             "state": {
                               "type": "State",
-                              "id": 6
+                              "id": 6,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             },
                             "labels": {
                               "keyType": "string",
@@ -3782,6 +3829,32 @@
                     }
                   }
                 },
+                "RequestOptions": {
+                  "fields": {
+                    "priority": {
+                      "type": "Priority",
+                      "id": 1
+                    },
+                    "requestTag": {
+                      "type": "string",
+                      "id": 2
+                    },
+                    "transactionTag": {
+                      "type": "string",
+                      "id": 3
+                    }
+                  },
+                  "nested": {
+                    "Priority": {
+                      "values": {
+                        "PRIORITY_UNSPECIFIED": 0,
+                        "PRIORITY_LOW": 1,
+                        "PRIORITY_MEDIUM": 2,
+                        "PRIORITY_HIGH": 3
+                      }
+                    }
+                  }
+                },
                 "ExecuteSqlRequest": {
                   "fields": {
                     "session": {
@@ -3831,6 +3904,10 @@
                     "queryOptions": {
                       "type": "QueryOptions",
                       "id": 10
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 11
                     }
                   },
                   "nested": {
@@ -3886,6 +3963,10 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 5
                     }
                   },
                   "nested": {
@@ -4084,6 +4165,10 @@
                     "partitionToken": {
                       "type": "bytes",
                       "id": 10
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 11
                     }
                   }
                 },
@@ -4103,6 +4188,10 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 3
                     }
                   }
                 },
@@ -4140,6 +4229,10 @@
                     "returnCommitStats": {
                       "type": "bool",
                       "id": 5
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 6
                     }
                   }
                 },

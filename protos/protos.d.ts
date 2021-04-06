@@ -4298,6 +4298,303 @@ export namespace google {
             }
         }
 
+        /** Properties of an ErrorInfo. */
+        interface IErrorInfo {
+
+            /** ErrorInfo reason */
+            reason?: (string|null);
+
+            /** ErrorInfo domain */
+            domain?: (string|null);
+
+            /** ErrorInfo metadata */
+            metadata?: ({ [k: string]: string }|null);
+        }
+
+        /** Represents an ErrorInfo. */
+        class ErrorInfo implements IErrorInfo {
+
+            /**
+             * Constructs a new ErrorInfo.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.rpc.IErrorInfo);
+
+            /** ErrorInfo reason. */
+            public reason: string;
+
+            /** ErrorInfo domain. */
+            public domain: string;
+
+            /** ErrorInfo metadata. */
+            public metadata: { [k: string]: string };
+
+            /**
+             * Creates a new ErrorInfo instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns ErrorInfo instance
+             */
+            public static create(properties?: google.rpc.IErrorInfo): google.rpc.ErrorInfo;
+
+            /**
+             * Encodes the specified ErrorInfo message. Does not implicitly {@link google.rpc.ErrorInfo.verify|verify} messages.
+             * @param message ErrorInfo message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.rpc.IErrorInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ErrorInfo message, length delimited. Does not implicitly {@link google.rpc.ErrorInfo.verify|verify} messages.
+             * @param message ErrorInfo message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.rpc.IErrorInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an ErrorInfo message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ErrorInfo
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.rpc.ErrorInfo;
+
+            /**
+             * Decodes an ErrorInfo message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ErrorInfo
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.rpc.ErrorInfo;
+
+            /**
+             * Verifies an ErrorInfo message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an ErrorInfo message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ErrorInfo
+             */
+            public static fromObject(object: { [k: string]: any }): google.rpc.ErrorInfo;
+
+            /**
+             * Creates a plain object from an ErrorInfo message. Also converts values to other types if specified.
+             * @param message ErrorInfo
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.rpc.ErrorInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ErrorInfo to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a PreconditionFailure. */
+        interface IPreconditionFailure {
+
+            /** PreconditionFailure violations */
+            violations?: (google.rpc.PreconditionFailure.IViolation[]|null);
+        }
+
+        /** Represents a PreconditionFailure. */
+        class PreconditionFailure implements IPreconditionFailure {
+
+            /**
+             * Constructs a new PreconditionFailure.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.rpc.IPreconditionFailure);
+
+            /** PreconditionFailure violations. */
+            public violations: google.rpc.PreconditionFailure.IViolation[];
+
+            /**
+             * Creates a new PreconditionFailure instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns PreconditionFailure instance
+             */
+            public static create(properties?: google.rpc.IPreconditionFailure): google.rpc.PreconditionFailure;
+
+            /**
+             * Encodes the specified PreconditionFailure message. Does not implicitly {@link google.rpc.PreconditionFailure.verify|verify} messages.
+             * @param message PreconditionFailure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.rpc.IPreconditionFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified PreconditionFailure message, length delimited. Does not implicitly {@link google.rpc.PreconditionFailure.verify|verify} messages.
+             * @param message PreconditionFailure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.rpc.IPreconditionFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a PreconditionFailure message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns PreconditionFailure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.rpc.PreconditionFailure;
+
+            /**
+             * Decodes a PreconditionFailure message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns PreconditionFailure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.rpc.PreconditionFailure;
+
+            /**
+             * Verifies a PreconditionFailure message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a PreconditionFailure message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns PreconditionFailure
+             */
+            public static fromObject(object: { [k: string]: any }): google.rpc.PreconditionFailure;
+
+            /**
+             * Creates a plain object from a PreconditionFailure message. Also converts values to other types if specified.
+             * @param message PreconditionFailure
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.rpc.PreconditionFailure, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this PreconditionFailure to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        namespace PreconditionFailure {
+
+            /** Properties of a Violation. */
+            interface IViolation {
+
+                /** Violation type */
+                type?: (string|null);
+
+                /** Violation subject */
+                subject?: (string|null);
+
+                /** Violation description */
+                description?: (string|null);
+            }
+
+            /** Represents a Violation. */
+            class Violation implements IViolation {
+
+                /**
+                 * Constructs a new Violation.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.rpc.PreconditionFailure.IViolation);
+
+                /** Violation type. */
+                public type: string;
+
+                /** Violation subject. */
+                public subject: string;
+
+                /** Violation description. */
+                public description: string;
+
+                /**
+                 * Creates a new Violation instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Violation instance
+                 */
+                public static create(properties?: google.rpc.PreconditionFailure.IViolation): google.rpc.PreconditionFailure.Violation;
+
+                /**
+                 * Encodes the specified Violation message. Does not implicitly {@link google.rpc.PreconditionFailure.Violation.verify|verify} messages.
+                 * @param message Violation message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.rpc.PreconditionFailure.IViolation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Violation message, length delimited. Does not implicitly {@link google.rpc.PreconditionFailure.Violation.verify|verify} messages.
+                 * @param message Violation message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.rpc.PreconditionFailure.IViolation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Violation message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Violation
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.rpc.PreconditionFailure.Violation;
+
+                /**
+                 * Decodes a Violation message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Violation
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.rpc.PreconditionFailure.Violation;
+
+                /**
+                 * Verifies a Violation message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Violation message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Violation
+                 */
+                public static fromObject(object: { [k: string]: any }): google.rpc.PreconditionFailure.Violation;
+
+                /**
+                 * Creates a plain object from a Violation message. Also converts values to other types if specified.
+                 * @param message Violation
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.rpc.PreconditionFailure.Violation, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Violation to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
+
         /** Properties of a BadRequest. */
         interface IBadRequest {
 
@@ -13991,6 +14288,119 @@ export namespace google {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a RequestOptions. */
+            interface IRequestOptions {
+
+                /** RequestOptions priority */
+                priority?: (google.spanner.v1.RequestOptions.Priority|keyof typeof google.spanner.v1.RequestOptions.Priority|null);
+
+                /** RequestOptions requestTag */
+                requestTag?: (string|null);
+
+                /** RequestOptions transactionTag */
+                transactionTag?: (string|null);
+            }
+
+            /** Represents a RequestOptions. */
+            class RequestOptions implements IRequestOptions {
+
+                /**
+                 * Constructs a new RequestOptions.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IRequestOptions);
+
+                /** RequestOptions priority. */
+                public priority: (google.spanner.v1.RequestOptions.Priority|keyof typeof google.spanner.v1.RequestOptions.Priority);
+
+                /** RequestOptions requestTag. */
+                public requestTag: string;
+
+                /** RequestOptions transactionTag. */
+                public transactionTag: string;
+
+                /**
+                 * Creates a new RequestOptions instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns RequestOptions instance
+                 */
+                public static create(properties?: google.spanner.v1.IRequestOptions): google.spanner.v1.RequestOptions;
+
+                /**
+                 * Encodes the specified RequestOptions message. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                 * @param message RequestOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IRequestOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified RequestOptions message, length delimited. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                 * @param message RequestOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IRequestOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a RequestOptions message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns RequestOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.RequestOptions;
+
+                /**
+                 * Decodes a RequestOptions message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns RequestOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.RequestOptions;
+
+                /**
+                 * Verifies a RequestOptions message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a RequestOptions message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns RequestOptions
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.RequestOptions;
+
+                /**
+                 * Creates a plain object from a RequestOptions message. Also converts values to other types if specified.
+                 * @param message RequestOptions
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.RequestOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this RequestOptions to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            namespace RequestOptions {
+
+                /** Priority enum. */
+                enum Priority {
+                    PRIORITY_UNSPECIFIED = 0,
+                    PRIORITY_LOW = 1,
+                    PRIORITY_MEDIUM = 2,
+                    PRIORITY_HIGH = 3
+                }
+            }
+
             /** Properties of an ExecuteSqlRequest. */
             interface IExecuteSqlRequest {
 
@@ -14023,6 +14433,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest queryOptions */
                 queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
+
+                /** ExecuteSqlRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -14063,6 +14476,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest queryOptions. */
                 public queryOptions?: (google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null);
+
+                /** ExecuteSqlRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -14255,6 +14671,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest seqno */
                 seqno?: (number|Long|string|null);
+
+                /** ExecuteBatchDmlRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
 
             /** Represents an ExecuteBatchDmlRequest. */
@@ -14277,6 +14696,9 @@ export namespace google {
 
                 /** ExecuteBatchDmlRequest seqno. */
                 public seqno: (number|Long|string);
+
+                /** ExecuteBatchDmlRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /**
                  * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
@@ -15107,6 +15529,9 @@ export namespace google {
 
                 /** ReadRequest partitionToken */
                 partitionToken?: (Uint8Array|string|null);
+
+                /** ReadRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
 
             /** Represents a ReadRequest. */
@@ -15144,6 +15569,9 @@ export namespace google {
 
                 /** ReadRequest partitionToken. */
                 public partitionToken: (Uint8Array|string);
+
+                /** ReadRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -15224,6 +15652,9 @@ export namespace google {
 
                 /** BeginTransactionRequest options */
                 options?: (google.spanner.v1.ITransactionOptions|null);
+
+                /** BeginTransactionRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
 
             /** Represents a BeginTransactionRequest. */
@@ -15240,6 +15671,9 @@ export namespace google {
 
                 /** BeginTransactionRequest options. */
                 public options?: (google.spanner.v1.ITransactionOptions|null);
+
+                /** BeginTransactionRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /**
                  * Creates a new BeginTransactionRequest instance using the specified properties.
@@ -15329,6 +15763,9 @@ export namespace google {
 
                 /** CommitRequest returnCommitStats */
                 returnCommitStats?: (boolean|null);
+
+                /** CommitRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
 
             /** Represents a CommitRequest. */
@@ -15354,6 +15791,9 @@ export namespace google {
 
                 /** CommitRequest returnCommitStats. */
                 public returnCommitStats: boolean;
+
+                /** CommitRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /** CommitRequest transaction. */
                 public transaction?: ("transactionId"|"singleUseTransaction");

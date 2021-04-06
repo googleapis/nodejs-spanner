@@ -11447,6 +11447,714 @@
                 return QuotaFailure;
             })();
     
+            rpc.ErrorInfo = (function() {
+    
+                /**
+                 * Properties of an ErrorInfo.
+                 * @memberof google.rpc
+                 * @interface IErrorInfo
+                 * @property {string|null} [reason] ErrorInfo reason
+                 * @property {string|null} [domain] ErrorInfo domain
+                 * @property {Object.<string,string>|null} [metadata] ErrorInfo metadata
+                 */
+    
+                /**
+                 * Constructs a new ErrorInfo.
+                 * @memberof google.rpc
+                 * @classdesc Represents an ErrorInfo.
+                 * @implements IErrorInfo
+                 * @constructor
+                 * @param {google.rpc.IErrorInfo=} [properties] Properties to set
+                 */
+                function ErrorInfo(properties) {
+                    this.metadata = {};
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * ErrorInfo reason.
+                 * @member {string} reason
+                 * @memberof google.rpc.ErrorInfo
+                 * @instance
+                 */
+                ErrorInfo.prototype.reason = "";
+    
+                /**
+                 * ErrorInfo domain.
+                 * @member {string} domain
+                 * @memberof google.rpc.ErrorInfo
+                 * @instance
+                 */
+                ErrorInfo.prototype.domain = "";
+    
+                /**
+                 * ErrorInfo metadata.
+                 * @member {Object.<string,string>} metadata
+                 * @memberof google.rpc.ErrorInfo
+                 * @instance
+                 */
+                ErrorInfo.prototype.metadata = $util.emptyObject;
+    
+                /**
+                 * Creates a new ErrorInfo instance using the specified properties.
+                 * @function create
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {google.rpc.IErrorInfo=} [properties] Properties to set
+                 * @returns {google.rpc.ErrorInfo} ErrorInfo instance
+                 */
+                ErrorInfo.create = function create(properties) {
+                    return new ErrorInfo(properties);
+                };
+    
+                /**
+                 * Encodes the specified ErrorInfo message. Does not implicitly {@link google.rpc.ErrorInfo.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {google.rpc.IErrorInfo} message ErrorInfo message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ErrorInfo.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.reason != null && Object.hasOwnProperty.call(message, "reason"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.reason);
+                    if (message.domain != null && Object.hasOwnProperty.call(message, "domain"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.domain);
+                    if (message.metadata != null && Object.hasOwnProperty.call(message, "metadata"))
+                        for (var keys = Object.keys(message.metadata), i = 0; i < keys.length; ++i)
+                            writer.uint32(/* id 3, wireType 2 =*/26).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.metadata[keys[i]]).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified ErrorInfo message, length delimited. Does not implicitly {@link google.rpc.ErrorInfo.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {google.rpc.IErrorInfo} message ErrorInfo message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ErrorInfo.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes an ErrorInfo message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.rpc.ErrorInfo} ErrorInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ErrorInfo.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.rpc.ErrorInfo(), key, value;
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.reason = reader.string();
+                            break;
+                        case 2:
+                            message.domain = reader.string();
+                            break;
+                        case 3:
+                            if (message.metadata === $util.emptyObject)
+                                message.metadata = {};
+                            var end2 = reader.uint32() + reader.pos;
+                            key = "";
+                            value = "";
+                            while (reader.pos < end2) {
+                                var tag2 = reader.uint32();
+                                switch (tag2 >>> 3) {
+                                case 1:
+                                    key = reader.string();
+                                    break;
+                                case 2:
+                                    value = reader.string();
+                                    break;
+                                default:
+                                    reader.skipType(tag2 & 7);
+                                    break;
+                                }
+                            }
+                            message.metadata[key] = value;
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes an ErrorInfo message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.rpc.ErrorInfo} ErrorInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ErrorInfo.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies an ErrorInfo message.
+                 * @function verify
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ErrorInfo.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.reason != null && message.hasOwnProperty("reason"))
+                        if (!$util.isString(message.reason))
+                            return "reason: string expected";
+                    if (message.domain != null && message.hasOwnProperty("domain"))
+                        if (!$util.isString(message.domain))
+                            return "domain: string expected";
+                    if (message.metadata != null && message.hasOwnProperty("metadata")) {
+                        if (!$util.isObject(message.metadata))
+                            return "metadata: object expected";
+                        var key = Object.keys(message.metadata);
+                        for (var i = 0; i < key.length; ++i)
+                            if (!$util.isString(message.metadata[key[i]]))
+                                return "metadata: string{k:string} expected";
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates an ErrorInfo message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.rpc.ErrorInfo} ErrorInfo
+                 */
+                ErrorInfo.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.rpc.ErrorInfo)
+                        return object;
+                    var message = new $root.google.rpc.ErrorInfo();
+                    if (object.reason != null)
+                        message.reason = String(object.reason);
+                    if (object.domain != null)
+                        message.domain = String(object.domain);
+                    if (object.metadata) {
+                        if (typeof object.metadata !== "object")
+                            throw TypeError(".google.rpc.ErrorInfo.metadata: object expected");
+                        message.metadata = {};
+                        for (var keys = Object.keys(object.metadata), i = 0; i < keys.length; ++i)
+                            message.metadata[keys[i]] = String(object.metadata[keys[i]]);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from an ErrorInfo message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {google.rpc.ErrorInfo} message ErrorInfo
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ErrorInfo.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.objects || options.defaults)
+                        object.metadata = {};
+                    if (options.defaults) {
+                        object.reason = "";
+                        object.domain = "";
+                    }
+                    if (message.reason != null && message.hasOwnProperty("reason"))
+                        object.reason = message.reason;
+                    if (message.domain != null && message.hasOwnProperty("domain"))
+                        object.domain = message.domain;
+                    var keys2;
+                    if (message.metadata && (keys2 = Object.keys(message.metadata)).length) {
+                        object.metadata = {};
+                        for (var j = 0; j < keys2.length; ++j)
+                            object.metadata[keys2[j]] = message.metadata[keys2[j]];
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this ErrorInfo to JSON.
+                 * @function toJSON
+                 * @memberof google.rpc.ErrorInfo
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ErrorInfo.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return ErrorInfo;
+            })();
+    
+            rpc.PreconditionFailure = (function() {
+    
+                /**
+                 * Properties of a PreconditionFailure.
+                 * @memberof google.rpc
+                 * @interface IPreconditionFailure
+                 * @property {Array.<google.rpc.PreconditionFailure.IViolation>|null} [violations] PreconditionFailure violations
+                 */
+    
+                /**
+                 * Constructs a new PreconditionFailure.
+                 * @memberof google.rpc
+                 * @classdesc Represents a PreconditionFailure.
+                 * @implements IPreconditionFailure
+                 * @constructor
+                 * @param {google.rpc.IPreconditionFailure=} [properties] Properties to set
+                 */
+                function PreconditionFailure(properties) {
+                    this.violations = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * PreconditionFailure violations.
+                 * @member {Array.<google.rpc.PreconditionFailure.IViolation>} violations
+                 * @memberof google.rpc.PreconditionFailure
+                 * @instance
+                 */
+                PreconditionFailure.prototype.violations = $util.emptyArray;
+    
+                /**
+                 * Creates a new PreconditionFailure instance using the specified properties.
+                 * @function create
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {google.rpc.IPreconditionFailure=} [properties] Properties to set
+                 * @returns {google.rpc.PreconditionFailure} PreconditionFailure instance
+                 */
+                PreconditionFailure.create = function create(properties) {
+                    return new PreconditionFailure(properties);
+                };
+    
+                /**
+                 * Encodes the specified PreconditionFailure message. Does not implicitly {@link google.rpc.PreconditionFailure.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {google.rpc.IPreconditionFailure} message PreconditionFailure message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PreconditionFailure.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.violations != null && message.violations.length)
+                        for (var i = 0; i < message.violations.length; ++i)
+                            $root.google.rpc.PreconditionFailure.Violation.encode(message.violations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified PreconditionFailure message, length delimited. Does not implicitly {@link google.rpc.PreconditionFailure.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {google.rpc.IPreconditionFailure} message PreconditionFailure message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                PreconditionFailure.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a PreconditionFailure message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.rpc.PreconditionFailure} PreconditionFailure
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PreconditionFailure.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.rpc.PreconditionFailure();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            if (!(message.violations && message.violations.length))
+                                message.violations = [];
+                            message.violations.push($root.google.rpc.PreconditionFailure.Violation.decode(reader, reader.uint32()));
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a PreconditionFailure message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.rpc.PreconditionFailure} PreconditionFailure
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                PreconditionFailure.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a PreconditionFailure message.
+                 * @function verify
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                PreconditionFailure.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.violations != null && message.hasOwnProperty("violations")) {
+                        if (!Array.isArray(message.violations))
+                            return "violations: array expected";
+                        for (var i = 0; i < message.violations.length; ++i) {
+                            var error = $root.google.rpc.PreconditionFailure.Violation.verify(message.violations[i]);
+                            if (error)
+                                return "violations." + error;
+                        }
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a PreconditionFailure message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.rpc.PreconditionFailure} PreconditionFailure
+                 */
+                PreconditionFailure.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.rpc.PreconditionFailure)
+                        return object;
+                    var message = new $root.google.rpc.PreconditionFailure();
+                    if (object.violations) {
+                        if (!Array.isArray(object.violations))
+                            throw TypeError(".google.rpc.PreconditionFailure.violations: array expected");
+                        message.violations = [];
+                        for (var i = 0; i < object.violations.length; ++i) {
+                            if (typeof object.violations[i] !== "object")
+                                throw TypeError(".google.rpc.PreconditionFailure.violations: object expected");
+                            message.violations[i] = $root.google.rpc.PreconditionFailure.Violation.fromObject(object.violations[i]);
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a PreconditionFailure message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {google.rpc.PreconditionFailure} message PreconditionFailure
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                PreconditionFailure.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults)
+                        object.violations = [];
+                    if (message.violations && message.violations.length) {
+                        object.violations = [];
+                        for (var j = 0; j < message.violations.length; ++j)
+                            object.violations[j] = $root.google.rpc.PreconditionFailure.Violation.toObject(message.violations[j], options);
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this PreconditionFailure to JSON.
+                 * @function toJSON
+                 * @memberof google.rpc.PreconditionFailure
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                PreconditionFailure.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                PreconditionFailure.Violation = (function() {
+    
+                    /**
+                     * Properties of a Violation.
+                     * @memberof google.rpc.PreconditionFailure
+                     * @interface IViolation
+                     * @property {string|null} [type] Violation type
+                     * @property {string|null} [subject] Violation subject
+                     * @property {string|null} [description] Violation description
+                     */
+    
+                    /**
+                     * Constructs a new Violation.
+                     * @memberof google.rpc.PreconditionFailure
+                     * @classdesc Represents a Violation.
+                     * @implements IViolation
+                     * @constructor
+                     * @param {google.rpc.PreconditionFailure.IViolation=} [properties] Properties to set
+                     */
+                    function Violation(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Violation type.
+                     * @member {string} type
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @instance
+                     */
+                    Violation.prototype.type = "";
+    
+                    /**
+                     * Violation subject.
+                     * @member {string} subject
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @instance
+                     */
+                    Violation.prototype.subject = "";
+    
+                    /**
+                     * Violation description.
+                     * @member {string} description
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @instance
+                     */
+                    Violation.prototype.description = "";
+    
+                    /**
+                     * Creates a new Violation instance using the specified properties.
+                     * @function create
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {google.rpc.PreconditionFailure.IViolation=} [properties] Properties to set
+                     * @returns {google.rpc.PreconditionFailure.Violation} Violation instance
+                     */
+                    Violation.create = function create(properties) {
+                        return new Violation(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified Violation message. Does not implicitly {@link google.rpc.PreconditionFailure.Violation.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {google.rpc.PreconditionFailure.IViolation} message Violation message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Violation.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
+                        if (message.subject != null && Object.hasOwnProperty.call(message, "subject"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.subject);
+                        if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.description);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified Violation message, length delimited. Does not implicitly {@link google.rpc.PreconditionFailure.Violation.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {google.rpc.PreconditionFailure.IViolation} message Violation message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Violation.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a Violation message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.rpc.PreconditionFailure.Violation} Violation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Violation.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.rpc.PreconditionFailure.Violation();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.type = reader.string();
+                                break;
+                            case 2:
+                                message.subject = reader.string();
+                                break;
+                            case 3:
+                                message.description = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a Violation message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.rpc.PreconditionFailure.Violation} Violation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Violation.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a Violation message.
+                     * @function verify
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    Violation.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.type != null && message.hasOwnProperty("type"))
+                            if (!$util.isString(message.type))
+                                return "type: string expected";
+                        if (message.subject != null && message.hasOwnProperty("subject"))
+                            if (!$util.isString(message.subject))
+                                return "subject: string expected";
+                        if (message.description != null && message.hasOwnProperty("description"))
+                            if (!$util.isString(message.description))
+                                return "description: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a Violation message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.rpc.PreconditionFailure.Violation} Violation
+                     */
+                    Violation.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.rpc.PreconditionFailure.Violation)
+                            return object;
+                        var message = new $root.google.rpc.PreconditionFailure.Violation();
+                        if (object.type != null)
+                            message.type = String(object.type);
+                        if (object.subject != null)
+                            message.subject = String(object.subject);
+                        if (object.description != null)
+                            message.description = String(object.description);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a Violation message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {google.rpc.PreconditionFailure.Violation} message Violation
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    Violation.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.type = "";
+                            object.subject = "";
+                            object.description = "";
+                        }
+                        if (message.type != null && message.hasOwnProperty("type"))
+                            object.type = message.type;
+                        if (message.subject != null && message.hasOwnProperty("subject"))
+                            object.subject = message.subject;
+                        if (message.description != null && message.hasOwnProperty("description"))
+                            object.description = message.description;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this Violation to JSON.
+                     * @function toJSON
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    Violation.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return Violation;
+                })();
+    
+                return PreconditionFailure;
+            })();
+    
             rpc.BadRequest = (function() {
     
                 /**
@@ -34160,6 +34868,279 @@
                     return DeleteSessionRequest;
                 })();
     
+                v1.RequestOptions = (function() {
+    
+                    /**
+                     * Properties of a RequestOptions.
+                     * @memberof google.spanner.v1
+                     * @interface IRequestOptions
+                     * @property {google.spanner.v1.RequestOptions.Priority|null} [priority] RequestOptions priority
+                     * @property {string|null} [requestTag] RequestOptions requestTag
+                     * @property {string|null} [transactionTag] RequestOptions transactionTag
+                     */
+    
+                    /**
+                     * Constructs a new RequestOptions.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a RequestOptions.
+                     * @implements IRequestOptions
+                     * @constructor
+                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
+                     */
+                    function RequestOptions(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * RequestOptions priority.
+                     * @member {google.spanner.v1.RequestOptions.Priority} priority
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     */
+                    RequestOptions.prototype.priority = 0;
+    
+                    /**
+                     * RequestOptions requestTag.
+                     * @member {string} requestTag
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     */
+                    RequestOptions.prototype.requestTag = "";
+    
+                    /**
+                     * RequestOptions transactionTag.
+                     * @member {string} transactionTag
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     */
+                    RequestOptions.prototype.transactionTag = "";
+    
+                    /**
+                     * Creates a new RequestOptions instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions=} [properties] Properties to set
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions instance
+                     */
+                    RequestOptions.create = function create(properties) {
+                        return new RequestOptions(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified RequestOptions message. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    RequestOptions.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.priority != null && Object.hasOwnProperty.call(message, "priority"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.priority);
+                        if (message.requestTag != null && Object.hasOwnProperty.call(message, "requestTag"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.requestTag);
+                        if (message.transactionTag != null && Object.hasOwnProperty.call(message, "transactionTag"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.transactionTag);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified RequestOptions message, length delimited. Does not implicitly {@link google.spanner.v1.RequestOptions.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.IRequestOptions} message RequestOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    RequestOptions.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a RequestOptions message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    RequestOptions.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.RequestOptions();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.priority = reader.int32();
+                                break;
+                            case 2:
+                                message.requestTag = reader.string();
+                                break;
+                            case 3:
+                                message.transactionTag = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a RequestOptions message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    RequestOptions.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a RequestOptions message.
+                     * @function verify
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    RequestOptions.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.priority != null && message.hasOwnProperty("priority"))
+                            switch (message.priority) {
+                            default:
+                                return "priority: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                                break;
+                            }
+                        if (message.requestTag != null && message.hasOwnProperty("requestTag"))
+                            if (!$util.isString(message.requestTag))
+                                return "requestTag: string expected";
+                        if (message.transactionTag != null && message.hasOwnProperty("transactionTag"))
+                            if (!$util.isString(message.transactionTag))
+                                return "transactionTag: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a RequestOptions message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.RequestOptions} RequestOptions
+                     */
+                    RequestOptions.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.RequestOptions)
+                            return object;
+                        var message = new $root.google.spanner.v1.RequestOptions();
+                        switch (object.priority) {
+                        case "PRIORITY_UNSPECIFIED":
+                        case 0:
+                            message.priority = 0;
+                            break;
+                        case "PRIORITY_LOW":
+                        case 1:
+                            message.priority = 1;
+                            break;
+                        case "PRIORITY_MEDIUM":
+                        case 2:
+                            message.priority = 2;
+                            break;
+                        case "PRIORITY_HIGH":
+                        case 3:
+                            message.priority = 3;
+                            break;
+                        }
+                        if (object.requestTag != null)
+                            message.requestTag = String(object.requestTag);
+                        if (object.transactionTag != null)
+                            message.transactionTag = String(object.transactionTag);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a RequestOptions message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {google.spanner.v1.RequestOptions} message RequestOptions
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    RequestOptions.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.priority = options.enums === String ? "PRIORITY_UNSPECIFIED" : 0;
+                            object.requestTag = "";
+                            object.transactionTag = "";
+                        }
+                        if (message.priority != null && message.hasOwnProperty("priority"))
+                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
+                        if (message.requestTag != null && message.hasOwnProperty("requestTag"))
+                            object.requestTag = message.requestTag;
+                        if (message.transactionTag != null && message.hasOwnProperty("transactionTag"))
+                            object.transactionTag = message.transactionTag;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this RequestOptions to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    RequestOptions.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Priority enum.
+                     * @name google.spanner.v1.RequestOptions.Priority
+                     * @enum {number}
+                     * @property {number} PRIORITY_UNSPECIFIED=0 PRIORITY_UNSPECIFIED value
+                     * @property {number} PRIORITY_LOW=1 PRIORITY_LOW value
+                     * @property {number} PRIORITY_MEDIUM=2 PRIORITY_MEDIUM value
+                     * @property {number} PRIORITY_HIGH=3 PRIORITY_HIGH value
+                     */
+                    RequestOptions.Priority = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "PRIORITY_UNSPECIFIED"] = 0;
+                        values[valuesById[1] = "PRIORITY_LOW"] = 1;
+                        values[valuesById[2] = "PRIORITY_MEDIUM"] = 2;
+                        values[valuesById[3] = "PRIORITY_HIGH"] = 3;
+                        return values;
+                    })();
+    
+                    return RequestOptions;
+                })();
+    
                 v1.ExecuteSqlRequest = (function() {
     
                     /**
@@ -34176,6 +35157,7 @@
                      * @property {Uint8Array|null} [partitionToken] ExecuteSqlRequest partitionToken
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
                      * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteSqlRequest requestOptions
                      */
     
                     /**
@@ -34275,6 +35257,14 @@
                     ExecuteSqlRequest.prototype.queryOptions = null;
     
                     /**
+                     * ExecuteSqlRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ExecuteSqlRequest
+                     * @instance
+                     */
+                    ExecuteSqlRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -34321,6 +35311,8 @@
                             writer.uint32(/* id 9, wireType 0 =*/72).int64(message.seqno);
                         if (message.queryOptions != null && Object.hasOwnProperty.call(message, "queryOptions"))
                             $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
     
@@ -34403,6 +35395,9 @@
                                 break;
                             case 10:
                                 message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
+                                break;
+                            case 11:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -34488,6 +35483,11 @@
                             if (error)
                                 return "queryOptions." + error;
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -34565,6 +35565,11 @@
                                 throw TypeError(".google.spanner.v1.ExecuteSqlRequest.queryOptions: object expected");
                             message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.fromObject(object.queryOptions);
                         }
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteSqlRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -34609,6 +35614,7 @@
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
                             object.queryOptions = null;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -34637,6 +35643,8 @@
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
                         if (message.queryOptions != null && message.hasOwnProperty("queryOptions"))
                             object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -34890,6 +35898,7 @@
                      * @property {google.spanner.v1.ITransactionSelector|null} [transaction] ExecuteBatchDmlRequest transaction
                      * @property {Array.<google.spanner.v1.ExecuteBatchDmlRequest.IStatement>|null} [statements] ExecuteBatchDmlRequest statements
                      * @property {number|Long|null} [seqno] ExecuteBatchDmlRequest seqno
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteBatchDmlRequest requestOptions
                      */
     
                     /**
@@ -34941,6 +35950,14 @@
                     ExecuteBatchDmlRequest.prototype.seqno = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
     
                     /**
+                     * ExecuteBatchDmlRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ExecuteBatchDmlRequest
+                     * @instance
+                     */
+                    ExecuteBatchDmlRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ExecuteBatchDmlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteBatchDmlRequest
@@ -34973,6 +35990,8 @@
                                 $root.google.spanner.v1.ExecuteBatchDmlRequest.Statement.encode(message.statements[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.seqno != null && Object.hasOwnProperty.call(message, "seqno"))
                             writer.uint32(/* id 4, wireType 0 =*/32).int64(message.seqno);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                         return writer;
                     };
     
@@ -35020,6 +36039,9 @@
                                 break;
                             case 4:
                                 message.seqno = reader.int64();
+                                break;
+                            case 5:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -35076,6 +36098,11 @@
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
                             if (!$util.isInteger(message.seqno) && !(message.seqno && $util.isInteger(message.seqno.low) && $util.isInteger(message.seqno.high)))
                                 return "seqno: integer|Long expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -35117,6 +36144,11 @@
                                 message.seqno = object.seqno;
                             else if (typeof object.seqno === "object")
                                 message.seqno = new $util.LongBits(object.seqno.low >>> 0, object.seqno.high >>> 0).toNumber();
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteBatchDmlRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -35143,6 +36175,7 @@
                                 object.seqno = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                             } else
                                 object.seqno = options.longs === String ? "0" : 0;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -35158,6 +36191,8 @@
                                 object.seqno = options.longs === String ? String(message.seqno) : message.seqno;
                             else
                                 object.seqno = options.longs === String ? $util.Long.prototype.toString.call(message.seqno) : options.longs === Number ? new $util.LongBits(message.seqno.low >>> 0, message.seqno.high >>> 0).toNumber() : message.seqno;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -37084,6 +38119,7 @@
                      * @property {number|Long|null} [limit] ReadRequest limit
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
                      */
     
                     /**
@@ -37175,6 +38211,14 @@
                     ReadRequest.prototype.partitionToken = $util.newBuffer([]);
     
                     /**
+                     * ReadRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.ReadRequest
+                     * @instance
+                     */
+                    ReadRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new ReadRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ReadRequest
@@ -37217,6 +38261,8 @@
                             writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.resumeToken);
                         if (message.partitionToken != null && Object.hasOwnProperty.call(message, "partitionToken"))
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         return writer;
                     };
     
@@ -37279,6 +38325,9 @@
                                 break;
                             case 10:
                                 message.partitionToken = reader.bytes();
+                                break;
+                            case 11:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -37350,6 +38399,11 @@
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             if (!(message.partitionToken && typeof message.partitionToken.length === "number" || $util.isString(message.partitionToken)))
                                 return "partitionToken: buffer expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -37407,6 +38461,11 @@
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
                             else if (object.partitionToken.length)
                                 message.partitionToken = object.partitionToken;
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -37450,6 +38509,7 @@
                                 if (options.bytes !== Array)
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -37475,6 +38535,8 @@
                             object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -37500,6 +38562,7 @@
                      * @interface IBeginTransactionRequest
                      * @property {string|null} [session] BeginTransactionRequest session
                      * @property {google.spanner.v1.ITransactionOptions|null} [options] BeginTransactionRequest options
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] BeginTransactionRequest requestOptions
                      */
     
                     /**
@@ -37534,6 +38597,14 @@
                     BeginTransactionRequest.prototype.options = null;
     
                     /**
+                     * BeginTransactionRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.BeginTransactionRequest
+                     * @instance
+                     */
+                    BeginTransactionRequest.prototype.requestOptions = null;
+    
+                    /**
                      * Creates a new BeginTransactionRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.BeginTransactionRequest
@@ -37561,6 +38632,8 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.session);
                         if (message.options != null && Object.hasOwnProperty.call(message, "options"))
                             $root.google.spanner.v1.TransactionOptions.encode(message.options, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -37600,6 +38673,9 @@
                                 break;
                             case 2:
                                 message.options = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                break;
+                            case 3:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -37644,6 +38720,11 @@
                             if (error)
                                 return "options." + error;
                         }
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -37666,6 +38747,11 @@
                                 throw TypeError(".google.spanner.v1.BeginTransactionRequest.options: object expected");
                             message.options = $root.google.spanner.v1.TransactionOptions.fromObject(object.options);
                         }
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.BeginTransactionRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -37685,11 +38771,14 @@
                         if (options.defaults) {
                             object.session = "";
                             object.options = null;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
                         if (message.options != null && message.hasOwnProperty("options"))
                             object.options = $root.google.spanner.v1.TransactionOptions.toObject(message.options, options);
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
@@ -37718,6 +38807,7 @@
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
                      * @property {boolean|null} [returnCommitStats] CommitRequest returnCommitStats
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] CommitRequest requestOptions
                      */
     
                     /**
@@ -37776,6 +38866,14 @@
                      */
                     CommitRequest.prototype.returnCommitStats = false;
     
+                    /**
+                     * CommitRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    CommitRequest.prototype.requestOptions = null;
+    
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
     
@@ -37825,6 +38923,8 @@
                                 $root.google.spanner.v1.Mutation.encode(message.mutations[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         if (message.returnCommitStats != null && Object.hasOwnProperty.call(message, "returnCommitStats"))
                             writer.uint32(/* id 5, wireType 0 =*/40).bool(message.returnCommitStats);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                         return writer;
                     };
     
@@ -37875,6 +38975,9 @@
                                 break;
                             case 5:
                                 message.returnCommitStats = reader.bool();
+                                break;
+                            case 6:
+                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -37942,6 +39045,11 @@
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             if (typeof message.returnCommitStats !== "boolean")
                                 return "returnCommitStats: boolean expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
                         return null;
                     };
     
@@ -37981,6 +39089,11 @@
                         }
                         if (object.returnCommitStats != null)
                             message.returnCommitStats = Boolean(object.returnCommitStats);
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.CommitRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
                         return message;
                     };
     
@@ -38002,6 +39115,7 @@
                         if (options.defaults) {
                             object.session = "";
                             object.returnCommitStats = false;
+                            object.requestOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -38022,6 +39136,8 @@
                         }
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             object.returnCommitStats = message.returnCommitStats;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
                         return object;
                     };
     
