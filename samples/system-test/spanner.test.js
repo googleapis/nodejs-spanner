@@ -492,7 +492,7 @@ describe('Spanner', () => {
 
   // query with RPC priority
   // TODO: Enable when RPC Priority has been released.
-  it('should use request options', async () => {
+  it.skip('should use request options', async () => {
     const output = execSync(
       `${rpcPriorityCommand} queryWithRpcPriority ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -500,7 +500,7 @@ describe('Spanner', () => {
       output,
       /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
-  }).skip();
+  });
 
   // read_only_transaction
   it('should read an example table using transactions', async () => {
