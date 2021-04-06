@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.6.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.1...v5.6.2) (2021-04-06)
+
+
+### Bug Fixes
+
+* prevent unhandled promise rejections while creating session ([#1332](https://www.github.com/googleapis/nodejs-spanner/issues/1332)) ([b62bf5e](https://www.github.com/googleapis/nodejs-spanner/commit/b62bf5e1a96c495f73512a97419ecf98915b457e))
+
 ### [5.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.0...v5.6.1) (2021-03-30)
 
 
