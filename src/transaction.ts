@@ -61,7 +61,7 @@ export interface RequestOptions {
 }
 
 export interface CommitOptions {
-  requestOptions?: Omit<IRequestOptions, 'requestTag'>;
+  requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
   gaxOptions?: CallOptions;
 }
