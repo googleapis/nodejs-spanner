@@ -25,6 +25,8 @@ import {Transform} from 'stream';
 import * as through from 'through2';
 
 import {TimestampBounds} from '../src/transaction';
+import {google} from '../protos/protos';
+import RequestOptions = google.spanner.v1.RequestOptions;
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -270,6 +272,17 @@ describe('Table', () => {
       table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
     });
 
+    it('should accept requestOptions', done => {
+      const deleteRowsOptions = {
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_HIGH},
+      };
+      transaction.commit = options => {
+        assert.strictEqual(options, deleteRowsOptions);
+        done();
+      };
+      table.deleteRows(KEYS, deleteRowsOptions, assert.ifError);
+    });
+
     it('should delete the rows via transaction', done => {
       const stub = (sandbox.stub(
         transaction,
@@ -357,6 +370,22 @@ describe('Table', () => {
 
     it('should accept commit options', done => {
       const insertRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, insertRowsOptions);
+        done();
+      };
+
+      table.insert(ROW, insertRowsOptions, assert.ifError);
+    });
+
+    it('should accept requestOptions', done => {
+      const insertRowsOptions = {
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_HIGH},
+      };
       (sandbox.stub(transaction, 'insert') as sinon.SinonStub).withArgs(
         table.name,
         ROW
@@ -490,6 +519,22 @@ describe('Table', () => {
 
       table.replace(ROW, replaceRowsOptions, assert.ifError);
     });
+
+    it('should accept requestOptions', done => {
+      const replaceRowsOptions = {
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_HIGH},
+      };
+      (sandbox.stub(transaction, 'replace') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, replaceRowsOptions);
+        done();
+      };
+
+      table.replace(ROW, replaceRowsOptions, assert.ifError);
+    });
   });
 
   describe('update', () => {
@@ -548,6 +593,22 @@ describe('Table', () => {
 
       table.update(ROW, updateRowsOptions, assert.ifError);
     });
+
+    it('should accept requestOptions', done => {
+      const updateRowsOptions = {
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+      };
+      (sandbox.stub(transaction, 'update') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, updateRowsOptions);
+        done();
+      };
+
+      table.update(ROW, updateRowsOptions, assert.ifError);
+    });
   });
 
   describe('upsert', () => {
@@ -595,6 +656,22 @@ describe('Table', () => {
 
     it('should accept commit options', done => {
       const upsertRowsOptions = {returnCommitStats: true};
+      (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
+        table.name,
+        ROW
+      );
+      transaction.commit = options => {
+        assert.strictEqual(options, upsertRowsOptions);
+        done();
+      };
+
+      table.upsert(ROW, upsertRowsOptions, assert.ifError);
+    });
+
+    it('should accept requestOptions', done => {
+      const upsertRowsOptions = {
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
+      };
       (sandbox.stub(transaction, 'upsert') as sinon.SinonStub).withArgs(
         table.name,
         ROW

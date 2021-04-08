@@ -37,6 +37,7 @@ import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
 
 export type Rows = Array<Row | Json>;
@@ -60,6 +61,7 @@ export interface RequestOptions {
 }
 
 export interface CommitOptions {
+  requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
   gaxOptions?: CallOptions;
 }
@@ -76,6 +78,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   partitionToken?: Uint8Array | string;
   seqno?: number;
   queryOptions?: IQueryOptions;
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
 }
 
 export interface KeyRange {
@@ -95,6 +98,7 @@ export interface ReadRequest extends RequestOptions {
   limit?: number | Long | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -126,6 +130,10 @@ export interface BatchUpdateCallback {
     rowCounts: number[],
     response?: spannerClient.spanner.v1.ExecuteBatchDmlResponse
   ): void;
+}
+export interface BatchUpdateOptions {
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  gaxOptions?: CallOptions;
 }
 
 export type ReadCallback = NormalCallback<Rows>;
@@ -1269,7 +1277,7 @@ export class Transaction extends Dml {
 
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptions?: CallOptions
+    options?: BatchUpdateOptions | CallOptions
   ): Promise<BatchUpdateResponse>;
   batchUpdate(
     queries: Array<string | Statement>,
@@ -1277,7 +1285,7 @@ export class Transaction extends Dml {
   ): void;
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptions: CallOptions,
+    options: BatchUpdateOptions | CallOptions,
     callback: BatchUpdateCallback
   ): void;
   /**
@@ -1311,6 +1319,7 @@ export class Transaction extends Dml {
    * @param {object} [query.types] A map of parameter types.
    * @param {object} [gaxOptions] Request configuration options, outlined here:
    *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {BatchUpdateOptions} [options] Options for configuring the request.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    *
@@ -1337,13 +1346,17 @@ export class Transaction extends Dml {
    */
   batchUpdate(
     queries: Array<string | Statement>,
-    gaxOptionsOrCallback?: CallOptions | BatchUpdateCallback,
+    optionsOrCallback?: BatchUpdateOptions | CallOptions | BatchUpdateCallback,
     cb?: BatchUpdateCallback
   ): Promise<BatchUpdateResponse> | void {
-    const gaxOpts =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const gaxOpts =
+      'gaxOptions' in options
+        ? (options as BatchUpdateOptions).gaxOptions
+        : options;
 
     if (!Array.isArray(queries) || !queries.length) {
       const rowCounts: number[] = [];
@@ -1371,6 +1384,7 @@ export class Transaction extends Dml {
       session: this.session.formattedName_!,
       transaction: {id: this.id!},
       seqno: this._seqno++,
+      requestOptions: (options as BatchUpdateOptions).requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
@@ -1442,6 +1456,8 @@ export class Transaction extends Dml {
   commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
+   * @property {IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
    * @property {CallOptions} [gaxOptions] The request configuration options
@@ -1511,7 +1527,8 @@ export class Transaction extends Dml {
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
-    const reqOpts: CommitRequest = {mutations, session};
+    const requestOptions = (options as CommitOptions).requestOptions;
+    const reqOpts: CommitRequest = {mutations, session, requestOptions};
 
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;

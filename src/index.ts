@@ -96,6 +96,7 @@ export interface CreateInstanceRequest {
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
 }
+
 /**
  * Translates enum values to string keys.
  *
