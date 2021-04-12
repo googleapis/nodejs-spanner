@@ -277,9 +277,9 @@ export function isDefaultCredentialsNotSetError(
 }
 
 /**
- * Checks whether the given error is a 'Project Id not set in Environment' error.
+ * Checks whether the given error is an 'Unable to detect a Project Id in the current environment' error.
  * @param {Error} error The error to check.
- * @return {boolean} True if the error is a 'Project Id not set in Environment' error, and otherwise false.
+ * @return {boolean} True if the error is an 'Unable to detect a Project Id in the current environment' error, and otherwise false.
  */
 export function isProjectIdNotSetInEnvironmentError(
   error: grpc.ServiceError | undefined
