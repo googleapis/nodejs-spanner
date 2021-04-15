@@ -2214,6 +2214,11 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "progress": {
+                              "rule": "repeated",
+                              "type": "OperationProgress",
+                              "id": 5
                             }
                           }
                         },
@@ -2960,6 +2965,28 @@
                 "(google.api.resource_definition).pattern": "projects/{project}/instances/{instance}/databases/{database}"
               },
               "nested": {
+                "CommitResponse": {
+                  "fields": {
+                    "commitTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 1
+                    },
+                    "commitStats": {
+                      "type": "CommitStats",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "CommitStats": {
+                      "fields": {
+                        "mutationCount": {
+                          "type": "int64",
+                          "id": 1
+                        }
+                      }
+                    }
+                  }
+                },
                 "KeyRange": {
                   "oneofs": {
                     "startKeyType": {
@@ -4233,28 +4260,6 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 6
-                    }
-                  }
-                },
-                "CommitResponse": {
-                  "fields": {
-                    "commitTimestamp": {
-                      "type": "google.protobuf.Timestamp",
-                      "id": 1
-                    },
-                    "commitStats": {
-                      "type": "CommitStats",
-                      "id": 2
-                    }
-                  },
-                  "nested": {
-                    "CommitStats": {
-                      "fields": {
-                        "mutationCount": {
-                          "type": "int64",
-                          "id": 1
-                        }
-                      }
                     }
                   }
                 },

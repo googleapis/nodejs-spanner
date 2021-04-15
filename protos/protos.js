@@ -20354,6 +20354,7 @@
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlMetadata statements
                              * @property {Array.<google.protobuf.ITimestamp>|null} [commitTimestamps] UpdateDatabaseDdlMetadata commitTimestamps
                              * @property {boolean|null} [throttled] UpdateDatabaseDdlMetadata throttled
+                             * @property {Array.<google.spanner.admin.database.v1.IOperationProgress>|null} [progress] UpdateDatabaseDdlMetadata progress
                              */
     
                             /**
@@ -20367,6 +20368,7 @@
                             function UpdateDatabaseDdlMetadata(properties) {
                                 this.statements = [];
                                 this.commitTimestamps = [];
+                                this.progress = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -20406,6 +20408,14 @@
                             UpdateDatabaseDdlMetadata.prototype.throttled = false;
     
                             /**
+                             * UpdateDatabaseDdlMetadata progress.
+                             * @member {Array.<google.spanner.admin.database.v1.IOperationProgress>} progress
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseDdlMetadata.prototype.progress = $util.emptyArray;
+    
+                            /**
                              * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
@@ -20439,6 +20449,9 @@
                                         $root.google.protobuf.Timestamp.encode(message.commitTimestamps[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                                 if (message.throttled != null && Object.hasOwnProperty.call(message, "throttled"))
                                     writer.uint32(/* id 4, wireType 0 =*/32).bool(message.throttled);
+                                if (message.progress != null && message.progress.length)
+                                    for (var i = 0; i < message.progress.length; ++i)
+                                        $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
                                 return writer;
                             };
     
@@ -20488,6 +20501,11 @@
                                         break;
                                     case 4:
                                         message.throttled = reader.bool();
+                                        break;
+                                    case 5:
+                                        if (!(message.progress && message.progress.length))
+                                            message.progress = [];
+                                        message.progress.push($root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32()));
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -20546,6 +20564,15 @@
                                 if (message.throttled != null && message.hasOwnProperty("throttled"))
                                     if (typeof message.throttled !== "boolean")
                                         return "throttled: boolean expected";
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    if (!Array.isArray(message.progress))
+                                        return "progress: array expected";
+                                    for (var i = 0; i < message.progress.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress[i]);
+                                        if (error)
+                                            return "progress." + error;
+                                    }
+                                }
                                 return null;
                             };
     
@@ -20582,6 +20609,16 @@
                                 }
                                 if (object.throttled != null)
                                     message.throttled = Boolean(object.throttled);
+                                if (object.progress) {
+                                    if (!Array.isArray(object.progress))
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.progress: array expected");
+                                    message.progress = [];
+                                    for (var i = 0; i < object.progress.length; ++i) {
+                                        if (typeof object.progress[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.progress: object expected");
+                                        message.progress[i] = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress[i]);
+                                    }
+                                }
                                 return message;
                             };
     
@@ -20601,6 +20638,7 @@
                                 if (options.arrays || options.defaults) {
                                     object.statements = [];
                                     object.commitTimestamps = [];
+                                    object.progress = [];
                                 }
                                 if (options.defaults) {
                                     object.database = "";
@@ -20620,6 +20658,11 @@
                                 }
                                 if (message.throttled != null && message.hasOwnProperty("throttled"))
                                     object.throttled = message.throttled;
+                                if (message.progress && message.progress.length) {
+                                    object.progress = [];
+                                    for (var j = 0; j < message.progress.length; ++j)
+                                        object.progress[j] = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress[j], options);
+                                }
                                 return object;
                             };
     
@@ -26685,6 +26728,427 @@
                  * @namespace
                  */
                 var v1 = {};
+    
+                v1.CommitResponse = (function() {
+    
+                    /**
+                     * Properties of a CommitResponse.
+                     * @memberof google.spanner.v1
+                     * @interface ICommitResponse
+                     * @property {google.protobuf.ITimestamp|null} [commitTimestamp] CommitResponse commitTimestamp
+                     * @property {google.spanner.v1.CommitResponse.ICommitStats|null} [commitStats] CommitResponse commitStats
+                     */
+    
+                    /**
+                     * Constructs a new CommitResponse.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a CommitResponse.
+                     * @implements ICommitResponse
+                     * @constructor
+                     * @param {google.spanner.v1.ICommitResponse=} [properties] Properties to set
+                     */
+                    function CommitResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * CommitResponse commitTimestamp.
+                     * @member {google.protobuf.ITimestamp|null|undefined} commitTimestamp
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @instance
+                     */
+                    CommitResponse.prototype.commitTimestamp = null;
+    
+                    /**
+                     * CommitResponse commitStats.
+                     * @member {google.spanner.v1.CommitResponse.ICommitStats|null|undefined} commitStats
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @instance
+                     */
+                    CommitResponse.prototype.commitStats = null;
+    
+                    /**
+                     * Creates a new CommitResponse instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {google.spanner.v1.ICommitResponse=} [properties] Properties to set
+                     * @returns {google.spanner.v1.CommitResponse} CommitResponse instance
+                     */
+                    CommitResponse.create = function create(properties) {
+                        return new CommitResponse(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified CommitResponse message. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {google.spanner.v1.ICommitResponse} message CommitResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    CommitResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.commitTimestamp != null && Object.hasOwnProperty.call(message, "commitTimestamp"))
+                            $root.google.protobuf.Timestamp.encode(message.commitTimestamp, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.commitStats != null && Object.hasOwnProperty.call(message, "commitStats"))
+                            $root.google.spanner.v1.CommitResponse.CommitStats.encode(message.commitStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified CommitResponse message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {google.spanner.v1.ICommitResponse} message CommitResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    CommitResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a CommitResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    CommitResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.CommitResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a CommitResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    CommitResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a CommitResponse message.
+                     * @function verify
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    CommitResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp")) {
+                            var error = $root.google.protobuf.Timestamp.verify(message.commitTimestamp);
+                            if (error)
+                                return "commitTimestamp." + error;
+                        }
+                        if (message.commitStats != null && message.hasOwnProperty("commitStats")) {
+                            var error = $root.google.spanner.v1.CommitResponse.CommitStats.verify(message.commitStats);
+                            if (error)
+                                return "commitStats." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a CommitResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
+                     */
+                    CommitResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.CommitResponse)
+                            return object;
+                        var message = new $root.google.spanner.v1.CommitResponse();
+                        if (object.commitTimestamp != null) {
+                            if (typeof object.commitTimestamp !== "object")
+                                throw TypeError(".google.spanner.v1.CommitResponse.commitTimestamp: object expected");
+                            message.commitTimestamp = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamp);
+                        }
+                        if (object.commitStats != null) {
+                            if (typeof object.commitStats !== "object")
+                                throw TypeError(".google.spanner.v1.CommitResponse.commitStats: object expected");
+                            message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.fromObject(object.commitStats);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a CommitResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {google.spanner.v1.CommitResponse} message CommitResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    CommitResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.commitTimestamp = null;
+                            object.commitStats = null;
+                        }
+                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp"))
+                            object.commitTimestamp = $root.google.protobuf.Timestamp.toObject(message.commitTimestamp, options);
+                        if (message.commitStats != null && message.hasOwnProperty("commitStats"))
+                            object.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.toObject(message.commitStats, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this CommitResponse to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    CommitResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    CommitResponse.CommitStats = (function() {
+    
+                        /**
+                         * Properties of a CommitStats.
+                         * @memberof google.spanner.v1.CommitResponse
+                         * @interface ICommitStats
+                         * @property {number|Long|null} [mutationCount] CommitStats mutationCount
+                         */
+    
+                        /**
+                         * Constructs a new CommitStats.
+                         * @memberof google.spanner.v1.CommitResponse
+                         * @classdesc Represents a CommitStats.
+                         * @implements ICommitStats
+                         * @constructor
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
+                         */
+                        function CommitStats(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * CommitStats mutationCount.
+                         * @member {number|Long} mutationCount
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @instance
+                         */
+                        CommitStats.prototype.mutationCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+    
+                        /**
+                         * Creates a new CommitStats instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats instance
+                         */
+                        CommitStats.create = function create(properties) {
+                            return new CommitStats(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        CommitStats.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.mutationCount != null && Object.hasOwnProperty.call(message, "mutationCount"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).int64(message.mutationCount);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        CommitStats.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a CommitStats message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        CommitStats.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.CommitResponse.CommitStats();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.mutationCount = reader.int64();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a CommitStats message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        CommitStats.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a CommitStats message.
+                         * @function verify
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        CommitStats.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
+                                if (!$util.isInteger(message.mutationCount) && !(message.mutationCount && $util.isInteger(message.mutationCount.low) && $util.isInteger(message.mutationCount.high)))
+                                    return "mutationCount: integer|Long expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
+                         */
+                        CommitStats.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.CommitResponse.CommitStats)
+                                return object;
+                            var message = new $root.google.spanner.v1.CommitResponse.CommitStats();
+                            if (object.mutationCount != null)
+                                if ($util.Long)
+                                    (message.mutationCount = $util.Long.fromValue(object.mutationCount)).unsigned = false;
+                                else if (typeof object.mutationCount === "string")
+                                    message.mutationCount = parseInt(object.mutationCount, 10);
+                                else if (typeof object.mutationCount === "number")
+                                    message.mutationCount = object.mutationCount;
+                                else if (typeof object.mutationCount === "object")
+                                    message.mutationCount = new $util.LongBits(object.mutationCount.low >>> 0, object.mutationCount.high >>> 0).toNumber();
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {google.spanner.v1.CommitResponse.CommitStats} message CommitStats
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        CommitStats.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                if ($util.Long) {
+                                    var long = new $util.Long(0, 0, false);
+                                    object.mutationCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                                } else
+                                    object.mutationCount = options.longs === String ? "0" : 0;
+                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
+                                if (typeof message.mutationCount === "number")
+                                    object.mutationCount = options.longs === String ? String(message.mutationCount) : message.mutationCount;
+                                else
+                                    object.mutationCount = options.longs === String ? $util.Long.prototype.toString.call(message.mutationCount) : options.longs === Number ? new $util.LongBits(message.mutationCount.low >>> 0, message.mutationCount.high >>> 0).toNumber() : message.mutationCount;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this CommitStats to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        CommitStats.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return CommitStats;
+                    })();
+    
+                    return CommitResponse;
+                })();
     
                 v1.KeyRange = (function() {
     
@@ -39153,427 +39617,6 @@
                     };
     
                     return CommitRequest;
-                })();
-    
-                v1.CommitResponse = (function() {
-    
-                    /**
-                     * Properties of a CommitResponse.
-                     * @memberof google.spanner.v1
-                     * @interface ICommitResponse
-                     * @property {google.protobuf.ITimestamp|null} [commitTimestamp] CommitResponse commitTimestamp
-                     * @property {google.spanner.v1.CommitResponse.ICommitStats|null} [commitStats] CommitResponse commitStats
-                     */
-    
-                    /**
-                     * Constructs a new CommitResponse.
-                     * @memberof google.spanner.v1
-                     * @classdesc Represents a CommitResponse.
-                     * @implements ICommitResponse
-                     * @constructor
-                     * @param {google.spanner.v1.ICommitResponse=} [properties] Properties to set
-                     */
-                    function CommitResponse(properties) {
-                        if (properties)
-                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                if (properties[keys[i]] != null)
-                                    this[keys[i]] = properties[keys[i]];
-                    }
-    
-                    /**
-                     * CommitResponse commitTimestamp.
-                     * @member {google.protobuf.ITimestamp|null|undefined} commitTimestamp
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @instance
-                     */
-                    CommitResponse.prototype.commitTimestamp = null;
-    
-                    /**
-                     * CommitResponse commitStats.
-                     * @member {google.spanner.v1.CommitResponse.ICommitStats|null|undefined} commitStats
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @instance
-                     */
-                    CommitResponse.prototype.commitStats = null;
-    
-                    /**
-                     * Creates a new CommitResponse instance using the specified properties.
-                     * @function create
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {google.spanner.v1.ICommitResponse=} [properties] Properties to set
-                     * @returns {google.spanner.v1.CommitResponse} CommitResponse instance
-                     */
-                    CommitResponse.create = function create(properties) {
-                        return new CommitResponse(properties);
-                    };
-    
-                    /**
-                     * Encodes the specified CommitResponse message. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
-                     * @function encode
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {google.spanner.v1.ICommitResponse} message CommitResponse message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    CommitResponse.encode = function encode(message, writer) {
-                        if (!writer)
-                            writer = $Writer.create();
-                        if (message.commitTimestamp != null && Object.hasOwnProperty.call(message, "commitTimestamp"))
-                            $root.google.protobuf.Timestamp.encode(message.commitTimestamp, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                        if (message.commitStats != null && Object.hasOwnProperty.call(message, "commitStats"))
-                            $root.google.spanner.v1.CommitResponse.CommitStats.encode(message.commitStats, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                        return writer;
-                    };
-    
-                    /**
-                     * Encodes the specified CommitResponse message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
-                     * @function encodeDelimited
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {google.spanner.v1.ICommitResponse} message CommitResponse message or plain object to encode
-                     * @param {$protobuf.Writer} [writer] Writer to encode to
-                     * @returns {$protobuf.Writer} Writer
-                     */
-                    CommitResponse.encodeDelimited = function encodeDelimited(message, writer) {
-                        return this.encode(message, writer).ldelim();
-                    };
-    
-                    /**
-                     * Decodes a CommitResponse message from the specified reader or buffer.
-                     * @function decode
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @param {number} [length] Message length if known beforehand
-                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    CommitResponse.decode = function decode(reader, length) {
-                        if (!(reader instanceof $Reader))
-                            reader = $Reader.create(reader);
-                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.CommitResponse();
-                        while (reader.pos < end) {
-                            var tag = reader.uint32();
-                            switch (tag >>> 3) {
-                            case 1:
-                                message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.decode(reader, reader.uint32());
-                                break;
-                            default:
-                                reader.skipType(tag & 7);
-                                break;
-                            }
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Decodes a CommitResponse message from the specified reader or buffer, length delimited.
-                     * @function decodeDelimited
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    CommitResponse.decodeDelimited = function decodeDelimited(reader) {
-                        if (!(reader instanceof $Reader))
-                            reader = new $Reader(reader);
-                        return this.decode(reader, reader.uint32());
-                    };
-    
-                    /**
-                     * Verifies a CommitResponse message.
-                     * @function verify
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {Object.<string,*>} message Plain object to verify
-                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                     */
-                    CommitResponse.verify = function verify(message) {
-                        if (typeof message !== "object" || message === null)
-                            return "object expected";
-                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp")) {
-                            var error = $root.google.protobuf.Timestamp.verify(message.commitTimestamp);
-                            if (error)
-                                return "commitTimestamp." + error;
-                        }
-                        if (message.commitStats != null && message.hasOwnProperty("commitStats")) {
-                            var error = $root.google.spanner.v1.CommitResponse.CommitStats.verify(message.commitStats);
-                            if (error)
-                                return "commitStats." + error;
-                        }
-                        return null;
-                    };
-    
-                    /**
-                     * Creates a CommitResponse message from a plain object. Also converts values to their respective internal types.
-                     * @function fromObject
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {Object.<string,*>} object Plain object
-                     * @returns {google.spanner.v1.CommitResponse} CommitResponse
-                     */
-                    CommitResponse.fromObject = function fromObject(object) {
-                        if (object instanceof $root.google.spanner.v1.CommitResponse)
-                            return object;
-                        var message = new $root.google.spanner.v1.CommitResponse();
-                        if (object.commitTimestamp != null) {
-                            if (typeof object.commitTimestamp !== "object")
-                                throw TypeError(".google.spanner.v1.CommitResponse.commitTimestamp: object expected");
-                            message.commitTimestamp = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamp);
-                        }
-                        if (object.commitStats != null) {
-                            if (typeof object.commitStats !== "object")
-                                throw TypeError(".google.spanner.v1.CommitResponse.commitStats: object expected");
-                            message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.fromObject(object.commitStats);
-                        }
-                        return message;
-                    };
-    
-                    /**
-                     * Creates a plain object from a CommitResponse message. Also converts values to other types if specified.
-                     * @function toObject
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @static
-                     * @param {google.spanner.v1.CommitResponse} message CommitResponse
-                     * @param {$protobuf.IConversionOptions} [options] Conversion options
-                     * @returns {Object.<string,*>} Plain object
-                     */
-                    CommitResponse.toObject = function toObject(message, options) {
-                        if (!options)
-                            options = {};
-                        var object = {};
-                        if (options.defaults) {
-                            object.commitTimestamp = null;
-                            object.commitStats = null;
-                        }
-                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp"))
-                            object.commitTimestamp = $root.google.protobuf.Timestamp.toObject(message.commitTimestamp, options);
-                        if (message.commitStats != null && message.hasOwnProperty("commitStats"))
-                            object.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.toObject(message.commitStats, options);
-                        return object;
-                    };
-    
-                    /**
-                     * Converts this CommitResponse to JSON.
-                     * @function toJSON
-                     * @memberof google.spanner.v1.CommitResponse
-                     * @instance
-                     * @returns {Object.<string,*>} JSON object
-                     */
-                    CommitResponse.prototype.toJSON = function toJSON() {
-                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                    };
-    
-                    CommitResponse.CommitStats = (function() {
-    
-                        /**
-                         * Properties of a CommitStats.
-                         * @memberof google.spanner.v1.CommitResponse
-                         * @interface ICommitStats
-                         * @property {number|Long|null} [mutationCount] CommitStats mutationCount
-                         */
-    
-                        /**
-                         * Constructs a new CommitStats.
-                         * @memberof google.spanner.v1.CommitResponse
-                         * @classdesc Represents a CommitStats.
-                         * @implements ICommitStats
-                         * @constructor
-                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
-                         */
-                        function CommitStats(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * CommitStats mutationCount.
-                         * @member {number|Long} mutationCount
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @instance
-                         */
-                        CommitStats.prototype.mutationCount = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-    
-                        /**
-                         * Creates a new CommitStats instance using the specified properties.
-                         * @function create
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {google.spanner.v1.CommitResponse.ICommitStats=} [properties] Properties to set
-                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats instance
-                         */
-                        CommitStats.create = function create(properties) {
-                            return new CommitStats(properties);
-                        };
-    
-                        /**
-                         * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
-                         * @function encode
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        CommitStats.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.mutationCount != null && Object.hasOwnProperty.call(message, "mutationCount"))
-                                writer.uint32(/* id 1, wireType 0 =*/8).int64(message.mutationCount);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {google.spanner.v1.CommitResponse.ICommitStats} message CommitStats message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        CommitStats.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a CommitStats message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        CommitStats.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.CommitResponse.CommitStats();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.mutationCount = reader.int64();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a CommitStats message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        CommitStats.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a CommitStats message.
-                         * @function verify
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        CommitStats.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
-                                if (!$util.isInteger(message.mutationCount) && !(message.mutationCount && $util.isInteger(message.mutationCount.low) && $util.isInteger(message.mutationCount.high)))
-                                    return "mutationCount: integer|Long expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {google.spanner.v1.CommitResponse.CommitStats} CommitStats
-                         */
-                        CommitStats.fromObject = function fromObject(object) {
-                            if (object instanceof $root.google.spanner.v1.CommitResponse.CommitStats)
-                                return object;
-                            var message = new $root.google.spanner.v1.CommitResponse.CommitStats();
-                            if (object.mutationCount != null)
-                                if ($util.Long)
-                                    (message.mutationCount = $util.Long.fromValue(object.mutationCount)).unsigned = false;
-                                else if (typeof object.mutationCount === "string")
-                                    message.mutationCount = parseInt(object.mutationCount, 10);
-                                else if (typeof object.mutationCount === "number")
-                                    message.mutationCount = object.mutationCount;
-                                else if (typeof object.mutationCount === "object")
-                                    message.mutationCount = new $util.LongBits(object.mutationCount.low >>> 0, object.mutationCount.high >>> 0).toNumber();
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @static
-                         * @param {google.spanner.v1.CommitResponse.CommitStats} message CommitStats
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        CommitStats.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults)
-                                if ($util.Long) {
-                                    var long = new $util.Long(0, 0, false);
-                                    object.mutationCount = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                                } else
-                                    object.mutationCount = options.longs === String ? "0" : 0;
-                            if (message.mutationCount != null && message.hasOwnProperty("mutationCount"))
-                                if (typeof message.mutationCount === "number")
-                                    object.mutationCount = options.longs === String ? String(message.mutationCount) : message.mutationCount;
-                                else
-                                    object.mutationCount = options.longs === String ? $util.Long.prototype.toString.call(message.mutationCount) : options.longs === Number ? new $util.LongBits(message.mutationCount.low >>> 0, message.mutationCount.high >>> 0).toNumber() : message.mutationCount;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this CommitStats to JSON.
-                         * @function toJSON
-                         * @memberof google.spanner.v1.CommitResponse.CommitStats
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        CommitStats.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return CommitStats;
-                    })();
-    
-                    return CommitResponse;
                 })();
     
                 v1.RollbackRequest = (function() {
