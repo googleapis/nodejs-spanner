@@ -528,6 +528,54 @@ describe('SessionPool', () => {
         process.listeners('unhandledRejection').push(originalRejection!);
       }
     });
+
+    it('should not trigger unhandled promise rejection when default credentials not set', () => {
+      const error = {
+        message: 'Could not load the default credentials',
+      } as grpc.ServiceError;
+
+      sandbox.restore();
+      sandbox.stub(sessionPool, '_fill').rejects(error);
+
+      const originalRejection = process.listeners('unhandledRejection').pop();
+      if (originalRejection) {
+        process.removeListener('unhandledRejection', originalRejection!);
+      }
+
+      process.once('unhandledRejection', err => {
+        assert.ifError(err);
+      });
+
+      sessionPool.open();
+
+      if (originalRejection) {
+        process.listeners('unhandledRejection').push(originalRejection!);
+      }
+    });
+
+    it('should not trigger unhandled promise rejection when projectId not set', () => {
+      const error = {
+        message: 'Unable to detect a Project Id in the current environment',
+      } as grpc.ServiceError;
+
+      sandbox.restore();
+      sandbox.stub(sessionPool, '_fill').rejects(error);
+
+      const originalRejection = process.listeners('unhandledRejection').pop();
+      if (originalRejection) {
+        process.removeListener('unhandledRejection', originalRejection!);
+      }
+
+      process.once('unhandledRejection', err => {
+        assert.ifError(err);
+      });
+
+      sessionPool.open();
+
+      if (originalRejection) {
+        process.listeners('unhandledRejection').push(originalRejection!);
+      }
+    });
   });
 
   describe('release', () => {
