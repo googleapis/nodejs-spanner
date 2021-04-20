@@ -77,4 +77,8 @@ function main(
   readDataWithStoringIndex().catch(console.error);
   // [END spanner_read_data_with_storing_index]
 }
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
 main(...process.argv.slice(2));
