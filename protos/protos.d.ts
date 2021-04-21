@@ -8180,6 +8180,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata throttled */
                         throttled?: (boolean|null);
+
+                        /** UpdateDatabaseDdlMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress[]|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlMetadata. */
@@ -8202,6 +8205,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata throttled. */
                         public throttled: boolean;
+
+                        /** UpdateDatabaseDdlMetadata progress. */
+                        public progress: google.spanner.admin.database.v1.IOperationProgress[];
 
                         /**
                          * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
@@ -10881,6 +10887,195 @@ export namespace google {
 
         /** Namespace v1. */
         namespace v1 {
+
+            /** Properties of a CommitResponse. */
+            interface ICommitResponse {
+
+                /** CommitResponse commitTimestamp */
+                commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** CommitResponse commitStats */
+                commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
+            }
+
+            /** Represents a CommitResponse. */
+            class CommitResponse implements ICommitResponse {
+
+                /**
+                 * Constructs a new CommitResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.ICommitResponse);
+
+                /** CommitResponse commitTimestamp. */
+                public commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /** CommitResponse commitStats. */
+                public commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
+
+                /**
+                 * Creates a new CommitResponse instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns CommitResponse instance
+                 */
+                public static create(properties?: google.spanner.v1.ICommitResponse): google.spanner.v1.CommitResponse;
+
+                /**
+                 * Encodes the specified CommitResponse message. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
+                 * @param message CommitResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.ICommitResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CommitResponse message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
+                 * @param message CommitResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.ICommitResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CommitResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CommitResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.CommitResponse;
+
+                /**
+                 * Decodes a CommitResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CommitResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.CommitResponse;
+
+                /**
+                 * Verifies a CommitResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CommitResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CommitResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.CommitResponse;
+
+                /**
+                 * Creates a plain object from a CommitResponse message. Also converts values to other types if specified.
+                 * @param message CommitResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.CommitResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CommitResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            namespace CommitResponse {
+
+                /** Properties of a CommitStats. */
+                interface ICommitStats {
+
+                    /** CommitStats mutationCount */
+                    mutationCount?: (number|Long|string|null);
+                }
+
+                /** Represents a CommitStats. */
+                class CommitStats implements ICommitStats {
+
+                    /**
+                     * Constructs a new CommitStats.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.CommitResponse.ICommitStats);
+
+                    /** CommitStats mutationCount. */
+                    public mutationCount: (number|Long|string);
+
+                    /**
+                     * Creates a new CommitStats instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns CommitStats instance
+                     */
+                    public static create(properties?: google.spanner.v1.CommitResponse.ICommitStats): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                     * @param message CommitStats message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
+                     * @param message CommitStats message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a CommitStats message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns CommitStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Decodes a CommitStats message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns CommitStats
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Verifies a CommitStats message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns CommitStats
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.CommitResponse.CommitStats;
+
+                    /**
+                     * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
+                     * @param message CommitStats
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.CommitResponse.CommitStats, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this CommitStats to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
 
             /** Properties of a KeyRange. */
             interface IKeyRange {
@@ -15867,195 +16062,6 @@ export namespace google {
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a CommitResponse. */
-            interface ICommitResponse {
-
-                /** CommitResponse commitTimestamp */
-                commitTimestamp?: (google.protobuf.ITimestamp|null);
-
-                /** CommitResponse commitStats */
-                commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
-            }
-
-            /** Represents a CommitResponse. */
-            class CommitResponse implements ICommitResponse {
-
-                /**
-                 * Constructs a new CommitResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: google.spanner.v1.ICommitResponse);
-
-                /** CommitResponse commitTimestamp. */
-                public commitTimestamp?: (google.protobuf.ITimestamp|null);
-
-                /** CommitResponse commitStats. */
-                public commitStats?: (google.spanner.v1.CommitResponse.ICommitStats|null);
-
-                /**
-                 * Creates a new CommitResponse instance using the specified properties.
-                 * @param [properties] Properties to set
-                 * @returns CommitResponse instance
-                 */
-                public static create(properties?: google.spanner.v1.ICommitResponse): google.spanner.v1.CommitResponse;
-
-                /**
-                 * Encodes the specified CommitResponse message. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
-                 * @param message CommitResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: google.spanner.v1.ICommitResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified CommitResponse message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.verify|verify} messages.
-                 * @param message CommitResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: google.spanner.v1.ICommitResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a CommitResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns CommitResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.CommitResponse;
-
-                /**
-                 * Decodes a CommitResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns CommitResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.CommitResponse;
-
-                /**
-                 * Verifies a CommitResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a CommitResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns CommitResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): google.spanner.v1.CommitResponse;
-
-                /**
-                 * Creates a plain object from a CommitResponse message. Also converts values to other types if specified.
-                 * @param message CommitResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: google.spanner.v1.CommitResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this CommitResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            namespace CommitResponse {
-
-                /** Properties of a CommitStats. */
-                interface ICommitStats {
-
-                    /** CommitStats mutationCount */
-                    mutationCount?: (number|Long|string|null);
-                }
-
-                /** Represents a CommitStats. */
-                class CommitStats implements ICommitStats {
-
-                    /**
-                     * Constructs a new CommitStats.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: google.spanner.v1.CommitResponse.ICommitStats);
-
-                    /** CommitStats mutationCount. */
-                    public mutationCount: (number|Long|string);
-
-                    /**
-                     * Creates a new CommitStats instance using the specified properties.
-                     * @param [properties] Properties to set
-                     * @returns CommitStats instance
-                     */
-                    public static create(properties?: google.spanner.v1.CommitResponse.ICommitStats): google.spanner.v1.CommitResponse.CommitStats;
-
-                    /**
-                     * Encodes the specified CommitStats message. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
-                     * @param message CommitStats message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified CommitStats message, length delimited. Does not implicitly {@link google.spanner.v1.CommitResponse.CommitStats.verify|verify} messages.
-                     * @param message CommitStats message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: google.spanner.v1.CommitResponse.ICommitStats, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a CommitStats message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns CommitStats
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.CommitResponse.CommitStats;
-
-                    /**
-                     * Decodes a CommitStats message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns CommitStats
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.CommitResponse.CommitStats;
-
-                    /**
-                     * Verifies a CommitStats message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a CommitStats message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns CommitStats
-                     */
-                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.CommitResponse.CommitStats;
-
-                    /**
-                     * Creates a plain object from a CommitStats message. Also converts values to other types if specified.
-                     * @param message CommitStats
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: google.spanner.v1.CommitResponse.CommitStats, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this CommitStats to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
             }
 
             /** Properties of a RollbackRequest. */

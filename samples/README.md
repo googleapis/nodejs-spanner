@@ -39,6 +39,7 @@ and automatic, synchronous replication for high availability.
   * [Numeric-update-data](#numeric-update-data)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
+  * [Rpc-priority](#rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
@@ -477,6 +478,23 @@ __Usage:__
 
 
 `node samples/quickstart.js`
+
+
+-----
+
+
+
+
+### Rpc-priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/rpc-priority.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/rpc-priority.js`
 
 
 -----
