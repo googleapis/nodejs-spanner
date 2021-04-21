@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.1...v5.7.0) (2021-04-21)
+
+
+### Features
+
+* regenerate protos with new types ([#1335](https://www.github.com/googleapis/nodejs-spanner/issues/1335)) ([cc6980e](https://www.github.com/googleapis/nodejs-spanner/commit/cc6980e364ea641f55b4ff1a765b22333352419a))
+* support RPC priority ([#1282](https://www.github.com/googleapis/nodejs-spanner/issues/1282)) ([8c82694](https://www.github.com/googleapis/nodejs-spanner/commit/8c8269437291a96aaed97db6684f7c8907f1fe43))
+
+
+### Bug Fixes
+
+* prevent unhandled promise rejection while projectId or credential not found ([#1340](https://www.github.com/googleapis/nodejs-spanner/issues/1340)) ([47ce076](https://www.github.com/googleapis/nodejs-spanner/commit/47ce0765cce4bdf8513917c86ec1db9c53f97618))
+* prevent unhandled promise rejections while creating session ([#1332](https://www.github.com/googleapis/nodejs-spanner/issues/1332)) ([b62bf5e](https://www.github.com/googleapis/nodejs-spanner/commit/b62bf5e1a96c495f73512a97419ecf98915b457e))
+
 ### [5.6.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.0...v5.6.1) (2021-03-30)
 
 
