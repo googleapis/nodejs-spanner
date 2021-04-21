@@ -49,12 +49,12 @@ async function main(instanceId, databaseId, projectId) {
         requestOptions: {
           priority: Priority.PRIORITY_LOW,
         },
+        json: true,
       });
 
       rows.forEach(row => {
-        const json = row.toJSON();
         console.log(
-          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json.MarketingBudget}`
+          `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`
         );
       });
     } catch (err) {

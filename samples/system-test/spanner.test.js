@@ -493,7 +493,7 @@ describe('Spanner', () => {
   // query with RPC priority
   it('should use RPC priority from request options', async () => {
     const output = execSync(
-      `${rpcPriorityCommand} queryWithRpcPriority ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
       output,
