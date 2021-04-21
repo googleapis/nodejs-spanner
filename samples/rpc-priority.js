@@ -15,7 +15,6 @@
 'use strict';
 
 async function main(instanceId, databaseId, projectId) {
-  // TODO: Add start region tag here
   // Imports the Google Cloud client library.
   const {Spanner, protos} = require('@google-cloud/spanner');
   const Priority = protos.google.spanner.v1.RequestOptions.Priority;
@@ -50,12 +49,12 @@ async function main(instanceId, databaseId, projectId) {
         requestOptions: {
           priority: Priority.PRIORITY_LOW,
         },
+        json: true,
       });
 
       rows.forEach(row => {
-        const json = row.toJSON();
         console.log(
-          `AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}, MarketingBudget: ${json.MarketingBudget}`
+          `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`
         );
       });
     } catch (err) {
@@ -65,7 +64,6 @@ async function main(instanceId, databaseId, projectId) {
       await database.close();
     }
   }
-  // TODO: Add end region tag here
   await queryWithRpcPriority(instanceId, databaseId);
 }
 main(...process.argv.slice(2)).then(() =>
