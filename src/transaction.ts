@@ -560,7 +560,7 @@ export class Snapshot extends EventEmitter {
         requestOptions: this.configureTagOptions(
           typeof transaction.singleUse !== 'undefined',
           this.requestOptions?.transactionTag!,
-          requestOptions?.requestTag!
+          requestOptions
         ),
         transaction,
         table,
@@ -980,7 +980,7 @@ export class Snapshot extends EventEmitter {
         requestOptions: this.configureTagOptions(
           typeof transaction.singleUse !== 'undefined',
           this.requestOptions?.transactionTag!,
-          requestOptions?.requestTag!
+          requestOptions
         ),
         transaction,
         params,
@@ -1022,12 +1022,15 @@ export class Snapshot extends EventEmitter {
   configureTagOptions(
     singleUse?: boolean,
     transactionTag?: string,
-    requestTag?: string
-  ): spannerClient.spanner.v1.IRequestOptions | null {
-    if (!transactionTag && !requestTag) {
-      return null;
+    requestOptions = {}
+  ): IRequestOptions | null {
+    if (!singleUse && transactionTag) {
+      (requestOptions as IRequestOptions).transactionTag = transactionTag;
     }
-    return singleUse ? {requestTag} : {transactionTag, requestTag};
+
+    return requestOptions!;
+
+    // return singleUse ? {requestTag: requestOptions} : {transactionTag, requestTag: requestOptions};
   }
 
   /**
@@ -1159,7 +1162,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end'],
+  exclude: ['configureTagOptions', 'end'],
 });
 
 /**
@@ -1440,11 +1443,10 @@ export class Transaction extends Dml {
       requestOptions: this.configureTagOptions(
         false,
         this.requestOptions?.transactionTag!,
-        (options as BatchUpdateOptions).requestOptions?.requestTag!
+        (options as BatchUpdateOptions).requestOptions
       ),
       transaction: {id: this.id!},
       seqno: this._seqno++,
-      requestOptions: (options as BatchUpdateOptions).requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
@@ -1605,7 +1607,8 @@ export class Transaction extends Dml {
 
     reqOpts.requestOptions = this.configureTagOptions(
       typeof reqOpts.singleUseTransaction !== 'undefined',
-      this.requestOptions?.transactionTag!
+      this.requestOptions?.transactionTag!,
+      requestOptions
     );
 
     this.request(

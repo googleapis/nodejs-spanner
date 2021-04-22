@@ -87,7 +87,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: ['end'],
+          exclude: ['configureTagOptions', 'end'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
@@ -297,7 +297,7 @@ describe('Transaction', () => {
 
         const expectedRequest = {
           session: SESSION_NAME,
-          requestOptions: null,
+          requestOptions: {},
           transaction: {id},
           table: TABLE,
           keySet: fakeKeySet,
@@ -557,7 +557,7 @@ describe('Transaction', () => {
       it('should set request tag', () => {
         const requestTag = 'foo';
         const query = Object.assign({}, QUERY, {
-          txnRequestOptions: {requestTag},
+          requestOptions: {requestTag},
         });
 
         snapshot.runStream(query);
@@ -581,7 +581,7 @@ describe('Transaction', () => {
 
         const expectedRequest = {
           session: SESSION_NAME,
-          requestOptions: null,
+          requestOptions: {},
           transaction: {id},
           sql: QUERY.sql,
           params: fakeParams,
@@ -1132,11 +1132,10 @@ describe('Transaction', () => {
 
       it('should set transactionTag', done => {
         const transactionTag = 'bar';
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
         transaction.request = config => {
           assert.deepStrictEqual(config.reqOpts.requestOptions, {
             transactionTag,
-            requestTag: undefined,
           });
           done();
         };
@@ -1148,7 +1147,6 @@ describe('Transaction', () => {
         const options: BatchUpdateOptions = {requestOptions: {requestTag}};
         transaction.request = config => {
           assert.deepStrictEqual(config.reqOpts.requestOptions, {
-            transactionTag: undefined,
             requestTag,
           });
           done();
@@ -1158,7 +1156,7 @@ describe('Transaction', () => {
 
       it('should set both tags and accept gaxOptions', done => {
         const transactionTag = 'bar';
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
 
         const requestTag = 'foo';
         const gaxOptions = {timeout: 1000};
@@ -1359,7 +1357,7 @@ describe('Transaction', () => {
 
       it('should set transaction tag', done => {
         const transactionTag = 'bar';
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
         transaction.request = config => {
           assert.deepStrictEqual(config.reqOpts.requestOptions, {
             transactionTag,
@@ -1466,7 +1464,7 @@ describe('Transaction', () => {
         const id = 'transaction-id-123';
         const transactionTag = 'bar';
         transaction.id = id;
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
 
         transaction.request = config => {
           assert.strictEqual(
@@ -1813,22 +1811,25 @@ describe('Transaction', () => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
       });
 
-      it('should set request tag ', () => {
-        const transactionTag = 'bar';
+      it('should set transaction tag when not `singleUse`', done => {
         const QUERY: ExecuteSqlRequest = {
           sql: 'SELET * FROM `MyTable`',
         };
 
-        transaction.transactionRequestOptions = {transactionTag};
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
 
-        transaction.runStream(QUERY);
+        const id = 'transaction-id-123';
+        transaction.id = id;
 
         transaction.requestStream = config => {
           assert.deepStrictEqual(config.reqOpts.requestOptions, {
             transactionTag,
-            requestTag: undefined,
           });
+          done();
         };
+
+        transaction.runStream(QUERY);
       });
     });
 
@@ -1841,7 +1842,7 @@ describe('Transaction', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
         transaction.id = 'transaction-id-123';
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
 
         transaction.createReadStream(TABLE);
 
@@ -1849,22 +1850,19 @@ describe('Transaction', () => {
 
         assert.deepStrictEqual(reqOpts.requestOptions, {
           transactionTag,
-          requestTag: undefined,
         });
       });
 
       it('should not set transaction tag if `signleUse`', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
-        transaction.transactionRequestOptions = {transactionTag};
+        transaction.requestOptions = {transactionTag};
 
         transaction.createReadStream(TABLE);
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(reqOpts.requestOptions, {
-          requestTag: undefined,
-        });
+        assert.deepStrictEqual(reqOpts.requestOptions, {});
       });
     });
   });
