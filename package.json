@@ -58,7 +58,7 @@
     "@google-cloud/promisify": "^2.0.0",
     "@types/big.js": "^6.0.0",
     "@types/stack-trace": "0.0.29",
-    "arrify": "^2.0.0",
+    "arrify": "^3.0.0",
     "big.js": "^6.0.0",
     "checkpoint-stream": "^0.1.1",
     "events-intercept": "^2.0.0",
