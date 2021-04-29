@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/nodejs-spanner.git",
-        "sha": "f2056a16cd79314f46b61a8cbea8345cd68a5efd"
+        "sha": "fd5856b1a1d4e13e225da18c91b68b93f5974d06"
       }
     },
     {
