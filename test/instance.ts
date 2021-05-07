@@ -25,7 +25,7 @@ import * as proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 import snakeCase = require('lodash.snakecase');
-import {Duplex} from 'stream';
+import * as through from 'through2';
 
 import * as inst from '../src/instance';
 import {Spanner, Database, RequestConfig} from '../src';
@@ -34,6 +34,7 @@ import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import duplexify = require('duplexify');
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1088,7 +1089,7 @@ describe('Instance', () => {
     const OPTIONS = {
       gaxOptions: {autoPaginate: false},
     } as inst.GetDatabasesOptions;
-    const returnValue = {} as Duplex;
+    const returnValue = through.obj();
 
     it('should make and return the correct gax API call', () => {
       const expectedReqOpts = extend({}, OPTIONS, {
@@ -1110,7 +1111,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getDatabasesStream(OPTIONS);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
@@ -1137,7 +1138,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getDatabasesStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
@@ -1173,7 +1174,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getDatabasesStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should not require options', () => {
@@ -1188,7 +1189,34 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getDatabasesStream();
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
+    });
+
+    it('should create and return Database objects', done => {
+      const stream = through.obj();
+      instance.requestStream = () => {
+        return stream;
+      };
+      const protoDatabase = {name: 'database'};
+      setImmediate(() => {
+        stream.push(protoDatabase);
+        stream.push(null);
+      });
+
+      const spy = sandbox.spy(instance, 'database');
+      instance
+        .getDatabasesStream()
+        .on('error', assert.ifError)
+        .on('data', database => {
+          assert.ok(database instanceof FakeDatabase);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          assert.strictEqual((database as any).metadata, protoDatabase);
+          assert.strictEqual(
+            (spy.getCall(0).args[1]! as SessionPoolOptions).min,
+            0
+          );
+        })
+        .on('end', done);
     });
   });
 
@@ -1523,7 +1551,7 @@ describe('Instance', () => {
     const OPTIONS = {
       gaxOptions: {autoPaginate: false},
     } as inst.GetDatabasesOptions;
-    const returnValue = {} as Duplex;
+    const returnValue = through.obj();
 
     it('should make and return the correct gax API call', () => {
       const expectedReqOpts = extend({}, OPTIONS, {
@@ -1545,7 +1573,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getBackupsStream(OPTIONS);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should pass pageSize and pageToken from gaxOptions into reqOpts', () => {
@@ -1572,7 +1600,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getBackupsStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('pageSize and pageToken in options should take precedence over gaxOptions', () => {
@@ -1608,7 +1636,7 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getBackupsStream(options);
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
     });
 
     it('should not require options', () => {
@@ -1623,7 +1651,27 @@ describe('Instance', () => {
       };
 
       const returnedValue = instance.getBackupsStream();
-      assert.strictEqual(returnedValue, returnValue);
+      assert.ok(returnedValue instanceof duplexify);
+    });
+
+    it('should create and return Backup objects', done => {
+      const stream = through.obj();
+      instance.requestStream = () => {
+        return stream;
+      };
+      const protoBackup = {name: 'backup'};
+      setImmediate(() => {
+        stream.push(protoBackup);
+        stream.push(null);
+      });
+
+      instance
+        .getBackupsStream()
+        .on('error', assert.ifError)
+        .on('data', backup => {
+          assert.ok(backup instanceof FakeBackup);
+        })
+        .on('end', done);
     });
   });
 

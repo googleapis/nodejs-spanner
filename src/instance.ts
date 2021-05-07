@@ -18,6 +18,7 @@ import arrify = require('arrify');
 import {ServiceObjectConfig, GetConfig} from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const common = require('./common-grpc/service-object');
+import * as pumpify from 'pumpify';
 import {promisifyAll} from '@google-cloud/promisify';
 import * as extend from 'extend';
 import snakeCase = require('lodash.snakecase');
@@ -33,7 +34,7 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
 } from './common';
-import {Duplex} from 'stream';
+import {Duplex, Transform} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
 import {Backup} from './backup';
@@ -433,13 +434,23 @@ class Instance extends common.GrpcServiceObject {
       delete gaxOpts.pageToken;
     }
 
-    return this.requestStream({
-      client: 'DatabaseAdminClient',
-      method: 'listBackupsStream',
-      reqOpts,
-      gaxOpts,
-      headers: this.resourceHeader_,
-    });
+    return new pumpify.obj([
+      this.requestStream({
+        client: 'DatabaseAdminClient',
+        method: 'listBackupsStream',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      }),
+      new Transform({
+        objectMode: true,
+        transform: (chunk: IBackup, enc: string, cb: Function) => {
+          const backup = this.backup(chunk.name!);
+          backup.metadata = chunk;
+          cb(null, backup);
+        },
+      }),
+    ]);
   }
 
   getBackupOperations(
@@ -1326,13 +1337,23 @@ class Instance extends common.GrpcServiceObject {
       delete gaxOpts.pageToken;
     }
 
-    return this.requestStream({
-      client: 'DatabaseAdminClient',
-      method: 'listDatabasesStream',
-      reqOpts,
-      gaxOpts,
-      headers: this.resourceHeader_,
-    });
+    return new pumpify.obj([
+      this.requestStream({
+        client: 'DatabaseAdminClient',
+        method: 'listDatabasesStream',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      }),
+      new Transform({
+        objectMode: true,
+        transform: (chunk: IDatabase, enc: string, cb: Function) => {
+          const database = this.database(chunk.name!, {min: 0});
+          database.metadata = chunk;
+          cb(null, database);
+        },
+      }),
+    ]);
   }
 
   getMetadata(

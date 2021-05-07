@@ -48,6 +48,8 @@ import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
+import * as pumpify from 'pumpify';
+import {Transform} from 'stream';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -620,13 +622,27 @@ class Spanner extends GrpcService {
       delete gaxOpts.pageToken;
     }
 
-    return this.requestStream({
-      client: 'InstanceAdminClient',
-      method: 'listInstancesStream',
-      reqOpts,
-      gaxOpts,
-      headers: this.resourceHeader_,
-    });
+    return new pumpify.obj([
+      this.requestStream({
+        client: 'InstanceAdminClient',
+        method: 'listInstancesStream',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      }),
+      new Transform({
+        objectMode: true,
+        transform: (
+          chunk: instanceAdmin.spanner.admin.instance.v1.IInstance,
+          enc: string,
+          cb: Function
+        ) => {
+          const instance = this.instance(chunk.name!);
+          instance.metadata = chunk;
+          cb(null, instance);
+        },
+      }),
+    ]);
   }
 
   getInstanceConfigs(
