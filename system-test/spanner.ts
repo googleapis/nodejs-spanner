@@ -180,8 +180,9 @@ describe('Spanner', () => {
     }
 
     before(done => {
-      DATABASE.updateSchema(
-        `
+      if (IS_EMULATOR_ENABLED) {
+        DATABASE.updateSchema(
+          `
             CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               BytesValue BYTES(MAX),
@@ -202,9 +203,38 @@ describe('Spanner', () => {
               TimestampArray ARRAY<TIMESTAMP>,
               CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
             ) PRIMARY KEY (Key)
-          `,
-        execAfterOperationComplete(done)
-      );
+            `,
+          execAfterOperationComplete(done)
+        );
+      } else {
+        DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME} (
+                Key STRING(MAX) NOT NULL,
+                BytesValue BYTES(MAX),
+                BoolValue BOOL,
+                DateValue DATE,
+                FloatValue FLOAT64,
+                JsonValue JSON,
+                IntValue INT64,
+                NumericValue NUMERIC,
+                StringValue STRING(MAX),
+                TimestampValue TIMESTAMP,
+                BytesArray ARRAY<BYTES(MAX)>,
+                BoolArray ARRAY<BOOL>,
+                DateArray ARRAY<DATE>,
+                FloatArray ARRAY<FLOAT64>,
+                JsonArray ARRAY<JSON>,
+                IntArray ARRAY<INT64>,
+                NumericArray ARRAY<NUMERIC>,
+                StringArray ARRAY<STRING(MAX)>,
+                TimestampArray ARRAY<TIMESTAMP>,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              ) PRIMARY KEY (Key)
+            `,
+          execAfterOperationComplete(done)
+        );
+      }
     });
 
     describe('uneven rows', () => {
@@ -668,6 +698,48 @@ describe('Spanner', () => {
         insert({BytesArray: values}, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, values);
+          done();
+        });
+      });
+    });
+
+    describe('jsons', () => {
+      it('should write json values', done => {
+        insert({JsonValue: {key1: 'value1', key2: 'value2'}}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonValue, {key1: 'value1', key2: 'value2'});
+          done();
+        });
+      });
+
+      it('should write null json values', done => {
+        insert({JsonValue: null}, (err, row) => {
+          assert.ifError(err);
+          assert.strictEqual(row.toJSON().JsonValue, null);
+          done();
+        });
+      });
+
+      it('should write empty json array values', done => {
+        insert({JsonArray: []}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonArray, []);
+          done();
+        });
+      });
+
+      it('should write null json array values', done => {
+        insert({JsonArray: [null]}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonArray, [null]);
+          done();
+        });
+      });
+
+      it('should write json array values', done => {
+        insert({JsonArray: [{key1: 'value1'}, {key2: 'value2'}]}, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonArray, [{key1: 'value1'}, {key2: 'value2'}]);
           done();
         });
       });

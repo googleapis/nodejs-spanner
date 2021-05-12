@@ -954,9 +954,44 @@ describe('Spanner', () => {
   // read_write_transaction with transaction tag
   it('should execute a read/write transaction with a transaction tag', async () => {
     const output = execSync(
-      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+        `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.include(output, 'Inserted new outdoor venue');
+  });
+
+  // add_json_column
+  it('should add a VenueDetails column to Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} addJsonColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+
+    assert.include(
+      output,
+      `Waiting for operation on ${DATABASE_ID} to complete...`
+    );
+    assert.include(
+      output,
+      `Added VenueDetails column to Venues table in database ${DATABASE_ID}.`
+    );
+  });
+
+  // update_data_with_json
+  it('should update rows in Venues example table to add data in VenueDetails column', async () => {
+    const output = execSync(
+      `${datatypesCmd} updateWithJsonData ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Updated data./);
+  });
+
+  // query_with_numeric_parameter
+  it('should use a JSON query parameter to query records from the Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
+    );
   });
 
   // create_backup

@@ -463,6 +463,34 @@ describe('codec', () => {
       assert.strictEqual(decoded.value, value);
     });
 
+    it('should decode JSON', () => {
+      const value = '{"result":true, "count":42}';
+      const expected = JSON.parse(value);
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+      });
+
+      assert.deepStrictEqual(decoded, expected);
+    });
+
+    it('should decode complex JSON string to object', () => {
+      const value =
+        '{"boolKey":true,"numberKey":3.14,"stringKey":"test","objectKey":{"innerKey":"inner-value"}}';
+      const expected = {
+        boolKey: true,
+        numberKey: 3.14,
+        stringKey: 'test',
+        objectKey: {innerKey: 'inner-value'},
+      };
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+      });
+
+      assert.deepStrictEqual(decoded, expected);
+    });
+
     it('should decode TIMESTAMP', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
@@ -528,7 +556,7 @@ describe('codec', () => {
   describe('encode', () => {
     it('should return the value from the common encoder', () => {
       const value = {};
-      const defaultEncodedValue = {};
+      const defaultEncodedValue = '{}';
 
       (GrpcService.encodeValue_ as sinon.SinonStub)
         .withArgs(value)
@@ -631,6 +659,31 @@ describe('codec', () => {
 
       assert.strictEqual(encoded, 10);
     });
+
+    it('should encode JSON', () => {
+      const expected = '{"result":true,"count":42}';
+      const value = JSON.parse('{"result": true, "count": 42}');
+
+      const encoded = codec.encode(value);
+
+      assert.deepStrictEqual(encoded, expected);
+    });
+
+    it('should encode complex object as JSON', () => {
+      const value = {
+        boolKey: true,
+        numberKey: 3.14,
+        stringKey: 'test',
+        objectKey: {innerKey: 'inner-value'},
+      };
+
+      const encoded = codec.encode(value);
+
+      assert.deepStrictEqual(
+        encoded,
+        '{"boolKey":true,"numberKey":3.14,"stringKey":"test","objectKey":{"innerKey":"inner-value"}}'
+      );
+    });
   });
 
   describe('getType', () => {
@@ -666,6 +719,12 @@ describe('codec', () => {
     it('should determine if the value is bytes', () => {
       assert.deepStrictEqual(codec.getType(Buffer.from('abc')), {
         type: 'bytes',
+      });
+    });
+
+    it('should determine if the value is json', () => {
+      assert.deepStrictEqual(codec.getType({key: 'value'}), {
+        type: 'json',
       });
     });
 
