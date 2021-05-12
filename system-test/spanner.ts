@@ -703,10 +703,19 @@ describe('Spanner', () => {
     });
 
     describe('jsons', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
       it('should write json values', done => {
         insert({JsonValue: {key1: 'value1', key2: 'value2'}}, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonValue, {key1: 'value1', key2: 'value2'});
+          assert.deepStrictEqual(row.toJSON().JsonValue, {
+            key1: 'value1',
+            key2: 'value2',
+          });
           done();
         });
       });
@@ -736,11 +745,17 @@ describe('Spanner', () => {
       });
 
       it('should write json array values', done => {
-        insert({JsonArray: [{key1: 'value1'}, {key2: 'value2'}]}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonArray, [{key1: 'value1'}, {key2: 'value2'}]);
-          done();
-        });
+        insert(
+          {JsonArray: [{key1: 'value1'}, {key2: 'value2'}]},
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().JsonArray, [
+              {key1: 'value1'},
+              {key2: 'value2'},
+            ]);
+            done();
+          }
+        );
       });
     });
 
