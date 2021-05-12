@@ -942,7 +942,7 @@ describe('Spanner', () => {
     assert.match(output, /Updated data./);
   });
 
-  // query_with_numeric_parameter
+  // query_with_json_parameter
   it('should use a JSON query parameter to query records from the Venues example table', async () => {
     const output = execSync(
       `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
