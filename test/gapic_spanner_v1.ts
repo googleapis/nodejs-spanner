@@ -28,10 +28,9 @@ import {PassThrough} from 'stream';
 import {protobuf} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
-  const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
-    instance as protobuf.Message<T>,
-    {defaults: true}
-  );
+  const filledObject = (
+    instance.constructor as typeof protobuf.Message
+  ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
     filledObject
   ) as T;
@@ -268,9 +267,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
-      client.innerApiCalls.createSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.createSession =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.createSession(
           request,
@@ -349,9 +347,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
-      client.innerApiCalls.batchCreateSessions = stubSimpleCall(
-        expectedResponse
-      );
+      client.innerApiCalls.batchCreateSessions =
+        stubSimpleCall(expectedResponse);
       const [response] = await client.batchCreateSessions(request);
       assert.deepStrictEqual(response, expectedResponse);
       assert(
@@ -382,9 +379,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
-      client.innerApiCalls.batchCreateSessions = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.batchCreateSessions =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.batchCreateSessions(
           request,
@@ -494,9 +490,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
-      client.innerApiCalls.getSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.getSession =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.getSession(
           request,
@@ -606,9 +601,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.deleteSession = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.deleteSession =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.deleteSession(
           request,
@@ -718,9 +712,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
-      client.innerApiCalls.executeSql = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.executeSql =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.executeSql(
           request,
@@ -830,9 +823,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlResponse()
       );
-      client.innerApiCalls.executeBatchDml = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.executeBatchDml =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.executeBatchDml(
           request,
@@ -1049,9 +1041,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Transaction()
       );
-      client.innerApiCalls.beginTransaction = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.beginTransaction =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.beginTransaction(
           request,
@@ -1161,9 +1152,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.CommitResponse()
       );
-      client.innerApiCalls.commit = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.commit =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.commit(
           request,
@@ -1270,9 +1260,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.rollback = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.rollback =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.rollback(
           request,
@@ -1379,9 +1368,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
-      client.innerApiCalls.partitionQuery = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.partitionQuery =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.partitionQuery(
           request,
@@ -1491,9 +1479,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
-      client.innerApiCalls.partitionRead = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.partitionRead =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.partitionRead(
           request,
@@ -1572,9 +1559,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
-      client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(
-        expectedResponse
-      );
+      client.innerApiCalls.executeStreamingSql =
+        stubServerStreamingCall(expectedResponse);
       const stream = client.executeStreamingSql(request);
       const promise = new Promise((resolve, reject) => {
         stream.on(
@@ -1662,9 +1648,8 @@ describe('v1.SpannerClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
-      client.innerApiCalls.streamingRead = stubServerStreamingCall(
-        expectedResponse
-      );
+      client.innerApiCalls.streamingRead =
+        stubServerStreamingCall(expectedResponse);
       const stream = client.streamingRead(request);
       const promise = new Promise((resolve, reject) => {
         stream.on(
@@ -1787,9 +1772,8 @@ describe('v1.SpannerClient', () => {
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
       ];
-      client.innerApiCalls.listSessions = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.listSessions =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.listSessions(
           request,
@@ -1861,9 +1845,8 @@ describe('v1.SpannerClient', () => {
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
       ];
-      client.descriptors.page.listSessions.createStream = stubPageStreamingCall(
-        expectedResponse
-      );
+      client.descriptors.page.listSessions.createStream =
+        stubPageStreamingCall(expectedResponse);
       const stream = client.listSessionsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.spanner.v1.Session[] = [];
@@ -1885,10 +1868,9 @@ describe('v1.SpannerClient', () => {
           .calledWith(client.innerApiCalls.listSessions, request)
       );
       assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
+        (
+          client.descriptors.page.listSessions.createStream as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
         expectedHeaderRequestParams
       );
     });
@@ -1929,10 +1911,9 @@ describe('v1.SpannerClient', () => {
           .calledWith(client.innerApiCalls.listSessions, request)
       );
       assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
+        (
+          client.descriptors.page.listSessions.createStream as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
         expectedHeaderRequestParams
       );
     });
@@ -1953,9 +1934,8 @@ describe('v1.SpannerClient', () => {
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
       ];
-      client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(
-        expectedResponse
-      );
+      client.descriptors.page.listSessions.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
       const responses: protos.google.spanner.v1.ISession[] = [];
       const iterable = client.listSessionsAsync(request);
       for await (const resource of iterable) {
@@ -1963,15 +1943,15 @@ describe('v1.SpannerClient', () => {
       }
       assert.deepStrictEqual(responses, expectedResponse);
       assert.deepStrictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[1],
+        (
+          client.descriptors.page.listSessions.asyncIterate as SinonStub
+        ).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
+        (
+          client.descriptors.page.listSessions.asyncIterate as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
         expectedHeaderRequestParams
       );
     });
@@ -1988,10 +1968,8 @@ describe('v1.SpannerClient', () => {
       request.database = '';
       const expectedHeaderRequestParams = 'database=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listSessions.asyncIterate = stubAsyncIterationCall(
-        undefined,
-        expectedError
-      );
+      client.descriptors.page.listSessions.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
       const iterable = client.listSessionsAsync(request);
       await assert.rejects(async () => {
         const responses: protos.google.spanner.v1.ISession[] = [];
@@ -2000,15 +1978,15 @@ describe('v1.SpannerClient', () => {
         }
       });
       assert.deepStrictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[1],
+        (
+          client.descriptors.page.listSessions.asyncIterate as SinonStub
+        ).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (client.descriptors.page.listSessions
-          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
-          'x-goog-request-params'
-        ],
+        (
+          client.descriptors.page.listSessions.asyncIterate as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
         expectedHeaderRequestParams
       );
     });
