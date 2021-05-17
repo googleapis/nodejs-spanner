@@ -39,11 +39,11 @@ async function queryWithJsonParameter(instanceId, databaseId, projectId) {
     type: 'json',
   };
 
-  const jsonValue = {rating: 9, description: 'This is a nice place'};
+  const jsonValue = {rating: 9};
 
   const query = {
     sql: `SELECT VenueId, VenueDetails FROM Venues
-            WHERE JSON_VALUE(VenueDetails, '$.description') = JSON_VALUE(@details, '$.description')`,
+            WHERE JSON_VALUE(VenueDetails, '$.rating') = JSON_VALUE(@details, '$.rating')`,
     params: {
       details: jsonValue,
     },
