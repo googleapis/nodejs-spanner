@@ -41,7 +41,7 @@ async function updateWithJsonData(instanceId, databaseId, projectId) {
   const data = [
     {
       VenueId: '19',
-      VenueDetails: {rating: 9, description: 'This is a nice place'},
+      VenueDetails: {rating: 9, open: true},
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -52,21 +52,17 @@ async function updateWithJsonData(instanceId, databaseId, projectId) {
       // library would encode this value as ARRAY<JSON> instead of JSON.
       VenueDetails: `[
         {
-          "wing1": {
-            "description": "the first wing",
-            "size": "5"
-          }
+          "name": null,
+          "open": true
         },
         {
-          "wing2": {
-            "description": "the second wing",
-            "size": "10"
-          }
+          "name": "room 2",
+          "open": false
         },
         {
           "main hall": {
             "description": "this is the biggest space",
-            "size": "200"
+            "size": 200
           }
         }
       ]`,
@@ -75,48 +71,12 @@ async function updateWithJsonData(instanceId, databaseId, projectId) {
     {
       VenueId: '42',
       VenueDetails: {
-        id: 'central123',
-        name: 'Central Park',
-        description: '🏞∮πρότερονแผ่นดินฮั่นเสื่อมሰማይᚻᛖ',
-        location: {
-          address: '59th St to 110th St',
-          crossStreet: '5th Ave to Central Park West',
-          lat: 40.78408342593807,
-          lng: -73.96485328674316,
-          postalCode: '10028',
-          cc: 'US',
-          city: 'New York',
-          state: 'NY',
-          country: 'United States',
-          formattedAddress: [
-            '59th St to 110th St (5th Ave to Central Park West)',
-            'New York, NY 10028',
-            'United States',
-          ],
+        name: null,
+        open: {
+          Monday: true,
+          Tuesday: false,
         },
-        hours: {
-          status: 'Likely open',
-          isOpen: true,
-          isLocalHoliday: false,
-          timeframes: [
-            {
-              days: 'Tue–Thu',
-              open: [{time: 'Noon–8:00PM'}],
-            },
-            {
-              days: 'Fri',
-              open: [{time: '11:00 AM–7:00 PM'}],
-            },
-            {
-              days: 'Sat',
-              open: [{time: '8:00 AM–8:00PM'}],
-            },
-            {
-              days: 'Sun',
-              open: [{time: '8:00 AM–7:00 PM'}],
-            },
-          ],
-        },
+        tags: ['large', 'airy'],
       },
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
