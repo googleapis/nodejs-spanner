@@ -461,7 +461,7 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {DeleteRowsOptions} [options] Options for configuring the request.
+   * @param {InsertRowsOptions} [options] Options for configuring the request.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *
