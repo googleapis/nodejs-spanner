@@ -18,7 +18,7 @@ import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
-import {grpc, CallOptions, ServiceError} from 'google-gax';
+import {grpc, CallOptions, ServiceError, Status} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable, PassThrough} from 'stream';
@@ -36,6 +36,7 @@ import {google as spannerClient} from '../protos/protos';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
+import ListValue = google.protobuf.ListValue;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
@@ -1670,10 +1671,95 @@ export class Transaction extends Dml {
             resp.commitTimestamp as DateStruct
           );
         }
+        err = Transaction.decorateCommitError(err as ServiceError, mutations);
 
         callback!(err as ServiceError | null, resp);
       }
     );
+  }
+
+  /**
+   * Decorates an error returned by a commit with additional information for
+   * specific known errors.
+   * @param err the error to check and decorate with additional information if possible
+   * @param mutations the mutations included in the commit request
+   * @private
+   */
+  private static decorateCommitError(
+    err: null | ServiceError,
+    mutations: spannerClient.spanner.v1.Mutation[]
+  ): null | Error {
+    if (!err) {
+      return err;
+    }
+    if (err.code === Status.FAILED_PRECONDITION) {
+      const mismatchErr = Transaction.decoratePossibleJsonMismatchError(
+        err,
+        mutations
+      );
+      if (mismatchErr) {
+        return mismatchErr;
+      }
+    }
+    return err;
+  }
+
+  /**
+   * Decorates an error returned by a commit with additional information if the
+   * error was returned because the application tried to insert an array of
+   * objects into a JSON column. An array of objects will by default be encoded
+   * as ARRAY<JSON>, but can also be interpreted as JSON. An application must
+   * specify a top-level array of objects that should be inserted into a JSON
+   * column as a string instead of as an array of objects.
+   * @param err the error returned by the commit RPC
+   * @param mutations the mutations included in the commit request
+   * @private
+   */
+  private static decoratePossibleJsonMismatchError(
+    err: ServiceError,
+    mutations: spannerClient.spanner.v1.Mutation[]
+  ): null | ServiceError {
+    const errorMessage = /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
+    const found = err.details.match(errorMessage);
+    if (found && found.groups) {
+      const table = found.groups.table;
+      const column = found.groups.column;
+      for (const mutation of mutations) {
+        const write =
+          mutation.insert ||
+          mutation.update ||
+          mutation.insertOrUpdate ||
+          mutation.replace;
+        if (write && write.table === table) {
+          const index = write.columns?.indexOf(column);
+          if (index && index > -1 && write.values) {
+            for (const row of write.values) {
+              if (
+                row.values?.length &&
+                row.values.length > index &&
+                row.values[index].listValue
+              ) {
+                // If the value is an array, the client library also encoded it as
+                // an array. Inserting an array into a JSON column is not possible,
+                // although if it is encoded as a string containing a top-level JSON
+                // array it will work.
+                const additionalMessage =
+                  'The value is an array. Convert the value to a JSON string containing an array instead in order to insert it into a JSON column. Example: `[{"key": "value 1"}, {"key": "value 2"}]` instead of [{key: "value 1"}, {key: "value 2"}]';
+                return {
+                  code: err.code,
+                  details: `${err.details} ${additionalMessage}`,
+                  message: `${err.message} ${additionalMessage}`,
+                  metadata: err.metadata,
+                  name: err.name,
+                  stack: err.stack,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+    return null;
   }
 
   /**

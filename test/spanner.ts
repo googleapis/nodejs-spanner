@@ -3151,6 +3151,35 @@ describe('Spanner with mock server', () => {
 
       await database.close();
     });
+
+    it('should decorate error with additional information if an array of objects was inserted into a JSON column', async () => {
+      const database = newTestDatabase();
+      const err = {
+        code: Status.FAILED_PRECONDITION,
+        message:
+          'Invalid value for column TestCol2 in table TestTable: Expected JSON.',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.commit,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.table('TestTable').upsert({
+          TestCol1: 1,
+          TestCol2: [{key1: 'value1'}, {key2: 'value2'}],
+        });
+        assert.fail('Missing expected error');
+      } catch (e) {
+        assert.strictEqual(e.code, Status.FAILED_PRECONDITION);
+        assert.ok(
+          e.message.includes(
+            'Convert the value to a JSON string containing an array instead'
+          )
+        );
+      }
+
+      await database.close();
+    });
   });
 
   describe('chunking', () => {
