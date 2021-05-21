@@ -296,10 +296,9 @@ describe('Table', () => {
     });
 
     it('should delete the rows via transaction', done => {
-      const stub = (sandbox.stub(
-        transaction,
-        'deleteRows'
-      ) as sinon.SinonStub).withArgs(table.name, KEYS);
+      const stub = (
+        sandbox.stub(transaction, 'deleteRows') as sinon.SinonStub
+      ).withArgs(table.name, KEYS);
 
       sandbox.stub(transaction, 'commit').callsFake((opts, callback) => {
         callback();
@@ -354,10 +353,9 @@ describe('Table', () => {
     });
 
     it('should insert via transaction', done => {
-      const stub = (sandbox.stub(
-        transaction,
-        'insert'
-      ) as sinon.SinonStub).withArgs(table.name, ROW);
+      const stub = (
+        sandbox.stub(transaction, 'insert') as sinon.SinonStub
+      ).withArgs(table.name, ROW);
 
       table.insert(ROW, err => {
         assert.ifError(err);
@@ -509,10 +507,9 @@ describe('Table', () => {
     });
 
     it('should replace via transaction', done => {
-      const stub = (sandbox.stub(
-        transaction,
-        'replace'
-      ) as sinon.SinonStub).withArgs(table.name, ROW);
+      const stub = (
+        sandbox.stub(transaction, 'replace') as sinon.SinonStub
+      ).withArgs(table.name, ROW);
 
       table.replace(ROW, err => {
         assert.ifError(err);
@@ -600,10 +597,9 @@ describe('Table', () => {
     });
 
     it('should update via transaction', done => {
-      const stub = (sandbox.stub(
-        transaction,
-        'update'
-      ) as sinon.SinonStub).withArgs(table.name, ROW);
+      const stub = (
+        sandbox.stub(transaction, 'update') as sinon.SinonStub
+      ).withArgs(table.name, ROW);
 
       table.update(ROW, err => {
         assert.ifError(err);
@@ -691,10 +687,9 @@ describe('Table', () => {
     });
 
     it('should upsert via transaction', done => {
-      const stub = (sandbox.stub(
-        transaction,
-        'upsert'
-      ) as sinon.SinonStub).withArgs(table.name, ROW);
+      const stub = (
+        sandbox.stub(transaction, 'upsert') as sinon.SinonStub
+      ).withArgs(table.name, ROW);
 
       table.upsert(ROW, err => {
         assert.ifError(err);

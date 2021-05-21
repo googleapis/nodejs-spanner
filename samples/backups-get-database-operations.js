@@ -42,9 +42,10 @@ async function getDatabaseOperations(instanceId, projectId) {
     });
     console.log('Optimize Database Operations:');
     databaseOperations.forEach(databaseOperation => {
-      const metadata = protos.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
-        databaseOperation.metadata.value
-      );
+      const metadata =
+        protos.google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata.decode(
+          databaseOperation.metadata.value
+        );
       console.log(
         `Database ${metadata.name} restored from backup is ` +
           `${metadata.progress.progressPercent}% optimized.`

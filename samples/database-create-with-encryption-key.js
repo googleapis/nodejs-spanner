@@ -67,4 +67,5 @@ async function createDatabaseWithEncryptionKey(
   // [END spanner_create_database_with_encryption_key]
 }
 
-module.exports.createDatabaseWithEncryptionKey = createDatabaseWithEncryptionKey;
+module.exports.createDatabaseWithEncryptionKey =
+  createDatabaseWithEncryptionKey;

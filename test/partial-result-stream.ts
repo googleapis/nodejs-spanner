@@ -72,8 +72,8 @@ describe('PartialResultStream', () => {
   afterEach(() => sandbox.restore());
 
   describe('acceptance tests', () => {
-    const TESTS = require('../../test/data/streaming-read-acceptance-test.json')
-      .tests;
+    const TESTS =
+      require('../../test/data/streaming-read-acceptance-test.json').tests;
 
     beforeEach(() => {
       sandbox.stub(codec, 'decode').callsFake(value => value);
