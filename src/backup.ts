@@ -68,7 +68,9 @@ type IBackupTranslatedEnum = TranslateEnumKeys<
 export type GetMetadataResponse = [IBackupTranslatedEnum];
 type GetMetadataCallback = RequestCallback<IBackupTranslatedEnum>;
 
-type UpdateExpireTimeCallback = RequestCallback<databaseAdmin.spanner.admin.database.v1.IBackup>;
+type UpdateExpireTimeCallback = RequestCallback<
+  databaseAdmin.spanner.admin.database.v1.IBackup
+>;
 
 type DeleteCallback = RequestCallback<databaseAdmin.protobuf.IEmpty>;
 

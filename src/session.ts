@@ -49,7 +49,9 @@ export const enum types {
   ReadWrite = 'readwrite',
 }
 
-export type GetSessionMetadataCallback = NormalCallback<google.spanner.v1.ISession>;
+export type GetSessionMetadataCallback = NormalCallback<
+  google.spanner.v1.ISession
+>;
 export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
