@@ -49,8 +49,7 @@ export const enum types {
   ReadWrite = 'readwrite',
 }
 
-export type GetSessionMetadataCallback =
-  NormalCallback<google.spanner.v1.ISession>;
+export type GetSessionMetadataCallback = NormalCallback<google.spanner.v1.ISession>;
 export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
@@ -203,7 +202,7 @@ export class Session extends common.GrpcServiceObject {
        */
       get: true,
     };
-    super({
+    super(({
       parent: database,
       /**
        * @name Session#id
@@ -232,7 +231,7 @@ export class Session extends common.GrpcServiceObject {
           callback(null, this, apiResponse);
         });
       },
-    } as {} as ServiceObjectConfig);
+    } as {}) as ServiceObjectConfig);
 
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,

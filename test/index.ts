@@ -180,8 +180,8 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
-      'grpc.callInvocationTransformer':
-        fakeGrpcGcp().gcpCallInvocationTransformer,
+      'grpc.callInvocationTransformer': fakeGrpcGcp()
+        .gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
       'grpc.gcpApiConfig': {
         calledWith_: apiConfig,

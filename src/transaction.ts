@@ -113,8 +113,7 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback =
-  NormalCallback<spannerClient.spanner.v1.ITransaction>;
+export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -152,8 +151,7 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback =
-  NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
+export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
 /**
  * @typedef {object} TimestampBounds
@@ -1032,15 +1030,11 @@ export class Snapshot extends EventEmitter {
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
-      readOnly.minReadTimestamp = (
-        options.minReadTimestamp as PreciseDate
-      ).toStruct();
+      readOnly.minReadTimestamp = (options.minReadTimestamp as PreciseDate).toStruct();
     }
 
     if (options.readTimestamp instanceof PreciseDate) {
-      readOnly.readTimestamp = (
-        options.readTimestamp as PreciseDate
-      ).toStruct();
+      readOnly.readTimestamp = (options.readTimestamp as PreciseDate).toStruct();
     }
 
     if (typeof options.maxStaleness === 'number') {
@@ -1375,15 +1369,16 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] =
-      queries.map(query => {
+    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(
+      query => {
         if (typeof query === 'string') {
           return {sql: query};
         }
         const {sql} = query;
         const {params, paramTypes} = Snapshot.encodeParams(query);
         return {sql, params, paramTypes};
-      });
+      }
+    );
 
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,

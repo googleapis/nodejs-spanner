@@ -205,8 +205,7 @@ export type BatchCreateSessionsCallback = ResourceCallback<
 >;
 
 export type DatabaseDeleteResponse = [databaseAdmin.protobuf.IEmpty];
-export type DatabaseDeleteCallback =
-  NormalCallback<databaseAdmin.protobuf.IEmpty>;
+export type DatabaseDeleteCallback = NormalCallback<databaseAdmin.protobuf.IEmpty>;
 
 export interface CancelableDuplex extends Duplex {
   cancel(): void;
@@ -315,7 +314,7 @@ class Database extends common.GrpcServiceObject {
 
     const formattedName_ = Database.formatName_(instance.formattedName_, name);
 
-    super({
+    super(({
       parent: instance,
       id: name,
       methods,
@@ -360,7 +359,7 @@ class Database extends common.GrpcServiceObject {
           return instance.createDatabase(formattedName_, options, callback);
         }
       },
-    } as {} as ServiceObjectConfig);
+    } as {}) as ServiceObjectConfig);
 
     this.pool_ =
       typeof poolOptions === 'function'
@@ -383,8 +382,7 @@ class Database extends common.GrpcServiceObject {
   }
 
   static getEnvironmentQueryOptions() {
-    const options =
-      {} as spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
+    const options = {} as spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
     if (process.env.SPANNER_OPTIMIZER_VERSION) {
       options.optimizerVersion = process.env.SPANNER_OPTIMIZER_VERSION;
     }
@@ -912,10 +910,9 @@ class Database extends common.GrpcServiceObject {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDropDatabaseRequest =
-      {
-        database: this.formattedName_,
-      };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IDropDatabaseRequest = {
+      database: this.formattedName_,
+    };
     this.close(() => {
       this.request<r.Response>(
         {
@@ -1131,10 +1128,9 @@ class Database extends common.GrpcServiceObject {
         ? (gaxOptionsOrCallback as CallOptions)
         : {};
 
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseRequest =
-      {
-        name: this.formattedName_,
-      };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseRequest = {
+      name: this.formattedName_,
+    };
     return this.request(
       {
         client: 'DatabaseAdminClient',
@@ -1293,10 +1289,9 @@ class Database extends common.GrpcServiceObject {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest =
-      {
-        database: this.formattedName_,
-      };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlRequest = {
+      database: this.formattedName_,
+    };
     this.request<databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse>(
       {
         client: 'DatabaseAdminClient',
@@ -1931,12 +1926,11 @@ class Database extends common.GrpcServiceObject {
         ? (options as RestoreOptions).gaxOptions
         : (options as CallOptions);
 
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest =
-      {
-        parent: this.instance.formattedName_,
-        databaseId: this.id,
-        backup: Backup.formatName_(this.instance.formattedName_, backupName),
-      };
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IRestoreDatabaseRequest = {
+      parent: this.instance.formattedName_,
+      databaseId: this.id,
+      backup: Backup.formatName_(this.instance.formattedName_, backupName),
+    };
 
     if (
       'encryptionConfig' in options &&
@@ -2762,13 +2756,12 @@ class Database extends common.GrpcServiceObject {
         statements: arrify(statements) as string[],
       };
     }
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest =
-      extend(
-        {
-          database: this.formattedName_,
-        },
-        statements
-      );
+    const reqOpts: databaseAdmin.spanner.admin.database.v1.IUpdateDatabaseDdlRequest = extend(
+      {
+        database: this.formattedName_,
+      },
+      statements
+    );
     return this.request(
       {
         client: 'DatabaseAdminClient',

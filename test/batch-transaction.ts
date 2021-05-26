@@ -101,7 +101,7 @@ describe('BatchTransaction', () => {
   });
 
   beforeEach(() => {
-    batchTransaction = new BatchTransaction(SESSION as {} as Session);
+    batchTransaction = new BatchTransaction((SESSION as {}) as Session);
   });
 
   afterEach(() => sandbox.restore());
@@ -112,7 +112,7 @@ describe('BatchTransaction', () => {
     });
 
     it('should extend the Snapshot class', () => {
-      const batchTransaction = new BatchTransaction(SESSION as {} as Session);
+      const batchTransaction = new BatchTransaction((SESSION as {}) as Session);
       assert(batchTransaction instanceof FakeTransaction);
     });
   });
@@ -193,7 +193,7 @@ describe('BatchTransaction', () => {
     const CONFIG = {reqOpts: QUERY};
 
     beforeEach(() => {
-      batchTransaction.session = SESSION as {} as Session;
+      batchTransaction.session = (SESSION as {}) as Session;
       batchTransaction.id = ID;
 
       REQUEST.callsFake((_, callback) => callback(null, RESPONSE));
@@ -266,8 +266,7 @@ describe('BatchTransaction', () => {
         assert.strictEqual(batchTransaction.id, ID);
         assert.strictEqual(batchTransaction.readTimestampProto, TIMESTAMP);
 
-        const timestamp =
-          batchTransaction.readTimestamp as unknown as FakeTimestamp;
+        const timestamp = (batchTransaction.readTimestamp as unknown) as FakeTimestamp;
         assert(timestamp instanceof FakeTimestamp);
         assert.strictEqual(timestamp.calledWith_[0], TIMESTAMP);
 
