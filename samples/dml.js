@@ -663,7 +663,7 @@ async function insertWithCustomTimeoutAndRetrySettings(
         // value is reached, the wait time will not increase further by the
         // multiplier.
         maxRetryDelayMillis: 10000,
-        // The previous wait time is multipled by this multiplier to come up
+        // The previous wait time is multiplied by this multiplier to come up
         // with the next wait time, until the max is reached.
         retryDelayMultiplier: 1.5,
 
