@@ -1720,7 +1720,7 @@ export class Transaction extends Dml {
     mutations: spannerClient.spanner.v1.Mutation[]
   ): null | ServiceError {
     const errorMessage = /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
-    const found = err.details.match(errorMessage);
+    const found = err.message && err.message.match(errorMessage);
     if (found && found.groups) {
       const table = found.groups.table;
       const column = found.groups.column;
