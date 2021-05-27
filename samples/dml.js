@@ -663,19 +663,19 @@ async function insertWithCustomTimeoutAndRetrySettings(
         // The maximum amount of time to wait before retrying. I.e. after this
         // value is reached, the wait time will not increase further by the
         // multiplier.
-        maxRetryDelayMillis: 10000,
-        // The previous wait time is multipled by this multiplier to come up
+        maxRetryDelayMillis: 64000,
+        // The previous wait time is multiplied by this multiplier to come up
         // with the next wait time, until the max is reached.
         retryDelayMultiplier: 1.5,
 
         // Configure RPC and total timeout settings.
         // Timeout for the first RPC call. Subsequent retries will be based off
         // this value.
-        initialRpcTimeoutMillis: 5000,
+        initialRpcTimeoutMillis: 60000,
         // Controls the change of timeout for each retry.
-        rpcTimeoutMultiplier: 1.5,
+        rpcTimeoutMultiplier: 1.0,
         // The max for the per RPC timeout.
-        maxRpcTimeoutMillis: 30000,
+        maxRpcTimeoutMillis: 60000,
         // The timeout for all calls (first call + all retries).
         totalTimeoutMillis: 60000,
       },
