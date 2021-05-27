@@ -26,6 +26,7 @@ import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import {grpc} from 'google-gax';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -1433,6 +1434,105 @@ describe('Transaction', () => {
         requestCallback(fakeError, fakeResponse);
 
         assert.strictEqual(callback.callCount, 1);
+      });
+
+      it('should not decorate non-gRPC error', () => {
+        const fakeError = new Error('err');
+        const decoratedError = Transaction.decorateCommitError(fakeError, []);
+        assert.strictEqual(decoratedError, fakeError);
+      });
+
+      it('should not decorate generic gRPC error', () => {
+        const tableNotFoundErr = Object.assign(
+          new Error('Table TestTable not found'),
+          {
+            code: grpc.status.NOT_FOUND,
+          }
+        );
+        const decoratedError = Transaction.decorateCommitError(
+          tableNotFoundErr,
+          []
+        );
+        assert.strictEqual(decoratedError, tableNotFoundErr);
+      });
+
+      it('should not decorate FAILED_PRECONDITION error without specific JSON error', () => {
+        const failedPreconditionErr = Object.assign(
+          new Error('Invalid value for column TestColumn'),
+          {
+            code: grpc.status.FAILED_PRECONDITION,
+          }
+        );
+        const decoratedError = Transaction.decorateCommitError(
+          failedPreconditionErr,
+          []
+        );
+        assert.strictEqual(decoratedError, failedPreconditionErr);
+      });
+
+      it('should not decorate FAILED_PRECONDITION error with specific JSON error if mutations are empty', () => {
+        const failedPreconditionErr = Object.assign(
+          new Error(
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+          ),
+          {
+            code: grpc.status.FAILED_PRECONDITION,
+          }
+        );
+        const decoratedError = Transaction.decorateCommitError(
+          failedPreconditionErr,
+          []
+        );
+        assert.strictEqual(decoratedError, failedPreconditionErr);
+      });
+
+      it('should not decorate FAILED_PRECONDITION error with specific JSON error if mutations do not contain a JSON array value', () => {
+        transaction._mutate('insert', 'TestTable', {
+          TestCol1: 1,
+          TestCol2: 'value',
+        });
+        const mutations = transaction._queuedMutations;
+
+        const failedPreconditionErr = Object.assign(
+          new Error(
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+          ),
+          {
+            code: grpc.status.FAILED_PRECONDITION,
+          }
+        );
+        const decoratedError = Transaction.decorateCommitError(
+          failedPreconditionErr,
+          mutations
+        );
+        assert.strictEqual(decoratedError, failedPreconditionErr);
+      });
+
+      it('should decorate FAILED_PRECONDITION error with specific JSON error if mutations contain a JSON array value', () => {
+        transaction._mutate('insert', 'TestTable', {
+          TestCol1: 1,
+          TestCol2: [{key1: 'value'}],
+        });
+        const mutations = transaction._queuedMutations;
+
+        const failedPreconditionErr = Object.assign(
+          new Error(
+            'Invalid value for column TestCol2 in table TestTable: Expected JSON.'
+          ),
+          {
+            code: grpc.status.FAILED_PRECONDITION,
+          }
+        );
+        const decoratedError = Transaction.decorateCommitError(
+          failedPreconditionErr,
+          mutations
+        );
+        assert.notStrictEqual(decoratedError, failedPreconditionErr);
+        assert.ok(
+          decoratedError.message.includes(
+            'The value is an array. Convert the value to a JSON string containing an array instead in order to insert it into a JSON column. Example: `[{"key": "value 1"}, {"key": "value 2"}]` instead of [{key: "value 1"}, {key: "value 2"}]'
+          )
+        );
       });
     });
 
