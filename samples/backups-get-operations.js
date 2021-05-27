@@ -44,9 +44,10 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
     });
     console.log('Create Backup Operations:');
     backupOperations.forEach(backupOperation => {
-      const metadata = protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
-        backupOperation.metadata.value
-      );
+      const metadata =
+        protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+          backupOperation.metadata.value
+        );
       console.log(
         `Backup ${metadata.name} on database ${metadata.database} is ` +
           `${metadata.progress.progressPercent}% complete.`

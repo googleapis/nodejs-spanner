@@ -10045,35 +10045,35 @@
     
                 /**
                  * Value nullValue.
-                 * @member {google.protobuf.NullValue} nullValue
+                 * @member {google.protobuf.NullValue|null|undefined} nullValue
                  * @memberof google.protobuf.Value
                  * @instance
                  */
-                Value.prototype.nullValue = 0;
+                Value.prototype.nullValue = null;
     
                 /**
                  * Value numberValue.
-                 * @member {number} numberValue
+                 * @member {number|null|undefined} numberValue
                  * @memberof google.protobuf.Value
                  * @instance
                  */
-                Value.prototype.numberValue = 0;
+                Value.prototype.numberValue = null;
     
                 /**
                  * Value stringValue.
-                 * @member {string} stringValue
+                 * @member {string|null|undefined} stringValue
                  * @memberof google.protobuf.Value
                  * @instance
                  */
-                Value.prototype.stringValue = "";
+                Value.prototype.stringValue = null;
     
                 /**
                  * Value boolValue.
-                 * @member {boolean} boolValue
+                 * @member {boolean|null|undefined} boolValue
                  * @memberof google.protobuf.Value
                  * @instance
                  */
-                Value.prototype.boolValue = false;
+                Value.prototype.boolValue = null;
     
                 /**
                  * Value structValue.
@@ -21787,11 +21787,11 @@
     
                             /**
                              * RestoreDatabaseRequest backup.
-                             * @member {string} backup
+                             * @member {string|null|undefined} backup
                              * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
                              * @instance
                              */
-                            RestoreDatabaseRequest.prototype.backup = "";
+                            RestoreDatabaseRequest.prototype.backup = null;
     
                             /**
                              * RestoreDatabaseRequest encryptionConfig.
@@ -30501,19 +30501,19 @@
     
                     /**
                      * ResultSetStats rowCountExact.
-                     * @member {number|Long} rowCountExact
+                     * @member {number|Long|null|undefined} rowCountExact
                      * @memberof google.spanner.v1.ResultSetStats
                      * @instance
                      */
-                    ResultSetStats.prototype.rowCountExact = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+                    ResultSetStats.prototype.rowCountExact = null;
     
                     /**
                      * ResultSetStats rowCountLowerBound.
-                     * @member {number|Long} rowCountLowerBound
+                     * @member {number|Long|null|undefined} rowCountLowerBound
                      * @memberof google.spanner.v1.ResultSetStats
                      * @instance
                      */
-                    ResultSetStats.prototype.rowCountLowerBound = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+                    ResultSetStats.prototype.rowCountLowerBound = null;
     
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
@@ -31392,11 +31392,11 @@
     
                         /**
                          * ReadOnly strong.
-                         * @member {boolean} strong
+                         * @member {boolean|null|undefined} strong
                          * @memberof google.spanner.v1.TransactionOptions.ReadOnly
                          * @instance
                          */
-                        ReadOnly.prototype.strong = false;
+                        ReadOnly.prototype.strong = null;
     
                         /**
                          * ReadOnly minReadTimestamp.
@@ -31988,11 +31988,11 @@
     
                     /**
                      * TransactionSelector id.
-                     * @member {Uint8Array} id
+                     * @member {Uint8Array|null|undefined} id
                      * @memberof google.spanner.v1.TransactionSelector
                      * @instance
                      */
-                    TransactionSelector.prototype.id = $util.newBuffer([]);
+                    TransactionSelector.prototype.id = null;
     
                     /**
                      * TransactionSelector begin.
@@ -39300,11 +39300,11 @@
     
                     /**
                      * CommitRequest transactionId.
-                     * @member {Uint8Array} transactionId
+                     * @member {Uint8Array|null|undefined} transactionId
                      * @memberof google.spanner.v1.CommitRequest
                      * @instance
                      */
-                    CommitRequest.prototype.transactionId = $util.newBuffer([]);
+                    CommitRequest.prototype.transactionId = null;
     
                     /**
                      * CommitRequest singleUseTransaction.
@@ -40787,43 +40787,43 @@
     
                 /**
                  * HttpRule get.
-                 * @member {string} get
+                 * @member {string|null|undefined} get
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.get = "";
+                HttpRule.prototype.get = null;
     
                 /**
                  * HttpRule put.
-                 * @member {string} put
+                 * @member {string|null|undefined} put
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.put = "";
+                HttpRule.prototype.put = null;
     
                 /**
                  * HttpRule post.
-                 * @member {string} post
+                 * @member {string|null|undefined} post
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.post = "";
+                HttpRule.prototype.post = null;
     
                 /**
                  * HttpRule delete.
-                 * @member {string} delete
+                 * @member {string|null|undefined} delete
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype["delete"] = "";
+                HttpRule.prototype["delete"] = null;
     
                 /**
                  * HttpRule patch.
-                 * @member {string} patch
+                 * @member {string|null|undefined} patch
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.patch = "";
+                HttpRule.prototype.patch = null;
     
                 /**
                  * HttpRule custom.

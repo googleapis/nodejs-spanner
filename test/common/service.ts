@@ -28,7 +28,7 @@ import * as sn from 'sinon';
 import {PassThrough} from 'stream';
 
 const sinon = sn.createSandbox();
-const glob = (global as {}) as {GCLOUD_SANDBOX_ENV: boolean | {}};
+const glob = global as {} as {GCLOUD_SANDBOX_ENV: boolean | {}};
 
 const gaxProtosDir = path.join(
   path.dirname(require.resolve('google-gax')),
