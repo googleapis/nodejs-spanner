@@ -127,12 +127,12 @@ export class MockInstanceAdmin {
     call: grpc.ServerUnaryCall<v1.GetInstanceConfigRequest, v1.Instance>,
     callback: v1.InstanceAdmin.GetInstanceConfigCallback
   ) {
-    if (call.request!!.name === TEST_INSTANCE_CONFIG_NAME) {
+    if (call.request!.name === TEST_INSTANCE_CONFIG_NAME) {
       callback(null, MockInstanceAdmin.TEST_INSTANCE_CONFIG);
     } else {
       callback(
         MockInstanceAdmin.createNotFoundError(
-          `InstanceConfig not found: ${call.request!!.name}`
+          `InstanceConfig not found: ${call.request!.name}`
         )
       );
     }
@@ -147,8 +147,8 @@ export class MockInstanceAdmin {
   ) {
     let instances: google.spanner.admin.instance.v1.IInstance[] = [];
     if (
-      !call.request!!.filter ||
-      call.request!!.filter.includes(
+      !call.request!.filter ||
+      call.request!.filter.includes(
         `name:${MockInstanceAdmin.TEST_INSTANCE.name}`
       )
     ) {
