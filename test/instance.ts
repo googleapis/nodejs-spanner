@@ -74,13 +74,13 @@ describe('Instance', () => {
 
   const sandbox = sinon.createSandbox();
 
-  const SPANNER = {
+  const SPANNER = ({
     request: () => {},
     requestStream: () => {},
     projectId: 'project-id',
     instances_: new Map(),
     projectFormattedName_: 'projects/project-id',
-  } as {} as Spanner;
+  } as {}) as Spanner;
 
   const NAME = 'instance-name';
 
@@ -422,10 +422,10 @@ describe('Instance', () => {
 
       assert.strictEqual(cache.has(NAME), false);
 
-      const database = instance.database(
+      const database = (instance.database(
         NAME,
         poolOptions
-      ) as {} as FakeDatabase;
+      ) as {}) as FakeDatabase;
 
       assert(database instanceof FakeDatabase);
       assert.strictEqual(database.calledWith_[0], instance);
@@ -502,12 +502,12 @@ describe('Instance', () => {
     it('should close all cached databases', done => {
       let closed = false;
 
-      instance.databases_.set('key', {
+      instance.databases_.set('key', ({
         close() {
           closed = true;
           return Promise.resolve();
         },
-      } as {} as Database);
+      } as {}) as Database);
 
       instance.request = () => {
         assert.strictEqual(closed, true);
@@ -519,11 +519,11 @@ describe('Instance', () => {
     });
 
     it('should ignore closing errors', done => {
-      instance.databases_.set('key', {
+      instance.databases_.set('key', ({
         close() {
           return Promise.reject(new Error('err'));
         },
-      } as {} as Database);
+      } as {}) as Database);
 
       instance.request = () => {
         done();
@@ -1637,7 +1637,7 @@ describe('Instance', () => {
     });
 
     it('should return an instance of Backup', () => {
-      const backup = instance.backup(BACKUP_NAME) as {} as FakeBackup;
+      const backup = (instance.backup(BACKUP_NAME) as {}) as FakeBackup;
       assert(backup instanceof FakeBackup);
       assert.strictEqual(backup.calledWith_[0], instance);
       assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);

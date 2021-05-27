@@ -84,8 +84,7 @@ export interface CreateDatabaseOptions
 export type GetDatabasesOptions = PagedOptions;
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
-export type DeleteInstanceCallback =
-  NormalCallback<instanceAdmin.protobuf.IEmpty>;
+export type DeleteInstanceCallback = NormalCallback<instanceAdmin.protobuf.IEmpty>;
 
 export type ExistsInstanceCallback = NormalCallback<boolean>;
 export type GetDatabasesCallback = RequestCallback<
@@ -202,7 +201,7 @@ class Instance extends common.GrpcServiceObject {
        */
       create: true,
     };
-    super({
+    super(({
       parent: spanner,
       /**
        * @name Instance#id
@@ -217,7 +216,7 @@ class Instance extends common.GrpcServiceObject {
       ): void {
         spanner.createInstance(formattedName_, options, callback);
       },
-    } as {} as ServiceObjectConfig);
+    } as {}) as ServiceObjectConfig);
     this.formattedName_ = formattedName_;
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);

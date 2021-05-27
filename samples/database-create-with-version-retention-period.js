@@ -68,5 +68,4 @@ async function createDatabaseWithVersionRetentionPeriod(
   // [END spanner_create_database_with_version_retention_period]
 }
 
-module.exports.createDatabaseWithVersionRetentionPeriod =
-  createDatabaseWithVersionRetentionPeriod;
+module.exports.createDatabaseWithVersionRetentionPeriod = createDatabaseWithVersionRetentionPeriod;

@@ -28,9 +28,10 @@ import {PassThrough} from 'stream';
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
-  const filledObject = (
-    instance.constructor as typeof protobuf.Message
-  ).toObject(instance as protobuf.Message<T>, {defaults: true});
+  const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
+    instance as protobuf.Message<T>,
+    {defaults: true}
+  );
   return (instance.constructor as typeof protobuf.Message).fromObject(
     filledObject
   ) as T;
@@ -278,8 +279,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Database()
       );
-      client.innerApiCalls.getDatabase =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.getDatabase = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.getDatabase(
           request,
@@ -389,8 +391,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.dropDatabase =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.dropDatabase = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.dropDatabase(
           request,
@@ -500,8 +503,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlResponse()
       );
-      client.innerApiCalls.getDatabaseDdl =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.getDatabaseDdl = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.getDatabaseDdl(
           request,
@@ -611,8 +615,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
-      client.innerApiCalls.setIamPolicy =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.setIamPolicy = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.setIamPolicy(
           request,
@@ -722,8 +727,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
-      client.innerApiCalls.getIamPolicy =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.getIamPolicy(
           request,
@@ -802,8 +808,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
-      client.innerApiCalls.testIamPermissions =
-        stubSimpleCall(expectedResponse);
+      client.innerApiCalls.testIamPermissions = stubSimpleCall(
+        expectedResponse
+      );
       const [response] = await client.testIamPermissions(request);
       assert.deepStrictEqual(response, expectedResponse);
       assert(
@@ -834,8 +841,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
-      client.innerApiCalls.testIamPermissions =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.testIamPermissions = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.testIamPermissions(
           request,
@@ -945,8 +953,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
-      client.innerApiCalls.getBackup =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.getBackup = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.getBackup(
           request,
@@ -1055,8 +1064,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
-      client.innerApiCalls.updateBackup =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.updateBackup = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.updateBackup(
           request,
@@ -1167,8 +1177,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.deleteBackup =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.deleteBackup = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.deleteBackup(
           request,
@@ -1247,8 +1258,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.createDatabase =
-        stubLongRunningCall(expectedResponse);
+      client.innerApiCalls.createDatabase = stubLongRunningCall(
+        expectedResponse
+      );
       const [operation] = await client.createDatabase(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
@@ -1280,8 +1292,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.createDatabase =
-        stubLongRunningCallWithCallback(expectedResponse);
+      client.innerApiCalls.createDatabase = stubLongRunningCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.createDatabase(
           request,
@@ -1441,8 +1454,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.updateDatabaseDdl =
-        stubLongRunningCall(expectedResponse);
+      client.innerApiCalls.updateDatabaseDdl = stubLongRunningCall(
+        expectedResponse
+      );
       const [operation] = await client.updateDatabaseDdl(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
@@ -1474,8 +1488,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.updateDatabaseDdl =
-        stubLongRunningCallWithCallback(expectedResponse);
+      client.innerApiCalls.updateDatabaseDdl = stubLongRunningCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.updateDatabaseDdl(
           request,
@@ -1667,8 +1682,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.createBackup =
-        stubLongRunningCallWithCallback(expectedResponse);
+      client.innerApiCalls.createBackup = stubLongRunningCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.createBackup(
           request,
@@ -1825,8 +1841,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.restoreDatabase =
-        stubLongRunningCall(expectedResponse);
+      client.innerApiCalls.restoreDatabase = stubLongRunningCall(
+        expectedResponse
+      );
       const [operation] = await client.restoreDatabase(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
@@ -1858,8 +1875,9 @@ describe('v1.DatabaseAdminClient', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.restoreDatabase =
-        stubLongRunningCallWithCallback(expectedResponse);
+      client.innerApiCalls.restoreDatabase = stubLongRunningCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.restoreDatabase(
           request,
@@ -2066,8 +2084,9 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Database()
         ),
       ];
-      client.innerApiCalls.listDatabases =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.listDatabases = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.listDatabases(
           request,
@@ -2145,12 +2164,12 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Database()
         ),
       ];
-      client.descriptors.page.listDatabases.createStream =
-        stubPageStreamingCall(expectedResponse);
+      client.descriptors.page.listDatabases.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
       const stream = client.listDatabasesStream(request);
       const promise = new Promise((resolve, reject) => {
-        const responses: protos.google.spanner.admin.database.v1.Database[] =
-          [];
+        const responses: protos.google.spanner.admin.database.v1.Database[] = [];
         stream.on(
           'data',
           (response: protos.google.spanner.admin.database.v1.Database) => {
@@ -2172,9 +2191,10 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(client.innerApiCalls.listDatabases, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabases
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2191,12 +2211,13 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listDatabases.createStream =
-        stubPageStreamingCall(undefined, expectedError);
+      client.descriptors.page.listDatabases.createStream = stubPageStreamingCall(
+        undefined,
+        expectedError
+      );
       const stream = client.listDatabasesStream(request);
       const promise = new Promise((resolve, reject) => {
-        const responses: protos.google.spanner.admin.database.v1.Database[] =
-          [];
+        const responses: protos.google.spanner.admin.database.v1.Database[] = [];
         stream.on(
           'data',
           (response: protos.google.spanner.admin.database.v1.Database) => {
@@ -2217,9 +2238,10 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(client.innerApiCalls.listDatabases, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabases
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2246,8 +2268,9 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Database()
         ),
       ];
-      client.descriptors.page.listDatabases.asyncIterate =
-        stubAsyncIterationCall(expectedResponse);
+      client.descriptors.page.listDatabases.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
       const responses: protos.google.spanner.admin.database.v1.IDatabase[] = [];
       const iterable = client.listDatabasesAsync(request);
       for await (const resource of iterable) {
@@ -2255,15 +2278,15 @@ describe('v1.DatabaseAdminClient', () => {
       }
       assert.deepStrictEqual(responses, expectedResponse);
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listDatabases
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabases
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2280,26 +2303,27 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listDatabases.asyncIterate =
-        stubAsyncIterationCall(undefined, expectedError);
+      client.descriptors.page.listDatabases.asyncIterate = stubAsyncIterationCall(
+        undefined,
+        expectedError
+      );
       const iterable = client.listDatabasesAsync(request);
       await assert.rejects(async () => {
-        const responses: protos.google.spanner.admin.database.v1.IDatabase[] =
-          [];
+        const responses: protos.google.spanner.admin.database.v1.IDatabase[] = [];
         for await (const resource of iterable) {
           responses.push(resource!);
         }
       });
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listDatabases
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabases
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2374,8 +2398,9 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Backup()
         ),
       ];
-      client.innerApiCalls.listBackups =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.listBackups = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.listBackups(
           request,
@@ -2453,8 +2478,9 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Backup()
         ),
       ];
-      client.descriptors.page.listBackups.createStream =
-        stubPageStreamingCall(expectedResponse);
+      client.descriptors.page.listBackups.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
       const stream = client.listBackupsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.spanner.admin.database.v1.Backup[] = [];
@@ -2554,8 +2580,9 @@ describe('v1.DatabaseAdminClient', () => {
           new protos.google.spanner.admin.database.v1.Backup()
         ),
       ];
-      client.descriptors.page.listBackups.asyncIterate =
-        stubAsyncIterationCall(expectedResponse);
+      client.descriptors.page.listBackups.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
       const responses: protos.google.spanner.admin.database.v1.IBackup[] = [];
       const iterable = client.listBackupsAsync(request);
       for await (const resource of iterable) {
@@ -2638,8 +2665,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.innerApiCalls.listDatabaseOperations =
-        stubSimpleCall(expectedResponse);
+      client.innerApiCalls.listDatabaseOperations = stubSimpleCall(
+        expectedResponse
+      );
       const [response] = await client.listDatabaseOperations(request);
       assert.deepStrictEqual(response, expectedResponse);
       assert(
@@ -2672,8 +2700,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.innerApiCalls.listDatabaseOperations =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.listDatabaseOperations = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.listDatabaseOperations(
           request,
@@ -2748,8 +2777,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.descriptors.page.listDatabaseOperations.createStream =
-        stubPageStreamingCall(expectedResponse);
+      client.descriptors.page.listDatabaseOperations.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
       const stream = client.listDatabaseOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.longrunning.Operation[] = [];
@@ -2766,18 +2796,16 @@ describe('v1.DatabaseAdminClient', () => {
       const responses = await promise;
       assert.deepStrictEqual(responses, expectedResponse);
       assert(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .createStream as SinonStub
-        )
+        (client.descriptors.page.listDatabaseOperations
+          .createStream as SinonStub)
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseOperations, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabaseOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2794,8 +2822,10 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listDatabaseOperations.createStream =
-        stubPageStreamingCall(undefined, expectedError);
+      client.descriptors.page.listDatabaseOperations.createStream = stubPageStreamingCall(
+        undefined,
+        expectedError
+      );
       const stream = client.listDatabaseOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.longrunning.Operation[] = [];
@@ -2811,18 +2841,16 @@ describe('v1.DatabaseAdminClient', () => {
       });
       await assert.rejects(promise, expectedError);
       assert(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .createStream as SinonStub
-        )
+        (client.descriptors.page.listDatabaseOperations
+          .createStream as SinonStub)
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseOperations, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabaseOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2843,8 +2871,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.descriptors.page.listDatabaseOperations.asyncIterate =
-        stubAsyncIterationCall(expectedResponse);
+      client.descriptors.page.listDatabaseOperations.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
       const responses: protos.google.longrunning.IOperation[] = [];
       const iterable = client.listDatabaseOperationsAsync(request);
       for await (const resource of iterable) {
@@ -2852,17 +2881,15 @@ describe('v1.DatabaseAdminClient', () => {
       }
       assert.deepStrictEqual(responses, expectedResponse);
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listDatabaseOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabaseOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2879,8 +2906,10 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listDatabaseOperations.asyncIterate =
-        stubAsyncIterationCall(undefined, expectedError);
+      client.descriptors.page.listDatabaseOperations.asyncIterate = stubAsyncIterationCall(
+        undefined,
+        expectedError
+      );
       const iterable = client.listDatabaseOperationsAsync(request);
       await assert.rejects(async () => {
         const responses: protos.google.longrunning.IOperation[] = [];
@@ -2889,17 +2918,15 @@ describe('v1.DatabaseAdminClient', () => {
         }
       });
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listDatabaseOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseOperations
-            .asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listDatabaseOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -2929,8 +2956,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.innerApiCalls.listBackupOperations =
-        stubSimpleCall(expectedResponse);
+      client.innerApiCalls.listBackupOperations = stubSimpleCall(
+        expectedResponse
+      );
       const [response] = await client.listBackupOperations(request);
       assert.deepStrictEqual(response, expectedResponse);
       assert(
@@ -2963,8 +2991,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.innerApiCalls.listBackupOperations =
-        stubSimpleCallWithCallback(expectedResponse);
+      client.innerApiCalls.listBackupOperations = stubSimpleCallWithCallback(
+        expectedResponse
+      );
       const promise = new Promise((resolve, reject) => {
         client.listBackupOperations(
           request,
@@ -3036,8 +3065,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.descriptors.page.listBackupOperations.createStream =
-        stubPageStreamingCall(expectedResponse);
+      client.descriptors.page.listBackupOperations.createStream = stubPageStreamingCall(
+        expectedResponse
+      );
       const stream = client.listBackupOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.longrunning.Operation[] = [];
@@ -3059,9 +3089,10 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(client.innerApiCalls.listBackupOperations, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listBackupOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -3078,8 +3109,10 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listBackupOperations.createStream =
-        stubPageStreamingCall(undefined, expectedError);
+      client.descriptors.page.listBackupOperations.createStream = stubPageStreamingCall(
+        undefined,
+        expectedError
+      );
       const stream = client.listBackupOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.longrunning.Operation[] = [];
@@ -3100,9 +3133,10 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(client.innerApiCalls.listBackupOperations, request)
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listBackupOperations
+          .createStream as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -3123,8 +3157,9 @@ describe('v1.DatabaseAdminClient', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.descriptors.page.listBackupOperations.asyncIterate =
-        stubAsyncIterationCall(expectedResponse);
+      client.descriptors.page.listBackupOperations.asyncIterate = stubAsyncIterationCall(
+        expectedResponse
+      );
       const responses: protos.google.longrunning.IOperation[] = [];
       const iterable = client.listBackupOperationsAsync(request);
       for await (const resource of iterable) {
@@ -3132,15 +3167,15 @@ describe('v1.DatabaseAdminClient', () => {
       }
       assert.deepStrictEqual(responses, expectedResponse);
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });
@@ -3157,8 +3192,10 @@ describe('v1.DatabaseAdminClient', () => {
       request.parent = '';
       const expectedHeaderRequestParams = 'parent=';
       const expectedError = new Error('expected');
-      client.descriptors.page.listBackupOperations.asyncIterate =
-        stubAsyncIterationCall(undefined, expectedError);
+      client.descriptors.page.listBackupOperations.asyncIterate = stubAsyncIterationCall(
+        undefined,
+        expectedError
+      );
       const iterable = client.listBackupOperationsAsync(request);
       await assert.rejects(async () => {
         const responses: protos.google.longrunning.IOperation[] = [];
@@ -3167,15 +3204,15 @@ describe('v1.DatabaseAdminClient', () => {
         }
       });
       assert.deepStrictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[1],
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[1],
         request
       );
       assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        (client.descriptors.page.listBackupOperations
+          .asyncIterate as SinonStub).getCall(0).args[2].otherArgs.headers[
+          'x-goog-request-params'
+        ],
         expectedHeaderRequestParams
       );
     });

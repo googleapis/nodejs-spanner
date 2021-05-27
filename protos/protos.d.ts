@@ -3733,16 +3733,16 @@ export namespace google {
             constructor(properties?: google.protobuf.IValue);
 
             /** Value nullValue. */
-            public nullValue?: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue|null);
+            public nullValue: (google.protobuf.NullValue|keyof typeof google.protobuf.NullValue);
 
             /** Value numberValue. */
-            public numberValue?: (number|null);
+            public numberValue: number;
 
             /** Value stringValue. */
-            public stringValue?: (string|null);
+            public stringValue: string;
 
             /** Value boolValue. */
-            public boolValue?: (boolean|null);
+            public boolValue: boolean;
 
             /** Value structValue. */
             public structValue?: (google.protobuf.IStruct|null);
@@ -8786,7 +8786,7 @@ export namespace google {
                         public databaseId: string;
 
                         /** RestoreDatabaseRequest backup. */
-                        public backup?: (string|null);
+                        public backup: string;
 
                         /** RestoreDatabaseRequest encryptionConfig. */
                         public encryptionConfig?: (google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig|null);
@@ -12379,10 +12379,10 @@ export namespace google {
                 public queryStats?: (google.protobuf.IStruct|null);
 
                 /** ResultSetStats rowCountExact. */
-                public rowCountExact?: (number|Long|string|null);
+                public rowCountExact: (number|Long|string);
 
                 /** ResultSetStats rowCountLowerBound. */
-                public rowCountLowerBound?: (number|Long|string|null);
+                public rowCountLowerBound: (number|Long|string);
 
                 /** ResultSetStats rowCount. */
                 public rowCount?: ("rowCountExact"|"rowCountLowerBound");
@@ -12765,7 +12765,7 @@ export namespace google {
                     constructor(properties?: google.spanner.v1.TransactionOptions.IReadOnly);
 
                     /** ReadOnly strong. */
-                    public strong?: (boolean|null);
+                    public strong: boolean;
 
                     /** ReadOnly minReadTimestamp. */
                     public minReadTimestamp?: (google.protobuf.ITimestamp|null);
@@ -12979,7 +12979,7 @@ export namespace google {
                 public singleUse?: (google.spanner.v1.ITransactionOptions|null);
 
                 /** TransactionSelector id. */
-                public id?: (Uint8Array|string|null);
+                public id: (Uint8Array|string);
 
                 /** TransactionSelector begin. */
                 public begin?: (google.spanner.v1.ITransactionOptions|null);
@@ -15976,7 +15976,7 @@ export namespace google {
                 public session: string;
 
                 /** CommitRequest transactionId. */
-                public transactionId?: (Uint8Array|string|null);
+                public transactionId: (Uint8Array|string);
 
                 /** CommitRequest singleUseTransaction. */
                 public singleUseTransaction?: (google.spanner.v1.ITransactionOptions|null);
@@ -16557,19 +16557,19 @@ export namespace google {
             public selector: string;
 
             /** HttpRule get. */
-            public get?: (string|null);
+            public get: string;
 
             /** HttpRule put. */
-            public put?: (string|null);
+            public put: string;
 
             /** HttpRule post. */
-            public post?: (string|null);
+            public post: string;
 
             /** HttpRule delete. */
-            public delete?: (string|null);
+            public delete: string;
 
             /** HttpRule patch. */
-            public patch?: (string|null);
+            public patch: string;
 
             /** HttpRule custom. */
             public custom?: (google.api.ICustomHttpPattern|null);
