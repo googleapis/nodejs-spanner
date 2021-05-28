@@ -402,15 +402,38 @@ export class Snapshot extends EventEmitter {
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
    * @typedef {object} ReadRequest
-   * @property {string[]|string[][]} [keys] The primary keys of the rows in this table to be
+   * @property {string} table The name of the table in the database to be read.
+   * @property {string[]} columns The columns of the table to be returned for each
+   *     row matching this query.
+   * @property {string[]|string[][]} keys The primary keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
    * @property {KeyRange[]} [ranges] An alternative to the keys property; this can
-   *       be used to define a range of keys to be yielded.
+   *     be used to define a range of keys to be yielded.
+   * @property {string} [index] The name of an index on the table.
    * @property {boolean} [json=false] Receive the rows as serialized objects. This
    *     is the equivalent of calling `toJSON()` on each row.
-   * @property {JSONOptions} [jsonOptions] Configuration options for the
-   *     serialized objects.
+   * @property {JSONOptions} [jsonOptions] Configuration options for the serialized
+   *     objects.
+   * @property {object} [keySet] Defines a collection of keys and/or key ranges to
+   *     read.
+   * @property {number} [limit] The number of rows to yield.
+   * @property {Buffer} [resumeToken]
+   *     If this request is resuming a previously interrupted read,
+   *     `resume_token` should be copied from the last
+   *     {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *     enables the new read to resume where the last read left off. The
+   *     rest of the request parameters must exactly match the request
+   *     that yielded this token.
+   * @property {Buffer} [partitionToken]
+   *     If present, results will be restricted to the specified partition
+   *     previously created using PartitionRead().    There must be an exact
+   *     match for the values of fields common to this message and the
+   *     PartitionReadRequest message used to create this partition_token.
+   * @property {google.spanner.v1.RequestOptions} [requestOptions]
+   *     Common options for this request.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    */
   /**
    * Create a readable object stream to receive rows from the database using key
