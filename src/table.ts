@@ -352,6 +352,16 @@ class Table {
    * @param {CommitResponse} apiResponse The full API response.
    */
   /**
+   * @typedef {object} DeleteRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
    * Delete rows from this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
@@ -359,7 +369,7 @@ class Table {
    * @param {array} keys The keys for the rows to delete. If using a
    *     composite key, provide an array within this array. See the example
    * below.
-   * @param {CommitOptions|CallOptions} [options] Options for configuring the request.
+   * @param {DeleteRowsOptions|CallOptions} [options] Options for configuring the request.
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @param {DeleteRowsCallback} [callback] Callback function.
    * @returns {Promise<DeleteRowsResponse>}
@@ -501,13 +511,23 @@ class Table {
    * @param {CommitResponse} apiResponse The full API response.
    */
   /**
+   * @typedef {object} InsertRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
    * Insert rows of data into this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {CommitOptions|CallOptions} [options] Options for configuring the request.
+   * @param {InsertRowsOptions|CallOptions} [options] Options for configuring the request.
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @param {InsertRowsCallback} [callback] Callback function.
    * @returns {Promise<InsertRowsResponse>}
@@ -751,13 +771,23 @@ class Table {
    * @param {CommitResponse} apiResponse The full API response.
    */
   /**
+   * @typedef {object} ReplaceRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
    * Replace rows of data within this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {CommitOptions|CallOptions} [options] Options for configuring the request.
+   * @param {ReplaceRowsOptions|CallOptions} [options] Options for configuring the request.
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @param {ReplaceRowsCallback} [callback] Callback function.
    * @returns {Promise<ReplaceRowsResponse>}
@@ -823,13 +853,23 @@ class Table {
    * @param {CommitResponse} apiResponse The full API response.
    */
   /**
+   * @typedef {object} UpdateRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
    * Update rows of data within this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {CommitOptions|CallOptions} [options] Options for configuring the request.
+   * @param {UpdateRowsOptions|CallOptions} [options] Options for configuring the request.
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @param {UpdateRowsCallback} [callback] Callback function.
    * @returns {Promise<UpdateRowsResponse>}
@@ -899,6 +939,16 @@ class Table {
    * @param {CommitResponse} apiResponse The full API response.
    */
   /**
+   * @typedef {object} UpsertRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
    * Insert or update rows of data within this table.
    *
    * @see [Commit API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Commit)
@@ -906,7 +956,7 @@ class Table {
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    *
-   * @param {CommitOptions|CallOptions} [options] Options for configuring the request.
+   * @param {UpsertRowsOptions|CallOptions} [options] Options for configuring the request.
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @param {UpsertRowsCallback} [callback] Callback function.
    * @returns {Promise<UpsertRowsResponse>}
