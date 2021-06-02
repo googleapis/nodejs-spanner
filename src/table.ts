@@ -261,9 +261,9 @@ class Table {
   delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * @typedef {array} DropTableResponse
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 0 An {@link Operation} object that can be used to check
    *     the status of the request.
-   * @property {object} 2 The full API response.
+   * @property {object} 1 The full API response.
    */
   /**
    * @callback DropTableCallback
@@ -425,9 +425,9 @@ class Table {
   drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * @typedef {array} DropTableResponse
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {Operation} 0 An {@link Operation} object that can be used to check
    *     the status of the request.
-   * @property {object} 2 The full API response.
+   * @property {object} 1 The full API response.
    */
   /**
    * @callback DropTableCallback
@@ -602,7 +602,7 @@ class Table {
    */
   /**
    * @typedef {array} TableReadResponse
-   * @property {array[]} 1 Rows are returned as an array of object arrays. Each
+   * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
