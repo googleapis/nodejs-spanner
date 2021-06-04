@@ -255,8 +255,9 @@ export class Session extends common.GrpcServiceObject {
    * @see {@link v1.SpannerClient#deleteSession}
    * @see [DeleteSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.DeleteSession)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DeleteSessionCallback} [callback] Callback function.
    * @returns {Promise<DeleteSessionResponse>}
    *
@@ -324,8 +325,9 @@ export class Session extends common.GrpcServiceObject {
    * @see {@link v1.SpannerClient#getSession}
    * @see [GetSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.GetSession)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetSessionMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetSessionMetadataResponse>}
    *
@@ -374,8 +376,9 @@ export class Session extends common.GrpcServiceObject {
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *

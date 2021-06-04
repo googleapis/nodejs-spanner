@@ -652,8 +652,9 @@ class Database extends common.GrpcServiceObject {
    *   * Label values must be between 0 and 63 characters long and must conform
    *     to the regular expression `([a-z]([-a-z0-9]*[a-z0-9])?)?`.
    *   * No more than 64 labels can be associated with a given session.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} CreateSessionResponse
@@ -782,8 +783,9 @@ class Database extends common.GrpcServiceObject {
    * @see {@link Database#updateSchema}
    *
    * @param {string} schema A DDL CREATE statement describing the table.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {CreateTableCallback} [callback] Callback function.
    * @returns {Promise<CreateTableResponse>}
    *
@@ -880,8 +882,9 @@ class Database extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#dropDatabase}
    * @see [DropDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.DropDatabase)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DatabaseDeleteCallback} [callback] Callback function.
    * @returns {Promise<DatabaseDeleteResponse>}
    *
@@ -949,8 +952,9 @@ class Database extends common.GrpcServiceObject {
    * Check if a database exists.
    *
    * @method Database#exists
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DatabaseExistsCallback} [callback] Callback function.
    * @returns {Promise<DatabaseExistsResponse>}
    *
@@ -1094,8 +1098,9 @@ class Database extends common.GrpcServiceObject {
    *
    * @see {@link v1.DatabaseAdminClient#getDatabase}
    * @see [GetDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabase)
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetMetadataResponse>}
    *
@@ -1173,8 +1178,9 @@ class Database extends common.GrpcServiceObject {
    * @see {@link #getMetadata}
    *
    * @method Database#getRestoreInfo
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetRestoreInfoCallback} [callback] Callback function.
    * @returns {Promise<IRestoreInfoTranslatedEnum | undefined>} When resolved,
    *     contains the restore information for the database if it was restored
@@ -1215,8 +1221,9 @@ class Database extends common.GrpcServiceObject {
    * @see {@link #getMetadata}
    *
    * @method Database#getState
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetStateCallback} [callback] Callback function.
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.Database.State> | undefined>}
    *     When resolved, contains the current state of the database if the state
@@ -1266,8 +1273,9 @@ class Database extends common.GrpcServiceObject {
    * @see [Data Definition Language (DDL)](https://cloud.google.com/spanner/docs/data-definition-language)
    * @see [GetDatabaseDdl API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseDdl)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetSchemaCallback} [callback] Callback function.
    * @returns {Promise<GetSchemaResponse>}
    *
@@ -1339,8 +1347,9 @@ class Database extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetSessionsResponse
@@ -1700,8 +1709,9 @@ class Database extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetDatabaseOperationsCallback} [callback] Callback function.
    */
   /**
@@ -1715,8 +1725,9 @@ class Database extends common.GrpcServiceObject {
    * @see {@link Instance.getDatabaseOperations}
    *
    * @param {GetDatabaseOperationsOptions} [options] Contains query object for
-   *     listing database operations and request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   *     listing database operations and request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains
    *     a paged list of database operations.
    *
@@ -1863,9 +1874,9 @@ class Database extends common.GrpcServiceObject {
    *     encryptionConfig An encryption configuration describing
    *     the encryption type and key resources in Cloud KMS used to
    *     encrypt/decrypt the database to restore to.
-   * @property {CallOptions} [gaxOptions] The request configuration options
-   *     outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @property {CallOptions} [gaxOptions] The request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} RestoreDatabaseResponse
@@ -1889,8 +1900,9 @@ class Database extends common.GrpcServiceObject {
    * necessarily have completed.
    *
    * @param backupPath The path of the backup to restore.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @returns Promise<RestoreDatabaseResponse> When resolved, contains the restore operation.
    *
    * @example
@@ -2694,8 +2706,9 @@ class Database extends common.GrpcServiceObject {
    * @param {string|string[]|object} statements An array of database DDL
    *     statements, or an
    *     [`UpdateDatabaseDdlRequest` object](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.UpdateDatabaseDdlRequest).
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {LongRunningOperationCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *
