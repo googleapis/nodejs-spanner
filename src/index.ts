@@ -424,8 +424,9 @@ class Spanner extends GrpcService {
    * Query object for listing instances.
    *
    * @typedef {object} GetInstancesOptions
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @property {string} [filter] An expression for filtering the results of the
    *     request. Filter rules are case insensitive. The fields eligible for
    *     filtering are:
@@ -644,9 +645,9 @@ class Spanner extends GrpcService {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
-
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetInstanceConfigsResponse

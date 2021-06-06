@@ -111,7 +111,8 @@ class Table {
    *
    * @param {string} schema See {@link Database#createTable}.
    * @param {object} [gaxOptions]
-   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {CreateTableCallback} [callback] Callback function.
    * @returns {Promise<CreateTableResponse>}
    *
@@ -281,7 +282,8 @@ class Table {
    *
    * @throws {TypeError} If any arguments are passed in.
    * @param {object} [gaxOptions]
-   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DropTableCallback} [callback] Callback function.
    * @returns {Promise<DropTableResponse>}
    *
@@ -370,7 +372,8 @@ class Table {
    *     composite key, provide an array within this array. See the example
    * below.
    * @param {DeleteRowsOptions|CallOptions} [options] Options for configuring the request.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DeleteRowsCallback} [callback] Callback function.
    * @returns {Promise<DeleteRowsResponse>}
    *
@@ -443,8 +446,8 @@ class Table {
    * @see {@link Database#updateSchema}
    *
    * @param {object} [gaxOptions] Request configuration options.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more
-   *     details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DropTableCallback} [callback] Callback function.
    * @returns {Promise<DropTableResponse>}
    *
@@ -528,7 +531,8 @@ class Table {
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {InsertRowsOptions|CallOptions} [options] Options for configuring the request.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {InsertRowsCallback} [callback] Callback function.
    * @returns {Promise<InsertRowsResponse>}
    *
@@ -788,7 +792,8 @@ class Table {
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {ReplaceRowsOptions|CallOptions} [options] Options for configuring the request.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {ReplaceRowsCallback} [callback] Callback function.
    * @returns {Promise<ReplaceRowsResponse>}
    *
@@ -870,7 +875,8 @@ class Table {
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    * @param {UpdateRowsOptions|CallOptions} [options] Options for configuring the request.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {UpdateRowsCallback} [callback] Callback function.
    * @returns {Promise<UpdateRowsResponse>}
    *
@@ -957,7 +963,8 @@ class Table {
    *     into this table.
    *
    * @param {UpsertRowsOptions|CallOptions} [options] Options for configuring the request.
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {UpsertRowsCallback} [callback] Callback function.
    * @returns {Promise<UpsertRowsResponse>}
    *
