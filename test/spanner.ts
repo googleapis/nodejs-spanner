@@ -2249,14 +2249,14 @@ describe('Spanner with mock server', () => {
       const expectedWrites = pool.options.min! * pool.options.writes!;
       const expectedReads = pool.options.min! - expectedWrites;
       // Execute an update.
-      const [count] = await database.runTransactionAsync((transaction): Promise<
-        [number]
-      > => {
-        return transaction.runUpdate(insertSql).then(updateCount => {
-          transaction.commit();
-          return updateCount;
-        });
-      });
+      const [count] = await database.runTransactionAsync(
+        (transaction): Promise<[number]> => {
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            transaction.commit();
+            return updateCount;
+          });
+        }
+      );
       assert.strictEqual(count, 1);
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
@@ -2476,16 +2476,17 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       const database = newTestDatabase();
       try {
-        await database.runTransactionAsync({timeout: 1}, (transaction): Promise<
-          number[]
-        > => {
-          attempts++;
-          return transaction.runUpdate(insertSql).then(updateCount => {
-            // Always abort the transaction.
-            spannerMock.abortTransaction(transaction);
-            return transaction.commit().then(() => updateCount);
-          });
-        });
+        await database.runTransactionAsync(
+          {timeout: 1},
+          (transaction): Promise<number[]> => {
+            attempts++;
+            return transaction.runUpdate(insertSql).then(updateCount => {
+              // Always abort the transaction.
+              spannerMock.abortTransaction(transaction);
+              return transaction.commit().then(() => updateCount);
+            });
+          }
+        );
         assert.fail('missing expected DEADLINE_EXCEEDED error');
       } catch (e) {
         assert.strictEqual(
