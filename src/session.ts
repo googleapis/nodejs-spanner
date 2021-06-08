@@ -50,7 +50,8 @@ export const enum types {
   ReadWrite = 'readwrite',
 }
 
-export type GetSessionMetadataCallback = NormalCallback<google.spanner.v1.ISession>;
+export type GetSessionMetadataCallback =
+  NormalCallback<google.spanner.v1.ISession>;
 export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
@@ -203,7 +204,7 @@ export class Session extends common.GrpcServiceObject {
        */
       get: true,
     };
-    super(({
+    super({
       parent: database,
       /**
        * @name Session#id
@@ -232,7 +233,7 @@ export class Session extends common.GrpcServiceObject {
           callback(null, this, apiResponse);
         });
       },
-    } as {}) as ServiceObjectConfig);
+    } as {} as ServiceObjectConfig);
 
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.parent as Database).formattedName_,
@@ -255,8 +256,9 @@ export class Session extends common.GrpcServiceObject {
    * @see {@link v1.SpannerClient#deleteSession}
    * @see [DeleteSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.DeleteSession)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DeleteSessionCallback} [callback] Callback function.
    * @returns {Promise<DeleteSessionResponse>}
    *
@@ -324,8 +326,9 @@ export class Session extends common.GrpcServiceObject {
    * @see {@link v1.SpannerClient#getSession}
    * @see [GetSession API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.GetSession)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {GetSessionMetadataCallback} [callback] Callback function.
    * @returns {Promise<GetSessionMetadataResponse>}
    *
@@ -374,8 +377,9 @@ export class Session extends common.GrpcServiceObject {
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *

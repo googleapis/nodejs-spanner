@@ -84,7 +84,8 @@ export interface CreateDatabaseOptions
 export type GetDatabasesOptions = PagedOptions;
 export type CreateInstanceCallback = LongRunningCallback<Instance>;
 export type CreateDatabaseCallback = LongRunningCallback<Database>;
-export type DeleteInstanceCallback = NormalCallback<instanceAdmin.protobuf.IEmpty>;
+export type DeleteInstanceCallback =
+  NormalCallback<instanceAdmin.protobuf.IEmpty>;
 
 export type ExistsInstanceCallback = NormalCallback<boolean>;
 export type GetDatabasesCallback = RequestCallback<
@@ -201,7 +202,7 @@ class Instance extends common.GrpcServiceObject {
        */
       create: true,
     };
-    super(({
+    super({
       parent: spanner,
       /**
        * @name Instance#id
@@ -216,7 +217,7 @@ class Instance extends common.GrpcServiceObject {
       ): void {
         spanner.createInstance(formattedName_, options, callback);
       },
-    } as {}) as ServiceObjectConfig);
+    } as {} as ServiceObjectConfig);
     this.formattedName_ = formattedName_;
     this.request = spanner.request.bind(spanner);
     this.requestStream = spanner.requestStream.bind(spanner);
@@ -261,8 +262,9 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetBackupsResponse
@@ -286,8 +288,8 @@ class Instance extends common.GrpcServiceObject {
    *
    * @param {GetBackupsOptions} [options] The query object for listing backups.
    * @param {gax.CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @returns {Promise<GetBackupsResponse>} When resolved, contains a paged list
    *     of backups.
    *
@@ -460,8 +462,9 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetBackupOperationsResponse
@@ -485,8 +488,8 @@ class Instance extends common.GrpcServiceObject {
    * @param {GetBackupOperationsOptions} [options] The query object for listing
    *     backup operations.
    * @param {gax.CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @returns {Promise<GetBackupOperationsResponse>} When resolved, contains a
    *     paged list of backup operations.
    *
@@ -584,8 +587,9 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetDatabaseOperationsResponse
@@ -609,8 +613,8 @@ class Instance extends common.GrpcServiceObject {
    * @param {GetDatabaseOperationsOptions} [options] The query object for
    *     listing database operations.
    * @param {gax.CallOptions} [options.gaxOptions] The request configuration
-   *     options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @returns {Promise<GetDatabaseOperationsResponse>} When resolved, contains a
    *     paged list of database operations.
    *
@@ -906,8 +910,9 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.InstanceAdminClient#deleteInstance}
    * @see [DeleteInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {DeleteInstanceCallback} [callback] Callback function.
    * @returns {Promise<DeleteInstanceResponse>}
    *
@@ -986,8 +991,9 @@ class Instance extends common.GrpcServiceObject {
    * Check if an instance exists.
    *
    * @method Instance#exists
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {InstanceExistsCallback} [callback] Callback function.
    * @returns {Promise<InstanceExistsResponse>}
    *
@@ -1143,8 +1149,9 @@ class Instance extends common.GrpcServiceObject {
    * @property {number} [pageSize] Maximum number of results per page.
    * @property {string} [pageToken] A previously-returned page token
    *     representing part of the larger set of results to view.
-   * @property {object} [gaxOptions] Request configuration options, outlined
-   *     here: https://googleapis.github.io/gax-nodejs/global.html#CallOptions.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {array} GetDatabasesResponse
@@ -1457,8 +1464,9 @@ class Instance extends common.GrpcServiceObject {
    * @see [UpdateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstance)
    *
    * @param {object} metadata The metadata you wish to set.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {SetInstanceMetadataCallback} [callback] Callback function.
    * @returns {Promise<LongRunningOperationResponse>}
    *

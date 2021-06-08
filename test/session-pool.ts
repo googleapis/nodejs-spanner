@@ -56,7 +56,7 @@ describe('SessionPool', () => {
   let SessionPool: typeof sp.SessionPool;
   let inventory;
 
-  const DATABASE = ({batchCreateSessions: noop} as unknown) as Database;
+  const DATABASE = {batchCreateSessions: noop} as unknown as Database;
   const sandbox = sinon.createSandbox();
   const shouldNotBeCalled = sandbox.stub().throws('Should not be called.');
 
@@ -262,7 +262,8 @@ describe('SessionPool', () => {
       });
 
       describe('writes', () => {
-        const writeErrReg = /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
+        const writeErrReg =
+          /Write percentage should be represented as a float between 0\.0 and 1\.0\./;
 
         it('should throw when writes is less than 0', () => {
           assert.throws(() => {
@@ -438,7 +439,7 @@ describe('SessionPool', () => {
 
   describe('getWriteSession', () => {
     it('should pass back the session and txn', done => {
-      const fakeTxn = (new FakeTransaction() as unknown) as Transaction;
+      const fakeTxn = new FakeTransaction() as unknown as Transaction;
       const fakeSession = createSession();
 
       fakeSession.txn = fakeTxn;
