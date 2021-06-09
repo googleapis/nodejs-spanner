@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.7.0...v5.8.0) (2021-06-07)
+
+
+### Features
+
+* support setting `optimizerStatisticsPackage` ([#1225](https://www.github.com/googleapis/nodejs-spanner/issues/1225)) ([dadc6dc](https://www.github.com/googleapis/nodejs-spanner/commit/dadc6dcf5c01e1bb380555fa9ea2ba9182af049c))
+
+
+### Bug Fixes
+
+* ensure table funcs accept gaxOptions directly ([#1371](https://www.github.com/googleapis/nodejs-spanner/issues/1371)) ([2c57c16](https://www.github.com/googleapis/nodejs-spanner/commit/2c57c1631a93d545bab52e309a5acd7641a747f3))
+* lint issue ([#1372](https://www.github.com/googleapis/nodejs-spanner/issues/1372)) ([3be0b4b](https://www.github.com/googleapis/nodejs-spanner/commit/3be0b4b51c8a76c7682101851d94e0611a87bc24))
+
 ## [5.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.1...v5.7.0) (2021-04-21)
 
 
