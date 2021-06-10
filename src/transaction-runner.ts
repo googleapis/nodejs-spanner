@@ -31,7 +31,7 @@ import IRequestOptions = google.spanner.v1.IRequestOptions;
 const jsonProtos = require('../protos/protos.json');
 const RETRY_INFO = 'google.rpc.retryinfo-bin';
 
-const RETRYABLE: grpc.status[] = [grpc.status.ABORTED, grpc.status.UNKNOWN];
+const RETRYABLE: grpc.status[] = [grpc.status.ABORTED];
 
 // tslint:disable-next-line variable-name
 const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
