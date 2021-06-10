@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.8.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.0...v5.8.1) (2021-06-10)
+
+
+### Bug Fixes
+
+* unknown errors should not be retried ([#1388](https://www.github.com/googleapis/nodejs-spanner/issues/1388)) ([1d6f4e2](https://www.github.com/googleapis/nodejs-spanner/commit/1d6f4e2923bc1ac20c0a73c342332ec2ae259812)), closes [#1387](https://www.github.com/googleapis/nodejs-spanner/issues/1387)
+
 ## [5.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.7.0...v5.8.0) (2021-06-07)
 
 
