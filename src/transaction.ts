@@ -548,13 +548,8 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {
-      gaxOptions,
-      json,
-      jsonOptions,
-      maxResumeRetries,
-      requestOptions,
-    } = request;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -970,13 +965,8 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {
-      gaxOptions,
-      json,
-      jsonOptions,
-      maxResumeRetries,
-      requestOptions,
-    } = query;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      query;
     let reqOpts;
 
     const sanitizeRequest = () => {

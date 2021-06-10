@@ -1031,21 +1031,20 @@ class Table {
   private _mutate(
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
-    options: MutateRowsOptions = {},
+    options: MutateRowsOptions | CallOptions = {},
     callback: CommitCallback
   ): void {
-    this.database.runTransaction(
-      {requestOptions: options.requestOptions},
-      (err, transaction) => {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        transaction![method](this.name, rows as Key[]);
-        transaction!.commit(options, callback);
+    const requestOptions =
+      'requestOptions' in options ? options.requestOptions : {};
+    this.database.runTransaction({requestOptions}, (err, transaction) => {
+      if (err) {
+        callback(err);
+        return;
       }
-    );
+
+      transaction![method](this.name, rows as Key[]);
+      transaction!.commit(options, callback);
+    });
   }
 }
 
