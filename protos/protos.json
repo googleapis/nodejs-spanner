@@ -2723,6 +2723,10 @@
                               "type": "int32",
                               "id": 5
                             },
+                            "processingUnits": {
+                              "type": "int32",
+                              "id": 9
+                            },
                             "state": {
                               "type": "State",
                               "id": 6,
