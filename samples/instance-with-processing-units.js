@@ -63,4 +63,5 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
   // [END spanner_create_instance_with_processing_units]
 }
 
-module.exports.createInstanceWithProcessingUnits = createInstanceWithProcessingUnits;
+module.exports.createInstanceWithProcessingUnits =
+  createInstanceWithProcessingUnits;
