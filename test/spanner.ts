@@ -1298,8 +1298,7 @@ describe('Spanner with mock server', () => {
 
       before(() => {
         process.env.SPANNER_OPTIMIZER_VERSION = OPTIMIZER_VERSION;
-        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE =
-          OPTIMIZER_STATISTICS_PACKAGE;
+        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE = OPTIMIZER_STATISTICS_PACKAGE;
         spannerWithEnvVar = new Spanner({
           projectId: 'fake-project-id',
           servicePath: 'localhost',
