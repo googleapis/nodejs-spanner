@@ -251,10 +251,6 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
   }
 
-  _hasResumeToken(chunk: google.spanner.v1.PartialResultSet): boolean {
-    return is.defined(chunk.resumeToken) && chunk.resumeToken.length > 0;
-  }
-
   /**
    * Manages any chunked values.
    *
@@ -283,10 +279,10 @@ export class PartialResultStream extends Transform implements ResultEvents {
     // chunk to be processed.
     if (chunk.chunkedValue) {
       this._pendingValue = values.pop();
-      if (this._hasResumeToken(chunk)) {
+      if (_hasResumeToken(chunk)) {
         this._pendingValueForResume = this._pendingValue;
       }
-    } else if (this._hasResumeToken(chunk)) {
+    } else if (_hasResumeToken(chunk)) {
       delete this._pendingValueForResume;
     }
 
@@ -445,24 +441,22 @@ export function partialResultStream(
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
-  // We also add an manual stream that can be used to flush any remaining items
-  // in the checkpoint stream that have been received, and that did not contain
-  // a resume token.
+  // We also add an additional stream that can be used to flush any remaining
+  // items in the checkpoint stream that have been received, and that did not
+  // contain a resume token.
   const requestsStream = mergeStream();
   const flushStream = new stream.PassThrough({objectMode: true});
   requestsStream.add(flushStream);
   const partialRSStream = new PartialResultStream(options);
   const userStream = streamEvents(partialRSStream);
   // We keep track of the number of PartialResultSets that did not include a
-  // resume token, as that is an indication whether we need to flush the
-  // checkpoint stream at the end or not, and whether it is safe to retry the
+  // resume token, as that is an indication whether it is safe to retry the
   // stream halfway.
   let withoutCheckpointCount = 0;
   const batchAndSplitOnTokenStream = checkpointStream.obj({
     maxQueued,
-    isCheckpointFn: (row: google.spanner.v1.PartialResultSet): boolean => {
-      const withCheckpoint =
-        is.defined(row.resumeToken) && row.resumeToken.length > 0;
+    isCheckpointFn: (chunk: google.spanner.v1.PartialResultSet): boolean => {
+      const withCheckpoint = _hasResumeToken(chunk);
       if (withCheckpoint) {
         withoutCheckpointCount = 0;
       } else {
@@ -512,6 +506,11 @@ export function partialResultStream(
       lastRequestStream.removeListener('end', endListener);
       lastRequestStream.destroy();
     }
+    // Delay the retry until all the values that are already in the stream
+    // pipeline have been handled. This ensures that the checkpoint stream is
+    // reset to the correct point. Calling .reset() directly here could cause
+    // any values that are currently in the pipeline and that have not been
+    // handled yet, to be pushed twice into the entire stream.
     setImmediate(() => {
       // Empty queued rows on the checkpoint stream (will not emit them to user).
       batchAndSplitOnTokenStream.reset();
@@ -544,6 +543,10 @@ export function partialResultStream(
       .on('paused', () => requestsStream.pause())
       .on('resumed', () => requestsStream.resume())
   );
+}
+
+function _hasResumeToken(chunk: google.spanner.v1.PartialResultSet): boolean {
+  return is.defined(chunk.resumeToken) && chunk.resumeToken.length > 0;
 }
 
 function isRetryableInternalError(err: grpc.ServiceError): boolean {

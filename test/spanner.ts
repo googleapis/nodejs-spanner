@@ -822,7 +822,6 @@ describe('Spanner with mock server', () => {
         message: 'Temporary unavailable',
         code: grpc.status.UNAVAILABLE,
         details: 'Transient error',
-        streamIndex: 11,
       } as MockError;
       spannerMock.setExecutionTime(
         spannerMock.executeStreamingSql,

@@ -22,15 +22,13 @@ const checkpointStream = require('checkpoint-stream');
 const concat = require('concat-stream');
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {PassThrough, Transform} from 'stream';
+import {Transform} from 'stream';
 import * as through from 'through2';
 
 import {codec} from '../src/codec';
 import * as prs from '../src/partial-result-stream';
 import {grpc} from 'google-gax';
 import {Row} from '../src/partial-result-stream';
-import mergeStream = require('merge-stream');
-import {FlushCallback} from 'checkpoint-stream';
 
 describe('PartialResultStream', () => {
   const sandbox = sinon.createSandbox();
@@ -215,12 +213,6 @@ describe('PartialResultStream', () => {
     beforeEach(() => {
       fakeRequestStream = through.obj();
       stream = partialResultStream(() => fakeRequestStream);
-
-      // const requestsStream = mergeStream();
-      // requestsStream.add(new PassThrough());
-      // requestsStream.add(fakeRequestStream);
-      // fakeRequestStream.on('end', () => requestsStream.end());
-      // stream = partialResultStream(() => requestsStream);
     });
 
     it('should only push rows when there is a token', done => {
@@ -249,7 +241,7 @@ describe('PartialResultStream', () => {
     });
 
     it('should not queue more than 10 results', done => {
-      for (let i = 0; i < 25; i += 1) {
+      for (let i = 0; i < 11; i += 1) {
         fakeRequestStream.push(RESULT);
       }
 
@@ -257,7 +249,7 @@ describe('PartialResultStream', () => {
 
       stream.on('error', done).pipe(
         concat(rows => {
-          assert.strictEqual(rows.length, 25);
+          assert.strictEqual(rows.length, 11);
           done();
         })
       );
@@ -269,13 +261,8 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
-      /* eslint-disable @typescript-eslint/no-explicit-any */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (fakeCheckpointStream as any).reset = () => {};
-      (fakeCheckpointStream as any).flush = (callback: FlushCallback) => {
-        callback(true);
-      };
-      (fakeCheckpointStream as any).queue = {length: 0};
-      /* eslint-enable @typescript-eslint/no-explicit-any */
 
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
@@ -331,13 +318,8 @@ describe('PartialResultStream', () => {
       // - Two rows
       // - Confirm all rows were received.
       const fakeCheckpointStream = through.obj();
-      /* eslint-disable @typescript-eslint/no-explicit-any */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (fakeCheckpointStream as any).reset = () => {};
-      (fakeCheckpointStream as any).flush = (callback: FlushCallback) => {
-        callback(true);
-      };
-      (fakeCheckpointStream as any).queue = {length: 0};
-      /* eslint-enable @typescript-eslint/no-explicit-any */
       sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
 
       const firstFakeRequestStream = through.obj();
