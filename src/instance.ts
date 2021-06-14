@@ -468,14 +468,14 @@ class Instance extends common.GrpcServiceObject {
    */
   /**
    * @typedef {array} GetBackupOperationsResponse
-   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 A query object to receive more results.
    * @property {object} 2 The full API response.
    */
   /**
    * @callback GetBackupOperationsCallback
    * @param {?Error} err Request error, if any.
-   * @param {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
@@ -593,14 +593,14 @@ class Instance extends common.GrpcServiceObject {
    */
   /**
    * @typedef {array} GetDatabaseOperationsResponse
-   * @property {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
    * @property {object} 1 A query object to receive more results.
    * @property {object} 2 The full API response.
    */
   /**
    * @callback GetDatabaseOperationsCallback
    * @param {?Error} err Request error, if any.
-   * @param {IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
@@ -715,7 +715,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * @typedef {array} CreateDatabaseResponse
    * @property {Database} 0 The new {@link Database}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
    */
@@ -723,7 +723,7 @@ class Instance extends common.GrpcServiceObject {
    * @callback CreateDatabaseCallback
    * @param {?Error} err Request error, if any.
    * @param {Database} database The new {@link Database}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */

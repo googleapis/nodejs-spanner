@@ -124,18 +124,18 @@ class Backup {
    *     expireTime The expire time of the backup.
    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     versionTime Take a backup of the state of the database at this time.
-   * @property {databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
+   * @property {google.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
    *     encryptionConfig An encryption configuration describing the
    *     encryption type and key resources in Cloud KMS to be used to encrypt
    *     the backup.
-   * @property {CallOptions} [gaxOptions] The request configuration options,
+   * @property {object} [gaxOptions] The request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
    */
   /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
-   * @property {Operation} 1 An {@link Operation} object that can be used to check
+   * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
    *     the status of the request.
    * @property {object} 2 The full API response.
    */
@@ -143,7 +143,7 @@ class Backup {
    * @callback CreateBackupCallback
    * @param {?Error} err Request error, if any.
    * @param {Backup} backup The new {@link Backup}.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */

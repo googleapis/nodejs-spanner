@@ -262,14 +262,14 @@ class Table {
   delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * @typedef {array} DropTableResponse
-   * @property {Operation} 0 An {@link Operation} object that can be used to check
+   * @property {google.longrunning.Operation} 0 An {@link Operation} object that can be used to check
    *     the status of the request.
    * @property {object} 1 The full API response.
    */
   /**
    * @callback DropTableCallback
    * @param {?Error} err Request error, if any.
-   * @param {Operation} operation An {@link Operation} object that can be used to
+   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
    *     check the status of the request.
    * @param {object} apiResponse The full API response.
    */
@@ -426,19 +426,6 @@ class Table {
   drop(gaxOptions?: CallOptions): Promise<DropTableResponse>;
   drop(callback: DropTableCallback): void;
   drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
-  /**
-   * @typedef {array} DropTableResponse
-   * @property {Operation} 0 An {@link Operation} object that can be used to check
-   *     the status of the request.
-   * @property {object} 1 The full API response.
-   */
-  /**
-   * @callback DropTableCallback
-   * @param {?Error} err Request error, if any.
-   * @param {Operation} operation An {@link Operation} object that can be used to
-   *     check the status of the request.
-   * @param {object} apiResponse The full API response.
-   */
   /**
    * Drop the table.
    *
