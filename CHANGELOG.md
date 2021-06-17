@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.1...v5.9.0) (2021-06-14)
+
+
+### Features
+
+* **spanner:** add processing_units to Instance resource ([#1398](https://www.github.com/googleapis/nodejs-spanner/issues/1398)) ([878cd3f](https://www.github.com/googleapis/nodejs-spanner/commit/878cd3f1596526b6e4e2457babd3dc2c2add11ad))
+
 ### [5.8.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.0...v5.8.1) (2021-06-10)
 
 
