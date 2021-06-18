@@ -1094,7 +1094,10 @@ class Database extends common.GrpcServiceObject {
   }
   getMetadata(gaxOptions?: CallOptions): Promise<GetDatabaseMetadataResponse>;
   getMetadata(callback: GetDatabaseMetadataCallback): void;
-  getMetadata(gaxOptions: CallOptions, callback: GetDatabaseMetadataCallback): void;
+  getMetadata(
+    gaxOptions: CallOptions,
+    callback: GetDatabaseMetadataCallback
+  ): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
