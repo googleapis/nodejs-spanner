@@ -2295,7 +2295,7 @@ describe('Spanner with mock server', () => {
           await sleep(ms);
         }
         let maxWriteSessions = 0;
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 500; i++) {
           if (Math.random() < 0.8) {
             promises.push(database.run(query));
           } else {
