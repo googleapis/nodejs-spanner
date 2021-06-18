@@ -1298,7 +1298,8 @@ describe('Spanner with mock server', () => {
 
       before(() => {
         process.env.SPANNER_OPTIMIZER_VERSION = OPTIMIZER_VERSION;
-        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE = OPTIMIZER_STATISTICS_PACKAGE;
+        process.env.SPANNER_OPTIMIZER_STATISTICS_PACKAGE =
+          OPTIMIZER_STATISTICS_PACKAGE;
         spannerWithEnvVar = new Spanner({
           projectId: 'fake-project-id',
           servicePath: 'localhost',
@@ -1889,20 +1890,18 @@ describe('Spanner with mock server', () => {
 
     async function runAsyncTransactionWithExpectedSessionRetry(db: Database) {
       try {
-        await db.runTransactionAsync(
-          async (transaction): Promise<void> => {
-            try {
-              const [rows] = await transaction.run(selectSql);
-              assert.strictEqual(rows.length, 3);
-              const [sessions] = await db.getSessions();
-              assert.strictEqual(sessions!.length, 2);
-              await transaction.commit();
-              return Promise.resolve();
-            } catch (e) {
-              return Promise.reject(e);
-            }
+        await db.runTransactionAsync(async (transaction): Promise<void> => {
+          try {
+            const [rows] = await transaction.run(selectSql);
+            assert.strictEqual(rows.length, 3);
+            const [sessions] = await db.getSessions();
+            assert.strictEqual(sessions!.length, 2);
+            await transaction.commit();
+            return Promise.resolve();
+          } catch (e) {
+            return Promise.reject(e);
           }
-        );
+        });
         await db.close();
       } catch (e) {
         assert.fail(e);
@@ -1924,14 +1923,12 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                transaction.insert('FOO', {Id: 1, Name: 'foo'});
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              transaction.insert('FOO', {Id: 1, Name: 'foo'});
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -1957,15 +1954,13 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                const [updateCount] = await transaction.runUpdate(insertSql);
-                assert.strictEqual(updateCount, 1);
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              const [updateCount] = await transaction.runUpdate(insertSql);
+              assert.strictEqual(updateCount, 1);
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -1991,18 +1986,16 @@ describe('Spanner with mock server', () => {
         );
         try {
           await db
-            .runTransactionAsync(
-              async (transaction): Promise<void> => {
-                const [updateCounts] = await transaction.batchUpdate([
-                  insertSql,
-                  insertSql,
-                ]);
-                assert.deepStrictEqual(updateCounts, [1, 1]);
-                await transaction.commit();
-                const [sessions] = await db.getSessions();
-                assert.strictEqual(sessions!.length, 2);
-              }
-            )
+            .runTransactionAsync(async (transaction): Promise<void> => {
+              const [updateCounts] = await transaction.batchUpdate([
+                insertSql,
+                insertSql,
+              ]);
+              assert.deepStrictEqual(updateCounts, [1, 1]);
+              await transaction.commit();
+              const [sessions] = await db.getSessions();
+              assert.strictEqual(sessions!.length, 2);
+            })
             .catch(assert.ifError);
           await db.close();
         } catch (e) {
@@ -3369,25 +3362,23 @@ function executeSimpleUpdate(
   update: string | ExecuteSqlRequest
 ): Promise<number | [number]> {
   return database
-    .runTransactionAsync<[number]>(
-      (transaction): Promise<[number]> => {
-        return transaction
-          .runUpdate(update)
-          .then(rowCount => {
-            return rowCount;
-          })
-          .then(rowCount => {
-            return transaction.commit().then(() => rowCount);
-          })
-          .then(rowCount => {
-            return rowCount;
-          })
-          .catch(() => {
-            transaction.rollback().then(() => {});
-            return [-1];
-          });
-      }
-    )
+    .runTransactionAsync<[number]>((transaction): Promise<[number]> => {
+      return transaction
+        .runUpdate(update)
+        .then(rowCount => {
+          return rowCount;
+        })
+        .then(rowCount => {
+          return transaction.commit().then(() => rowCount);
+        })
+        .then(rowCount => {
+          return rowCount;
+        })
+        .catch(() => {
+          transaction.rollback().then(() => {});
+          return [-1];
+        });
+    })
     .then(updated => {
       return updated;
     });
