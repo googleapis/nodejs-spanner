@@ -635,7 +635,7 @@ export class Snapshot extends EventEmitter {
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
-   * @typedef {array} TransactionReadResponse
+   * @typedef {array} ReadResponse
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
@@ -645,7 +645,7 @@ export class Snapshot extends EventEmitter {
    * Spanner.Int}.
    */
   /**
-   * @callback TransactionReadCallback
+   * @callback ReadCallback
    * @param {?Error} err Request error, if any.
    * @param {array[]} rows Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
@@ -666,8 +666,8 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} query Configuration object. See official
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
    *     API documentation.
-   * @param {TransactionRequestReadCallback} [callback] Callback function.
-   * @returns {Promise<TransactionRequestReadResponse>}
+   * @param {ReadCallback} [callback] Callback function.
+   * @returns {Promise<ReadResponse>}
    *
    * @example
    * const query = {
@@ -1339,6 +1339,14 @@ export class Transaction extends Dml {
    * @property {?object} metadata gRPC metadata.
    * @property {number[]} rowCounts The affected row counts for any DML
    *     statements that were executed successfully before this error occurred.
+   */
+  /**
+   * @typedef {object} BatchUpdateOptions
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @property {google.spanner.v1.IRequestOptions} [requestOptions] The request options to include
+   *     with the commit request.
    */
   /**
    * @typedef {array} BatchUpdateResponse
