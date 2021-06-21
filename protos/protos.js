@@ -23767,6 +23767,7 @@
                              * @property {string|null} [config] Instance config
                              * @property {string|null} [displayName] Instance displayName
                              * @property {number|null} [nodeCount] Instance nodeCount
+                             * @property {number|null} [processingUnits] Instance processingUnits
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
                              * @property {Array.<string>|null} [endpointUris] Instance endpointUris
@@ -23820,6 +23821,14 @@
                              * @instance
                              */
                             Instance.prototype.nodeCount = 0;
+    
+                            /**
+                             * Instance processingUnits.
+                             * @member {number} processingUnits
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.processingUnits = 0;
     
                             /**
                              * Instance state.
@@ -23885,6 +23894,8 @@
                                 if (message.endpointUris != null && message.endpointUris.length)
                                     for (var i = 0; i < message.endpointUris.length; ++i)
                                         writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUris[i]);
+                                if (message.processingUnits != null && Object.hasOwnProperty.call(message, "processingUnits"))
+                                    writer.uint32(/* id 9, wireType 0 =*/72).int32(message.processingUnits);
                                 return writer;
                             };
     
@@ -23930,6 +23941,9 @@
                                         break;
                                     case 5:
                                         message.nodeCount = reader.int32();
+                                        break;
+                                    case 9:
+                                        message.processingUnits = reader.int32();
                                         break;
                                     case 6:
                                         message.state = reader.int32();
@@ -24008,6 +24022,9 @@
                                 if (message.nodeCount != null && message.hasOwnProperty("nodeCount"))
                                     if (!$util.isInteger(message.nodeCount))
                                         return "nodeCount: integer expected";
+                                if (message.processingUnits != null && message.hasOwnProperty("processingUnits"))
+                                    if (!$util.isInteger(message.processingUnits))
+                                        return "processingUnits: integer expected";
                                 if (message.state != null && message.hasOwnProperty("state"))
                                     switch (message.state) {
                                     default:
@@ -24055,6 +24072,8 @@
                                     message.displayName = String(object.displayName);
                                 if (object.nodeCount != null)
                                     message.nodeCount = object.nodeCount | 0;
+                                if (object.processingUnits != null)
+                                    message.processingUnits = object.processingUnits | 0;
                                 switch (object.state) {
                                 case "STATE_UNSPECIFIED":
                                 case 0:
@@ -24109,6 +24128,7 @@
                                     object.displayName = "";
                                     object.nodeCount = 0;
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
+                                    object.processingUnits = 0;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -24131,6 +24151,8 @@
                                     for (var j = 0; j < message.endpointUris.length; ++j)
                                         object.endpointUris[j] = message.endpointUris[j];
                                 }
+                                if (message.processingUnits != null && message.hasOwnProperty("processingUnits"))
+                                    object.processingUnits = message.processingUnits;
                                 return object;
                             };
     
