@@ -412,7 +412,7 @@ export class DatabaseAdminClient {
   // -- Service calls --
   // -------------------
   getDatabase(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -461,7 +461,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getDatabase(request);
    */
   getDatabase(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -504,7 +504,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.getDatabase(request, options, callback);
   }
   dropDatabase(
-    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -554,7 +554,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.dropDatabase(request);
    */
   dropDatabase(
-    request: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -597,7 +597,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.dropDatabase(request, options, callback);
   }
   getDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -652,7 +652,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getDatabaseDdl(request);
    */
   getDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -698,7 +698,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.getDatabaseDdl(request, options, callback);
   }
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -754,7 +754,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.setIamPolicy(request);
    */
   setIamPolicy(
-    request: protos.google.iam.v1.ISetIamPolicyRequest,
+    request?: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -793,7 +793,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -848,7 +848,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getIamPolicy(request);
    */
   getIamPolicy(
-    request: protos.google.iam.v1.IGetIamPolicyRequest,
+    request?: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -887,7 +887,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -946,7 +946,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.testIamPermissions(request);
    */
   testIamPermissions(
-    request: protos.google.iam.v1.ITestIamPermissionsRequest,
+    request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -985,7 +985,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
   getBackup(
-    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1035,7 +1035,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.getBackup(request);
    */
   getBackup(
-    request: protos.google.spanner.admin.database.v1.IGetBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1078,7 +1078,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.getBackup(request, options, callback);
   }
   updateBackup(
-    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1135,7 +1135,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.updateBackup(request);
    */
   updateBackup(
-    request: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1178,7 +1178,7 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.updateBackup(request, options, callback);
   }
   deleteBackup(
-    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1228,7 +1228,7 @@ export class DatabaseAdminClient {
    * const [response] = await client.deleteBackup(request);
    */
   deleteBackup(
-    request: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1272,7 +1272,7 @@ export class DatabaseAdminClient {
   }
 
   createDatabase(
-    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1351,7 +1351,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   createDatabase(
-    request: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1436,7 +1436,7 @@ export class DatabaseAdminClient {
     >;
   }
   updateDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1520,7 +1520,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   updateDatabaseDdl(
-    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1605,7 +1605,7 @@ export class DatabaseAdminClient {
     >;
   }
   createBackup(
-    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1689,7 +1689,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   createBackup(
-    request: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1774,7 +1774,7 @@ export class DatabaseAdminClient {
     >;
   }
   restoreDatabase(
-    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1865,7 +1865,7 @@ export class DatabaseAdminClient {
    * const [response] = await operation.promise();
    */
   restoreDatabase(
-    request: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
+    request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1950,7 +1950,7 @@ export class DatabaseAdminClient {
     >;
   }
   listDatabases(
-    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2009,7 +2009,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listDatabases(
-    request: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2153,7 +2153,7 @@ export class DatabaseAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
   listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2251,7 +2251,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listBackups(
-    request: protos.google.spanner.admin.database.v1.IListBackupsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2469,7 +2469,7 @@ export class DatabaseAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
   listDatabaseOperations(
-    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2577,7 +2577,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listDatabaseOperations(
-    request: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -2809,7 +2809,7 @@ export class DatabaseAdminClient {
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -2917,7 +2917,7 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    */
   listBackupOperations(
-    request: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
+    request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<

@@ -32418,6 +32418,7 @@
                             case 8:
                             case 9:
                             case 10:
+                            case 11:
                                 break;
                             }
                         if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType")) {
@@ -32489,6 +32490,10 @@
                         case "NUMERIC":
                         case 10:
                             message.code = 10;
+                            break;
+                        case "JSON":
+                        case 11:
+                            message.code = 11;
                             break;
                         }
                         if (object.arrayElementType != null) {
@@ -32983,6 +32988,7 @@
                  * @property {number} ARRAY=8 ARRAY value
                  * @property {number} STRUCT=9 STRUCT value
                  * @property {number} NUMERIC=10 NUMERIC value
+                 * @property {number} JSON=11 JSON value
                  */
                 v1.TypeCode = (function() {
                     var valuesById = {}, values = Object.create(valuesById);
@@ -32997,6 +33003,7 @@
                     values[valuesById[8] = "ARRAY"] = 8;
                     values[valuesById[9] = "STRUCT"] = 9;
                     values[valuesById[10] = "NUMERIC"] = 10;
+                    values[valuesById[11] = "JSON"] = 11;
                     return values;
                 })();
     
