@@ -9669,6 +9669,9 @@ export namespace google {
                         /** Instance nodeCount */
                         nodeCount?: (number|null);
 
+                        /** Instance processingUnits */
+                        processingUnits?: (number|null);
+
                         /** Instance state */
                         state?: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State|null);
 
@@ -9699,6 +9702,9 @@ export namespace google {
 
                         /** Instance nodeCount. */
                         public nodeCount: number;
+
+                        /** Instance processingUnits. */
+                        public processingUnits: number;
 
                         /** Instance state. */
                         public state: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State);
@@ -13361,7 +13367,8 @@ export namespace google {
                 BYTES = 7,
                 ARRAY = 8,
                 STRUCT = 9,
-                NUMERIC = 10
+                NUMERIC = 10,
+                JSON = 11
             }
 
             /** Represents a Spanner */

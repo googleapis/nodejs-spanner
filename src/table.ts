@@ -110,6 +110,9 @@ class Table {
    * Create a table.
    *
    * @param {string} schema See {@link Database#createTable}.
+   * @param {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {CreateTableCallback} [callback] Callback function.
    * @returns {Promise<CreateTableResponse>}
    *
@@ -174,11 +177,9 @@ class Table {
    * @see [StreamingRead API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.StreamingRead)
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
-   * @param {ReadRequest} query Configuration object. See official
-   *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
-   *     API documentation.
+   * @param {ReadRequest} query Configuration object, describing what to read from the table..
    * @param {TimestampBounds} [options] [Transaction options](https://cloud.google.com/spanner/docs/timestamp-bounds).
-   * @returns {ReadableStream}
+   * @returns {PartialResultStream} A readable stream that emits rows.
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -260,6 +261,19 @@ class Table {
   delete(callback: DropTableCallback): void;
   delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
+   * @typedef {array} DropTableResponse
+   * @property {Operation} 0 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback DropTableCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
    * Delete the table. Not to be confused with {@link Table#deleteRows}.
    *
    * Wrapper around {@link Database#updateSchema}.
@@ -267,10 +281,11 @@ class Table {
    * @see {@link Database#updateSchema}
    *
    * @throws {TypeError} If any arguments are passed in.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
-   * @param {LongRunningOperationCallback} [callback] Callback function.
-   * @returns {Promise<LongRunningOperationResponse>}
+   * @param {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {DropTableCallback} [callback] Callback function.
+   * @returns {Promise<DropTableResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -321,14 +336,33 @@ class Table {
   }
   deleteRows(
     keys: Key[],
-    options?: DeleteRowsOptions
+    options?: DeleteRowsOptions | CallOptions
   ): Promise<DeleteRowsResponse>;
   deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
   deleteRows(
     keys: Key[],
-    options: DeleteRowsOptions,
+    options: DeleteRowsOptions | CallOptions,
     callback: DeleteRowsCallback
   ): void;
+  /**
+   * @typedef {array} DeleteRowsResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback DeleteRowsCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
+   * @typedef {object} DeleteRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
   /**
    * Delete rows from this table.
    *
@@ -337,9 +371,11 @@ class Table {
    * @param {array} keys The keys for the rows to delete. If using a
    *     composite key, provide an array within this array. See the example
    * below.
-   * @param {DeleteRowsOptions} [options] Options for configuring the request.
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {DeleteRowsOptions|CallOptions} [options] Options for configuring the request.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {DeleteRowsCallback} [callback] Callback function.
+   * @returns {Promise<DeleteRowsResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -377,7 +413,7 @@ class Table {
    */
   deleteRows(
     keys: Key[],
-    optionsOrCallback?: DeleteRowsOptions | DeleteRowsCallback,
+    optionsOrCallback?: DeleteRowsOptions | CallOptions | DeleteRowsCallback,
     cb?: DeleteRowsCallback
   ): Promise<DeleteRowsResponse> | void {
     const options =
@@ -391,15 +427,29 @@ class Table {
   drop(callback: DropTableCallback): void;
   drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
+   * @typedef {array} DropTableResponse
+   * @property {Operation} 0 An {@link Operation} object that can be used to check
+   *     the status of the request.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback DropTableCallback
+   * @param {?Error} err Request error, if any.
+   * @param {Operation} operation An {@link Operation} object that can be used to
+   *     check the status of the request.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
    * Drop the table.
    *
    * @see {@link Table#delete}
    * @see {@link Database#updateSchema}
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
-   * @param {LongRunningOperationCallback} [callback] Callback function.
-   * @returns {Promise<LongRunningOperationResponse>}
+   * @param {object} [gaxOptions] Request configuration options.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {DropTableCallback} [callback] Callback function.
+   * @returns {Promise<DropTableResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -446,14 +496,33 @@ class Table {
   }
   insert(
     rows: object | object[],
-    options?: InsertRowsOptions
+    options?: InsertRowsOptions | CallOptions
   ): Promise<InsertRowsResponse>;
   insert(rows: object | object[], callback: InsertRowsCallback): void;
   insert(
     rows: object | object[],
-    options: InsertRowsOptions,
+    options: InsertRowsOptions | CallOptions,
     callback: InsertRowsCallback
   ): void;
+  /**
+   * @typedef {array} InsertRowsResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback InsertRowsCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
+   * @typedef {object} InsertRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
   /**
    * Insert rows of data into this table.
    *
@@ -461,9 +530,11 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {DeleteRowsOptions} [options] Options for configuring the request.
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {InsertRowsOptions|CallOptions} [options] Options for configuring the request.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {InsertRowsCallback} [callback] Callback function.
+   * @returns {Promise<InsertRowsResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -513,7 +584,7 @@ class Table {
    */
   insert(
     rows: object | object[],
-    optionsOrCallback?: InsertRowsOptions | InsertRowsCallback,
+    optionsOrCallback?: InsertRowsOptions | CallOptions | InsertRowsCallback,
     cb?: InsertRowsCallback
   ): Promise<InsertRowsResponse> | void {
     const options =
@@ -532,27 +603,10 @@ class Table {
   ): void;
   /**
    * Configuration object, describing what to read from the table.
-   *
-   * @typedef {object} TableReadRequestOptions
-   * @property {string[]} columns The columns of the table to be returned for each
-   *     row matching this query.
-   * @property {string[]|string[][]} keys The primary keys of the rows in this table to be
-   *     yielded. If using a composite key, provide an array within this array.
-   *     See the example below.
-   * @property {string} [index] The name of an index on the table.
-   * @property {boolean} [json=false] Receive the rows as serialized objects. This
-   *     is the equivalent of calling `toJSON()` on each row.
-   * @property {object} [jsonOptions] Configuration options for the serialized
-   *     objects.
-   * @property {boolean} [jsonOptions.wrapNumbers=false] Protect large integer
-   *     values outside of the range of JavaScript Number.
-   * @property {object} [keySet] Defines a collection of keys and/or key ranges to
-   *     read.
-   * @property {number} [limit] The number of rows to yield.
    */
   /**
    * @typedef {array} TableReadResponse
-   * @property {array[]} 1 Rows are returned as an array of object arrays. Each
+   * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
    *     specifying `wrapNumbers: true` to protect large integer values outside
@@ -703,14 +757,33 @@ class Table {
   }
   replace(
     rows: object | object[],
-    options?: ReplaceRowsOptions
+    options?: ReplaceRowsOptions | CallOptions
   ): Promise<ReplaceRowsResponse>;
   replace(rows: object | object[], callback: ReplaceRowsCallback): void;
   replace(
     rows: object | object[],
-    options: ReplaceRowsOptions,
+    options: ReplaceRowsOptions | CallOptions,
     callback: ReplaceRowsCallback
   ): void;
+  /**
+   * @typedef {array} ReplaceRowsResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback ReplaceRowsCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
+   * @typedef {object} ReplaceRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
   /**
    * Replace rows of data within this table.
    *
@@ -718,9 +791,11 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {ReplaceRowsOptions} [options] Options for configuring the request.
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {ReplaceRowsOptions|CallOptions} [options] Options for configuring the request.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {ReplaceRowsCallback} [callback] Callback function.
+   * @returns {Promise<ReplaceRowsResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -753,7 +828,7 @@ class Table {
    */
   replace(
     rows: object | object[],
-    optionsOrCallback?: ReplaceRowsOptions | ReplaceRowsCallback,
+    optionsOrCallback?: ReplaceRowsOptions | CallOptions | ReplaceRowsCallback,
     cb?: ReplaceRowsCallback
   ): Promise<ReplaceRowsResponse> | void {
     const options =
@@ -765,14 +840,33 @@ class Table {
   }
   update(
     rows: object | object[],
-    options?: UpdateRowsOptions
+    options?: UpdateRowsOptions | CallOptions
   ): Promise<UpdateRowsResponse>;
   update(rows: object | object[], callback: UpdateRowsCallback): void;
   update(
     rows: object | object[],
-    options: UpdateRowsOptions,
+    options: UpdateRowsOptions | CallOptions,
     callback: UpdateRowsCallback
   ): void;
+  /**
+   * @typedef {array} UpdateRowsResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback UpdateRowsCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
+   * @typedef {object} UpdateRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
   /**
    * Update rows of data within this table.
    *
@@ -780,9 +874,11 @@ class Table {
    *
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
-   * @param {UpdateRowsOptions} [options] Options for configuring the request.
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {UpdateRowsOptions|CallOptions} [options] Options for configuring the request.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {UpdateRowsCallback} [callback] Callback function.
+   * @returns {Promise<UpdateRowsResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -819,7 +915,7 @@ class Table {
    */
   update(
     rows: object | object[],
-    optionsOrCallback?: UpdateRowsOptions | UpdateRowsCallback,
+    optionsOrCallback?: UpdateRowsOptions | CallOptions | UpdateRowsCallback,
     cb?: UpdateRowsCallback
   ): Promise<UpdateRowsResponse> | void {
     const options =
@@ -831,14 +927,33 @@ class Table {
   }
   upsert(
     rows: object | object[],
-    options?: UpsertRowsOptions
+    options?: UpsertRowsOptions | CallOptions
   ): Promise<UpsertRowsResponse>;
   upsert(rows: object | object[], callback: UpsertRowsCallback): void;
   upsert(
     rows: object | object[],
-    options: UpsertRowsOptions,
+    options: UpsertRowsOptions | CallOptions,
     callback: UpsertRowsCallback
   ): void;
+  /**
+   * @typedef {array} UpsertRowsResponse
+   * @property {CommitResponse} 0 The commit response.
+   */
+  /**
+   * @callback UpsertRowsCallback
+   * @param {?Error} error Request error, if any.
+   * @param {CommitResponse} apiResponse The full API response.
+   */
+  /**
+   * @typedef {object} UpsertRowsOptions
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
+   * @property {boolean} returnCommitStats Include statistics related to the
+   *     transaction in the {@link CommitResponse}.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
   /**
    * Insert or update rows of data within this table.
    *
@@ -847,9 +962,11 @@ class Table {
    * @param {object|object[]} rows A map of names to values of data to insert
    *     into this table.
    *
-   * @param {UpsertRowsOptions} [options] Options for configuring the request.
-   * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
+   * @param {UpsertRowsOptions|CallOptions} [options] Options for configuring the request.
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {UpsertRowsCallback} [callback] Callback function.
+   * @returns {Promise<UpsertRowsResponse>}
    *
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
@@ -882,7 +999,7 @@ class Table {
    */
   upsert(
     rows: object | object[],
-    optionsOrCallback?: UpsertRowsOptions | UpsertRowsCallback,
+    optionsOrCallback?: UpsertRowsOptions | CallOptions | UpsertRowsCallback,
     cb?: UpsertRowsCallback
   ): Promise<UpsertRowsResponse> | void {
     const options =
@@ -908,7 +1025,7 @@ class Table {
   private _mutate(
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
-    options: CommitOptions = {},
+    options: CommitOptions | CallOptions,
     callback: CommitCallback
   ): void {
     this.database.runTransaction((err, transaction) => {

@@ -33,7 +33,14 @@ async function databaseWithQueryOptions(instanceId, databaseId, projectId) {
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId, {}, {optimizerVersion: '1'});
+  const database = instance.database(
+    databaseId,
+    {},
+    {
+      optimizerVersion: '1',
+      optimizerStatisticsPackage: 'auto_20191128_14_47_22UTC',
+    }
+  );
 
   const query = {
     sql: `SELECT AlbumId, AlbumTitle, MarketingBudget
@@ -90,6 +97,7 @@ async function queryWithQueryOptions(instanceId, databaseId, projectId) {
           ORDER BY AlbumTitle`,
     queryOptions: {
       optimizerVersion: 'latest',
+      optimizerStatisticsPackage: 'latest',
     },
   };
 

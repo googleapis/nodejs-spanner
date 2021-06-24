@@ -36,7 +36,6 @@ import {google as spannerClient} from '../protos/protos';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
-import ListValue = google.protobuf.ListValue;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
@@ -114,7 +113,8 @@ export type BatchUpdateResponse = [
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
-export type BeginTransactionCallback = NormalCallback<spannerClient.spanner.v1.ITransaction>;
+export type BeginTransactionCallback =
+  NormalCallback<spannerClient.spanner.v1.ITransaction>;
 export type CommitResponse = [spannerClient.spanner.v1.ICommitResponse];
 
 export type ReadResponse = [Rows];
@@ -152,7 +152,8 @@ export interface RunUpdateCallback {
   (err: null | grpc.ServiceError, rowCount: number): void;
 }
 
-export type CommitCallback = NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
+export type CommitCallback =
+  NormalCallback<spannerClient.spanner.v1.ICommitResponse>;
 
 /**
  * @typedef {object} TimestampBounds
@@ -307,8 +308,9 @@ export class Snapshot extends EventEmitter {
    *
    * @see [BeginTransaction API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.BeginTransaction)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {TransactionBeginCallback} [callback] Callback function.
    * @returns {Promise<TransactionBeginResponse>}
    *
@@ -401,15 +403,33 @@ export class Snapshot extends EventEmitter {
    * @see [ReadRequest API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest)
    *
    * @typedef {object} ReadRequest
-   * @property {string[]|string[][]} [keys] The primary keys of the rows in this table to be
+   * @property {string} table The name of the table in the database to be read.
+   * @property {string[]} columns The columns of the table to be returned for each
+   *     row matching this query.
+   * @property {string[]|string[][]} keys The primary or index keys of the rows in this table to be
    *     yielded. If using a composite key, provide an array within this array.
    *     See the example below.
    * @property {KeyRange[]} [ranges] An alternative to the keys property; this can
-   *       be used to define a range of keys to be yielded.
+   *     be used to define a range of keys to be yielded.
+   * @property {string} [index] The name of an index on the table if a
+   *     different index than the primary key should be used to determine which rows to return.
    * @property {boolean} [json=false] Receive the rows as serialized objects. This
    *     is the equivalent of calling `toJSON()` on each row.
-   * @property {JSONOptions} [jsonOptions] Configuration options for the
-   *     serialized objects.
+   * @property {JSONOptions} [jsonOptions] Configuration options for the serialized
+   *     objects.
+   * @property {object} [keySet] Defines a collection of keys and/or key ranges to
+   *     read.
+   * @property {number} [limit] The number of rows to yield.
+   * @property {Buffer} [partitionToken]
+   *     If present, results will be restricted to the specified partition
+   *     previously created using PartitionRead(). There must be an exact
+   *     match for the values of fields common to this message and the
+   *     PartitionReadRequest message used to create this partition_token.
+   * @property {google.spanner.v1.RequestOptions} [requestOptions]
+   *     Common options for this request.
+   * @property {object} [gaxOptions]
+   *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * Create a readable object stream to receive rows from the database using key
@@ -1031,11 +1051,15 @@ export class Snapshot extends EventEmitter {
     const {returnReadTimestamp = true} = options;
 
     if (options.minReadTimestamp instanceof PreciseDate) {
-      readOnly.minReadTimestamp = (options.minReadTimestamp as PreciseDate).toStruct();
+      readOnly.minReadTimestamp = (
+        options.minReadTimestamp as PreciseDate
+      ).toStruct();
     }
 
     if (options.readTimestamp instanceof PreciseDate) {
-      readOnly.readTimestamp = (options.readTimestamp as PreciseDate).toStruct();
+      readOnly.readTimestamp = (
+        options.readTimestamp as PreciseDate
+      ).toStruct();
     }
 
     if (typeof options.maxStaleness === 'number') {
@@ -1318,8 +1342,9 @@ export class Transaction extends Dml {
    *     object.
    * @param {object} [query.params] A map of parameter name to values.
    * @param {object} [query.types] A map of parameter types.
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BatchUpdateOptions} [options] Options for configuring the request.
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
@@ -1370,16 +1395,15 @@ export class Transaction extends Dml {
       return;
     }
 
-    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] = queries.map(
-      query => {
+    const statements: spannerClient.spanner.v1.ExecuteBatchDmlRequest.IStatement[] =
+      queries.map(query => {
         if (typeof query === 'string') {
           return {sql: query};
         }
         const {sql} = query;
         const {params, paramTypes} = Snapshot.encodeParams(query);
         return {sql, params, paramTypes};
-      }
-    );
+      });
 
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
@@ -1461,9 +1485,9 @@ export class Transaction extends Dml {
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
-   * @property {CallOptions} [gaxOptions] The request configuration options
-   *     outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @property {CallOptions} [gaxOptions] The request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    */
   /**
    * @typedef {object} CommitResponse
@@ -1609,7 +1633,8 @@ export class Transaction extends Dml {
     err: ServiceError,
     mutations: spannerClient.spanner.v1.Mutation[]
   ): null | ServiceError {
-    const errorMessage = /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
+    const errorMessage =
+      /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
     const found = err.message && err.message.match(errorMessage);
     if (found && found.groups) {
       const table = found.groups.table;
@@ -1820,8 +1845,9 @@ export class Transaction extends Dml {
    * @see {@link v1.SpannerClient#rollback}
    * @see [Rollback API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.Rollback)
    *
-   * @param {object} [gaxOptions] Request configuration options, outlined here:
-   *     https://googleapis.github.io/gax-nodejs/classes/CallSettings.html.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
    * @param {BasicCallback} [callback] Callback function.
    * @returns {Promise<BasicResponse>}
    *

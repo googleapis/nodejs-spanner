@@ -831,10 +831,9 @@ describe('codec', () => {
     it('should convert strings to the corresponding type', () => {
       const typeMap = {
         unspecified: {
-          code:
-            google.spanner.v1.TypeCode[
-              google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
-            ],
+          code: google.spanner.v1.TypeCode[
+            google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
+          ],
         },
         bool: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.BOOL],
@@ -846,8 +845,9 @@ describe('codec', () => {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT64],
         },
         timestamp: {
-          code:
-            google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.TIMESTAMP],
+          code: google.spanner.v1.TypeCode[
+            google.spanner.v1.TypeCode.TIMESTAMP
+          ],
         },
         date: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.DATE],
@@ -861,10 +861,9 @@ describe('codec', () => {
         array: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.ARRAY],
           arrayElementType: {
-            code:
-              google.spanner.v1.TypeCode[
-                google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
-              ],
+            code: google.spanner.v1.TypeCode[
+              google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
+            ],
           },
         },
         struct: {
@@ -883,10 +882,9 @@ describe('codec', () => {
       const type = codec.createTypeObject('unicorn');
 
       assert.deepStrictEqual(type, {
-        code:
-          google.spanner.v1.TypeCode[
-            google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
-          ],
+        code: google.spanner.v1.TypeCode[
+          google.spanner.v1.TypeCode.TYPE_CODE_UNSPECIFIED
+        ],
       });
     });
 
@@ -920,15 +918,17 @@ describe('codec', () => {
             {
               name: 'boolKey',
               type: {
-                code:
-                  google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.BOOL],
+                code: google.spanner.v1.TypeCode[
+                  google.spanner.v1.TypeCode.BOOL
+                ],
               },
             },
             {
               name: 'intKey',
               type: {
-                code:
-                  google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+                code: google.spanner.v1.TypeCode[
+                  google.spanner.v1.TypeCode.INT64
+                ],
               },
             },
           ],
@@ -960,17 +960,17 @@ describe('codec', () => {
             {
               name: 'nestedStruct',
               type: {
-                code:
-                  google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.STRUCT],
+                code: google.spanner.v1.TypeCode[
+                  google.spanner.v1.TypeCode.STRUCT
+                ],
                 structType: {
                   fields: [
                     {
                       name: 'boolKey',
                       type: {
-                        code:
-                          google.spanner.v1.TypeCode[
-                            google.spanner.v1.TypeCode.BOOL
-                          ],
+                        code: google.spanner.v1.TypeCode[
+                          google.spanner.v1.TypeCode.BOOL
+                        ],
                       },
                     },
                   ],

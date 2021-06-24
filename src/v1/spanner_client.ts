@@ -26,11 +26,11 @@ import {
   PaginationCallback,
   GaxCall,
 } from 'google-gax';
-import * as path from 'path';
 
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
+import jsonProtos = require('../../protos/protos.json');
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/spanner_client_config.json`.
@@ -143,27 +143,14 @@ export class SpannerClient {
     }
     if (!opts.fallback) {
       clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
+    } else if (opts.fallback === 'rest') {
+      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    // For Node.js, pass the path to JSON proto file.
-    // For browsers, pass the JSON content.
-
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
-    this._protos = this._gaxGrpc.loadProto(
-      opts.fallback
-        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/protos.json')
-        : nodejsProtoPath
-    );
+    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
 
     // This API contains "path templates"; forward-slash-separated
     // identifiers to uniquely identify resources within the API.
@@ -263,13 +250,14 @@ export class SpannerClient {
     ];
     for (const methodName of spannerStubMethods) {
       const callPromise = this.spannerStub.then(
-        stub => (...args: Array<{}>) => {
-          if (this._terminated) {
-            return Promise.reject('The client has already been closed.');
-          }
-          const func = stub[methodName];
-          return func.apply(stub, args);
-        },
+        stub =>
+          (...args: Array<{}>) => {
+            if (this._terminated) {
+              return Promise.reject('The client has already been closed.');
+            }
+            const func = stub[methodName];
+            return func.apply(stub, args);
+          },
         (err: Error | null | undefined) => () => {
           throw err;
         }
@@ -348,7 +336,7 @@ export class SpannerClient {
   // -- Service calls --
   // -------------------
   createSession(
-    request: protos.google.spanner.v1.ICreateSessionRequest,
+    request?: protos.google.spanner.v1.ICreateSessionRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -412,7 +400,7 @@ export class SpannerClient {
    * const [response] = await client.createSession(request);
    */
   createSession(
-    request: protos.google.spanner.v1.ICreateSessionRequest,
+    request?: protos.google.spanner.v1.ICreateSessionRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -443,16 +431,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.createSession(request, options, callback);
   }
   batchCreateSessions(
-    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -507,7 +494,7 @@ export class SpannerClient {
    * const [response] = await client.batchCreateSessions(request);
    */
   batchCreateSessions(
-    request: protos.google.spanner.v1.IBatchCreateSessionsRequest,
+    request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -540,16 +527,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.batchCreateSessions(request, options, callback);
   }
   getSession(
-    request: protos.google.spanner.v1.IGetSessionRequest,
+    request?: protos.google.spanner.v1.IGetSessionRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -595,7 +581,7 @@ export class SpannerClient {
    * const [response] = await client.getSession(request);
    */
   getSession(
-    request: protos.google.spanner.v1.IGetSessionRequest,
+    request?: protos.google.spanner.v1.IGetSessionRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -626,16 +612,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.getSession(request, options, callback);
   }
   deleteSession(
-    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    request?: protos.google.spanner.v1.IDeleteSessionRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -681,7 +666,7 @@ export class SpannerClient {
    * const [response] = await client.deleteSession(request);
    */
   deleteSession(
-    request: protos.google.spanner.v1.IDeleteSessionRequest,
+    request?: protos.google.spanner.v1.IDeleteSessionRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -712,16 +697,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      name: request.name || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        name: request.name || '',
+      });
     this.initialize();
     return this.innerApiCalls.deleteSession(request, options, callback);
   }
   executeSql(
-    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    request?: protos.google.spanner.v1.IExecuteSqlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -842,7 +826,7 @@ export class SpannerClient {
    * const [response] = await client.executeSql(request);
    */
   executeSql(
-    request: protos.google.spanner.v1.IExecuteSqlRequest,
+    request?: protos.google.spanner.v1.IExecuteSqlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -873,16 +857,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.executeSql(request, options, callback);
   }
   executeBatchDml(
-    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -960,7 +943,7 @@ export class SpannerClient {
    * const [response] = await client.executeBatchDml(request);
    */
   executeBatchDml(
-    request: protos.google.spanner.v1.IExecuteBatchDmlRequest,
+    request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -991,16 +974,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.executeBatchDml(request, options, callback);
   }
   read(
-    request: protos.google.spanner.v1.IReadRequest,
+    request?: protos.google.spanner.v1.IReadRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1099,7 +1081,7 @@ export class SpannerClient {
    * const [response] = await client.read(request);
    */
   read(
-    request: protos.google.spanner.v1.IReadRequest,
+    request?: protos.google.spanner.v1.IReadRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1130,16 +1112,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.read(request, options, callback);
   }
   beginTransaction(
-    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    request?: protos.google.spanner.v1.IBeginTransactionRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1194,7 +1175,7 @@ export class SpannerClient {
    * const [response] = await client.beginTransaction(request);
    */
   beginTransaction(
-    request: protos.google.spanner.v1.IBeginTransactionRequest,
+    request?: protos.google.spanner.v1.IBeginTransactionRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1225,16 +1206,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.beginTransaction(request, options, callback);
   }
   commit(
-    request: protos.google.spanner.v1.ICommitRequest,
+    request?: protos.google.spanner.v1.ICommitRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1313,7 +1293,7 @@ export class SpannerClient {
    * const [response] = await client.commit(request);
    */
   commit(
-    request: protos.google.spanner.v1.ICommitRequest,
+    request?: protos.google.spanner.v1.ICommitRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1344,16 +1324,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.commit(request, options, callback);
   }
   rollback(
-    request: protos.google.spanner.v1.IRollbackRequest,
+    request?: protos.google.spanner.v1.IRollbackRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1406,7 +1385,7 @@ export class SpannerClient {
    * const [response] = await client.rollback(request);
    */
   rollback(
-    request: protos.google.spanner.v1.IRollbackRequest,
+    request?: protos.google.spanner.v1.IRollbackRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1437,16 +1416,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.rollback(request, options, callback);
   }
   partitionQuery(
-    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    request?: protos.google.spanner.v1.IPartitionQueryRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1538,7 +1516,7 @@ export class SpannerClient {
    * const [response] = await client.partitionQuery(request);
    */
   partitionQuery(
-    request: protos.google.spanner.v1.IPartitionQueryRequest,
+    request?: protos.google.spanner.v1.IPartitionQueryRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1569,16 +1547,15 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.partitionQuery(request, options, callback);
   }
   partitionRead(
-    request: protos.google.spanner.v1.IPartitionReadRequest,
+    request?: protos.google.spanner.v1.IPartitionReadRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1656,7 +1633,7 @@ export class SpannerClient {
    * const [response] = await client.partitionRead(request);
    */
   partitionRead(
-    request: protos.google.spanner.v1.IPartitionReadRequest,
+    request?: protos.google.spanner.v1.IPartitionReadRequest,
     optionsOrCallback?:
       | CallOptions
       | Callback<
@@ -1687,11 +1664,10 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.partitionRead(request, options, callback);
   }
@@ -1794,11 +1770,10 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.executeStreamingSql(request, options);
   }
@@ -1877,17 +1852,16 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      session: request.session || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        session: request.session || '',
+      });
     this.initialize();
     return this.innerApiCalls.streamingRead(request, options);
   }
 
   listSessions(
-    request: protos.google.spanner.v1.IListSessionsRequest,
+    request?: protos.google.spanner.v1.IListSessionsRequest,
     options?: CallOptions
   ): Promise<
     [
@@ -1952,7 +1926,7 @@ export class SpannerClient {
    *   for more details and examples.
    */
   listSessions(
-    request: protos.google.spanner.v1.IListSessionsRequest,
+    request?: protos.google.spanner.v1.IListSessionsRequest,
     optionsOrCallback?:
       | CallOptions
       | PaginationCallback<
@@ -1983,11 +1957,10 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     this.initialize();
     return this.innerApiCalls.listSessions(request, options, callback);
   }
@@ -2036,11 +2009,10 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listSessions.createStream(
@@ -2100,17 +2072,16 @@ export class SpannerClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      database: request.database || '',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        database: request.database || '',
+      });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
-      (request as unknown) as RequestType,
+      request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.spanner.v1.ISession>;
   }

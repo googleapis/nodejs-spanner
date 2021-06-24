@@ -2723,6 +2723,10 @@
                               "type": "int32",
                               "id": 5
                             },
+                            "processingUnits": {
+                              "type": "int32",
+                              "id": 9
+                            },
                             "state": {
                               "type": "State",
                               "id": 6,
@@ -3431,7 +3435,8 @@
                     "BYTES": 7,
                     "ARRAY": 8,
                     "STRUCT": 9,
-                    "NUMERIC": 10
+                    "NUMERIC": 10,
+                    "JSON": 11
                   }
                 },
                 "Spanner": {

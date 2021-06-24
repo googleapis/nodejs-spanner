@@ -128,13 +128,8 @@ describe('Transaction', () => {
       it('should send the correct request', () => {
         snapshot.begin();
 
-        const {
-          client,
-          method,
-          reqOpts,
-          gaxOpts,
-          headers,
-        } = REQUEST.lastCall.args[0];
+        const {client, method, reqOpts, gaxOpts, headers} =
+          REQUEST.lastCall.args[0];
 
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
@@ -1791,7 +1786,8 @@ describe('Transaction', () => {
         const table = 'my-table-123';
         const rows = [{name: 'dave', id: '1'}, {name: 'stephen'}];
 
-        const errorRegExp = /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns: \["id"\]/;
+        const errorRegExp =
+          /Row at index 1 does not contain the correct number of columns\.\n\nMissing columns: \["id"\]/;
 
         assert.throws(() => transaction.insert(table, rows), errorRegExp);
       });

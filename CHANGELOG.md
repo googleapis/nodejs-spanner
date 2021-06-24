@@ -4,6 +4,40 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.9.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.0...v5.9.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* make request optional in all cases ([#1400](https://www.github.com/googleapis/nodejs-spanner/issues/1400)) ([0b78770](https://www.github.com/googleapis/nodejs-spanner/commit/0b78770bfef6f463abb0f336999f7dfd61b5b2fe))
+
+## [5.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.1...v5.9.0) (2021-06-14)
+
+
+### Features
+
+* **spanner:** add processing_units to Instance resource ([#1398](https://www.github.com/googleapis/nodejs-spanner/issues/1398)) ([878cd3f](https://www.github.com/googleapis/nodejs-spanner/commit/878cd3f1596526b6e4e2457babd3dc2c2add11ad))
+
+### [5.8.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.0...v5.8.1) (2021-06-10)
+
+
+### Bug Fixes
+
+* unknown errors should not be retried ([#1388](https://www.github.com/googleapis/nodejs-spanner/issues/1388)) ([1d6f4e2](https://www.github.com/googleapis/nodejs-spanner/commit/1d6f4e2923bc1ac20c0a73c342332ec2ae259812)), closes [#1387](https://www.github.com/googleapis/nodejs-spanner/issues/1387)
+
+## [5.8.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.7.0...v5.8.0) (2021-06-07)
+
+
+### Features
+
+* support setting `optimizerStatisticsPackage` ([#1225](https://www.github.com/googleapis/nodejs-spanner/issues/1225)) ([dadc6dc](https://www.github.com/googleapis/nodejs-spanner/commit/dadc6dcf5c01e1bb380555fa9ea2ba9182af049c))
+
+
+### Bug Fixes
+
+* ensure table funcs accept gaxOptions directly ([#1371](https://www.github.com/googleapis/nodejs-spanner/issues/1371)) ([2c57c16](https://www.github.com/googleapis/nodejs-spanner/commit/2c57c1631a93d545bab52e309a5acd7641a747f3))
+* lint issue ([#1372](https://www.github.com/googleapis/nodejs-spanner/issues/1372)) ([3be0b4b](https://www.github.com/googleapis/nodejs-spanner/commit/3be0b4b51c8a76c7682101851d94e0611a87bc24))
+
 ## [5.7.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.6.1...v5.7.0) (2021-04-21)
 
 
