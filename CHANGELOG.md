@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.9.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.0...v5.9.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* make request optional in all cases ([#1400](https://www.github.com/googleapis/nodejs-spanner/issues/1400)) ([0b78770](https://www.github.com/googleapis/nodejs-spanner/commit/0b78770bfef6f463abb0f336999f7dfd61b5b2fe))
+
 ## [5.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.1...v5.9.0) (2021-06-14)
 
 
