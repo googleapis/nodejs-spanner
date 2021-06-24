@@ -13367,7 +13367,8 @@ export namespace google {
                 BYTES = 7,
                 ARRAY = 8,
                 STRUCT = 9,
-                NUMERIC = 10
+                NUMERIC = 10,
+                JSON = 11
             }
 
             /** Represents a Spanner */
