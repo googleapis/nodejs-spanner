@@ -3308,24 +3308,6 @@ describe('Spanner with mock server', () => {
       );
     });
 
-    it('should replace {{projectId}}', async () => {
-      const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
-      const [updatedInstance] = await instance
-        .setMetadata({
-          nodeCount: 20,
-          displayName: 'Production instance with 20 nodes',
-        })
-        .then(data => {
-          return data[0].promise() as Promise<
-            [google.spanner.admin.instance.v1.Instance]
-          >;
-        })
-        .then(instance => {
-          return instance;
-        });
-      assert.strictEqual(updatedInstance.nodeCount, 20);
-    });
-
     it('should update an instance', async () => {
       const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
       const [updatedInstance] = await instance
