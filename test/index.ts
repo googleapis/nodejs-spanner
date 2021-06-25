@@ -1373,7 +1373,7 @@ describe('Spanner', () => {
       const replacedReqOpts = {};
 
       replaceProjectIdTokenOverride = (reqOpts, projectId) => {
-        if (typeof(reqOpts) === 'object') {
+        if (typeof reqOpts === 'object') {
           assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
           assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
         }

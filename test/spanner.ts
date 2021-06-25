@@ -138,7 +138,6 @@ describe('Spanner with mock server', () => {
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
     process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     spanner = new Spanner({
-      // projectId: '{{projectId}}',
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
