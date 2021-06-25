@@ -69,7 +69,7 @@ function main(
       database.close();
     }
   }
-  readDataWithIndex().catch(console.error);
+  readDataWithIndex();
   // [END spanner_read_data_with_index]
 }
 process.on('unhandledRejection', err => {

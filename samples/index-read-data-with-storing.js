@@ -39,6 +39,10 @@ function main(
     projectId: projectId,
   });
 
+  // "Storing" indexes store copies of the columns they index
+  // This speeds up queries, but takes more space compared to normal indexes
+  // See the link below for more information:
+  // https://cloud.google.com/spanner/docs/secondary-indexes#storing_clause
   async function readDataWithStoringIndex() {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
@@ -74,7 +78,7 @@ function main(
       database.close();
     }
   }
-  readDataWithStoringIndex().catch(console.error);
+  readDataWithStoringIndex();
   // [END spanner_read_data_with_storing_index]
 }
 process.on('unhandledRejection', err => {

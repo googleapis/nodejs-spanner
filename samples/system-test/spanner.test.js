@@ -460,7 +460,11 @@ describe('Spanner', () => {
 
   it('should respect query boundaries when querying an example table with an index', async () => {
     const output = execSync(
-      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} "Ardvark" "Goo"`
+      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} "Ardvark" "Zoo"`
+    );
+    assert.match(
+      output,
+      /AlbumId: 1, AlbumTitle: Total Junk, MarketingBudget:/
     );
     assert.match(
       output,

@@ -78,7 +78,7 @@ function main(
       database.close();
     }
   }
-  queryDataWithIndex().catch(console.error);
+  queryDataWithIndex();
   // [END spanner_query_data_with_index]
 }
 process.on('unhandledRejection', err => {

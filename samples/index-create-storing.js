@@ -63,7 +63,7 @@ function main(
       database.close();
     }
   }
-  createStoringIndex().catch(console.error);
+  createStoringIndex();
   // [END spanner_create_storing_index]
 }
 process.on('unhandledRejection', err => {

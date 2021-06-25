@@ -61,7 +61,7 @@ function main(
       database.close();
     }
   }
-  createIndex().catch(console.error);
+  createIndex();
   // [END spanner_create_index]
 }
 process.on('unhandledRejection', err => {
