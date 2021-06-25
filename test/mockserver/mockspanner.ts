@@ -27,6 +27,7 @@ import ResultSet = google.spanner.v1.ResultSet;
 import Status = google.rpc.Status;
 import Any = google.protobuf.Any;
 import QueryMode = google.spanner.v1.ExecuteSqlRequest.QueryMode;
+import NullValue = google.protobuf.NullValue;
 
 const PROTO_PATH = 'spanner.proto';
 const IMPORT_PATH = __dirname + '/../../../protos';
@@ -77,8 +78,11 @@ export class StatementResult {
     }
     throw new Error('The StatementResult does not contain an Error');
   }
-  private readonly _resultSet: protobuf.ResultSet | null;
-  get resultSet(): protobuf.ResultSet {
+  private readonly _resultSet:
+    | protobuf.ResultSet
+    | protobuf.PartialResultSet[]
+    | null;
+  get resultSet(): protobuf.ResultSet | protobuf.PartialResultSet[] {
     if (this._resultSet) {
       return this._resultSet;
     }
@@ -95,7 +99,7 @@ export class StatementResult {
   private constructor(
     type: StatementResultType,
     error: Error | null,
-    resultSet: protobuf.ResultSet | null,
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[] | null,
     updateCount: number | null
   ) {
     this._type = type;
@@ -116,7 +120,9 @@ export class StatementResult {
    * Create a StatementResult that will return a ResultSet or a stream of PartialResultSets.
    * @param resultSet The result set to return.
    */
-  static resultSet(resultSet: protobuf.ResultSet): StatementResult {
+  static resultSet(
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[]
+  ): StatementResult {
     return new StatementResult(
       StatementResultType.RESULT_SET,
       null,
@@ -532,10 +538,14 @@ export class MockSpanner {
           let streamErr;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
-              partialResultSets = MockSpanner.toPartialResultSets(
-                res.resultSet,
-                call.request!.queryMode
-              );
+              if (Array.isArray(res.resultSet)) {
+                partialResultSets = res.resultSet;
+              } else {
+                partialResultSets = MockSpanner.toPartialResultSets(
+                  res.resultSet,
+                  call.request!.queryMode
+                );
+              }
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
                 call.request!.resumeToken.length === 0
@@ -1026,6 +1036,377 @@ export function createSelect1ResultSet(): protobuf.ResultSet {
   return protobuf.ResultSet.create({
     metadata,
     rows: [{values: [{stringValue: '1'}]}],
+  });
+}
+
+export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'COLBOOL',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLINT64',
+      type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLFLOAT64',
+      type: protobuf.Type.create({code: protobuf.TypeCode.FLOAT64}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLNUMERIC',
+      type: protobuf.Type.create({code: protobuf.TypeCode.NUMERIC}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLSTRING',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBYTES',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BYTES}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLDATE',
+      type: protobuf.Type.create({code: protobuf.TypeCode.DATE}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLTIMESTAMP',
+      type: protobuf.Type.create({code: protobuf.TypeCode.TIMESTAMP}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBOOLARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLINT64ARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLFLOAT64ARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.FLOAT64,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLNUMERICARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.NUMERIC,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLSTRINGARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.STRING,
+        }),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLBYTESARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.BYTES}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLDATEARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.DATE}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'COLTIMESTAMPARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.TIMESTAMP,
+        }),
+      }),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {
+        values: [
+          {boolValue: true},
+          {stringValue: '1'},
+          {numberValue: 3.14},
+          {stringValue: '6.626'},
+          {stringValue: 'One'},
+          {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '2021-05-11'},
+          {stringValue: '2021-05-11T16:46:04.872Z'},
+          {
+            listValue: {
+              values: [
+                {boolValue: true},
+                {boolValue: false},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '1'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {numberValue: 3.14},
+                {numberValue: 100.9},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '6.626'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: 'One'},
+                {stringValue: 'test'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: Buffer.from('test1').toString('base64')},
+                {stringValue: Buffer.from('test2').toString('base64')},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12'},
+                {stringValue: '2000-02-29'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12T08:38:19.8474Z'},
+                {stringValue: '2000-02-29T07:00:00Z'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {boolValue: false},
+          {stringValue: '2'},
+          {numberValue: 3.14},
+          {stringValue: '6.626'},
+          {stringValue: 'Two'},
+          {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '2021-05-11'},
+          {stringValue: '2021-05-11T16:46:04.872Z'},
+          {
+            listValue: {
+              values: [
+                {boolValue: true},
+                {boolValue: false},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2'},
+                {stringValue: '200'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {numberValue: 3.14},
+                {numberValue: 100.9},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '6.626'},
+                {stringValue: '100'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: 'Two'},
+                {stringValue: 'test'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: Buffer.from('test1').toString('base64')},
+                {stringValue: Buffer.from('test2').toString('base64')},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12'},
+                {stringValue: '2000-02-29'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {stringValue: '2021-05-12T08:38:19.8474Z'},
+                {stringValue: '2000-02-29T07:00:00Z'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
+        ],
+      },
+    ],
+  });
+}
+
+export function createResultSetWithStringArray(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'string1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'string2',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'bool1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'stringArray',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.STRING,
+        }),
+      }),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {
+        values: [
+          {stringValue: 'test1_1'},
+          {stringValue: 'test2_1'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'One'}, {stringValue: 'test 1'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_2'},
+          {stringValue: 'test2_2'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Two'}, {stringValue: 'test 2'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_3'},
+          {stringValue: 'test2_3'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Three'}, {stringValue: 'test 3'}],
+            },
+          },
+        ],
+      },
+    ],
   });
 }
 

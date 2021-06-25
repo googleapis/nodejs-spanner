@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.9.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.1...v5.9.2) (2021-06-25)
+
+
+### Bug Fixes
+
+* reset buffered chunked value before retry ([#1397](https://www.github.com/googleapis/nodejs-spanner/issues/1397)) ([da2ca7b](https://www.github.com/googleapis/nodejs-spanner/commit/da2ca7b15539119fada7869c206ad24460d8edfa)), closes [#1392](https://www.github.com/googleapis/nodejs-spanner/issues/1392)
+
+### [5.9.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.0...v5.9.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* make request optional in all cases ([#1400](https://www.github.com/googleapis/nodejs-spanner/issues/1400)) ([0b78770](https://www.github.com/googleapis/nodejs-spanner/commit/0b78770bfef6f463abb0f336999f7dfd61b5b2fe))
+
 ## [5.9.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.8.1...v5.9.0) (2021-06-14)
 
 
