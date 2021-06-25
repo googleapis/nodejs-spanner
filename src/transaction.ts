@@ -635,7 +635,7 @@ export class Snapshot extends EventEmitter {
   read(table: string, callback: ReadCallback): void;
   read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
-   * @typedef {array} TransactionReadResponse
+   * @typedef {array} ReadResponse
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
    *     call `toJSON()`. Optionally, provide an options object to `toJSON()`
@@ -645,7 +645,7 @@ export class Snapshot extends EventEmitter {
    * Spanner.Int}.
    */
   /**
-   * @callback TransactionReadCallback
+   * @callback ReadCallback
    * @param {?Error} err Request error, if any.
    * @param {array[]} rows Rows are returned as an array of object arrays. Each
    *     object has a `name` and `value` property. To get a serialized object,
@@ -666,8 +666,8 @@ export class Snapshot extends EventEmitter {
    * @param {ReadRequest} query Configuration object. See official
    *     [`ReadRequest`](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.ReadRequest).
    *     API documentation.
-   * @param {TransactionRequestReadCallback} [callback] Callback function.
-   * @returns {Promise<TransactionRequestReadResponse>}
+   * @param {ReadCallback} [callback] Callback function.
+   * @returns {Promise<ReadResponse>}
    *
    * @example
    * const query = {
@@ -870,7 +870,19 @@ export class Snapshot extends EventEmitter {
    * @see [ExecuteSql API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.Spanner.ExecuteSql)
    *
    * @typedef {object} ExecuteSqlRequest
+   * @property {string} resumeToken The token used to resume getting results.
+   * @property {google.spanner.v1.ExecuteSqlRequest.QueryMode} queryMode Query plan and
+   *     execution statistics for the SQL statement that
+   *     produced this result set.
+   * @property {string} partitionToken The partition token.
+   * @property {number} seqno The Sequence number.
    * @property {string} sql The SQL string.
+   * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
+   *     Default query options to use with the database. These options will be
+   *     overridden by any query options set in environment variables or that
+   *     are specified on a per-query basis.
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
+   *     with the commit request.
    * @property {Object.<string, *>} [params] A map of parameter names to values.
    * @property {Object.<string, (string|ParamType)>} [types] A map of parameter
    *     names to types. If omitted the client will attempt to guess for all
@@ -879,6 +891,14 @@ export class Snapshot extends EventEmitter {
    *     is the equivalent of calling `toJSON()` on each row.
    * @property {JSONOptions} [jsonOptions] Configuration options for the
    *     serialized objects.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   *  @property {number} [maxResumeRetries] The maximum number of times that the
+   *     stream will retry to push data downstream, when the downstream indicates
+   *     that it is not ready for any more data. Increase this value if you
+   *     experience 'Stream is still not ready to receive data' errors as a
+   *     result of a slow writer in your receiving stream.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1321,6 +1341,14 @@ export class Transaction extends Dml {
    *     statements that were executed successfully before this error occurred.
    */
   /**
+   * @typedef {object} BatchUpdateOptions
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @property {google.spanner.v1.IRequestOptions} [requestOptions] The request options to include
+   *     with the commit request.
+   */
+  /**
    * @typedef {array} BatchUpdateResponse
    * @property {number[]} 0 Affected row counts.
    * @property {object} 1 The full API response.
@@ -1481,11 +1509,11 @@ export class Transaction extends Dml {
   commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
-   * @property {IRequestOptions} requestOptions The request options to include
+   * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
-   * @property {CallOptions} [gaxOptions] The request configuration options,
+   * @property {object} [gaxOptions] The request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
    */

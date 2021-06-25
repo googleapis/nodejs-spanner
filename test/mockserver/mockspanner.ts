@@ -78,8 +78,11 @@ export class StatementResult {
     }
     throw new Error('The StatementResult does not contain an Error');
   }
-  private readonly _resultSet: protobuf.ResultSet | null;
-  get resultSet(): protobuf.ResultSet {
+  private readonly _resultSet:
+    | protobuf.ResultSet
+    | protobuf.PartialResultSet[]
+    | null;
+  get resultSet(): protobuf.ResultSet | protobuf.PartialResultSet[] {
     if (this._resultSet) {
       return this._resultSet;
     }
@@ -96,7 +99,7 @@ export class StatementResult {
   private constructor(
     type: StatementResultType,
     error: Error | null,
-    resultSet: protobuf.ResultSet | null,
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[] | null,
     updateCount: number | null
   ) {
     this._type = type;
@@ -117,7 +120,9 @@ export class StatementResult {
    * Create a StatementResult that will return a ResultSet or a stream of PartialResultSets.
    * @param resultSet The result set to return.
    */
-  static resultSet(resultSet: protobuf.ResultSet): StatementResult {
+  static resultSet(
+    resultSet: protobuf.ResultSet | protobuf.PartialResultSet[]
+  ): StatementResult {
     return new StatementResult(
       StatementResultType.RESULT_SET,
       null,
@@ -533,10 +538,14 @@ export class MockSpanner {
           let streamErr;
           switch (res.type) {
             case StatementResultType.RESULT_SET:
-              partialResultSets = MockSpanner.toPartialResultSets(
-                res.resultSet,
-                call.request!.queryMode
-              );
+              if (Array.isArray(res.resultSet)) {
+                partialResultSets = res.resultSet;
+              } else {
+                partialResultSets = MockSpanner.toPartialResultSets(
+                  res.resultSet,
+                  call.request!.queryMode
+                );
+              }
               // Resume on the next index after the last one seen by the client.
               resumeIndex =
                 call.request!.resumeToken.length === 0
@@ -1356,6 +1365,78 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
           {nullValue: NullValue.NULL_VALUE},
           {nullValue: NullValue.NULL_VALUE},
           {nullValue: NullValue.NULL_VALUE},
+        ],
+      },
+    ],
+  });
+}
+
+export function createResultSetWithStringArray(): protobuf.ResultSet {
+  const fields = [
+    protobuf.StructType.Field.create({
+      name: 'string1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'string2',
+      type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'bool1',
+      type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+    }),
+    protobuf.StructType.Field.create({
+      name: 'stringArray',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({
+          code: protobuf.TypeCode.STRING,
+        }),
+      }),
+    }),
+  ];
+  const metadata = new protobuf.ResultSetMetadata({
+    rowType: new protobuf.StructType({
+      fields,
+    }),
+  });
+  return protobuf.ResultSet.create({
+    metadata,
+    rows: [
+      {
+        values: [
+          {stringValue: 'test1_1'},
+          {stringValue: 'test2_1'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'One'}, {stringValue: 'test 1'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_2'},
+          {stringValue: 'test2_2'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Two'}, {stringValue: 'test 2'}],
+            },
+          },
+        ],
+      },
+      {
+        values: [
+          {stringValue: 'test1_3'},
+          {stringValue: 'test2_3'},
+          {boolValue: true},
+          {
+            listValue: {
+              values: [{stringValue: 'Three'}, {stringValue: 'test 3'}],
+            },
+          },
         ],
       },
     ],

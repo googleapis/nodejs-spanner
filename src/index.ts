@@ -297,17 +297,17 @@ class Spanner extends GrpcService {
   /**
    * @typedef {array} CreateInstanceResponse
    * @property {Instance} 0 The new {@link Instance}.
-   * @property {Operation} 1 An operation object that can be used to check
+   * @property {google.longrunning.Operation} 1 An operation object that can be used to check
    *     the status of the request.
-   * @property {IOperation} 2 The full API response.
+   * @property {google.longrunning.IOperation} 2 The full API response.
    */
   /**
    * @callback CreateInstanceCallback
    * @param {?Error} err Request error, if any.
    * @param {Instance} instance The new {@link Instance}.
-   * @param {Operation} operation An operation object that can be used to
+   * @param {google.longrunning.Operation} operation An operation object that can be used to
    *     check the status of the request.
-   * @param {IOperation} apiResponse The full API response.
+   * @param {google.longrunning.IOperation} apiResponse The full API response.
    */
   /**
    * Create an instance.

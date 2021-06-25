@@ -51,6 +51,8 @@ import ResultSetStats = google.spanner.v1.ResultSetStats;
 import RequestOptions = google.spanner.v1.RequestOptions;
 import Priority = google.spanner.v1.RequestOptions.Priority;
 import {PreciseDate} from '@google-cloud/precise-date';
+import PartialResultSet = google.spanner.v1.PartialResultSet;
+import protobuf = google.spanner.v1;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -944,6 +946,57 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (e) {
         assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should not retry UNAVAILABLE from executeStreamingSql when maxQueued was exceeded', async () => {
+      // Setup a query result with more than maxQueued (10) PartialResultSets.
+      // None of the PartialResultSets include a resume token.
+      const sql = 'SELECT C1 FROM TestTable';
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'C1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+      ];
+      const metadata = new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+      const results: PartialResultSet[] = [];
+      for (let i = 0; i < 12; i++) {
+        results.push(
+          PartialResultSet.create({
+            metadata,
+            values: [{stringValue: `V${i}`}],
+          })
+        );
+      }
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(results)
+      );
+      // Register an error after maxQueued has been exceeded.
+      const err = {
+        message: 'Temporary unavailable',
+        code: grpc.status.UNAVAILABLE,
+        details: 'Transient error',
+        streamIndex: 11,
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+
+      const database = newTestDatabase();
+      try {
+        await database.run(sql);
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(e.message, '14 UNAVAILABLE: Transient error');
       } finally {
         await database.close();
       }
@@ -2339,7 +2392,7 @@ describe('Spanner with mock server', () => {
           await sleep(ms);
         }
         let maxWriteSessions = 0;
-        for (let i = 0; i < 1000; i++) {
+        for (let i = 0; i < 500; i++) {
           if (Math.random() < 0.8) {
             promises.push(database.run(query));
           } else {
@@ -2942,6 +2995,331 @@ describe('Spanner with mock server', () => {
 
       await database.close();
     });
+  });
+
+  describe('chunking', () => {
+    it('should return each value only once when all partial results miss a resume token and the buffer size is exceeded', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const partials: PartialResultSet[] = [];
+      for (let i = 0; i < 11; i++) {
+        partials.push(
+          PartialResultSet.create({
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'Value'},
+              {
+                listValue: {
+                  values: [{stringValue: '1'}, {stringValue: '2'}],
+                },
+              },
+            ],
+          })
+        );
+      }
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(partials)
+      );
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 11);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked string value', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [{stringValue: 'This value is '}],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {stringValue: 'chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'One'}, {stringValue: 'Two'}],
+                },
+              },
+              {stringValue: 'This value is not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+            assert.strictEqual(rows[1].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked string value in an array', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'This value is not chunked'},
+              {listValue: {values: [{stringValue: 'On'}]}},
+            ],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {listValue: {values: [{stringValue: 'e'}, {stringValue: 'Two'}]}},
+              {stringValue: 'This value is also not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+            assert.strictEqual(
+              rows[1].ColString,
+              'This value is also not chunked'
+            );
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should return all values from PartialResultSet with chunked list value', async () => {
+      for (const includeResumeToken in [true, false]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let errorOnIndexes: any;
+        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+          const sql = 'SELECT * FROM TestTable';
+          const prs1 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000000')
+              : undefined,
+            metadata: createMetadata(),
+            values: [
+              {stringValue: 'This value is not chunked'},
+              // The last value in this list value is a null value. A null value
+              // cannot be chunked, which means that in this case the list value
+              // itself is what is chunked.
+              {
+                listValue: {
+                  values: [
+                    {stringValue: 'One'},
+                    {nullValue: google.protobuf.NullValue.NULL_VALUE},
+                  ],
+                },
+              },
+            ],
+            chunkedValue: true,
+          });
+          const prs2 = PartialResultSet.create({
+            resumeToken: includeResumeToken
+              ? Buffer.from('00000001')
+              : undefined,
+            values: [
+              {listValue: {values: [{stringValue: 'Two'}]}},
+              {stringValue: 'This value is also not chunked'},
+              {
+                listValue: {
+                  values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+                },
+              },
+            ],
+          });
+          setupResultsAndErrors(sql, [prs1, prs2], errorOnIndexes);
+          const database = newTestDatabase();
+          try {
+            const [rows] = (await database.run({
+              sql,
+              json: true,
+            })) as Json[];
+            assert.strictEqual(rows.length, 2);
+            assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+            assert.deepStrictEqual(rows[0].ColStringArray, [
+              'One',
+              null,
+              'Two',
+            ]);
+            assert.strictEqual(
+              rows[1].ColString,
+              'This value is also not chunked'
+            );
+            assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+          } finally {
+            await database.close();
+          }
+        }
+      }
+    });
+
+    it('should reset to the chunked value of the last PartialResultSet with a resume token on retry', async () => {
+      // This tests the following scenario:
+      // 1. PartialResultSet without resume token, no chunked value.
+      // 2. PartialResultSet with resume token and chunked value.
+      // 3. PartialResultSet without resume token and chunked value.
+      // 4. PartialResultSet without resume token and no chunked value.
+      // The stream breaks with UNAVAILABLE after receiving 3 but before
+      // receiving 4. This means that the stream must retry from PRS 2, and
+      // reset the pending value that should be merged with the next result to
+      // the chunked value that was returned by PRS 2 and not the one from PRS
+      // 3.
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        metadata: createMetadata(),
+        values: [
+          {stringValue: 'This value is not chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'One'}, {stringValue: 'Two'}],
+            },
+          },
+        ],
+      });
+      const prs2 = PartialResultSet.create({
+        resumeToken: Buffer.from('00000001'),
+        values: [{stringValue: 'This value is'}],
+        chunkedValue: true,
+      });
+      const prs3 = PartialResultSet.create({
+        values: [
+          {stringValue: ' chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'Three'}, {stringValue: 'Four'}],
+            },
+          },
+          {stringValue: 'This value is also'},
+        ],
+        chunkedValue: true,
+      });
+      const prs4 = PartialResultSet.create({
+        values: [
+          {stringValue: ' chunked'},
+          {
+            listValue: {
+              values: [{stringValue: 'Five'}, {stringValue: 'Six'}],
+            },
+          },
+        ],
+      });
+      setupResultsAndErrors(sql, [prs1, prs2, prs3, prs4], [3]);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 3);
+        assert.strictEqual(rows[0].ColString, 'This value is not chunked');
+        assert.deepStrictEqual(rows[0].ColStringArray, ['One', 'Two']);
+        assert.strictEqual(rows[1].ColString, 'This value is chunked');
+        assert.deepStrictEqual(rows[1].ColStringArray, ['Three', 'Four']);
+        assert.strictEqual(rows[2].ColString, 'This value is also chunked');
+        assert.deepStrictEqual(rows[2].ColStringArray, ['Five', 'Six']);
+      } finally {
+        await database.close();
+      }
+    });
+
+    function createMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'ColString',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'ColStringArray',
+          type: protobuf.Type.create({
+            code: protobuf.TypeCode.ARRAY,
+            arrayElementType: protobuf.Type.create({
+              code: protobuf.TypeCode.STRING,
+            }),
+          }),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
+
+    function setupResultsAndErrors(
+      sql: string,
+      results: PartialResultSet[],
+      errorOnIndexes: number[]
+    ) {
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.resultSet(results)
+      );
+      if (errorOnIndexes.length) {
+        const errors: MockError[] = [];
+        for (const index of errorOnIndexes) {
+          errors.push({
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError);
+        }
+        spannerMock.setExecutionTime(
+          spannerMock.executeStreamingSql,
+          SimulatedExecutionTime.ofErrors(errors)
+        );
+      }
+    }
   });
 
   describe('instanceAdmin', () => {

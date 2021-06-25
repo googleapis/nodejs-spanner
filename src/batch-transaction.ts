@@ -310,7 +310,7 @@ class BatchTransaction extends Snapshot {
   }
   /**
    * @typedef {object} TransactionIdentifier
-   * @property {string} session The full session name.
+   * @property {string|Session} session The full session name.
    * @property {string} transaction The transaction ID.
    * @property {string|Date} readTimestamp The transaction read timestamp.
    */
