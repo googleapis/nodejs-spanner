@@ -1373,8 +1373,10 @@ describe('Spanner', () => {
       const replacedReqOpts = {};
 
       replaceProjectIdTokenOverride = (reqOpts, projectId) => {
-        assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
-        assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
+        if (typeof(reqOpts) === 'object') {
+          assert.deepStrictEqual(reqOpts, CONFIG.reqOpts);
+          assert.notStrictEqual(reqOpts, CONFIG.reqOpts);
+        }
         assert.strictEqual(projectId, PROJECT_ID);
         return replacedReqOpts;
       };

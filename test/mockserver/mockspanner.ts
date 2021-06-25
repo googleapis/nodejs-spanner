@@ -18,6 +18,8 @@ import * as path from 'path';
 import {google} from '../../protos/protos';
 import {grpc} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
+// eslint-disable-next-line node/no-extraneous-import
+import {Metadata} from '@grpc/grpc-js';
 import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;
 import Timestamp = google.protobuf.Timestamp;
@@ -221,6 +223,7 @@ interface Request {}
  */
 export class MockSpanner {
   private requests: Request[] = [];
+  private metadata: Metadata[] = [];
   private frozen = 0;
   private sessionCounter = 0;
   private sessions: Map<string, protobuf.Session> = new Map<
@@ -274,6 +277,7 @@ export class MockSpanner {
 
   resetRequests(): void {
     this.requests = [];
+    this.metadata = [];
   }
 
   /**
@@ -281,6 +285,13 @@ export class MockSpanner {
    */
   getRequests(): Request[] {
     return this.requests;
+  }
+
+  /**
+   * @return the metadata that have been received by this mock server.
+   */
+  getMetadata(): Metadata[] {
+    return this.metadata;
   }
 
   /**
@@ -417,6 +428,11 @@ export class MockSpanner {
     return undefined;
   }
 
+  private pushRequest(request: Request, metadata: Metadata): void {
+    this.requests.push(request);
+    this.metadata.push(metadata);
+  }
+
   batchCreateSessions(
     call: grpc.ServerUnaryCall<
       protobuf.BatchCreateSessionsRequest,
@@ -424,7 +440,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.BatchCreateSessionsCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.batchCreateSessions.name)
       .then(() => {
         const sessions = new Array<protobuf.Session>();
@@ -445,7 +461,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CreateSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.CreateSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.createSession.name).then(() => {
       callback(null, this.newSession(call.request!.database));
     });
@@ -455,7 +471,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.GetSessionRequest, protobuf.Session>,
     callback: protobuf.Spanner.GetSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.getSession.name).then(() => {
       const session = this.sessions[call.request!.name];
       if (session) {
@@ -473,7 +489,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ListSessionsCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.listSessions.name).then(() => {
       callback(
         null,
@@ -493,7 +509,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.DeleteSessionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     if (this.sessions.delete(call.request!.name)) {
       callback(null, google.protobuf.Empty.create());
     } else {
@@ -505,7 +521,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.ExecuteSqlRequest, {}>,
     callback: protobuf.Spanner.ExecuteSqlCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('ExecuteSql is not yet implemented'));
   }
 
@@ -515,7 +531,7 @@ export class MockSpanner {
       protobuf.PartialResultSet
     >
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeStreamingSql.name)
       .then(() => {
         if (call.request!.transaction && call.request!.transaction.id) {
@@ -687,7 +703,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.ExecuteBatchDmlCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
         if (call.request!.transaction && call.request!.transaction.id) {
@@ -778,12 +794,12 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.ReadRequest, {}>,
     callback: protobuf.Spanner.ReadCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('Read is not yet implemented'));
   }
 
   streamingRead(call: grpc.ServerWritableStream<protobuf.ReadRequest, {}>) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     call.emit(
       'error',
       createUnimplementedError('StreamingRead is not yet implemented')
@@ -798,7 +814,7 @@ export class MockSpanner {
     >,
     callback: protobuf.Spanner.BeginTransactionCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.beginTransaction.name)
       .then(() => {
         const session = this.sessions.get(call.request!.session);
@@ -838,7 +854,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.CommitRequest, protobuf.CommitResponse>,
     callback: protobuf.Spanner.CommitCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.commit.name)
       .then(() => {
         if (call.request!.transactionId) {
@@ -888,7 +904,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.RollbackRequest, google.protobuf.Empty>,
     callback: protobuf.Spanner.RollbackCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     const session = this.sessions.get(call.request!.session);
     if (session) {
       const buffer = Buffer.from(call.request!.transactionId as string);
@@ -911,7 +927,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.PartitionQueryRequest, {}>,
     callback: protobuf.Spanner.PartitionQueryCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 
@@ -919,7 +935,7 @@ export class MockSpanner {
     call: grpc.ServerUnaryCall<protobuf.PartitionReadRequest, {}>,
     callback: protobuf.Spanner.PartitionReadCallback
   ) {
-    this.requests.push(call.request!);
+    this.pushRequest(call.request!, call.metadata);
     callback(createUnimplementedError('PartitionQuery is not yet implemented'));
   }
 }
