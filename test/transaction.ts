@@ -1834,7 +1834,7 @@ describe('Transaction', () => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
       });
 
-      it('should set transaction tag if not `signleUse`', () => {
+      it('should set transaction tag if not `singleUse`', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
         transaction.id = 'transaction-id-123';
@@ -1849,7 +1849,7 @@ describe('Transaction', () => {
         });
       });
 
-      it('should not set transaction tag if `signleUse`', () => {
+      it('should not set transaction tag if `singleUse`', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
         transaction.requestOptions = {transactionTag};

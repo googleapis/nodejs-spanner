@@ -1040,8 +1040,6 @@ export class Snapshot extends EventEmitter {
     }
 
     return requestOptions!;
-
-    // return singleUse ? {requestTag: requestOptions} : {transactionTag, requestTag: requestOptions};
   }
 
   /**
