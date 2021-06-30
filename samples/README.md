@@ -33,6 +33,7 @@ and automatic, synchronous replication for high availability.
   * [DML](#dml)
   * [Get-commit-stats](#get-commit-stats)
   * [Indexing](#indexing)
+  * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
@@ -376,6 +377,23 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Instance-with-processing-units
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance-with-processing-units.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-processing-units.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-with-processing-units.js`
 
 
 -----
