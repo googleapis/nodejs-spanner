@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,8 +15,8 @@
 
 'use strict';
 
-async function createInstance(instanceId, projectId) {
-  // [START spanner_create_instance]
+async function createInstanceWithProcessingUnits(instanceId, projectId) {
+  // [START spanner_create_instance_with_processing_units]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -38,11 +38,10 @@ async function createInstance(instanceId, projectId) {
     console.log(`Creating instance ${instance.formattedName_}.`);
     const [, operation] = await instance.create({
       config: 'regional-us-central1',
-      nodes: 1,
+      processingUnits: 500,
       displayName: 'This is a display name.',
       labels: {
         ['cloud_spanner_samples']: 'true',
-        created: Math.round(Date.now() / 1000).toString(), // current time
       },
     });
 
@@ -50,36 +49,19 @@ async function createInstance(instanceId, projectId) {
     await operation.promise();
 
     console.log(`Created instance ${instanceId}.`);
+
+    const [metadata] = await instance.getMetadata({
+      fieldNames: ['processingUnits'],
+    });
+    console.log(
+      `Instance ${instanceId} has ${metadata.processingUnits} ` +
+        'processing units.'
+    );
   } catch (err) {
     console.error('ERROR:', err);
   }
-  // [END spanner_create_instance]
+  // [END spanner_create_instance_with_processing_units]
 }
 
-const {
-  createInstanceWithProcessingUnits,
-} = require('./instance-with-processing-units');
-
-require('yargs')
-  .demand(1)
-  .command(
-    'createInstance <instanceName> <projectId>',
-    'Creates an example instance in a Cloud Spanner instance.',
-    {},
-    opts => createInstance(opts.instanceName, opts.projectId)
-  )
-  .example('node $0 createInstance "my-instance" "my-project-id"')
-  .command(
-    'createInstanceWithProcessingUnits <instanceName> <projectId>',
-    'Creates an example instance in a Cloud Spanner instance with processing units.',
-    {},
-    opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
-  )
-  .example(
-    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
-  )
-  .wrap(120)
-  .recommendCommands()
-  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
-  .strict()
-  .help().argv;
+module.exports.createInstanceWithProcessingUnits =
+  createInstanceWithProcessingUnits;
