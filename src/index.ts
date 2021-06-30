@@ -158,6 +158,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
 
@@ -260,6 +261,7 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
@@ -889,6 +891,34 @@ class Spanner extends GrpcService {
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId!);
+      // It would have been preferable to replace the projectId already in the
+      // constructor of Spanner, but that is not possible as auth.getProjectId
+      // is an async method. This is therefore the first place where we have
+      // access to the value that should be used instead of the placeholder.
+      if (!this.projectIdReplaced_) {
+        this.projectId = replaceProjectIdToken(this.projectId, projectId!);
+        this.projectFormattedName_ = replaceProjectIdToken(
+          this.projectFormattedName_,
+          projectId!
+        );
+        this.instances_.forEach(instance => {
+          instance.formattedName_ = replaceProjectIdToken(
+            instance.formattedName_,
+            projectId!
+          );
+          instance.databases_.forEach(database => {
+            database.formattedName_ = replaceProjectIdToken(
+              database.formattedName_,
+              projectId!
+            );
+          });
+        });
+        this.projectIdReplaced_ = true;
+      }
+      config.headers[CLOUD_RESOURCE_HEADER] = replaceProjectIdToken(
+        config.headers[CLOUD_RESOURCE_HEADER],
+        projectId!
+      );
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,

@@ -32,7 +32,13 @@ and automatic, synchronous replication for high availability.
   * [Datatypes](#datatypes)
   * [DML](#dml)
   * [Get-commit-stats](#get-commit-stats)
+  * [Creates a new value-storing index](#creates-a-new-value-storing-index)
+  * [Creates a new index](#creates-a-new-index)
+  * [Executes a read-only SQL query using an existing index.](#executes-a-read-only-sql-query-using-an-existing-index.)
+  * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
+  * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
+  * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
@@ -366,6 +372,91 @@ __Usage:__
 
 
 
+### Creates a new value-storing index
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-create-storing.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-create-storing.js,samples/README.md)
+
+__Usage:__
+
+
+`node createStoringIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a new index
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node createIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes a read-only SQL query using an existing index.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-query-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-query-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node queryDataWithIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID> <START_TITLE> <END_TITLE>`
+
+
+-----
+
+
+
+
+### Reads data using an existing storing index.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-read-data-with-storing.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-read-data-with-storing.js,samples/README.md)
+
+__Usage:__
+
+
+`node readDataWithStoringIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Read data using an existing index.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-read-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-read-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node readDataWithIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Indexing
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js).
@@ -376,6 +467,23 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Instance-with-processing-units
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance-with-processing-units.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-processing-units.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-with-processing-units.js`
 
 
 -----

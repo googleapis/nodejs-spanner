@@ -53,6 +53,7 @@ import Priority = google.spanner.v1.RequestOptions.Priority;
 import {PreciseDate} from '@google-cloud/precise-date';
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -135,8 +136,8 @@ describe('Spanner with mock server', () => {
     // TODO(loite): Enable when SPANNER_EMULATOR_HOST is supported.
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
+    process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     spanner = new Spanner({
-      projectId: 'fake-project-id',
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -182,6 +183,24 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(numCol.value.valueOf(), i);
           assert.strictEqual(nameCol.name, 'NAME');
           assert.strictEqual(nameCol.value.valueOf(), numberToEnglishWord(i));
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should replace {{projectId}} in resource header', async () => {
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        await database.run(query);
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(CLOUD_RESOURCE_HEADER)[0],
+            `projects/test-project/instances/instance/databases/${database.id}`
+          );
         });
       } finally {
         await database.close();
