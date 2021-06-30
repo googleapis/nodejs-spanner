@@ -92,6 +92,7 @@ export interface RequestConfig {
 export interface CreateInstanceRequest {
   config?: string;
   nodes?: number;
+  processingUnits?: number;
   displayName?: string;
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
@@ -385,11 +386,23 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName,
-          nodeCount: config.nodes || 1,
+          nodeCount: config.nodes,
+          processingUnits: config.processingUnits,
         },
         config
       ),
     };
+
+    if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
+      throw new Error(
+        ['Only one of nodeCount or processingUnits can be specified.'].join('')
+      );
+    }
+    if (!reqOpts.instance.nodeCount && !reqOpts.instance.processingUnits) {
+      // If neither nodes nor processingUnits are specified, default to a
+      // nodeCount of 1.
+      reqOpts.instance.nodeCount = 1;
+    }
 
     delete reqOpts.instance.nodes;
     delete reqOpts.instance.gaxOptions;

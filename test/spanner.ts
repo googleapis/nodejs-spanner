@@ -3307,6 +3307,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should create an instance with processing units', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          processingUnits: 500,
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.processingUnits, 500);
+      assert.strictEqual(createdInstance.nodeCount, 0);
+    });
+
     it('should update an instance', async () => {
       const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
       const [updatedInstance] = await instance

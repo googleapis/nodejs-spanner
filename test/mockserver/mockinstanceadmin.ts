@@ -209,6 +209,9 @@ export class MockInstanceAdmin {
       nodeCount: call.request!.instance
         ? call.request!.instance.nodeCount
         : undefined,
+      processingUnits: call.request!.instance
+        ? call.request!.instance.processingUnits
+        : undefined,
       labels: call.request!.instance
         ? call.request!.instance.labels
         : undefined,
