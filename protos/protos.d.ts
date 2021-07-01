@@ -7461,6 +7461,9 @@ export namespace google {
 
                         /** Database earliestVersionTime */
                         earliestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Database defaultLeader */
+                        defaultLeader?: (string|null);
                     }
 
                     /** Represents a Database. */
@@ -7495,6 +7498,9 @@ export namespace google {
 
                         /** Database earliestVersionTime. */
                         public earliestVersionTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Database defaultLeader. */
+                        public defaultLeader: string;
 
                         /**
                          * Creates a new Database instance using the specified properties.
@@ -9563,6 +9569,9 @@ export namespace google {
 
                         /** InstanceConfig replicas */
                         replicas?: (google.spanner.admin.instance.v1.IReplicaInfo[]|null);
+
+                        /** InstanceConfig leaderOptions */
+                        leaderOptions?: (string[]|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -9582,6 +9591,9 @@ export namespace google {
 
                         /** InstanceConfig replicas. */
                         public replicas: google.spanner.admin.instance.v1.IReplicaInfo[];
+
+                        /** InstanceConfig leaderOptions. */
+                        public leaderOptions: string[];
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
