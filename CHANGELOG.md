@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.11.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.10.0...v5.11.0) (2021-07-01)
+
+
+### Features
+
+* **spanner:** add leader_options to InstanceConfig and default_leader to Database ([#1414](https://www.github.com/googleapis/nodejs-spanner/issues/1414)) ([e67adc2](https://www.github.com/googleapis/nodejs-spanner/commit/e67adc281d603d741af49d957eff05fd4184d38e))
+
 ## [5.10.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.3...v5.10.0) (2021-06-30)
 
 
