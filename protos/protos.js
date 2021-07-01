@@ -18571,6 +18571,7 @@
                              * @property {Array.<google.spanner.admin.database.v1.IEncryptionInfo>|null} [encryptionInfo] Database encryptionInfo
                              * @property {string|null} [versionRetentionPeriod] Database versionRetentionPeriod
                              * @property {google.protobuf.ITimestamp|null} [earliestVersionTime] Database earliestVersionTime
+                             * @property {string|null} [defaultLeader] Database defaultLeader
                              */
     
                             /**
@@ -18654,6 +18655,14 @@
                             Database.prototype.earliestVersionTime = null;
     
                             /**
+                             * Database defaultLeader.
+                             * @member {string} defaultLeader
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.defaultLeader = "";
+    
+                            /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Database
@@ -18694,6 +18703,8 @@
                                 if (message.encryptionInfo != null && message.encryptionInfo.length)
                                     for (var i = 0; i < message.encryptionInfo.length; ++i)
                                         $root.google.spanner.admin.database.v1.EncryptionInfo.encode(message.encryptionInfo[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                                if (message.defaultLeader != null && Object.hasOwnProperty.call(message, "defaultLeader"))
+                                    writer.uint32(/* id 9, wireType 2 =*/74).string(message.defaultLeader);
                                 return writer;
                             };
     
@@ -18753,6 +18764,9 @@
                                         break;
                                     case 7:
                                         message.earliestVersionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 9:
+                                        message.defaultLeader = reader.string();
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -18834,6 +18848,9 @@
                                     if (error)
                                         return "earliestVersionTime." + error;
                                 }
+                                if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
+                                    if (!$util.isString(message.defaultLeader))
+                                        return "defaultLeader: string expected";
                                 return null;
                             };
     
@@ -18901,6 +18918,8 @@
                                         throw TypeError(".google.spanner.admin.database.v1.Database.earliestVersionTime: object expected");
                                     message.earliestVersionTime = $root.google.protobuf.Timestamp.fromObject(object.earliestVersionTime);
                                 }
+                                if (object.defaultLeader != null)
+                                    message.defaultLeader = String(object.defaultLeader);
                                 return message;
                             };
     
@@ -18927,6 +18946,7 @@
                                     object.encryptionConfig = null;
                                     object.versionRetentionPeriod = "";
                                     object.earliestVersionTime = null;
+                                    object.defaultLeader = "";
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -18947,6 +18967,8 @@
                                     for (var j = 0; j < message.encryptionInfo.length; ++j)
                                         object.encryptionInfo[j] = $root.google.spanner.admin.database.v1.EncryptionInfo.toObject(message.encryptionInfo[j], options);
                                 }
+                                if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
+                                    object.defaultLeader = message.defaultLeader;
                                 return object;
                             };
     
@@ -23517,6 +23539,7 @@
                              * @property {string|null} [name] InstanceConfig name
                              * @property {string|null} [displayName] InstanceConfig displayName
                              * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [replicas] InstanceConfig replicas
+                             * @property {Array.<string>|null} [leaderOptions] InstanceConfig leaderOptions
                              */
     
                             /**
@@ -23529,6 +23552,7 @@
                              */
                             function InstanceConfig(properties) {
                                 this.replicas = [];
+                                this.leaderOptions = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -23558,6 +23582,14 @@
                              * @instance
                              */
                             InstanceConfig.prototype.replicas = $util.emptyArray;
+    
+                            /**
+                             * InstanceConfig leaderOptions.
+                             * @member {Array.<string>} leaderOptions
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.leaderOptions = $util.emptyArray;
     
                             /**
                              * Creates a new InstanceConfig instance using the specified properties.
@@ -23590,6 +23622,9 @@
                                 if (message.replicas != null && message.replicas.length)
                                     for (var i = 0; i < message.replicas.length; ++i)
                                         $root.google.spanner.admin.instance.v1.ReplicaInfo.encode(message.replicas[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.leaderOptions != null && message.leaderOptions.length)
+                                    for (var i = 0; i < message.leaderOptions.length; ++i)
+                                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.leaderOptions[i]);
                                 return writer;
                             };
     
@@ -23634,6 +23669,11 @@
                                         if (!(message.replicas && message.replicas.length))
                                             message.replicas = [];
                                         message.replicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
+                                        break;
+                                    case 4:
+                                        if (!(message.leaderOptions && message.leaderOptions.length))
+                                            message.leaderOptions = [];
+                                        message.leaderOptions.push(reader.string());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -23685,6 +23725,13 @@
                                             return "replicas." + error;
                                     }
                                 }
+                                if (message.leaderOptions != null && message.hasOwnProperty("leaderOptions")) {
+                                    if (!Array.isArray(message.leaderOptions))
+                                        return "leaderOptions: array expected";
+                                    for (var i = 0; i < message.leaderOptions.length; ++i)
+                                        if (!$util.isString(message.leaderOptions[i]))
+                                            return "leaderOptions: string[] expected";
+                                }
                                 return null;
                             };
     
@@ -23714,6 +23761,13 @@
                                         message.replicas[i] = $root.google.spanner.admin.instance.v1.ReplicaInfo.fromObject(object.replicas[i]);
                                     }
                                 }
+                                if (object.leaderOptions) {
+                                    if (!Array.isArray(object.leaderOptions))
+                                        throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.leaderOptions: array expected");
+                                    message.leaderOptions = [];
+                                    for (var i = 0; i < object.leaderOptions.length; ++i)
+                                        message.leaderOptions[i] = String(object.leaderOptions[i]);
+                                }
                                 return message;
                             };
     
@@ -23730,8 +23784,10 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.arrays || options.defaults)
+                                if (options.arrays || options.defaults) {
                                     object.replicas = [];
+                                    object.leaderOptions = [];
+                                }
                                 if (options.defaults) {
                                     object.name = "";
                                     object.displayName = "";
@@ -23744,6 +23800,11 @@
                                     object.replicas = [];
                                     for (var j = 0; j < message.replicas.length; ++j)
                                         object.replicas[j] = $root.google.spanner.admin.instance.v1.ReplicaInfo.toObject(message.replicas[j], options);
+                                }
+                                if (message.leaderOptions && message.leaderOptions.length) {
+                                    object.leaderOptions = [];
+                                    for (var j = 0; j < message.leaderOptions.length; ++j)
+                                        object.leaderOptions[j] = message.leaderOptions[j];
                                 }
                                 return object;
                             };
