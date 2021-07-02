@@ -268,6 +268,18 @@ class Spanner extends GrpcService {
     };
   }
 
+  /** Closes this Spanner client and cleans up all resources used by it. */
+  close(): void {
+    this.clients_.forEach(c => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = c as any;
+      if (client.operationsClient && client.operationsClient.close) {
+        client.operationsClient.close();
+      }
+      client.close();
+    });
+  }
+
   createInstance(
     name: string,
     config: CreateInstanceRequest
