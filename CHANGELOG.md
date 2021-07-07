@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.11.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.0...v5.11.1) (2021-07-07)
+
+
+### Bug Fixes
+
+* add close method to Spanner client ([#1416](https://www.github.com/googleapis/nodejs-spanner/issues/1416)) ([69cd0b4](https://www.github.com/googleapis/nodejs-spanner/commit/69cd0b474ab6c836724813fd8bea88ec2e1ac9f5)), closes [#1306](https://www.github.com/googleapis/nodejs-spanner/issues/1306)
+
 ## [5.11.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.10.0...v5.11.0) (2021-07-01)
 
 
