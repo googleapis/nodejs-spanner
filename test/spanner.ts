@@ -147,6 +147,7 @@ describe('Spanner with mock server', () => {
   });
 
   after(() => {
+    spanner.close();
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
