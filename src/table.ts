@@ -30,6 +30,7 @@ import {
 } from './transaction';
 import {google as databaseAdmin} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
+import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
 
 export type Key = string | string[];
 
@@ -43,25 +44,30 @@ export type CreateTableCallback = LongRunningCallback<Table>;
 export type DropTableResponse = UpdateSchemaResponse;
 export type DropTableCallback = UpdateSchemaCallback;
 
+interface MutateRowsOptions extends CommitOptions {
+  requestOptions?: Omit<IRequestOptions, 'requestTag'>;
+}
+
 export type DeleteRowsCallback = CommitCallback;
 export type DeleteRowsResponse = CommitResponse;
-export type DeleteRowsOptions = CommitOptions;
+export type DeleteRowsOptions = MutateRowsOptions;
 
 export type InsertRowsCallback = CommitCallback;
 export type InsertRowsResponse = CommitResponse;
-export type InsertRowsOptions = CommitOptions;
+export type InsertRowsOptions = MutateRowsOptions;
 
 export type ReplaceRowsCallback = CommitCallback;
 export type ReplaceRowsResponse = CommitResponse;
-export type ReplaceRowsOptions = CommitOptions;
+export type ReplaceRowsOptions = MutateRowsOptions;
 
 export type UpdateRowsCallback = CommitCallback;
 export type UpdateRowsResponse = CommitResponse;
-export type UpdateRowsOptions = CommitOptions;
+export type UpdateRowsOptions = MutateRowsOptions;
 
 export type UpsertRowsCallback = CommitCallback;
 export type UpsertRowsResponse = CommitResponse;
-export type UpsertRowsOptions = CommitOptions;
+export type UpsertRowsOptions = MutateRowsOptions;
+
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
@@ -1012,10 +1018,12 @@ class Table {
   private _mutate(
     method: 'deleteRows' | 'insert' | 'replace' | 'update' | 'upsert',
     rows: object | object[],
-    options: CommitOptions | CallOptions,
+    options: MutateRowsOptions | CallOptions = {},
     callback: CommitCallback
   ): void {
-    this.database.runTransaction((err, transaction) => {
+    const requestOptions =
+      'requestOptions' in options ? options.requestOptions : {};
+    this.database.runTransaction({requestOptions}, (err, transaction) => {
       if (err) {
         callback(err);
         return;

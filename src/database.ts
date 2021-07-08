@@ -2662,6 +2662,10 @@ class Database extends common.GrpcServiceObject {
     while (true) {
       try {
         const [session, transaction] = await promisify(getWriteSession)();
+        transaction.requestOptions = Object.assign(
+          transaction.requestOptions || {},
+          options.requestOptions
+        );
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,

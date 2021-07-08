@@ -870,23 +870,32 @@ export class MockSpanner {
         }
         const session = this.sessions.get(call.request!.session);
         if (session) {
-          const buffer = Buffer.from(call.request!.transactionId as string);
-          const transactionId = buffer.toString();
-          const fullTransactionId =
-            session.name + '/transactions/' + transactionId;
-          const transaction = this.transactions.get(fullTransactionId);
-          if (transaction) {
-            this.transactions.delete(fullTransactionId);
-            this.transactionOptions.delete(fullTransactionId);
+          if (call.request!.transactionId) {
+            const buffer = Buffer.from(call.request!.transactionId as string);
+            const transactionId = buffer.toString();
+            const fullTransactionId =
+              session.name + '/transactions/' + transactionId;
+            const transaction = this.transactions.get(fullTransactionId);
+            if (transaction) {
+              this.transactions.delete(fullTransactionId);
+              this.transactionOptions.delete(fullTransactionId);
+              callback(
+                null,
+                protobuf.CommitResponse.create({
+                  commitTimestamp: now(),
+                })
+              );
+            } else {
+              callback(
+                MockSpanner.createTransactionNotFoundError(fullTransactionId)
+              );
+            }
+          } else if (call.request!.singleUseTransaction) {
             callback(
               null,
               protobuf.CommitResponse.create({
                 commitTimestamp: now(),
               })
-            );
-          } else {
-            callback(
-              MockSpanner.createTransactionNotFoundError(fullTransactionId)
             );
           }
         } else {

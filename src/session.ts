@@ -38,6 +38,7 @@ import {
 import {ServiceObjectConfig} from '@google-cloud/common';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {grpc, CallOptions} from 'google-gax';
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -450,9 +451,10 @@ export class Session extends common.GrpcServiceObject {
    * const transaction = session.transaction();
    */
   transaction(
-    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    requestOptions?: Pick<IRequestOptions, 'transactionTag'>
   ) {
-    return new Transaction(this, undefined, queryOptions);
+    return new Transaction(this, undefined, queryOptions, requestOptions);
   }
   /**
    * Format the session name to include the parent database's name.

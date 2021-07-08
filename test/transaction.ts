@@ -26,6 +26,11 @@ import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import {
+  BatchUpdateOptions,
+  ExecuteSqlRequest,
+  ReadRequest,
+} from '../src/transaction';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -82,7 +87,7 @@ describe('Transaction', () => {
     describe('initialization', () => {
       it('should promisify all the things', () => {
         const expectedOptions = sinon.match({
-          exclude: ['end'],
+          exclude: ['configureTagOptions', 'end'],
         });
 
         const stub = PROMISIFY_ALL.withArgs(Snapshot, expectedOptions);
@@ -135,6 +140,19 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(gaxOpts, {});
         assert.deepStrictEqual(headers, snapshot.resourceHeader_);
+      });
+
+      it('should accept gaxOptions', done => {
+        const gaxOptions = {
+          timeout: 1000,
+        };
+
+        snapshot.request = config => {
+          assert.strictEqual(config.gaxOpts, gaxOptions);
+          done();
+        };
+
+        snapshot.begin(gaxOptions);
       });
 
       it('should send the formatted options', () => {
@@ -251,6 +269,17 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
       });
 
+      it('should set request tag', () => {
+        const requestTag = 'foo';
+        const request: ReadRequest = {requestOptions: {requestTag}};
+
+        snapshot.createReadStream(TABLE, request);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.requestOptions, {requestTag});
+      });
+
       it('should send the correct `reqOpts`', () => {
         const id = 'transaction-id-123';
         const fakeKeySet = {all: true};
@@ -263,6 +292,7 @@ describe('Transaction', () => {
 
         const expectedRequest = {
           session: SESSION_NAME,
+          requestOptions: {},
           transaction: {id},
           table: TABLE,
           keySet: fakeKeySet,
@@ -519,6 +549,19 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts.transaction, expectedTransaction);
       });
 
+      it('should set request tag', () => {
+        const requestTag = 'foo';
+        const query = Object.assign({}, QUERY, {
+          requestOptions: {requestTag},
+        });
+
+        snapshot.runStream(query);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.requestOptions, {requestTag});
+      });
+
       it('should send the correct `reqOpts`', () => {
         const id = 'transaction-id-123';
         const fakeParams = {b: 'a'};
@@ -533,6 +576,7 @@ describe('Transaction', () => {
 
         const expectedRequest = {
           session: SESSION_NAME,
+          requestOptions: {},
           transaction: {id},
           sql: QUERY.sql,
           params: fakeParams,
@@ -1081,24 +1125,46 @@ describe('Transaction', () => {
         transaction.batchUpdate(STRING_STATEMENTS, gaxOptions, assert.ifError);
       });
 
-      it('should accept gaxOptions in BatchUpdateOptions', done => {
-        const options = {gaxOptions: {}};
+      it('should set transactionTag', done => {
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
         transaction.request = config => {
-          assert.strictEqual(config.gaxOpts, options.gaxOptions);
+          assert.deepStrictEqual(config.reqOpts.requestOptions, {
+            transactionTag,
+          });
+          done();
+        };
+        transaction.batchUpdate(STRING_STATEMENTS, assert.ifError);
+      });
+
+      it('should set requestTag', done => {
+        const requestTag = 'foo';
+        const options: BatchUpdateOptions = {requestOptions: {requestTag}};
+        transaction.request = config => {
+          assert.deepStrictEqual(config.reqOpts.requestOptions, {
+            requestTag,
+          });
           done();
         };
         transaction.batchUpdate(STRING_STATEMENTS, options, assert.ifError);
       });
 
-      it('should accept requestOptions', done => {
-        const options = {
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
+      it('should set both tags and accept gaxOptions', done => {
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
+
+        const requestTag = 'foo';
+        const gaxOptions = {timeout: 1000};
+        const options: BatchUpdateOptions = {
+          requestOptions: {requestTag},
+          gaxOptions,
         };
         transaction.request = config => {
-          assert.strictEqual(
-            config.reqOpts.requestOptions,
-            options.requestOptions
-          );
+          assert.deepStrictEqual(config.reqOpts.requestOptions, {
+            transactionTag,
+            requestTag,
+          });
+          assert.strictEqual(config.gaxOpts, gaxOptions);
           done();
         };
         transaction.batchUpdate(STRING_STATEMENTS, options, assert.ifError);
@@ -1283,6 +1349,18 @@ describe('Transaction', () => {
         };
         transaction.begin(gaxOptions, assert.ifError);
       });
+
+      it('should set transaction tag', done => {
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
+        transaction.request = config => {
+          assert.deepStrictEqual(config.reqOpts.requestOptions, {
+            transactionTag,
+          });
+          done();
+        };
+        transaction.begin(assert.ifError);
+      });
     });
 
     describe('commit', () => {
@@ -1375,6 +1453,22 @@ describe('Transaction', () => {
         const {reqOpts} = stub.lastCall.args[0];
 
         assert.strictEqual(reqOpts.transactionId, id);
+      });
+
+      it('should set transactionTag when not single use transaction', done => {
+        const id = 'transaction-id-123';
+        const transactionTag = 'bar';
+        transaction.id = id;
+        transaction.requestOptions = {transactionTag};
+
+        transaction.request = config => {
+          assert.strictEqual(
+            config.reqOpts.requestOptions.transactionTag,
+            transactionTag
+          );
+          done();
+        };
+        transaction.commit(assert.ifError);
       });
 
       it('should set `singleUseTransaction` when `id` is not set', () => {
@@ -1705,6 +1799,66 @@ describe('Transaction', () => {
         const keys = Transaction.getUniqueKeys(rows);
 
         assert.deepStrictEqual(keys, expectedKeys);
+      });
+    });
+
+    describe('runStream', () => {
+      before(() => {
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should set transaction tag when not `singleUse`', done => {
+        const QUERY: ExecuteSqlRequest = {
+          sql: 'SELET * FROM `MyTable`',
+        };
+
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
+
+        const id = 'transaction-id-123';
+        transaction.id = id;
+
+        transaction.requestStream = config => {
+          assert.deepStrictEqual(config.reqOpts.requestOptions, {
+            transactionTag,
+          });
+          done();
+        };
+
+        transaction.runStream(QUERY);
+      });
+    });
+
+    describe('createReadStream', () => {
+      before(() => {
+        PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should set transaction tag if not `singleUse`', () => {
+        const TABLE = 'my-table-123';
+        const transactionTag = 'bar';
+        transaction.id = 'transaction-id-123';
+        transaction.requestOptions = {transactionTag};
+
+        transaction.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.requestOptions, {
+          transactionTag,
+        });
+      });
+
+      it('should not set transaction tag if `singleUse`', () => {
+        const TABLE = 'my-table-123';
+        const transactionTag = 'bar';
+        transaction.requestOptions = {transactionTag};
+
+        transaction.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts.requestOptions, {});
       });
     });
   });
