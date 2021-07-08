@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.12.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.1...v5.12.0) (2021-07-08)
+
+
+### Features
+
+* add tagging support ([#1419](https://www.github.com/googleapis/nodejs-spanner/issues/1419)) ([4770dab](https://www.github.com/googleapis/nodejs-spanner/commit/4770dab607e50e81d79c8c4c8fafbb278cb08954))
+
 ### [5.11.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.0...v5.11.1) (2021-07-07)
 
 
