@@ -54,6 +54,10 @@ import RequestOptions = google.spanner.v1.RequestOptions;
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
+import {PreciseDate} from '@google-cloud/precise-date';
+import PartialResultSet = google.spanner.v1.PartialResultSet;
+import protobuf = google.spanner.v1;
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
