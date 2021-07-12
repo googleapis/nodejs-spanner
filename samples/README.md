@@ -43,12 +43,14 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Query-tag](#query-tag)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Rpc-priority](#rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
+  * [Transaction-tag](#transaction-tag)
   * [Transaction](#transaction)
 
 ## Before you begin
@@ -559,6 +561,23 @@ __Usage:__
 
 
 
+### Query-tag
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/query-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/query-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/query-tag.js`
+
+
+-----
+
+
+
+
 ### Queryoptions
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/queryoptions.js).
@@ -654,6 +673,23 @@ __Usage:__
 
 
 `node samples/timestamp.js`
+
+
+-----
+
+
+
+
+### Transaction-tag
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/transaction-tag.js`
 
 
 -----
