@@ -2062,6 +2062,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "defaultLeader": {
+                              "type": "string",
+                              "id": 9,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -2695,6 +2702,11 @@
                               "rule": "repeated",
                               "type": "ReplicaInfo",
                               "id": 3
+                            },
+                            "leaderOptions": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 4
                             }
                           }
                         },

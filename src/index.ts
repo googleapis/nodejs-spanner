@@ -92,6 +92,7 @@ export interface RequestConfig {
 export interface CreateInstanceRequest {
   config?: string;
   nodes?: number;
+  processingUnits?: number;
   displayName?: string;
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
@@ -157,6 +158,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
 
@@ -259,10 +261,23 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+  }
+
+  /** Closes this Spanner client and cleans up all resources used by it. */
+  close(): void {
+    this.clients_.forEach(c => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const client = c as any;
+      if (client.operationsClient && client.operationsClient.close) {
+        client.operationsClient.close();
+      }
+      client.close();
+    });
   }
 
   createInstance(
@@ -383,11 +398,23 @@ class Spanner extends GrpcService {
         {
           name: formattedName,
           displayName,
-          nodeCount: config.nodes || 1,
+          nodeCount: config.nodes,
+          processingUnits: config.processingUnits,
         },
         config
       ),
     };
+
+    if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
+      throw new Error(
+        ['Only one of nodeCount or processingUnits can be specified.'].join('')
+      );
+    }
+    if (!reqOpts.instance.nodeCount && !reqOpts.instance.processingUnits) {
+      // If neither nodes nor processingUnits are specified, default to a
+      // nodeCount of 1.
+      reqOpts.instance.nodeCount = 1;
+    }
 
     delete reqOpts.instance.nodes;
     delete reqOpts.instance.gaxOptions;
@@ -876,6 +903,34 @@ class Spanner extends GrpcService {
       const gaxClient = this.clients_.get(clientName)!;
       let reqOpts = extend(true, {}, config.reqOpts);
       reqOpts = replaceProjectIdToken(reqOpts, projectId!);
+      // It would have been preferable to replace the projectId already in the
+      // constructor of Spanner, but that is not possible as auth.getProjectId
+      // is an async method. This is therefore the first place where we have
+      // access to the value that should be used instead of the placeholder.
+      if (!this.projectIdReplaced_) {
+        this.projectId = replaceProjectIdToken(this.projectId, projectId!);
+        this.projectFormattedName_ = replaceProjectIdToken(
+          this.projectFormattedName_,
+          projectId!
+        );
+        this.instances_.forEach(instance => {
+          instance.formattedName_ = replaceProjectIdToken(
+            instance.formattedName_,
+            projectId!
+          );
+          instance.databases_.forEach(database => {
+            database.formattedName_ = replaceProjectIdToken(
+              database.formattedName_,
+              projectId!
+            );
+          });
+        });
+        this.projectIdReplaced_ = true;
+      }
+      config.headers[CLOUD_RESOURCE_HEADER] = replaceProjectIdToken(
+        config.headers[CLOUD_RESOURCE_HEADER],
+        projectId!
+      );
       const requestFn = gaxClient[config.method].bind(
         gaxClient,
         reqOpts,

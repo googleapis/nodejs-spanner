@@ -4,6 +4,46 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.12.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.1...v5.12.0) (2021-07-08)
+
+
+### Features
+
+* add tagging support ([#1419](https://www.github.com/googleapis/nodejs-spanner/issues/1419)) ([4770dab](https://www.github.com/googleapis/nodejs-spanner/commit/4770dab607e50e81d79c8c4c8fafbb278cb08954))
+
+### [5.11.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.0...v5.11.1) (2021-07-07)
+
+
+### Bug Fixes
+
+* add close method to Spanner client ([#1416](https://www.github.com/googleapis/nodejs-spanner/issues/1416)) ([69cd0b4](https://www.github.com/googleapis/nodejs-spanner/commit/69cd0b474ab6c836724813fd8bea88ec2e1ac9f5)), closes [#1306](https://www.github.com/googleapis/nodejs-spanner/issues/1306)
+
+## [5.11.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.10.0...v5.11.0) (2021-07-01)
+
+
+### Features
+
+* **spanner:** add leader_options to InstanceConfig and default_leader to Database ([#1414](https://www.github.com/googleapis/nodejs-spanner/issues/1414)) ([e67adc2](https://www.github.com/googleapis/nodejs-spanner/commit/e67adc281d603d741af49d957eff05fd4184d38e))
+
+## [5.10.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.3...v5.10.0) (2021-06-30)
+
+
+### Features
+
+* create instances with processing units ([#1279](https://www.github.com/googleapis/nodejs-spanner/issues/1279)) ([05c2135](https://www.github.com/googleapis/nodejs-spanner/commit/05c213522a32627186ad9b474b416c1b9996df1f))
+
+
+### Bug Fixes
+
+* replace projectId placeholder in formatted names ([#1407](https://www.github.com/googleapis/nodejs-spanner/issues/1407)) ([4364d2b](https://www.github.com/googleapis/nodejs-spanner/commit/4364d2b25638384a6a1bea2e283b1219b4e5cdf3)), closes [#1375](https://www.github.com/googleapis/nodejs-spanner/issues/1375)
+
+### [5.9.3](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.2...v5.9.3) (2021-06-29)
+
+
+### Bug Fixes
+
+* **deps:** require google-gax v2.17.0 ([#1409](https://www.github.com/googleapis/nodejs-spanner/issues/1409)) ([080d82f](https://www.github.com/googleapis/nodejs-spanner/commit/080d82f455324d2010187904532032e7905e14ac))
+
 ### [5.9.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.9.1...v5.9.2) (2021-06-25)
 
 

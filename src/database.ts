@@ -2166,7 +2166,7 @@ class Database extends common.GrpcServiceObject {
    * region_tag:spanner_query_data
    * Full example:
    *
-   * @example <caption>include:samples/indexing.js</caption>
+   * @example <caption>include:samples/index-query-data.js</caption>
    * region_tag:spanner_query_data_with_index
    * Querying data with an index:
    */
@@ -2662,6 +2662,10 @@ class Database extends common.GrpcServiceObject {
     while (true) {
       try {
         const [session, transaction] = await promisify(getWriteSession)();
+        transaction.requestOptions = Object.assign(
+          transaction.requestOptions || {},
+          options.requestOptions
+        );
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,
@@ -2798,11 +2802,11 @@ class Database extends common.GrpcServiceObject {
    * region_tag:spanner_add_column
    * Adding a column:
    *
-   * @example <caption>include:samples/indexing.js</caption>
+   * @example <caption>include:samples/index-create.js</caption>
    * region_tag:spanner_create_index
    * Creating an index:
    *
-   * @example <caption>include:samples/indexing.js</caption>
+   * @example <caption>include:samples/index-create-stroing.js</caption>
    * region_tag:spanner_create_storing_index
    * Creating a storing index:
    */

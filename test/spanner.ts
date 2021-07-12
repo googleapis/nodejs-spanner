@@ -43,16 +43,17 @@ import {
 import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
+import {PreciseDate} from '@google-cloud/precise-date';
+import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import ResultSetStats = google.spanner.v1.ResultSetStats;
 import RequestOptions = google.spanner.v1.RequestOptions;
-import Priority = google.spanner.v1.RequestOptions.Priority;
-import {PreciseDate} from '@google-cloud/precise-date';
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
+import Priority = google.spanner.v1.RequestOptions.Priority;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -141,8 +142,8 @@ describe('Spanner with mock server', () => {
     // TODO(loite): Enable when SPANNER_EMULATOR_HOST is supported.
     // Set environment variable for SPANNER_EMULATOR_HOST to the mock server.
     // process.env.SPANNER_EMULATOR_HOST = `localhost:${port}`;
+    process.env.GOOGLE_CLOUD_PROJECT = 'test-project';
     spanner = new Spanner({
-      projectId: 'fake-project-id',
       servicePath: 'localhost',
       port,
       sslCreds: grpc.credentials.createInsecure(),
@@ -152,6 +153,7 @@ describe('Spanner with mock server', () => {
   });
 
   after(() => {
+    spanner.close();
     server.tryShutdown(() => {});
     delete process.env.SPANNER_EMULATOR_HOST;
     sandbox.restore();
@@ -194,13 +196,31 @@ describe('Spanner with mock server', () => {
       }
     });
 
+    it('should replace {{projectId}} in resource header', async () => {
+      const query = {
+        sql: selectSql,
+      };
+      const database = newTestDatabase();
+      try {
+        await database.run(query);
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(CLOUD_RESOURCE_HEADER)[0],
+            `projects/test-project/instances/instance/databases/${database.id}`
+          );
+        });
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should execute query with requestOptions', async () => {
       const priority = RequestOptions.Priority.PRIORITY_HIGH;
       const database = newTestDatabase();
       try {
         const [rows] = await database.run({
           sql: selectSql,
-          requestOptions: {priority: priority},
+          requestOptions: {priority: priority, requestTag: 'request-tag'},
         });
         assert.strictEqual(rows.length, 3);
       } finally {
@@ -215,6 +235,7 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteSqlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_HIGH');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
     });
 
     it('should execute read with requestOptions', async () => {
@@ -223,7 +244,10 @@ describe('Spanner with mock server', () => {
       try {
         await snapshot.read('foo', {
           keySet: {all: true},
-          requestOptions: {priority: Priority.PRIORITY_MEDIUM},
+          requestOptions: {
+            priority: Priority.PRIORITY_MEDIUM,
+            requestTag: 'request-tag',
+          },
         });
       } catch (e) {
         // Ignore the fact that streaming read is unimplemented on the mock
@@ -242,15 +266,23 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ReadRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
     });
 
     it('should execute batchUpdate with requestOptions', async () => {
       const database = newTestDatabase();
-      await database.runTransactionAsync(tx => {
-        return tx!.batchUpdate([insertSql, insertSql], {
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM},
-        });
-      });
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          await tx!.batchUpdate([insertSql, insertSql], {
+            requestOptions: {
+              priority: RequestOptions.Priority.PRIORITY_MEDIUM,
+              requestTag: 'request-tag',
+            },
+          });
+          return await tx.commit();
+        }
+      );
       await database.close();
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteBatchDmlRequest).statements;
@@ -261,16 +293,36 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteBatchDmlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        commitRequest.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
 
     it('should execute update with requestOptions', async () => {
       const database = newTestDatabase();
-      await database.runTransactionAsync(tx => {
-        return tx!.runUpdate({
-          sql: insertSql,
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        });
-      });
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+            requestOptions: {
+              priority: RequestOptions.Priority.PRIORITY_LOW,
+              requestTag: 'request-tag',
+            },
+          });
+          return await tx.commit();
+        }
+      );
       await database.close();
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteSqlRequest).sql;
@@ -281,6 +333,59 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on ExecuteSqlRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.strictEqual(commitRequest.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        commitRequest.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+    });
+
+    it('should execute read with requestOptions in a read/write transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {requestOptions: {transactionTag: 'transaction-tag'}},
+        async tx => {
+          try {
+            return await tx.read('foo', {
+              keySet: {all: true},
+              requestOptions: {
+                priority: Priority.PRIORITY_LOW,
+                requestTag: 'request-tag',
+              },
+            });
+          } catch (e) {
+            // Ignore the fact that streaming read is unimplemented on the mock
+            // server. We just want to verify that the correct request is sent.
+            assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+            return undefined;
+          } finally {
+            tx.end();
+          }
+        }
+      );
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ReadRequest).table === 'foo';
+      }) as v1.ReadRequest;
+      assert.ok(request, 'no ReadRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on ReadRequest'
+      );
+      assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+      assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
 
     it('should return an array of json objects', async () => {
@@ -2905,18 +3010,94 @@ describe('Spanner with mock server', () => {
           await database.close();
         }
       });
+
+      it('should use request options', async () => {
+        const database = newTestDatabase();
+        await database.runPartitionedUpdate({
+          sql: updateSql,
+          requestOptions: {
+            priority: Priority.PRIORITY_LOW,
+            requestTag: 'request-tag',
+          },
+        });
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.ok(
+          request.requestOptions,
+          'no requestOptions found on ExecuteSqlRequest'
+        );
+        assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
+        assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+        await database.close();
+      });
+    });
+  });
+
+  describe('hand-crafted transaction', () => {
+    it('should use transactionTag on beginTransaction', async () => {
+      const database = newTestDatabase({min: 0});
+      const [session] = await database.createSession({});
+      const transaction = session.transaction(
+        {},
+        {transactionTag: 'transaction-tag'}
+      );
+      await transaction.begin();
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(request, 'no BeginTransactionRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on BeginTransactionRequest'
+      );
+      assert.strictEqual(request.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
+    });
+
+    it('should use transactionTag on blind commit', async () => {
+      const database = newTestDatabase({min: 0});
+      const [session] = await database.createSession({});
+      const transaction = session.transaction(
+        {},
+        {transactionTag: 'transaction-tag'}
+      );
+      transaction.insert('foo', {id: 1, name: 'One'});
+      await transaction.commit();
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).singleUseTransaction?.readWrite;
+      }) as v1.CommitRequest;
+      assert.ok(request, 'no CommitRequest found');
+      assert.ok(
+        request.requestOptions,
+        'no requestOptions found on CommitRequest'
+      );
+      assert.strictEqual(request.requestOptions!.requestTag, '');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
     });
   });
 
   describe('table', () => {
     it('should use requestOptions for mutations', async () => {
       const database = newTestDatabase();
-      await database
-        .table('foo')
-        .upsert(
-          {id: 1, name: 'bar'},
-          {requestOptions: {priority: RequestOptions.Priority.PRIORITY_MEDIUM}}
-        );
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
+          requestOptions: {
+            priority: RequestOptions.Priority.PRIORITY_MEDIUM,
+            transactionTag: 'transaction-tag',
+          },
+        }
+      );
 
       const request = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).mutations;
@@ -2927,6 +3108,10 @@ describe('Spanner with mock server', () => {
         'no requestOptions found on CommitRequest'
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_MEDIUM');
+      assert.strictEqual(
+        request.requestOptions!.transactionTag,
+        'transaction-tag'
+      );
 
       await database.close();
     });
@@ -3448,6 +3633,29 @@ describe('Spanner with mock server', () => {
           });
         }
       );
+    });
+
+    it('should create an instance with processing units', async () => {
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          processingUnits: 500,
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(createdInstance.processingUnits, 500);
+      assert.strictEqual(createdInstance.nodeCount, 0);
     });
 
     it('should update an instance', async () => {

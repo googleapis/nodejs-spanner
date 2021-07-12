@@ -17,7 +17,7 @@
 const {Spanner} = require('@google-cloud/spanner');
 const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
-const {describe, it, before, after} = require('mocha');
+const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
 
@@ -26,7 +26,6 @@ const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 const batchCmd = 'node batch.js';
 const crudCmd = 'node crud.js';
 const schemaCmd = 'node schema.js';
-const indexingCmd = 'node indexing.js';
 const queryOptionsCmd = 'node queryoptions.js';
 const rpcPriorityCommand = 'node rpc-priority.js';
 const transactionCmd = 'node transaction.js';
@@ -227,7 +226,7 @@ describe('Spanner', () => {
   });
 
   describe('instance', () => {
-    after(async () => {
+    afterEach(async () => {
       const sample_instance = spanner.instance(SAMPLE_INSTANCE_ID);
       await sample_instance.delete();
     });
@@ -246,6 +245,27 @@ describe('Spanner', () => {
       assert.match(
         output,
         new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+    });
+
+    // create_instance_with_processing_units
+    it('should create an example instance with processing units', async () => {
+      const output = execSync(
+        `${instanceCmd} createInstanceWithProcessingUnits "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Instance ${SAMPLE_INSTANCE_ID} has 500 processing units.`)
       );
     });
   });
@@ -404,7 +424,7 @@ describe('Spanner', () => {
   // create_index
   it('should create an index in an example table', async () => {
     const output = execSync(
-      `${indexingCmd} createIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the AlbumsByAlbumTitle index\./);
@@ -417,7 +437,7 @@ describe('Spanner', () => {
     await delay(this.test);
 
     const output = execSync(
-      `${indexingCmd} createStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-create-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the AlbumsByAlbumTitle2 index\./);
@@ -426,7 +446,7 @@ describe('Spanner', () => {
   // query_data_with_index
   it('should query an example table with an index and return matching rows', async () => {
     const output = execSync(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
       output,
@@ -440,7 +460,7 @@ describe('Spanner', () => {
 
   it('should respect query boundaries when querying an example table with an index', async () => {
     const output = execSync(
-      `${indexingCmd} queryIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} -s Ardvark -e Zoo`
+      `node index-query-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} "Ardvark" "Zoo"`
     );
     assert.match(
       output,
@@ -455,7 +475,7 @@ describe('Spanner', () => {
   // read_data_with_index
   it('should read an example table with an index', async () => {
     const output = execSync(
-      `${indexingCmd} readIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-read-data ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -463,7 +483,7 @@ describe('Spanner', () => {
   // read_data_with_storing_index
   it('should read an example table with a storing index', async () => {
     const output = execSync(
-      `${indexingCmd} readStoringIndex ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node index-read-data-with-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /AlbumId: 1, AlbumTitle: Total Junk/);
   });

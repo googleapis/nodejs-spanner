@@ -125,6 +125,10 @@ export type RunResponse = [
 ];
 export type RunUpdateResponse = [number];
 
+export interface BatchUpdateOptions {
+  requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  gaxOptions?: CallOptions;
+}
 export interface BatchUpdateCallback {
   (
     err: null | BatchUpdateError,
@@ -220,6 +224,7 @@ export class Snapshot extends EventEmitter {
   session: Session;
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
+  requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
 
   /**
    * The transaction ID.
@@ -343,6 +348,14 @@ export class Snapshot extends EventEmitter {
       session,
       options,
     };
+
+    // Only hand crafted read-write transactions will be able to set a
+    // transaction tag for the BeginTransaction RPC. Also, this.requestOptions
+    // is only set in the constructor of Transaction, which is the constructor
+    // for read/write transactions.
+    if (this.requestOptions) {
+      reqOpts.requestOptions = this.requestOptions;
+    }
 
     this.request(
       {
@@ -538,7 +551,8 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries} = request;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -556,13 +570,22 @@ export class Snapshot extends EventEmitter {
     delete request.maxResumeRetries;
     delete request.keys;
     delete request.ranges;
+    delete request.requestOptions;
 
-    const reqOpts: ReadRequest = Object.assign(request, {
-      session: this.session.formattedName_!,
-      transaction,
-      table,
-      keySet,
-    });
+    const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
+      request,
+      {
+        session: this.session.formattedName_!,
+        requestOptions: this.configureTagOptions(
+          typeof transaction.singleUse !== 'undefined',
+          this.requestOptions?.transactionTag!,
+          requestOptions
+        ),
+        transaction,
+        table,
+        keySet,
+      }
+    );
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       return this.requestStream({
@@ -965,7 +988,8 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries} = query;
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+      query;
     let reqOpts;
 
     const sanitizeRequest = () => {
@@ -981,10 +1005,17 @@ export class Snapshot extends EventEmitter {
       delete query.json;
       delete query.jsonOptions;
       delete query.maxResumeRetries;
+      delete query.requestOptions;
       delete query.types;
+
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
         seqno: this._seqno++,
+        requestOptions: this.configureTagOptions(
+          typeof transaction.singleUse !== 'undefined',
+          this.requestOptions?.transactionTag!,
+          requestOptions
+        ),
         transaction,
         params,
         paramTypes,
@@ -1016,6 +1047,22 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
     });
+  }
+
+  /**
+   *
+   * @private
+   */
+  configureTagOptions(
+    singleUse?: boolean,
+    transactionTag?: string,
+    requestOptions = {}
+  ): IRequestOptions | null {
+    if (!singleUse && transactionTag) {
+      (requestOptions as IRequestOptions).transactionTag = transactionTag;
+    }
+
+    return requestOptions!;
   }
 
   /**
@@ -1151,7 +1198,7 @@ export class Snapshot extends EventEmitter {
  * that a callback is omitted.
  */
 promisifyAll(Snapshot, {
-  exclude: ['end'],
+  exclude: ['configureTagOptions', 'end'],
 });
 
 /**
@@ -1312,12 +1359,14 @@ export class Transaction extends Dml {
   constructor(
     session: Session,
     options = {} as spannerClient.spanner.v1.TransactionOptions.ReadWrite,
-    queryOptions?: IQueryOptions
+    queryOptions?: IQueryOptions,
+    requestOptions?: Pick<IRequestOptions, 'transactionTag'>
   ) {
     super(session, undefined, queryOptions);
 
     this._queuedMutations = [];
     this._options = {readWrite: options};
+    this.requestOptions = requestOptions;
   }
 
   batchUpdate(
@@ -1435,9 +1484,13 @@ export class Transaction extends Dml {
 
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
+      requestOptions: this.configureTagOptions(
+        false,
+        this.requestOptions?.transactionTag!,
+        (options as BatchUpdateOptions).requestOptions
+      ),
       transaction: {id: this.id!},
       seqno: this._seqno++,
-      requestOptions: (options as BatchUpdateOptions).requestOptions,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
@@ -1595,6 +1648,10 @@ export class Transaction extends Dml {
     ) {
       reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
     }
+    reqOpts.requestOptions = Object.assign(
+      requestOptions || {},
+      this.requestOptions
+    );
 
     this.request(
       {
