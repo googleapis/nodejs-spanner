@@ -13,13 +13,14 @@
  * limitations under the License.
  */
 
+// sample-metadata:
+//  title: Gets the query statistics from the last hour for a specific tag
+//  usage: node query-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+
 'use strict';
 
-async function main(instanceId, databaseId, projectId) {
+function main(instanceId, databaseId, projectId) {
   // [START spanner_query_tags]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -27,34 +28,41 @@ async function main(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  async function queryTags() {
+    // Gets a reference to a Cloud Spanner instance and database.
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
 
-  // Get the statistics for queries that used a specific request tag.
-  const [stats] = await database.run({
-    sql: `SELECT REQUEST_TAG, AVG_LATENCY_SECONDS, AVG_CPU_SECONDS
-          FROM SPANNER_SYS.QUERY_STATS_TOP_HOUR
-          WHERE REQUEST_TAG = 'app=cart,env=dev,action=update'`,
-    json: true,
-  });
-  console.log(
-    "Query stats last hour for request tag 'app=cart,env=dev,action=update':"
-  );
-  stats.forEach(row => {
+    // Get the statistics for queries that used a specific request tag.
+    const [stats] = await database.run({
+      sql: `SELECT REQUEST_TAG, AVG_LATENCY_SECONDS, AVG_CPU_SECONDS
+            FROM SPANNER_SYS.QUERY_STATS_TOP_HOUR
+            WHERE REQUEST_TAG = 'app=cart,env=dev,action=update'`,
+      json: true,
+    });
     console.log(
-      `${row.REQUEST_TAG} ${row.AVG_LATENCY_SECONDS} ${row.AVG_CPU_SECONDS}`
+      "Query stats last hour for request tag 'app=cart,env=dev,action=update':"
     );
-  });
-
-  await database.close();
+    stats.forEach(row => {
+      console.log(
+        `${row.REQUEST_TAG} ${row.AVG_LATENCY_SECONDS} ${row.AVG_CPU_SECONDS}`
+      );
+    });
+    await database.close();
+  }
+  queryTags();
   // [END spanner_query_tags]
 }
-main(...process.argv.slice(2)).then(() =>
-  console.log('Finished executing query-tag sample')
-);
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
