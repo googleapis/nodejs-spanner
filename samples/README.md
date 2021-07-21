@@ -43,12 +43,14 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Gets the query statistics from the last hour for a specific tag](#gets-the-query-statistics-from-the-last-hour-for-a-specific-tag)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Rpc-priority](#rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
+  * [Executes a read/write transaction with transaction and query tags](#executes-a-read/write-transaction-with-transaction-and-query-tags)
   * [Transaction](#transaction)
 
 ## Before you begin
@@ -559,6 +561,23 @@ __Usage:__
 
 
 
+### Gets the query statistics from the last hour for a specific tag
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/query-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/query-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node query-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Queryoptions
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/queryoptions.js).
@@ -654,6 +673,23 @@ __Usage:__
 
 
 `node samples/timestamp.js`
+
+
+-----
+
+
+
+
+### Executes a read/write transaction with transaction and query tags
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node transaction-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
