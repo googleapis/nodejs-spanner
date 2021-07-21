@@ -38,7 +38,9 @@ async function databaseWithQueryOptions(instanceId, databaseId, projectId) {
     {},
     {
       optimizerVersion: '1',
-      optimizerStatisticsPackage: 'auto_20191128_14_47_22UTC',
+      // The list of available statistics packages can be found by querying the
+      // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
+      optimizerStatisticsPackage: 'latest',
     }
   );
 
@@ -97,6 +99,8 @@ async function queryWithQueryOptions(instanceId, databaseId, projectId) {
           ORDER BY AlbumTitle`,
     queryOptions: {
       optimizerVersion: 'latest',
+      // The list of available statistics packages can be found by querying the
+      // "INFORMATION_SCHEMA.SPANNER_STATISTICS" table.
       optimizerStatisticsPackage: 'latest',
     },
   };
