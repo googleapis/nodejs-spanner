@@ -687,8 +687,8 @@ describe('codec', () => {
 
     it('should encode deeply-nested object as JSON', () => {
       // Cloud Spanner accepts a nesting level in a JSON string of at most 100.
-      // This test ensures that the encode is able to encode such an object to a
-      // JSON string.
+      // This test ensures that the encoder is able to encode such an object to
+      // a JSON string.
       const nesting = 100;
       const value = JSON.parse(
         '{"k": '.repeat(nesting).concat('"v"').concat('}'.repeat(nesting))
@@ -699,6 +699,27 @@ describe('codec', () => {
       assert.deepStrictEqual(
         encoded,
         '{"k":'.repeat(nesting).concat('"v"').concat('}'.repeat(nesting))
+      );
+    });
+
+    it('should decode deeply-nested object as JSON', () => {
+      // Cloud Spanner accepts a nesting level in a JSON string of at most 100.
+      // This test ensures that the encoder is able to decode such a string.
+      const nesting = 100;
+      const value = '{"k": '
+        .repeat(nesting)
+        .concat('"v"')
+        .concat('}'.repeat(nesting));
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+      });
+
+      assert.deepStrictEqual(
+        decoded,
+        JSON.parse(
+          '{"k":'.repeat(nesting).concat('"v"').concat('}'.repeat(nesting))
+        )
       );
     });
   });
