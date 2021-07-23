@@ -704,7 +704,7 @@ describe('codec', () => {
 
     it('should decode deeply-nested object as JSON', () => {
       // Cloud Spanner accepts a nesting level in a JSON string of at most 100.
-      // This test ensures that the encoder is able to decode such a string.
+      // This test ensures that the decoder is able to decode such a string.
       const nesting = 100;
       const value = '{"k": '
         .repeat(nesting)
