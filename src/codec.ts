@@ -340,6 +340,10 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'DATE':
       decoded = new SpannerDate(decoded);
       break;
+    case spannerClient.spanner.v1.TypeCode.JSON:
+    case 'JSON':
+      decoded = JSON.parse(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.ARRAY:
     case 'ARRAY':
       decoded = decoded.map(value => {
@@ -418,6 +422,10 @@ function encodeValue(value: Value): Value {
     return value.map(encodeValue);
   }
 
+  if (is.object(value)) {
+    return JSON.stringify(value);
+  }
+
   return value;
 }
 
@@ -439,6 +447,7 @@ const TypeCode: {
   date: 'DATE',
   string: 'STRING',
   bytes: 'BYTES',
+  json: 'JSON',
   array: 'ARRAY',
   struct: 'STRUCT',
 };
@@ -472,6 +481,7 @@ interface FieldType extends Type {
  *     - bool
  *     - string
  *     - bytes
+ *     - json
  *     - timestamp
  *     - date
  *     - struct
@@ -553,6 +563,10 @@ function getType(value: Value): Type {
       type: 'array',
       child: getType(child),
     };
+  }
+
+  if (is.object(value)) {
+    return {type: 'json'};
   }
 
   return {type: 'unspecified'};

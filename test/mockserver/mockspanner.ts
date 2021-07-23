@@ -1091,6 +1091,10 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
       type: protobuf.Type.create({code: protobuf.TypeCode.BYTES}),
     }),
     protobuf.StructType.Field.create({
+      name: 'COLJSON',
+      type: protobuf.Type.create({code: protobuf.TypeCode.JSON}),
+    }),
+    protobuf.StructType.Field.create({
       name: 'COLDATE',
       type: protobuf.Type.create({code: protobuf.TypeCode.DATE}),
     }),
@@ -1147,6 +1151,13 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
       }),
     }),
     protobuf.StructType.Field.create({
+      name: 'COLJSONARRAY',
+      type: protobuf.Type.create({
+        code: protobuf.TypeCode.ARRAY,
+        arrayElementType: protobuf.Type.create({code: protobuf.TypeCode.JSON}),
+      }),
+    }),
+    protobuf.StructType.Field.create({
       name: 'COLDATEARRAY',
       type: protobuf.Type.create({
         code: protobuf.TypeCode.ARRAY,
@@ -1179,6 +1190,7 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
           {stringValue: '6.626'},
           {stringValue: 'One'},
           {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '{"result":true, "count":42}'},
           {stringValue: '2021-05-11'},
           {stringValue: '2021-05-11T16:46:04.872Z'},
           {
@@ -1238,6 +1250,15 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
           {
             listValue: {
               values: [
+                {stringValue: '{"result":true, "count":42}'},
+                {stringValue: '{}'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
                 {stringValue: '2021-05-12'},
                 {stringValue: '2000-02-29'},
                 {nullValue: NullValue.NULL_VALUE},
@@ -1263,6 +1284,7 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
           {stringValue: '6.626'},
           {stringValue: 'Two'},
           {stringValue: Buffer.from('test').toString('base64')},
+          {stringValue: '{"result":true, "count":42}'},
           {stringValue: '2021-05-11'},
           {stringValue: '2021-05-11T16:46:04.872Z'},
           {
@@ -1322,6 +1344,15 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
           {
             listValue: {
               values: [
+                {stringValue: '{"result":true, "count":42}'},
+                {stringValue: '{}'},
+                {nullValue: NullValue.NULL_VALUE},
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
                 {stringValue: '2021-05-12'},
                 {stringValue: '2000-02-29'},
                 {nullValue: NullValue.NULL_VALUE},
@@ -1341,6 +1372,8 @@ export function createResultSetWithAllDataTypes(): protobuf.ResultSet {
       },
       {
         values: [
+          {nullValue: NullValue.NULL_VALUE},
+          {nullValue: NullValue.NULL_VALUE},
           {nullValue: NullValue.NULL_VALUE},
           {nullValue: NullValue.NULL_VALUE},
           {nullValue: NullValue.NULL_VALUE},

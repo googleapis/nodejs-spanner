@@ -611,6 +611,10 @@ const {addNumericColumn} = require('./numeric-add-column');
 const {updateWithNumericData} = require('./numeric-update-data');
 const {queryWithNumericParameter} = require('./numeric-query-parameter');
 
+const {addJsonColumn} = require('./json-add-column');
+const {updateWithJsonData} = require('./json-update-data');
+const {queryWithJsonParameter} = require('./json-query-parameter');
+
 require('yargs')
   .demand(1)
   .command(
@@ -700,6 +704,30 @@ require('yargs')
     {},
     opts =>
       queryWithNumericParameter(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .command(
+    'addJsonColumn <instanceName> <databaseName> <projectId>',
+    'Adds a "VenueDetails" column to sample "Venues" table in a Cloud Spanner database.',
+    {},
+    opts => addJsonColumn(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'updateWithJsonData <instanceName> <databaseName> <projectId>',
+    'Updates rows to include "VenueDetails" in sample "Venues" Cloud Spanner table.',
+    {},
+    opts =>
+      updateWithJsonData(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'queryWithJsonParameter <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a JSON datatype.",
+    {},
+    opts =>
+      queryWithJsonParameter(
         opts.instanceName,
         opts.databaseName,
         opts.projectId
