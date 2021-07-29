@@ -33,13 +33,14 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {grpc, GrpcClientOptions, CallOptions} from 'google-gax';
-import {google as instanceAdmin} from '../protos/protos';
+import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
   PagedResponse,
   PagedCallback,
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
+  NormalCallback,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -74,6 +75,9 @@ export type GetInstanceConfigsCallback = PagedCallback<
   instanceAdmin.spanner.admin.instance.v1.IInstanceConfig,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
+
+export type GetInstanceConfigResponse = [IInstanceConfig];
+export type GetInstanceConfigCallback = NormalCallback<IInstanceConfig>;
 
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -682,6 +686,9 @@ class Spanner extends GrpcService {
    * @property {string} 0.name The unique identifier for the instance config.
    * @property {string} 0.displayName The name of the instance config as it
    *     appears in UIs.
+   * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} 0.replicas The replicas used by
+   *     this instance config.
+   * @property {string[]} 0.leaderOptions The possible leader options for this instance config.
    * @property {object} 1 A query object to receive more results.
    * @property {object} 2 The full API response.
    */
@@ -693,6 +700,9 @@ class Spanner extends GrpcService {
    *     config.
    * @param {string} instanceConfigs.displayName The name of the instance config
    *     as it appears in UIs.
+   * @param {google.spanner.admin.instance.v1.IReplicaInfo[]} instanceConfigs.replicas The replicas used by
+   *     this instance config.
+   * @param {string[]} instanceConfigs.leaderOptions The possible leader options for this instance config.
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
@@ -855,6 +865,93 @@ class Spanner extends GrpcService {
       gaxOpts,
       headers: this.resourceHeader_,
     });
+  }
+
+  getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
+  /**
+   * Gets the instance configuration with the specified name.
+   */
+  /**
+   * @typedef {array} GetInstanceConfigResponse
+   * @property {object[]} 0 The metadata of the instance config.
+   * @property {string} 0.name The unique identifier for the instance config.
+   * @property {string} 0.displayName The name of the instance config as it
+   *     appears in UIs.
+   * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} 0.replicas The replicas used by
+   *     this instance config.
+   * @property {string[]} 0.leaderOptions The possible leader options for this instance config.
+   */
+  /**
+   * @callback GetInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} instanceConfig The metadata of the instance config.
+   * @param {string} instanceConfig.name The unique identifier for the instance
+   *     config.
+   * @param {string} instanceConfig.displayName The name of the instance config
+   *     as it appears in UIs.
+   * @param {google.spanner.admin.instance.v1.IReplicaInfo[]} instanceConfig.replicas The replicas used by
+   *     this instance config.
+   * @param {string[]} 0.leaderOptions The possible leader options for this instance config.
+   */
+  /**
+   * Get a specific instance config.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#getInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#getInstanceConfig}
+   * @see [GetInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstanceConfig)
+   *
+   * @param {string} [name] The name of the instance config to get.
+   * @param {GetInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<GetInstanceConfigResponse>}
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * spanner.getInstanceConfig('nam6', function(err, instanceConfig) {
+   *   // `instanceConfig` is an instance configuration descriptor.
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * spanner.getInstanceConfig().then(function(data) {
+   *   const instanceConfig = data[0];
+   * });
+   */
+  getInstanceConfig(
+    name: string,
+    optionsOrCallback?: CallOptions | GetInstanceConfigCallback,
+    cb?: GetInstanceConfigCallback
+  ): Promise<GetInstanceConfigResponse> | void {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as CallOptions);
+
+    const reqOpts = extend(
+      {},
+      {
+        name: 'projects/' + this.projectId + '/instanceConfigs/' + name,
+      }
+    );
+
+    return this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'getInstanceConfig',
+        reqOpts,
+        gaxOpts: options,
+        headers: this.resourceHeader_,
+      },
+      (err, instanceConfig) => {
+        callback!(err, instanceConfig);
+      }
+    );
   }
 
   /**
@@ -1290,5 +1387,6 @@ export {Transaction};
  *   Reference to {@link v1.SpannerClient}
  */
 import * as protos from '../protos/protos';
+import IInstanceConfig = google.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};

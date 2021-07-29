@@ -933,6 +933,25 @@ describe('Spanner', () => {
           })
         );
     });
+
+    it('should get an instanceConfig', done => {
+      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
+        assert.ifError(err);
+        assert(instanceConfig!.displayName);
+        done();
+      });
+    });
+
+    it('should get an instanceConfig in promise mode', done => {
+      spanner
+        .getInstanceConfig('nam6')
+        .then(data => {
+          const instanceConfig = data[0];
+          assert(instanceConfig.displayName);
+          done();
+        })
+        .catch(done);
+    });
   });
 
   describe('Databases', () => {
