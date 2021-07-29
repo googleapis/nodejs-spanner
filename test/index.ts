@@ -31,7 +31,11 @@ import * as sinon from 'sinon';
 import * as spnr from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest} from '../src/index';
-import {GetInstanceConfigOptions, GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
+import {
+  GetInstanceConfigOptions,
+  GetInstanceConfigsOptions,
+  GetInstancesOptions,
+} from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
@@ -1295,7 +1299,9 @@ describe('Spanner', () => {
       const options: GetInstanceConfigOptions = {
         gaxOptions: {timeout: 5},
       };
-      const expectedReqOpts = {name: `projects/${spanner.projectId}/instanceConfigs/nam1`};
+      const expectedReqOpts = {
+        name: `projects/${spanner.projectId}/instanceConfigs/nam1`,
+      };
 
       function callback() {}
 
@@ -1316,7 +1322,11 @@ describe('Spanner', () => {
         return returnValue;
       };
 
-      const returnedValue = spanner.getInstanceConfig('nam1', options, callback);
+      const returnedValue = spanner.getInstanceConfig(
+        'nam1',
+        options,
+        callback
+      );
       assert.strictEqual(returnedValue, returnValue);
     });
 

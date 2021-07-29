@@ -871,9 +871,16 @@ class Spanner extends GrpcService {
   }
 
   getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
-  getInstanceConfig(name: string, options: GetInstanceConfigOptions): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions
+  ): Promise<GetInstanceConfigResponse>;
   getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
-  getInstanceConfig(name: string, options: GetInstanceConfigOptions, callback: GetInstanceConfigCallback): void;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions,
+    callback: GetInstanceConfigCallback
+  ): void;
   /**
    * Gets the instance configuration with the specified name.
    */
