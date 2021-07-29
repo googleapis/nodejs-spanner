@@ -56,8 +56,8 @@ const LOCATION_ID = 'regional-us-central1';
 const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
-const DEFAULT_LEADER = 'test-leader';
-const DEFAULT_LEADER_2 = 'test-leader-2';
+const DEFAULT_LEADER = 'us-central1';
+const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -1130,97 +1130,117 @@ describe('Spanner', () => {
     assert.include(output, 'Earliest version time:');
   });
 
-  // list_instance_configs
-  it('should list available instance configs', async () => {
-    const output = execSync(
-        `node list-instance-configs.js ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Available instance configs for project ${PROJECT_ID}:`
-        )
-    );
-    assert.include(output, `Available leader options for instance config`);
-  });
+  describe('leader options', () => {
+    before(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      const [, operation] =  instance.create({
+        config: 'nam6',
+        nodes: 1,
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
+      });
+      await operation.promise();
+    });
 
-  // get_instance_config
-  it('should get a specific instance config', async () => {
-    const output = execSync(
-        `node get-instance-config.js ${PROJECT_ID}`
-    );
-    assert.include(output, `Available leader options for instance config`);
-  });
+    after(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await instance.delete();
+    });
 
-  // create_database_with_default_leader
-  it('should create a database with a default leader', async () => {
-    const output = execSync(
-        `node database-create-with-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
-        )
-    );
-    assert.match(
-        output,
-        new RegExp(`Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`
-        )
-    );
-  });
+    // list_instance_configs
+    it('should list available instance configs', async () => {
+      const output = execSync(
+          `node list-instance-configs.js ${PROJECT_ID}`
+      );
+      assert.match(
+          output,
+          new RegExp(
+              `Available instance configs for project ${PROJECT_ID}:`
+          )
+      );
+      assert.include(output, `Available leader options for instance config`);
+    });
 
-  // update_database_with_default_leader
-  it('should update a database with a default leader', async () => {
-    const output = execSync(
-        `node database-update-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
-        )
-    );
-    assert.match(
-        output,
-        new RegExp(`Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`
-        )
-    );
-  });
+    // get_instance_config
+    it('should get a specific instance config', async () => {
+      const output = execSync(
+          `node get-instance-config.js ${PROJECT_ID}`
+      );
+      assert.include(output, `Available leader options for instance config`);
+    });
 
-  // get_default_leader
-  it('should get the default leader option of a database', async () => {
-    const output = execSync(
-        `node database-get-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
-    );
-    assert.include(output, `The default_leader for ${DEFAULT_LEADER_DATABASE_ID} is ${DEFAULT_LEADER_2}`);
-  });
+    // create_database_with_default_leader
+    it('should create a database with a default leader', async () => {
+      const output = execSync(
+          `node database-create-with-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`
+      );
+      assert.match(
+          output,
+          new RegExp(
+              `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+          )
+      );
+      assert.match(
+          output,
+          new RegExp(`Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`
+          )
+      );
+    });
 
-  // list_databases
-  it('should list databases on the instance', async () => {
-    const output = execSync(
-        `node list-databases.js "${INSTANCE_ID}" ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Databases for projects/${PROJECT_ID}/instances/${INSTANCE_ID}:`
-        )
-    );
-    assert.include(output, `(default leader = ${DEFAULT_LEADER_2}`);
-  });
+    // update_database_with_default_leader
+    it('should update a database with a default leader', async () => {
+      const output = execSync(
+          `node database-update-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`
+      );
+      assert.match(
+          output,
+          new RegExp(
+              `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+          )
+      );
+      assert.match(
+          output,
+          new RegExp(`Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`
+          )
+      );
+    });
 
-  // get_database_ddl
-  it('should get the ddl of a database', async () => {
-    const output = execSync(
-        `node database-get-ddl.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Retrieved database DDL for projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`
-        )
-    );
-    assert.include(output, `CREATE TABLE Singers`);
+    // get_default_leader
+    it('should get the default leader option of a database', async () => {
+      const output = execSync(
+          `node database-get-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.include(output, `The default_leader for ${DEFAULT_LEADER_DATABASE_ID} is ${DEFAULT_LEADER_2}`);
+    });
+
+    // list_databases
+    it('should list databases on the instance', async () => {
+      const output = execSync(
+          `node list-databases.js "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+          output,
+          new RegExp(
+              `Databases for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}:`
+          )
+      );
+      assert.include(output, `(default leader = ${DEFAULT_LEADER_2}`);
+    });
+
+    // get_database_ddl
+    it('should get the ddl of a database', async () => {
+      const output = execSync(
+          `node database-get-ddl.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+          output,
+          new RegExp(
+              `Retrieved database DDL for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`
+          )
+      );
+      assert.include(output, `CREATE TABLE Singers`);
+    });
   });
 });
