@@ -1164,7 +1164,8 @@ describe('Spanner', () => {
     });
 
     // get_instance_config
-    it('should get a specific instance config', async () => {
+    // TODO: Enable when the feature has been merged.
+    it.skip('should get a specific instance config', async () => {
       const output = execSync(
           `node get-instance-config.js ${PROJECT_ID}`
       );
