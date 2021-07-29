@@ -33,7 +33,7 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {grpc, GrpcClientOptions, CallOptions} from 'google-gax';
-import {google, google as instanceAdmin} from '../protos/protos';
+import {google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
   PagedResponse,
@@ -76,6 +76,9 @@ export type GetInstanceConfigsCallback = PagedCallback<
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigsResponse
 >;
 
+export interface GetInstanceConfigOptions {
+  gaxOptions?: CallOptions;
+}
 export type GetInstanceConfigResponse = [IInstanceConfig];
 export type GetInstanceConfigCallback = NormalCallback<IInstanceConfig>;
 
@@ -868,7 +871,9 @@ class Spanner extends GrpcService {
   }
 
   getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(name: string, options: GetInstanceConfigOptions): Promise<GetInstanceConfigResponse>;
   getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
+  getInstanceConfig(name: string, options: GetInstanceConfigOptions, callback: GetInstanceConfigCallback): void;
   /**
    * Gets the instance configuration with the specified name.
    */
@@ -923,7 +928,7 @@ class Spanner extends GrpcService {
    */
   getInstanceConfig(
     name: string,
-    optionsOrCallback?: CallOptions | GetInstanceConfigCallback,
+    optionsOrCallback?: GetInstanceConfigOptions | GetInstanceConfigCallback,
     cb?: GetInstanceConfigCallback
   ): Promise<GetInstanceConfigResponse> | void {
     const callback =
@@ -931,7 +936,7 @@ class Spanner extends GrpcService {
     const options =
       typeof optionsOrCallback === 'object'
         ? optionsOrCallback
-        : ({} as CallOptions);
+        : ({} as GetInstanceConfigOptions);
 
     const reqOpts = extend(
       {},
@@ -939,13 +944,14 @@ class Spanner extends GrpcService {
         name: 'projects/' + this.projectId + '/instanceConfigs/' + name,
       }
     );
+    const gaxOpts = extend({}, options.gaxOptions);
 
     return this.request(
       {
         client: 'InstanceAdminClient',
         method: 'getInstanceConfig',
         reqOpts,
-        gaxOpts: options,
+        gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, instanceConfig) => {
@@ -1387,6 +1393,6 @@ export {Transaction};
  *   Reference to {@link v1.SpannerClient}
  */
 import * as protos from '../protos/protos';
-import IInstanceConfig = google.spanner.admin.instance.v1.IInstanceConfig;
+import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};

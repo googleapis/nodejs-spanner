@@ -934,7 +934,10 @@ describe('Spanner', () => {
         );
     });
 
-    it('should get an instanceConfig', done => {
+    it('should get an instanceConfig', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
         assert.ifError(err);
         assert(instanceConfig!.displayName);
@@ -942,7 +945,10 @@ describe('Spanner', () => {
       });
     });
 
-    it('should get an instanceConfig in promise mode', done => {
+    it('should get an instanceConfig in promise mode', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
       spanner
         .getInstanceConfig('nam6')
         .then(data => {
