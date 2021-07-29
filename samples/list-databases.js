@@ -40,7 +40,7 @@ function main(instanceId, projectId) {
   async function listDatabases() {
     // Lists all databases on the instance.
     const [databases] = await instance.getDatabases();
-    console.log(`Databases for projects/${projectId}/instances/${instanceId}`);
+    console.log(`Databases for projects/${projectId}/instances/${instanceId}:`);
     databases.forEach(database => {
       const defaultLeader = database.metadata.defaultLeader
         ? `(default leader = ${database.metadata.defaultLeader})`

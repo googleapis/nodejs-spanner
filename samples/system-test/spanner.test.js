@@ -48,6 +48,7 @@ const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
+const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
@@ -55,6 +56,8 @@ const LOCATION_ID = 'regional-us-central1';
 const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
+const DEFAULT_LEADER = 'test-leader';
+const DEFAULT_LEADER_2 = 'test-leader-2';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -1125,5 +1128,99 @@ describe('Spanner', () => {
     );
     assert.include(output, 'Version retention period: 1d');
     assert.include(output, 'Earliest version time:');
+  });
+
+  // list_instance_configs
+  it('should list available instance configs', async () => {
+    const output = execSync(
+        `node list-instance-configs.js ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(
+            `Available instance configs for project ${PROJECT_ID}:`
+        )
+    );
+    assert.include(output, `Available leader options for instance config`);
+  });
+
+  // get_instance_config
+  it('should get a specific instance config', async () => {
+    const output = execSync(
+        `node get-instance-config.js ${PROJECT_ID}`
+    );
+    assert.include(output, `Available leader options for instance config`);
+  });
+
+  // create_database_with_default_leader
+  it('should create a database with a default leader', async () => {
+    const output = execSync(
+        `node database-create-with-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(
+            `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+        )
+    );
+    assert.match(
+        output,
+        new RegExp(`Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`
+        )
+    );
+  });
+
+  // update_database_with_default_leader
+  it('should update a database with a default leader', async () => {
+    const output = execSync(
+        `node database-update-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(
+            `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+        )
+    );
+    assert.match(
+        output,
+        new RegExp(`Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`
+        )
+    );
+  });
+
+  // get_default_leader
+  it('should get the default leader option of a database', async () => {
+    const output = execSync(
+        `node database-get-default-leader.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.include(output, `The default_leader for ${DEFAULT_LEADER_DATABASE_ID} is ${DEFAULT_LEADER_2}`);
+  });
+
+  // list_databases
+  it('should list databases on the instance', async () => {
+    const output = execSync(
+        `node list-databases.js "${INSTANCE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(
+            `Databases for projects/${PROJECT_ID}/instances/${INSTANCE_ID}:`
+        )
+    );
+    assert.include(output, `(default leader = ${DEFAULT_LEADER_2}`);
+  });
+
+  // get_database_ddl
+  it('should get the ddl of a database', async () => {
+    const output = execSync(
+        `node database-get-ddl.js "${INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(
+            `Retrieved database DDL for projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`
+        )
+    );
+    assert.include(output, `CREATE TABLE Singers`);
   });
 });
