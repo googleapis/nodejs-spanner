@@ -1134,9 +1134,9 @@ describe('Spanner', () => {
     before(async () => {
       const instance = spanner.instance(SAMPLE_INSTANCE_ID);
       const [, operation] = await instance.create({
-        config: 'regional-us-central1',
+        config: 'nam6',
         nodes: 1,
-        displayName: 'Test instance for multi-region leader options',
+        displayName: 'Multi-region options test',
         labels: {
           ['cloud_spanner_samples']: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
@@ -1165,7 +1165,7 @@ describe('Spanner', () => {
     });
 
     // get_instance_config
-    // TODO: Enable when the feature has been merged.
+    // TODO: Enable when the feature has been released.
     it.skip('should get a specific instance config', async () => {
       const output = execSync(
           `node get-instance-config.js ${PROJECT_ID}`
