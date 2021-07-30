@@ -1136,11 +1136,11 @@ describe('Spanner', () => {
       const [, operation] = await instance.create({
         config: 'nam6',
         nodes: 1,
+        displayName: 'Test instance for multi-region leader options',
         labels: {
-          [LABEL]: 'true',
-          created: CURRENT_TIME,
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
         },
-        gaxOptions: GAX_OPTIONS,
       });
       await operation.promise();
     });
