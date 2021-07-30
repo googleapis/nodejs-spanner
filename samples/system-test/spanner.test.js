@@ -1134,7 +1134,7 @@ describe('Spanner', () => {
     before(async () => {
       const instance = spanner.instance(SAMPLE_INSTANCE_ID);
       const [, operation] = await instance.create({
-        config: 'nam6',
+        config: 'regional-us-central1',
         nodes: 1,
         displayName: 'Test instance for multi-region leader options',
         labels: {
