@@ -31,7 +31,11 @@ import * as sinon from 'sinon';
 import * as spnr from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest} from '../src/index';
-import {GetInstanceConfigsOptions, GetInstancesOptions} from '../src';
+import {
+  GetInstanceConfigOptions,
+  GetInstanceConfigsOptions,
+  GetInstancesOptions,
+} from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
@@ -1283,6 +1287,61 @@ describe('Spanner', () => {
 
       const returnedValue = spanner.getInstanceConfigs(options, assert.ifError);
       assert.strictEqual(returnedValue, returnValue);
+    });
+  });
+
+  describe('getInstanceConfig', () => {
+    beforeEach(() => {
+      spanner.request = util.noop;
+    });
+
+    it('should make and return the correct request', () => {
+      const options: GetInstanceConfigOptions = {
+        gaxOptions: {timeout: 5},
+      };
+      const expectedReqOpts = {
+        name: `projects/${spanner.projectId}/instanceConfigs/nam1`,
+      };
+
+      function callback() {}
+
+      const returnValue = {};
+
+      spanner.request = config => {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'getInstanceConfig');
+
+        const reqOpts = config.reqOpts;
+        assert.deepStrictEqual(reqOpts, expectedReqOpts);
+        assert.notStrictEqual(reqOpts, options);
+
+        const gaxOpts = config.gaxOpts;
+        assert.deepStrictEqual(gaxOpts, options.gaxOptions);
+        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+
+        return returnValue;
+      };
+
+      const returnedValue = spanner.getInstanceConfig(
+        'nam1',
+        options,
+        callback
+      );
+      assert.strictEqual(returnedValue, returnValue);
+    });
+
+    it('should not require options', done => {
+      spanner.request = config => {
+        const reqOpts = config.reqOpts;
+        assert.deepStrictEqual(reqOpts, {
+          name: `projects/${spanner.projectId}/instanceConfigs/nam1`,
+        });
+        assert.deepStrictEqual(config.gaxOpts, {});
+
+        done();
+      };
+
+      spanner.getInstanceConfig('nam1', assert.ifError);
     });
   });
 
