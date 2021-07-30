@@ -15,7 +15,7 @@
 
 // sample-metadata:
 //  title: Gets the default leader option of an existing database
-//  usage: node database-get-ddl.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node database-get-default-leader.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
