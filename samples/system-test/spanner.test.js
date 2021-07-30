@@ -1133,13 +1133,14 @@ describe('Spanner', () => {
   describe('leader options', () => {
     before(async () => {
       const instance = spanner.instance(SAMPLE_INSTANCE_ID);
-      const [, operation] =  instance.create({
+      const [, operation] = await instance.create({
         config: 'nam6',
         nodes: 1,
         labels: {
-          ['cloud_spanner_samples']: 'true',
-          created: Math.round(Date.now() / 1000).toString(), // current time
+          [LABEL]: 'true',
+          created: CURRENT_TIME,
         },
+        gaxOptions: GAX_OPTIONS,
       });
       await operation.promise();
     });
