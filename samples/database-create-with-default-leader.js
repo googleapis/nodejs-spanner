@@ -65,12 +65,18 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
       ALTER DATABASE \`${databaseId}\`
       SET OPTIONS (default_leader = '${defaultLeader}')`;
     const [, operation] = await database.create({
-      extraStatements: [createSingersTableStatement, createAlbumsStatement, setDefaultLeaderStatement],
+      extraStatements: [
+        createSingersTableStatement,
+        createAlbumsStatement,
+        setDefaultLeaderStatement,
+      ],
     });
 
     console.log(`Waiting for creation of ${database.id} to complete...`);
     await operation.promise();
-    console.log(`Created database ${databaseId} with default leader ${defaultLeader}.`);
+    console.log(
+      `Created database ${databaseId} with default leader ${defaultLeader}.`
+    );
   }
   createDatabaseWithDefaultLeader();
   // [END spanner_create_database_with_default_leader]

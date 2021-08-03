@@ -49,7 +49,9 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
 
     console.log(`Waiting for updating of ${database.id} to complete...`);
     await operation.promise();
-    console.log(`Updated database ${databaseId} with default leader ${defaultLeader}.`);
+    console.log(
+      `Updated database ${databaseId} with default leader ${defaultLeader}.`
+    );
   }
   updateDatabaseWithDefaultLeader();
   // [END spanner_update_database_with_default_leader]

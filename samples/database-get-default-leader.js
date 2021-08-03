@@ -46,13 +46,17 @@ function main(instanceId, databaseId, projectId) {
         SELECT s.OPTION_NAME, s.OPTION_VALUE
         FROM INFORMATION_SCHEMA.DATABASE_OPTIONS s
         WHERE s.OPTION_NAME = 'default_leader'`,
-      json: true
+      json: true,
     });
     if (rows.length > 0) {
       const option = rows[0];
-      console.log(`The ${option.OPTION_NAME} for ${databaseId} is ${option.OPTION_VALUE}`);
+      console.log(
+        `The ${option.OPTION_NAME} for ${databaseId} is ${option.OPTION_VALUE}`
+      );
     } else {
-      console.log(`Database ${databaseId} does not have a value for option 'default_leader'`);
+      console.log(
+        `Database ${databaseId} does not have a value for option 'default_leader'`
+      );
     }
   }
   getDatabaseDdl();
