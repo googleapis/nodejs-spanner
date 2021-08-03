@@ -14,13 +14,13 @@
  */
 
 // sample-metadata:
-//  title: Executes a read/write transaction with transaction and query tags
+//  title: Executes a read/write transaction with transaction and request tags
 //  usage: node transaction-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
 function main(instanceId, databaseId, projectId) {
-  // [START spanner_set_transaction_and_request_tags]
+  // [START spanner_set_transaction_tag]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -44,28 +44,35 @@ function main(instanceId, databaseId, projectId) {
     // Run a transaction with a transaction tag that will automatically be
     // included with each request in the transaction.
     try {
-      const updateCount = await database.runTransactionAsync(
+      await database.runTransactionAsync(
         {requestOptions: {transactionTag: 'app=cart,env=dev'}},
-        async tx => {
-          const [rows] = await tx.run({
-            sql: "SELECT VenueId FROM Venues WHERE VenueName='Venue 4' LIMIT 1",
-            requestOptions: {requestTag: 'app=cart,env=dev,action=list'},
+      async tx => {
+          // Set the request tag to "app=concert,env=dev,action=select".
+          // This request tag will only be set on this request.
+          const [venues] = await tx.run({
+            sql: `SELECT VenueId, VenueName, Capacity
+                  FROM Venues
+                  WHERE OutdoorVenue = @outdoorVenue`,
+            params: {outdoorVenue: false},
+            types: {outdoorVenue: {type: 'bool'}},
+            requestOptions: {requestTag: 'app=concert,env=dev,action=select'},
             json: true,
           });
-          let updateCount = 0;
-          if (rows.length) {
-            const id = rows[0].VenueId;
-            updateCount = await tx.runUpdate({
-              sql: "UPDATE Venues SET VenueName='New Venue 4' WHERE VenueId=@id",
-              params: {id},
-              types: {id: {type: 'int64'}},
+          for (const venue of venues) {
+            const newCapacity = Math.round(venue.Capacity / 4);
+            // Set the request tag to "app=concert,env=dev,action=update".
+            // This request tag will only be set on this request.
+            await tx.runUpdate({
+              sql: `UPDATE Venues SET Capacity = @capacity WHERE VenueId = @venueId`,
+              params: {venueId: venue.VenueId, capacity: newCapacity},
+              types: {venueId: {type: 'int64'}, capacity: {type: 'int64'}},
+              requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
             });
-          }
+            console.log(`Capacity of ${venue.VenueName} updated to ${newCapacity}`);
+          };
           await tx.commit();
-          return Promise.resolve(updateCount);
         }
       );
-      console.log(`Updated ${updateCount} venue(s)`);
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
@@ -73,7 +80,7 @@ function main(instanceId, databaseId, projectId) {
     }
   }
   transactionTag();
-  // [END spanner_set_transaction_and_request_tags]
+  // [END spanner_set_transaction_tag]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

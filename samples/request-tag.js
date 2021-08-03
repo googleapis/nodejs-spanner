@@ -14,13 +14,13 @@
  */
 
 // sample-metadata:
-//  title: Gets the query statistics from the last hour for a specific tag
-//  usage: node query-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Sets a request tag for a single query
+//  usage: node request-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
 function main(instanceId, databaseId, projectId) {
-  // [START spanner_query_tags]
+  // [START spanner_set_request_tag]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -41,25 +41,19 @@ function main(instanceId, databaseId, projectId) {
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Get the statistics for queries that used a specific request tag.
-    const [stats] = await database.run({
-      sql: `SELECT REQUEST_TAG, AVG_LATENCY_SECONDS, AVG_CPU_SECONDS
-            FROM SPANNER_SYS.QUERY_STATS_TOP_HOUR
-            WHERE REQUEST_TAG = 'app=cart,env=dev,action=update'`,
+    // Execute a query with a request tag.
+    const [albums] = await database.run({
+      sql: `SELECT SingerId, AlbumId, AlbumTitle FROM Albums`,
+      requestOptions: {requestTag: `app=concert,env=dev,action=select`},
       json: true,
-    });
-    console.log(
-      "Query stats last hour for request tag 'app=cart,env=dev,action=update':"
-    );
-    stats.forEach(row => {
-      console.log(
-        `${row.REQUEST_TAG} ${row.AVG_LATENCY_SECONDS} ${row.AVG_CPU_SECONDS}`
-      );
+    })
+    albums.forEach(album => {
+      console.log(`SingerId: ${album.SingerId}, AlbumId: ${album.AlbumId}, AlbumTitle: ${album.AlbumTitle}`);
     });
     await database.close();
   }
   queryTags();
-  // [END spanner_query_tags]
+  // [END spanner_set_request_tag]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);
