@@ -46,7 +46,7 @@ function main(instanceId, databaseId, projectId) {
     try {
       await database.runTransactionAsync(
         {requestOptions: {transactionTag: 'app=cart,env=dev'}},
-      async tx => {
+        async tx => {
           // Set the request tag to "app=concert,env=dev,action=select".
           // This request tag will only be set on this request.
           const [venues] = await tx.run({
@@ -63,13 +63,15 @@ function main(instanceId, databaseId, projectId) {
             // Set the request tag to "app=concert,env=dev,action=update".
             // This request tag will only be set on this request.
             await tx.runUpdate({
-              sql: `UPDATE Venues SET Capacity = @capacity WHERE VenueId = @venueId`,
+              sql: 'UPDATE Venues SET Capacity = @capacity WHERE VenueId = @venueId',
               params: {venueId: venue.VenueId, capacity: newCapacity},
               types: {venueId: {type: 'int64'}, capacity: {type: 'int64'}},
               requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
             });
-            console.log(`Capacity of ${venue.VenueName} updated to ${newCapacity}`);
-          };
+            console.log(
+              `Capacity of ${venue.VenueName} updated to ${newCapacity}`
+            );
+          }
           await tx.commit();
         }
       );

@@ -43,12 +43,14 @@ function main(instanceId, databaseId, projectId) {
 
     // Execute a query with a request tag.
     const [albums] = await database.run({
-      sql: `SELECT SingerId, AlbumId, AlbumTitle FROM Albums`,
-      requestOptions: {requestTag: `app=concert,env=dev,action=select`},
+      sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums',
+      requestOptions: {requestTag: 'app=concert,env=dev,action=select'},
       json: true,
-    })
+    });
     albums.forEach(album => {
-      console.log(`SingerId: ${album.SingerId}, AlbumId: ${album.AlbumId}, AlbumTitle: ${album.AlbumTitle}`);
+      console.log(
+        `SingerId: ${album.SingerId}, AlbumId: ${album.AlbumId}, AlbumTitle: ${album.AlbumTitle}`
+      );
     });
     await database.close();
   }
