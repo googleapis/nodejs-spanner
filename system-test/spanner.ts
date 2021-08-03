@@ -933,6 +933,31 @@ describe('Spanner', () => {
           })
         );
     });
+
+    it('should get an instanceConfig', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
+        assert.ifError(err);
+        assert(instanceConfig!.displayName);
+        done();
+      });
+    });
+
+    it('should get an instanceConfig in promise mode', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner
+        .getInstanceConfig('nam6')
+        .then(data => {
+          const instanceConfig = data[0];
+          assert(instanceConfig.displayName);
+          done();
+        })
+        .catch(done);
+    });
   });
 
   describe('Databases', () => {
@@ -4964,18 +4989,26 @@ function generateName(resourceType) {
 }
 
 function onPromiseOperationComplete(data) {
-  const operation = data[data.length - 2];
+  const length =
+    data[data.length - 1] === undefined ? data.length - 1 : data.length;
+  const operation = data[length - 2];
   return operation.promise();
 }
 
 function execAfterOperationComplete(callback) {
   // tslint:disable-next-line only-arrow-functions
   return function (err) {
-    // arguments = [..., op, apiResponse]
+    // arguments = [..., op, apiResponse], unless the response is Empty.
+    // arguments = [op, apiResponse, undefined] if the response is Empty.
+    const length =
+      // eslint-disable-next-line prefer-rest-params
+      arguments[arguments.length - 1] === undefined
+        ? arguments.length - 1
+        : arguments.length;
     // eslint-disable-next-line prefer-rest-params
-    const operation = arguments[arguments.length - 2];
+    const operation = arguments[length - 2];
     // eslint-disable-next-line prefer-rest-params
-    const apiResponse = arguments[arguments.length - 1];
+    const apiResponse = arguments[length - 1];
 
     if (err) {
       callback(err, apiResponse);
