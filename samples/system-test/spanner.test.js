@@ -550,22 +550,6 @@ describe('Spanner', () => {
     assert.match(output, /SingerId: 2, AlbumId: 2, MarketingBudget: 300000/);
   });
 
-  // query with request tag
-  it('should execute a query with a request tag', async () => {
-    const output = execSync(
-        `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-  });
-
-  // read_write_transaction with transaction tag
-  it('should execute a read/write transaction with a transaction tag', async () => {
-    const output = execSync(
-      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /Capacity of .+ updated to/);
-  });
-
   // batch_client
   it('should create and execute query partitions', async () => {
     const output = execSync(
@@ -954,6 +938,22 @@ describe('Spanner', () => {
       `${datatypesCmd} queryWithNumericParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /VenueId: 4, Revenue: 35000/);
+  });
+
+  // query with request tag
+  it('should execute a query with a request tag', async () => {
+    const output = execSync(
+        `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // read_write_transaction with transaction tag
+  it('should execute a read/write transaction with a transaction tag', async () => {
+    const output = execSync(
+        `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Capacity of .+ updated to/);
   });
 
   // create_backup
