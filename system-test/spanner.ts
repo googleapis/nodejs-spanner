@@ -1114,7 +1114,6 @@ describe('Spanner', () => {
     });
   });
 
-
   describe('Backups', () => {
     let database1: Database;
     let database2: Database;
