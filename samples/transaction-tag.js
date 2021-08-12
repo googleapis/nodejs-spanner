@@ -50,7 +50,7 @@ function main(instanceId, databaseId, projectId) {
           // Set the request tag to "app=concert,env=dev,action=update".
           // This request tag will only be set on this request.
           await tx.runUpdate({
-            sql: 'UPDATE Venues SET Capacity = Capacity/4 WHERE OutdoorVenue = false',
+            sql: 'UPDATE Venues SET Capacity = DIV(Capacity, 4) WHERE OutdoorVenue = false',
             requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
           });
           console.log('Updated capacity of all indoor venues to 1/4.');
