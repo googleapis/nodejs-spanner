@@ -47,31 +47,33 @@ function main(instanceId, databaseId, projectId) {
       await database.runTransactionAsync(
         {requestOptions: {transactionTag: 'app=cart,env=dev'}},
         async tx => {
-          // Set the request tag to "app=concert,env=dev,action=select".
+          // Set the request tag to "app=concert,env=dev,action=update".
           // This request tag will only be set on this request.
-          const [venues] = await tx.run({
-            sql: `SELECT VenueId, VenueName, Capacity
-                  FROM Venues
-                  WHERE OutdoorVenue = @outdoorVenue`,
-            params: {outdoorVenue: false},
-            types: {outdoorVenue: {type: 'bool'}},
-            requestOptions: {requestTag: 'app=concert,env=dev,action=select'},
-            json: true,
+          await tx.runUpdate({
+            sql: 'UPDATE Venues SET Capacity = Capacity/4 WHERE OutdoorVenue = false',
+            requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
           });
-          for (const venue of venues) {
-            const newCapacity = Math.round(venue.Capacity / 4);
-            // Set the request tag to "app=concert,env=dev,action=update".
-            // This request tag will only be set on this request.
-            await tx.runUpdate({
-              sql: 'UPDATE Venues SET Capacity = @capacity WHERE VenueId = @venueId',
-              params: {venueId: venue.VenueId, capacity: newCapacity},
-              types: {venueId: {type: 'int64'}, capacity: {type: 'int64'}},
-              requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
-            });
-            console.log(
-              `Capacity of ${venue.VenueName} updated to ${newCapacity}`
-            );
-          }
+          console.log('Updated capacity of all indoor venues to 1/4.');
+
+          await tx.runUpdate({
+            sql: `INSERT INTO Venues (VenueId, VenueName, Capacity, OutdoorVenue)
+                  VALUES (@venueId, @venueName, @capacity, @outdoorVenue)`,
+            params: {
+              venueId: 81,
+              venueName: 'Venue 81',
+              capacity: 1440,
+              outdoorVenue: true,
+            },
+            types: {
+              venueId: {type: 'int64'},
+              venueName: {type: 'string'},
+              capacity: {type: 'int64'},
+              outdoorVenue: {type: 'bool'},
+            },
+            requestOptions: {requestTag: 'app=concert,env=dev,action=update'},
+          });
+          console.log('Inserted new outdoor venue');
+
           await tx.commit();
         }
       );

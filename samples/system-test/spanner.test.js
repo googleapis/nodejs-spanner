@@ -956,7 +956,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Capacity of .+ updated to/);
+    assert.include(output, 'Inserted new outdoor venue');
   });
 
   // create_backup
