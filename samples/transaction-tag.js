@@ -56,8 +56,8 @@ function main(instanceId, databaseId, projectId) {
           console.log('Updated capacity of all indoor venues to 1/4.');
 
           await tx.runUpdate({
-            sql: `INSERT INTO Venues (VenueId, VenueName, Capacity, OutdoorVenue)
-                  VALUES (@venueId, @venueName, @capacity, @outdoorVenue)`,
+            sql: `INSERT INTO Venues (VenueId, VenueName, Capacity, OutdoorVenue, LastUpdateTime)
+                  VALUES (@venueId, @venueName, @capacity, @outdoorVenue, PENDING_COMMIT_TIMESTAMP())`,
             params: {
               venueId: 81,
               venueName: 'Venue 81',
