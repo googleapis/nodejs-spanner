@@ -22,6 +22,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "mocha": "^8.0.0",
-    "p-limit": "^3.0.1"
+    "p-limit": "^4.0.0"
   }
 }
