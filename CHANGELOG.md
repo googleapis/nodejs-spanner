@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.13.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.12.0...v5.13.0) (2021-08-04)
+
+
+### Features
+
+* add GetInstanceConfig function ([#1438](https://www.github.com/googleapis/nodejs-spanner/issues/1438)) ([24b3524](https://www.github.com/googleapis/nodejs-spanner/commit/24b35242d3ce52e16a5fa04ff949ca44a6608396))
+
+
+### Bug Fixes
+
+* adding option to skip back up tests ([#1445](https://www.github.com/googleapis/nodejs-spanner/issues/1445)) ([e189e5a](https://www.github.com/googleapis/nodejs-spanner/commit/e189e5a03c6e40d3adc64233e72d9d9748e0bc0a))
+
 ## [5.12.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.11.1...v5.12.0) (2021-07-08)
 
 
