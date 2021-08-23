@@ -29,6 +29,8 @@ const schemaCmd = 'node schema.js';
 const queryOptionsCmd = 'node queryoptions.js';
 const rpcPriorityCommand = 'node rpc-priority.js';
 const transactionCmd = 'node transaction.js';
+const transactionTagCommand = 'node transaction-tag.js';
+const requestTagCommand = 'node request-tag.js';
 const timestampCmd = 'node timestamp.js';
 const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
@@ -48,6 +50,7 @@ const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
+const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
@@ -55,6 +58,8 @@ const LOCATION_ID = 'regional-us-central1';
 const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
+const DEFAULT_LEADER = 'us-central1';
+const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -965,12 +970,28 @@ describe('Spanner', () => {
   // query_with_json_parameter
   it('should use a JSON query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+        `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
-      output,
-      /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
+        output,
+        /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
     );
+  });
+
+  // query with request tag
+  it('should execute a query with a request tag', async () => {
+    const output = execSync(
+      `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // read_write_transaction with transaction tag
+  it('should execute a read/write transaction with a transaction tag', async () => {
+    const output = execSync(
+      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.include(output, 'Inserted new outdoor venue');
   });
 
   // create_backup
@@ -1160,5 +1181,120 @@ describe('Spanner', () => {
     );
     assert.include(output, 'Version retention period: 1d');
     assert.include(output, 'Earliest version time:');
+  });
+
+  describe('leader options', () => {
+    before(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      const [, operation] = await instance.create({
+        config: 'nam6',
+        nodes: 1,
+        displayName: 'Multi-region options test',
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
+      });
+      await operation.promise();
+    });
+
+    after(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await instance.delete();
+    });
+
+    // list_instance_configs
+    it('should list available instance configs', async () => {
+      const output = execSync(`node list-instance-configs.js ${PROJECT_ID}`);
+      assert.match(
+        output,
+        new RegExp(`Available instance configs for project ${PROJECT_ID}:`)
+      );
+      assert.include(output, 'Available leader options for instance config');
+    });
+
+    // get_instance_config
+    // TODO: Enable when the feature has been released.
+    it.skip('should get a specific instance config', async () => {
+      const output = execSync(`node get-instance-config.js ${PROJECT_ID}`);
+      assert.include(output, 'Available leader options for instance config');
+    });
+
+    // create_database_with_default_leader
+    it('should create a database with a default leader', async () => {
+      const output = execSync(
+        `node database-create-with-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for creation of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER}.`
+        )
+      );
+    });
+
+    // update_database_with_default_leader
+    it('should update a database with a default leader', async () => {
+      const output = execSync(
+        `node database-update-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" "${DEFAULT_LEADER_2}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for updating of ${DEFAULT_LEADER_DATABASE_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Updated database ${DEFAULT_LEADER_DATABASE_ID} with default leader ${DEFAULT_LEADER_2}.`
+        )
+      );
+    });
+
+    // get_default_leader
+    it('should get the default leader option of a database', async () => {
+      const output = execSync(
+        `node database-get-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.include(
+        output,
+        `The default_leader for ${DEFAULT_LEADER_DATABASE_ID} is ${DEFAULT_LEADER_2}`
+      );
+    });
+
+    // list_databases
+    it('should list databases on the instance', async () => {
+      const output = execSync(
+        `node list-databases.js "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Databases for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}:`
+        )
+      );
+      assert.include(output, `(default leader = ${DEFAULT_LEADER_2}`);
+    });
+
+    // get_database_ddl
+    it('should get the ddl of a database', async () => {
+      const output = execSync(
+        `node database-get-ddl.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Retrieved database DDL for projects/${PROJECT_ID}/instances/${SAMPLE_INSTANCE_ID}/databases/${DEFAULT_LEADER_DATABASE_ID}:`
+        )
+      );
+      assert.include(output, 'CREATE TABLE Singers');
+    });
   });
 });

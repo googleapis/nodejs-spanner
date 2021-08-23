@@ -37,6 +37,7 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 
+const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
@@ -1020,6 +1021,31 @@ describe('Spanner', () => {
           })
         );
     });
+
+    it('should get an instanceConfig', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
+        assert.ifError(err);
+        assert(instanceConfig!.displayName);
+        done();
+      });
+    });
+
+    it('should get an instanceConfig in promise mode', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner
+        .getInstanceConfig('nam6')
+        .then(data => {
+          const instanceConfig = data[0];
+          assert(instanceConfig.displayName);
+          done();
+        })
+        .catch(done);
+    });
   });
 
   describe('Databases', () => {
@@ -1190,6 +1216,9 @@ describe('Spanner', () => {
 
     before(async function () {
       if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      if (SKIP_BACKUPS === 'true') {
         this.skip();
       }
       database1 = DATABASE;

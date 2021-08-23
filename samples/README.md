@@ -27,11 +27,16 @@ and automatic, synchronous replication for high availability.
   * [Backups](#backups)
   * [Batch](#batch)
   * [CRUD](#crud)
+  * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
   * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
+  * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
+  * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
+  * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Datatypes](#datatypes)
   * [DML](#dml)
   * [Get-commit-stats](#get-commit-stats)
+  * [Gets the instance config metadata for the configuration nam6](#gets-the-instance-config-metadata-for-the-configuration-nam6)
   * [Creates a new value-storing index](#creates-a-new-value-storing-index)
   * [Creates a new index](#creates-a-new-index)
   * [Executes a read-only SQL query using an existing index.](#executes-a-read-only-sql-query-using-an-existing-index.)
@@ -40,18 +45,19 @@ and automatic, synchronous replication for high availability.
   * [Indexing](#indexing)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
-  * [Json-add-column](#json-add-column)
-  * [Json-query-parameter](#json-query-parameter)
-  * [Json-update-data](#json-update-data)
+  * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
+  * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
+  * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Rpc-priority](#rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
+  * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
 
 ## Before you begin
@@ -290,6 +296,23 @@ __Usage:__
 
 
 
+### Creates a new database with a specific default leader
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-default-leader.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-default-leader.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-create-with-default-leader.js <INSTANCE_ID> <DATABASE_ID> <DEFAULT_LEADER> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Database-create-with-encryption-key
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-encryption-key.js).
@@ -317,6 +340,57 @@ __Usage:__
 
 
 `node samples/database-create-with-version-retention-period.js`
+
+
+-----
+
+
+
+
+### Gets the schema definition of an existing database
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-get-ddl.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-get-ddl.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-get-ddl.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Gets the default leader option of an existing database
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-get-default-leader.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-get-default-leader.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-get-default-leader.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates the default leader of an existing database
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-update-default-leader.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-update-default-leader.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-update-default-leader.js <INSTANCE_ID> <DATABASE_ID> <DEFAULT_LEADER> <PROJECT_ID>`
 
 
 -----
@@ -368,6 +442,23 @@ __Usage:__
 
 
 `node samples/get-commit-stats.js`
+
+
+-----
+
+
+
+
+### Gets the instance config metadata for the configuration nam6
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-instance-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-instance-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node get-instance-config.js <PROJECT_ID>`
 
 
 -----
@@ -511,16 +602,16 @@ __Usage:__
 
 
 
-### Json-add-column
+### Lists all databases on the selected instance
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-add-column.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-databases.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-add-column.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-databases.js,samples/README.md)
 
 __Usage:__
 
 
-`node samples/json-add-column.js`
+`node list-databases.js <INSTANCE_ID> <PROJECT_ID>`
 
 
 -----
@@ -528,33 +619,16 @@ __Usage:__
 
 
 
-### Json-query-parameter
+### Lists all the available instance configs for the selected project.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-query-parameter.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-instance-configs.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-query-parameter.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/json-query-parameter.js`
-
-
------
-
-
-
-
-### Json-update-data
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-update-data.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-update-data.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-instance-configs.js,samples/README.md)
 
 __Usage:__
 
 
-`node samples/json-update-data.js`
+`node list-instance-configs.js <PROJECT_ID>`
 
 
 -----
@@ -647,6 +721,23 @@ __Usage:__
 
 
 
+### Sets a request tag for a single query
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/request-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/request-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node request-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Rpc-priority
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/rpc-priority.js).
@@ -708,6 +799,23 @@ __Usage:__
 
 
 `node samples/timestamp.js`
+
+
+-----
+
+
+
+
+### Executes a read/write transaction with transaction and request tags
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction-tag.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction-tag.js,samples/README.md)
+
+__Usage:__
+
+
+`node transaction-tag.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
