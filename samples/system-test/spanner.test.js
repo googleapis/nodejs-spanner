@@ -988,10 +988,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(
-      output,
-      /VenueId: 19, Details: {"open":true,"rating":9}/
-    );
+    assert.match(output, /VenueId: 19, Details: {"open":true,"rating":9}/);
   });
 
   // query with request tag
