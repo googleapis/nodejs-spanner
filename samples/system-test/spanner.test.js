@@ -970,11 +970,11 @@ describe('Spanner', () => {
   // query_with_json_parameter
   it('should use a JSON query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-        `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
-        output,
-        /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
+      output,
+      /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
     );
   });
 
