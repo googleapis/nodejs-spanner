@@ -994,6 +994,21 @@ describe('Spanner', () => {
     );
   });
 
+  // query with request tag
+  it('should execute a query with a request tag', async () => {
+    const output = execSync(
+      `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // read_write_transaction with transaction tag
+  it('should execute a read/write transaction with a transaction tag', async () => {
+    const output = execSync(
+      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+  });
+
   // create_backup
   it('should create a backup of the database', async () => {
     const instance = spanner.instance(INSTANCE_ID);
