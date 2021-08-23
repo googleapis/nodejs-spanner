@@ -990,7 +990,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /VenueId: 19, Details: {"description":"This is a nice place","rating":9}/
+      /VenueId: 19, Details: {"open":true,"rating":9}/
     );
   });
 
