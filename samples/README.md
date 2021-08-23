@@ -45,6 +45,9 @@ and automatic, synchronous replication for high availability.
   * [Indexing](#indexing)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
+  * [Json-add-column](#json-add-column)
+  * [Json-query-parameter](#json-query-parameter)
+  * [Json-update-data](#json-update-data)
   * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
   * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
   * [Numeric-add-column](#numeric-add-column)
@@ -595,6 +598,57 @@ __Usage:__
 
 
 `node samples/instance.js`
+
+
+-----
+
+
+
+
+### Json-add-column
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/json-add-column.js`
+
+
+-----
+
+
+
+
+### Json-query-parameter
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-query-parameter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-query-parameter.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/json-query-parameter.js`
+
+
+-----
+
+
+
+
+### Json-update-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/json-update-data.js`
 
 
 -----
