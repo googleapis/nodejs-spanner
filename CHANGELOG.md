@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.14.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.13.1...v5.14.0) (2021-08-24)
+
+
+### Features
+
+* turns on self-signed JWT feature flag ([#1455](https://www.github.com/googleapis/nodejs-spanner/issues/1455)) ([2867a80](https://www.github.com/googleapis/nodejs-spanner/commit/2867a80319c07b4d40e88026409722f26db47631))
+
 ### [5.13.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.13.0...v5.13.1) (2021-08-17)
 
 
