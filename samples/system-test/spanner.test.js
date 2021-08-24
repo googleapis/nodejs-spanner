@@ -954,7 +954,7 @@ describe('Spanner', () => {
   // read_write_transaction with transaction tag
   it('should execute a read/write transaction with a transaction tag', async () => {
     const output = execSync(
-        `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.include(output, 'Inserted new outdoor venue');
   });
@@ -1004,6 +1004,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
+    assert.include(output, 'Inserted new outdoor venue');
   });
 
   // create_backup

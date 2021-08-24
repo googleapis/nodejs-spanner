@@ -36,7 +36,6 @@ import {google as spannerClient} from '../protos/protos';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
-import ListValue = google.protobuf.ListValue;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
@@ -1719,7 +1718,8 @@ export class Transaction extends Dml {
     err: ServiceError,
     mutations: spannerClient.spanner.v1.Mutation[]
   ): null | ServiceError {
-    const errorMessage = /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
+    const errorMessage =
+      /Invalid value for column (?<column>.+) in table (?<table>.+): Expected JSON./;
     const found = err.message && err.message.match(errorMessage);
     if (found && found.groups) {
       const table = found.groups.table;
