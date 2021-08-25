@@ -983,12 +983,12 @@ describe('Spanner', () => {
     assert.match(output, /Updated data./);
   });
 
-  // read_write_transaction with transaction tag
-  it('should execute a read/write transaction with a transaction tag', async () => {
+  // query_with_json_parameter
+  it('should use a JSON query parameter to query records from the Venues example table', async () => {
     const output = execSync(
-      `${transactionTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.include(output, 'Inserted new outdoor venue');
+    assert.match(output, /VenueId: 19, Details: {"open":true,"rating":9}/);
   });
 
   // create_backup
