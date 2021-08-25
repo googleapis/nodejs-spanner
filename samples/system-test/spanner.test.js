@@ -983,22 +983,6 @@ describe('Spanner', () => {
     assert.match(output, /Updated data./);
   });
 
-  // query_with_json_parameter
-  it('should use a JSON query parameter to query records from the Venues example table', async () => {
-    const output = execSync(
-      `${datatypesCmd} queryWithJsonParameter ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /VenueId: 19, Details: {"open":true,"rating":9}/);
-  });
-
-  // query with request tag
-  it('should execute a query with a request tag', async () => {
-    const output = execSync(
-      `${requestTagCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
-    );
-    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-  });
-
   // read_write_transaction with transaction tag
   it('should execute a read/write transaction with a transaction tag', async () => {
     const output = execSync(
