@@ -230,14 +230,18 @@ class Spanner extends GrpcService {
         libName: 'gccl',
         libVersion: require('../../package.json').version,
         scopes,
-        // Enable grpc-gcp support
-        'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
-        'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
-        'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
         grpc,
       },
       options || {}
     ) as {} as SpannerOptions;
+    if (!process.env.SPANNER_DISABLE_GCP) {
+      // Enable grpc-gcp support
+      options = Object.assign(options, {
+        'grpc.callInvocationTransformer': grpcGcp.gcpCallInvocationTransformer,
+        'grpc.channelFactoryOverride': grpcGcp.gcpChannelFactoryOverride,
+        'grpc.gcpApiConfig': grpcGcp.createGcpApiConfig(gcpApiConfig),
+      });
+    }
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
