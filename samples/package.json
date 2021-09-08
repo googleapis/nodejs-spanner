@@ -16,7 +16,7 @@
   "dependencies": {
     "@google-cloud/kms": "^2.1.3",
     "@google-cloud/precise-date": "^2.0.0",
-    "@google-cloud/spanner": "^5.15.0",
+    "@google-cloud/spanner": "^5.15.1",
     "yargs": "^16.0.0"
   },
   "devDependencies": {

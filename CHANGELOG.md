@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.15.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.0...v5.15.1) (2021-09-08)
+
+
+### Bug Fixes
+
+* **deps:** google-gax v2.17.1 ([#1429](https://www.github.com/googleapis/nodejs-spanner/issues/1429)) ([3a1517c](https://www.github.com/googleapis/nodejs-spanner/commit/3a1517cff95bd00598935b30859c7991b4d4c4ca))
+
 ## [5.15.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.14.0...v5.15.0) (2021-08-26)
 
 
