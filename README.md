@@ -121,6 +121,9 @@ Samples are in the [`samples/`](https://github.com/googleapis/nodejs-spanner/tre
 | Indexing | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md) |
 | Instance-with-processing-units | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance-with-processing-units.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-processing-units.js,samples/README.md) |
 | Instance | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance.js,samples/README.md) |
+| Json-add-column | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-add-column.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-add-column.js,samples/README.md) |
+| Json-query-parameter | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-query-parameter.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-query-parameter.js,samples/README.md) |
+| Json-update-data | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-update-data.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-update-data.js,samples/README.md) |
 | Lists all databases on the selected instance | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-databases.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-databases.js,samples/README.md) |
 | Lists all the available instance configs for the selected project. | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-instance-configs.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-instance-configs.js,samples/README.md) |
 | Numeric-add-column | [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-add-column.js) | [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-add-column.js,samples/README.md) |
@@ -188,8 +191,8 @@ Contributions welcome! See the [Contributing Guide](https://github.com/googleapi
 Please note that this `README.md`, the `samples/README.md`,
 and a variety of configuration files in this repository (including `.nycrc` and `tsconfig.json`)
 are generated from a central template. To edit one of these files, make an edit
-to its template in this
-[directory](https://github.com/googleapis/synthtool/tree/master/synthtool/gcp/templates/node_library).
+to its templates in
+[directory](https://github.com/googleapis/synthtool).
 
 ## License
 

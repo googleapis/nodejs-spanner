@@ -75,6 +75,8 @@ describe('Spanner with mock server', () => {
   const invalidSql = 'SELECT * FROM FOO';
   const insertSql = "INSERT INTO NUMBER (NUM, NAME) VALUES (4, 'Four')";
   const selectAllTypes = 'SELECT * FROM TABLE_WITH_ALL_TYPES';
+  const insertSqlForAllTypes = `INSERT INTO TABLE_WITH_ALL_TYPES (COLBOOL, COLINT64, COLFLOAT64, COLNUMERIC, COLSTRING, COLBYTES, COLJSON, COLDATE, COLTIMESTAMP) 
+                                VALUES (@bool, @int64, @float64, @numeric, @string, @bytes, @json, @date, @timestamp)`;
   const updateSql = "UPDATE NUMBER SET NAME='Unknown' WHERE NUM IN (5, 6)";
   const fooNotFoundErr = Object.assign(new Error('Table FOO not found'), {
     code: grpc.status.NOT_FOUND,
@@ -126,6 +128,10 @@ describe('Spanner with mock server', () => {
     );
     spannerMock.putStatementResult(
       insertSql,
+      mock.StatementResult.updateCount(1)
+    );
+    spannerMock.putStatementResult(
+      insertSqlForAllTypes,
       mock.StatementResult.updateCount(1)
     );
     spannerMock.putStatementResult(
@@ -413,6 +419,7 @@ describe('Spanner with mock server', () => {
             numericCol,
             stringCol,
             bytesCol,
+            jsonCol,
             dateCol,
             timestampCol,
             arrayBoolCol,
@@ -421,6 +428,7 @@ describe('Spanner with mock server', () => {
             arrayNumericCol,
             arrayStringCol,
             arrayBytesCol,
+            arrayJsonCol,
             arrayDateCol,
             arrayTimestampCol,
           ] = row;
@@ -431,6 +439,7 @@ describe('Spanner with mock server', () => {
             assert.ok(numericCol.value === null);
             assert.ok(stringCol.value === null);
             assert.ok(bytesCol.value === null);
+            assert.ok(jsonCol.value === null);
             assert.ok(dateCol.value === null);
             assert.ok(timestampCol.value === null);
             assert.ok(arrayBoolCol.value === null);
@@ -439,6 +448,7 @@ describe('Spanner with mock server', () => {
             assert.ok(arrayNumericCol.value === null);
             assert.ok(arrayStringCol.value === null);
             assert.ok(arrayBytesCol.value === null);
+            assert.ok(arrayJsonCol.value === null);
             assert.ok(arrayDateCol.value === null);
             assert.ok(arrayTimestampCol.value === null);
           } else {
@@ -448,6 +458,10 @@ describe('Spanner with mock server', () => {
             assert.deepStrictEqual(numericCol.value, new Numeric('6.626'));
             assert.strictEqual(stringCol.value, numberToEnglishWord(i));
             assert.deepStrictEqual(bytesCol.value, Buffer.from('test'));
+            assert.deepStrictEqual(jsonCol.value, {
+              result: true,
+              count: 42,
+            });
             assert.deepStrictEqual(
               dateCol.value,
               new SpannerDate('2021-05-11')
@@ -482,6 +496,11 @@ describe('Spanner with mock server', () => {
               Buffer.from('test2'),
               null,
             ]);
+            assert.deepStrictEqual(arrayJsonCol.value, [
+              {result: true, count: 42},
+              {},
+              null,
+            ]);
             assert.deepStrictEqual(arrayDateCol.value, [
               new SpannerDate('2021-05-12'),
               new SpannerDate('2000-02-29'),
@@ -514,6 +533,7 @@ describe('Spanner with mock server', () => {
             assert.ok(row.COLNUMERIC === null);
             assert.ok(row.COLSTRING === null);
             assert.ok(row.COLBYTES === null);
+            assert.ok(row.COLJSON === null);
             assert.ok(row.COLDATE === null);
             assert.ok(row.COLTIMESTAMP === null);
             assert.ok(row.COLBOOLARRAY === null);
@@ -522,6 +542,7 @@ describe('Spanner with mock server', () => {
             assert.ok(row.COLNUMERICARRAY === null);
             assert.ok(row.COLSTRINGARRAY === null);
             assert.ok(row.COLBYTESARRAY === null);
+            assert.ok(row.COLJSONARRAY === null);
             assert.ok(row.COLDATEARRAY === null);
             assert.ok(row.COLTIMESTAMPARRAY === null);
           } else {
@@ -531,6 +552,10 @@ describe('Spanner with mock server', () => {
             assert.deepStrictEqual(row.COLNUMERIC, new Numeric('6.626'));
             assert.strictEqual(row.COLSTRING, numberToEnglishWord(i));
             assert.deepStrictEqual(row.COLBYTES, Buffer.from('test'));
+            assert.deepStrictEqual(row.COLJSON, {
+              result: true,
+              count: 42,
+            });
             assert.deepStrictEqual(row.COLDATE, new SpannerDate('2021-05-11'));
             assert.deepStrictEqual(
               row.COLTIMESTAMP,
@@ -552,6 +577,11 @@ describe('Spanner with mock server', () => {
             assert.deepStrictEqual(row.COLBYTESARRAY, [
               Buffer.from('test1'),
               Buffer.from('test2'),
+              null,
+            ]);
+            assert.deepStrictEqual(row.COLJSONARRAY, [
+              {result: true, count: 42},
+              {},
               null,
             ]);
             assert.deepStrictEqual(row.COLDATEARRAY, [
@@ -804,6 +834,73 @@ describe('Spanner with mock server', () => {
       try {
         const updated = await executeSimpleUpdate(database, update);
         assert.deepStrictEqual(updated, [1]);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should execute update with all types', async () => {
+      const update = {
+        sql: insertSqlForAllTypes,
+        params: {
+          bool: true,
+          int64: 100,
+          float64: 3.14,
+          numeric: new Numeric('6.626'),
+          string: 'test',
+          bytes: Buffer.from('test'),
+          json: {key1: 'value1', key2: 'value2', key3: ['1', '2', '3']},
+          date: new SpannerDate('2021-05-11'),
+          timestamp: new PreciseDate('2021-05-11T17:55:16.9823Z'),
+        },
+      };
+      const database = newTestDatabase();
+      try {
+        const updated = await executeSimpleUpdate(database, update);
+        assert.deepStrictEqual(updated, [1]);
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(request.params!.fields!['bool'].boolValue, true);
+        assert.strictEqual(request.params!.fields!['int64'].stringValue, '100');
+        assert.strictEqual(
+          request.params!.fields!['float64'].numberValue,
+          3.14
+        );
+        assert.strictEqual(
+          request.params!.fields!['numeric'].stringValue,
+          '6.626'
+        );
+        assert.strictEqual(
+          request.params!.fields!['string'].stringValue,
+          'test'
+        );
+        assert.strictEqual(
+          request.params!.fields!['bytes'].stringValue,
+          Buffer.from('test').toString('base64')
+        );
+        assert.strictEqual(
+          request.params!.fields!['json'].stringValue,
+          '{"key1":"value1","key2":"value2","key3":["1","2","3"]}'
+        );
+        assert.strictEqual(
+          request.params!.fields!['date'].stringValue,
+          '2021-05-11'
+        );
+        assert.strictEqual(
+          request.params!.fields!['timestamp'].stringValue,
+          '2021-05-11T17:55:16.982300000Z'
+        );
+        assert.strictEqual(request.paramTypes!['bool'].code, 'BOOL');
+        assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
+        assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
+        assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
+        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
+        assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
+        assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
+        assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
+        assert.strictEqual(request.paramTypes!['timestamp'].code, 'TIMESTAMP');
       } finally {
         await database.close();
       }
@@ -3015,6 +3112,71 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+
+      await database.close();
+    });
+
+    it('should encode object to JSON', async () => {
+      const database = newTestDatabase();
+      await database
+        .table('foo')
+        .upsert({id: 1, value: {key1: 'value1', key2: 'value2'}});
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.ok(request, 'no CommitRequest found');
+      assert.ok(request.mutations, 'no mutations found');
+      assert.strictEqual(request.mutations.length, 1);
+      assert.strictEqual(
+        request.mutations[0].insertOrUpdate?.values?.length,
+        1
+      );
+      assert.strictEqual(
+        request.mutations[0].insertOrUpdate!.columns![0],
+        'id'
+      );
+      assert.strictEqual(
+        request.mutations[0].insertOrUpdate!.columns![1],
+        'value'
+      );
+      assert.strictEqual(
+        request.mutations[0].insertOrUpdate!.values![0].values![0].stringValue,
+        '1'
+      );
+      assert.strictEqual(
+        request.mutations[0].insertOrUpdate!.values![0].values![1].stringValue,
+        '{"key1":"value1","key2":"value2"}'
+      );
+
+      await database.close();
+    });
+
+    it('should decorate error with additional information if an array of objects was inserted into a JSON column', async () => {
+      const database = newTestDatabase();
+      const err = {
+        code: Status.FAILED_PRECONDITION,
+        message:
+          'Invalid value for column TestCol2 in table TestTable: Expected JSON.',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.commit,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.table('TestTable').upsert({
+          TestCol1: 1,
+          TestCol2: [{key1: 'value1'}, {key2: 'value2'}],
+        });
+        assert.fail('Missing expected error');
+      } catch (e) {
+        assert.strictEqual(e.code, Status.FAILED_PRECONDITION);
+        assert.ok(
+          e.message.includes(
+            'Convert the value to a JSON string containing an array instead'
+          )
+        );
+      }
 
       await database.close();
     });

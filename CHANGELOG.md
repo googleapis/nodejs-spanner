@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.15.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.14.0...v5.15.0) (2021-08-26)
+
+
+### Features
+
+* add support for JSON data type ([#1368](https://www.github.com/googleapis/nodejs-spanner/issues/1368)) ([b8d6fe5](https://www.github.com/googleapis/nodejs-spanner/commit/b8d6fe5b1e767576ba42d57d2e4e4597bca27883))
+
+## [5.14.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.13.1...v5.14.0) (2021-08-24)
+
+
+### Features
+
+* turns on self-signed JWT feature flag ([#1455](https://www.github.com/googleapis/nodejs-spanner/issues/1455)) ([2867a80](https://www.github.com/googleapis/nodejs-spanner/commit/2867a80319c07b4d40e88026409722f26db47631))
+
 ### [5.13.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.13.0...v5.13.1) (2021-08-17)
 
 
