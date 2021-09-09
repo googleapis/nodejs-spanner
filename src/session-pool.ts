@@ -1052,10 +1052,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       if (reads > 0) {
         this._pending += reads;
         promises.push(
-            new Promise((resolve, reject) => {
-              this._pending -= reads;
-              this._createSessions({reads, writes: 0}).catch(reject);
-            })
+          new Promise((resolve, reject) => {
+            this._pending -= reads;
+            this._createSessions({reads, writes: 0}).catch(reject);
+          })
         );
       }
     }
