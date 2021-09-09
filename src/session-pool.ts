@@ -824,10 +824,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const labels = this.options.labels!;
 
     let needed = reads + writes;
+    if (needed <= 0) {
+      return;
+    }
     this._pending += needed;
 
     // while we can request as many sessions be created as we want, the backend
-    // will return at most 100 at a time. hence the need for a while loop
+    // will return at most 100 at a time, hence the need for a while loop.
     while (needed > 0) {
       let sessions: Session[] | null = null;
 
@@ -862,7 +865,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @private
    *
-   * @fires SessoinPool#error
+   * @fires SessionPool#error
    * @param {Session} session The session to delete.
    * @returns {Promise}
    */
@@ -909,7 +912,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   async _fill(): Promise<void> {
     const needed = this.options.min! - this.size;
-    if (!needed) {
+    if (needed <= 0) {
       return;
     }
 
@@ -1046,13 +1049,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       if (reads + this.size > this.options.max!) {
         reads = this.options.max! - this.size;
       }
-      this._pending += reads;
-      promises.push(
-        new Promise((_, reject) => {
-          this._pending -= reads;
-          this._createSessions({reads, writes: 0}).catch(reject);
-        })
-      );
+      if (reads > 0) {
+        this._pending += reads;
+        promises.push(
+            new Promise((resolve, reject) => {
+              this._pending -= reads;
+              this._createSessions({reads, writes: 0}).catch(reject);
+            })
+        );
+      }
     }
 
     let removeErrorListener: Function;
