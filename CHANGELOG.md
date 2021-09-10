@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.15.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.1...v5.15.2) (2021-09-10)
+
+
+### Bug Fixes
+
+* never try to create a negative number of sessions ([#1467](https://www.github.com/googleapis/nodejs-spanner/issues/1467)) ([13f5153](https://www.github.com/googleapis/nodejs-spanner/commit/13f51537ab13e0cd5a1fb9142f76796b1911809c))
+
 ### [5.15.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.0...v5.15.1) (2021-09-08)
 
 
