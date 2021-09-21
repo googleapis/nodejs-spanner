@@ -450,6 +450,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getInstanceConfig(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance_config.js</caption>
+   * region_tag:instance_get_instance_config_sample
+   *
    */
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
@@ -549,6 +553,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getInstance(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance.js</caption>
+   * region_tag:instance_get_instance_sample
+   *
    */
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
@@ -654,6 +662,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.deleteInstance(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.delete_instance.js</caption>
+   * region_tag:instance_delete_instance_sample
+   *
    */
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
@@ -754,6 +766,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.setIamPolicy(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.set_iam_policy.js</caption>
+   * region_tag:instance_set_iam_policy_sample
+   *
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -845,6 +861,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getIamPolicy(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.get_iam_policy.js</caption>
+   * region_tag:instance_get_iam_policy_sample
+   *
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -939,6 +959,10 @@ export class InstanceAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.testIamPermissions(request);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.test_iam_permissions.js</caption>
+   * region_tag:instance_test_iam_permissions_sample
+   *
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1076,6 +1100,10 @@ export class InstanceAdminClient {
    * @example
    * const [operation] = await client.createInstance(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:instance_create_instance_sample
+   *
    */
   createInstance(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
@@ -1139,6 +1167,10 @@ export class InstanceAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:instance_create_instance_sample
+   *
    */
   async checkCreateInstanceProgress(
     name: string
@@ -1262,6 +1294,10 @@ export class InstanceAdminClient {
    * @example
    * const [operation] = await client.updateInstance(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:instance_update_instance_sample
+   *
    */
   updateInstance(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
@@ -1325,6 +1361,10 @@ export class InstanceAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:instance_update_instance_sample
+   *
    */
   async checkUpdateInstanceProgress(
     name: string
@@ -1407,6 +1447,10 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_configs.js</caption>
+   * region_tag:instance_list_instance_configs_sample
+   *
    */
   listInstanceConfigs(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -1478,6 +1522,10 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_configs.js</caption>
+   * region_tag:instance_list_instance_configs_sample
+   *
    */
   listInstanceConfigsStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -1491,7 +1539,8 @@ export class InstanceAdminClient {
       gax.routingHeader.fromParams({
         parent: request.parent || '',
       });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listInstanceConfigs'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listInstanceConfigs.createStream(
       this.innerApiCalls.listInstanceConfigs as gax.GaxCall,
@@ -1532,6 +1581,10 @@ export class InstanceAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_configs.js</caption>
+   * region_tag:instance_list_instance_configs_sample
+   *
    */
   listInstanceConfigsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -1546,7 +1599,8 @@ export class InstanceAdminClient {
         parent: request.parent || '',
       });
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listInstanceConfigs'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listInstanceConfigs.asyncIterate(
       this.innerApiCalls['listInstanceConfigs'] as GaxCall,
@@ -1632,6 +1686,10 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instances.js</caption>
+   * region_tag:instance_list_instances_sample
+   *
    */
   listInstances(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -1722,6 +1780,10 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instances.js</caption>
+   * region_tag:instance_list_instances_sample
+   *
    */
   listInstancesStream(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -1735,7 +1797,8 @@ export class InstanceAdminClient {
       gax.routingHeader.fromParams({
         parent: request.parent || '',
       });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listInstances'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listInstances.createStream(
       this.innerApiCalls.listInstances as gax.GaxCall,
@@ -1795,6 +1858,10 @@ export class InstanceAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instances.js</caption>
+   * region_tag:instance_list_instances_sample
+   *
    */
   listInstancesAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -1809,7 +1876,8 @@ export class InstanceAdminClient {
         parent: request.parent || '',
       });
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listInstances'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listInstances.asyncIterate(
       this.innerApiCalls['listInstances'] as GaxCall,
