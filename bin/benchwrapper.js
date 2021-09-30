@@ -77,10 +77,11 @@ function Insert(call, callback) {
       callback(err);
       return;
     }
-    call.request.users.forEach(user => {
+    call.request.singers.forEach(singer => {
       transaction.insert('sometable', {
-        name: user.name,
-        age: user.age,
+        SingerId: singer.singerId,
+        FirstName: singer.firstName,
+        LastName: singer.lastName
       });
     });
     transaction.commit(err => {
