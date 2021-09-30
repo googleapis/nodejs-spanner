@@ -79,7 +79,7 @@ function Insert(call, callback) {
     }
     call.request.singers.forEach(singer => {
       transaction.insert('Singers', {
-        SingerId: singer.singerId,
+        SingerId: singer.id,
         FirstName: singer.firstName,
         LastName: singer.lastName
       });
