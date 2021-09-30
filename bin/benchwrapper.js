@@ -81,7 +81,7 @@ function Insert(call, callback) {
       transaction.insert('Singers', {
         SingerId: singer.id,
         FirstName: singer.firstName,
-        LastName: singer.lastName
+        LastName: singer.lastName,
       });
     });
     transaction.commit(err => {
