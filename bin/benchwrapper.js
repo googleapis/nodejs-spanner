@@ -78,7 +78,7 @@ function Insert(call, callback) {
       return;
     }
     call.request.singers.forEach(singer => {
-      transaction.insert('sometable', {
+      transaction.insert('Singers', {
         SingerId: singer.singerId,
         FirstName: singer.firstName,
         LastName: singer.lastName
