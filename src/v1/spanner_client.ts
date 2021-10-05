@@ -2028,7 +2028,8 @@ export class SpannerClient {
       gax.routingHeader.fromParams({
         database: request.database || '',
       });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listSessions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listSessions.createStream(
       this.innerApiCalls.listSessions as gax.GaxCall,
@@ -2092,7 +2093,8 @@ export class SpannerClient {
         database: request.database || '',
       });
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listSessions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
