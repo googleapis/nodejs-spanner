@@ -101,7 +101,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates1,
       LastContactDate: '2018-09-02',
       OutdoorVenue: false,
-      PopularityScore: 0.85543,
+      PopularityScore: Spanner.float(0.85543),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -112,7 +112,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates2,
       LastContactDate: '2019-01-15',
       OutdoorVenue: true,
-      PopularityScore: 0.98716,
+      PopularityScore: Spanner.float(0.98716),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
     {
@@ -123,7 +123,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates3,
       LastContactDate: '2018-10-01',
       OutdoorVenue: false,
-      PopularityScore: 0.72598,
+      PopularityScore: Spanner.float(0.72598),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
   ];
@@ -403,7 +403,7 @@ async function queryWithFloat(instanceId, databaseId, projectId) {
     type: 'float64',
   };
 
-  const exampleFloat = 0.8;
+  const exampleFloat = Spanner.float(0.8);
 
   const query = {
     sql: `SELECT VenueId, VenueName, PopularityScore FROM Venues
