@@ -241,6 +241,12 @@ export class DatabaseAdminClient {
     const createBackupMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.CreateBackupMetadata'
     ) as gax.protobuf.Type;
+    const copyBackupResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.Backup'
+    ) as gax.protobuf.Type;
+    const copyBackupMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.CopyBackupMetadata'
+    ) as gax.protobuf.Type;
     const restoreDatabaseResponse = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.Database'
     ) as gax.protobuf.Type;
@@ -263,6 +269,11 @@ export class DatabaseAdminClient {
         this.operationsClient,
         createBackupResponse.decode.bind(createBackupResponse),
         createBackupMetadata.decode.bind(createBackupMetadata)
+      ),
+      copyBackup: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        copyBackupResponse.decode.bind(copyBackupResponse),
+        copyBackupMetadata.decode.bind(copyBackupMetadata)
       ),
       restoreDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
@@ -331,6 +342,7 @@ export class DatabaseAdminClient {
       'getIamPolicy',
       'testIamPermissions',
       'createBackup',
+      'copyBackup',
       'getBackup',
       'updateBackup',
       'deleteBackup',
@@ -474,6 +486,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getDatabase(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.get_database.js</caption>
+   * region_tag:database_get_database_sample
+   *
    */
   getDatabase(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
@@ -567,6 +583,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.dropDatabase(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.drop_database.js</caption>
+   * region_tag:database_drop_database_sample
+   *
    */
   dropDatabase(
     request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
@@ -665,6 +685,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getDatabaseDdl(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.get_database_ddl.js</caption>
+   * region_tag:database_get_database_ddl_sample
+   *
    */
   getDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
@@ -767,6 +791,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.setIamPolicy(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.set_iam_policy.js</caption>
+   * region_tag:database_set_iam_policy_sample
+   *
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -861,6 +889,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getIamPolicy(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.get_iam_policy.js</caption>
+   * region_tag:database_get_iam_policy_sample
+   *
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -959,6 +991,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.testIamPermissions(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.test_iam_permissions.js</caption>
+   * region_tag:database_test_iam_permissions_sample
+   *
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1048,6 +1084,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.getBackup(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.get_backup.js</caption>
+   * region_tag:database_get_backup_sample
+   *
    */
   getBackup(
     request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
@@ -1148,6 +1188,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.updateBackup(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.update_backup.js</caption>
+   * region_tag:database_update_backup_sample
+   *
    */
   updateBackup(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
@@ -1241,6 +1285,10 @@ export class DatabaseAdminClient {
    *   for more details and examples.
    * @example
    * const [response] = await client.deleteBackup(request);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.delete_backup.js</caption>
+   * region_tag:database_delete_backup_sample
+   *
    */
   deleteBackup(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
@@ -1364,6 +1412,10 @@ export class DatabaseAdminClient {
    * @example
    * const [operation] = await client.createDatabase(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.create_database.js</caption>
+   * region_tag:database_create_database_sample
+   *
    */
   createDatabase(
     request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
@@ -1427,6 +1479,10 @@ export class DatabaseAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.create_database.js</caption>
+   * region_tag:database_create_database_sample
+   *
    */
   async checkCreateDatabaseProgress(
     name: string
@@ -1533,6 +1589,10 @@ export class DatabaseAdminClient {
    * @example
    * const [operation] = await client.updateDatabaseDdl(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.update_database_ddl.js</caption>
+   * region_tag:database_update_database_ddl_sample
+   *
    */
   updateDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
@@ -1596,6 +1656,10 @@ export class DatabaseAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.update_database_ddl.js</caption>
+   * region_tag:database_update_database_ddl_sample
+   *
    */
   async checkUpdateDatabaseDdlProgress(
     name: string
@@ -1702,6 +1766,10 @@ export class DatabaseAdminClient {
    * @example
    * const [operation] = await client.createBackup(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.create_backup.js</caption>
+   * region_tag:database_create_backup_sample
+   *
    */
   createBackup(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
@@ -1765,6 +1833,10 @@ export class DatabaseAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.create_backup.js</caption>
+   * region_tag:database_create_backup_sample
+   *
    */
   async checkCreateBackupProgress(
     name: string
@@ -1786,6 +1858,190 @@ export class DatabaseAdminClient {
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
       protos.google.spanner.admin.database.v1.CreateBackupMetadata
+    >;
+  }
+  copyBackup(
+    request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  copyBackup(
+    request: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  copyBackup(
+    request: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  /**
+   * Starts copying a Cloud Spanner Backup.
+   * The returned backup {@link google.longrunning.Operation|long-running operation}
+   * will have a name of the format
+   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
+   * and can be used to track copying of the backup. The operation is associated
+   * with the destination backup.
+   * The {@link google.longrunning.Operation.metadata|metadata} field type is
+   * {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
+   * copying and delete the backup.
+   * Concurrent CopyBackup requests can run on the same source backup.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the destination instance that will contain the backup copy.
+   *   Values are of the form: `projects/<project>/instances/<instance>`.
+   * @param {string} request.backupId
+   *   Required. The id of the backup copy.
+   *   The `backup_id` appended to `parent` forms the full backup_uri of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {string} request.sourceBackup
+   *   Required. The source backup to be copied.
+   *   The source backup needs to be in READY state for it to be copied.
+   *   Once CopyBackup is in progress, the source backup cannot be deleted or
+   *   cleaned up on expiration until CopyBackup is finished.
+   *   Values are of the form:
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {google.protobuf.Timestamp} request.expireTime
+   *   Required. The expiration time of the backup in microsecond granularity.
+   *   The expiration time must be at least 6 hours and at most 366 days
+   *   from the `create_time` of the source backup. Once the `expire_time` has
+   *   passed, the backup is eligible to be automatically deleted by Cloud Spanner
+   *   to free the resources used by the backup.
+   * @param {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration used to encrypt the backup. If this field is
+   *   not specified, the backup will use the same
+   *   encryption configuration as the source backup by default, namely
+   *   {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type|encryption_type} =
+   *   `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example
+   * const [operation] = await client.copyBackup(request);
+   * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
+   * region_tag:database_copy_backup_sample
+   *
+   */
+  copyBackup(
+    request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    this.initialize();
+    return this.innerApiCalls.copyBackup(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by `copyBackup()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example
+   * const decodedOperation = await checkCopyBackupProgress(name);
+   * console.log(decodedOperation.result);
+   * console.log(decodedOperation.done);
+   * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
+   * region_tag:database_copy_backup_sample
+   *
+   */
+  async checkCopyBackupProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CopyBackupMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.copyBackup,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CopyBackupMetadata
     >;
   }
   restoreDatabase(
@@ -1878,6 +2134,10 @@ export class DatabaseAdminClient {
    * @example
    * const [operation] = await client.restoreDatabase(request);
    * const [response] = await operation.promise();
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.restore_database.js</caption>
+   * region_tag:database_restore_database_sample
+   *
    */
   restoreDatabase(
     request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -1941,6 +2201,10 @@ export class DatabaseAdminClient {
    * console.log(decodedOperation.result);
    * console.log(decodedOperation.done);
    * console.log(decodedOperation.metadata);
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.restore_database.js</caption>
+   * region_tag:database_restore_database_sample
+   *
    */
   async checkRestoreDatabaseProgress(
     name: string
@@ -2022,6 +2286,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_databases.js</caption>
+   * region_tag:database_list_databases_sample
+   *
    */
   listDatabases(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -2092,6 +2360,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_databases.js</caption>
+   * region_tag:database_list_databases_sample
+   *
    */
   listDatabasesStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -2146,6 +2418,10 @@ export class DatabaseAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_databases.js</caption>
+   * region_tag:database_list_databases_sample
+   *
    */
   listDatabasesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -2266,6 +2542,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backups.js</caption>
+   * region_tag:database_list_backups_sample
+   *
    */
   listBackups(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -2373,6 +2653,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backups.js</caption>
+   * region_tag:database_list_backups_sample
+   *
    */
   listBackupsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -2464,6 +2748,10 @@ export class DatabaseAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backups.js</caption>
+   * region_tag:database_list_backups_sample
+   *
    */
   listBackupsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -2594,6 +2882,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_database_operations.js</caption>
+   * region_tag:database_list_database_operations_sample
+   *
    */
   listDatabaseOperations(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -2710,6 +3002,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_database_operations.js</caption>
+   * region_tag:database_list_database_operations_sample
+   *
    */
   listDatabaseOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -2806,6 +3102,10 @@ export class DatabaseAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_database_operations.js</caption>
+   * region_tag:database_list_database_operations_sample
+   *
    */
   listDatabaseOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -2936,6 +3236,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backup_operations.js</caption>
+   * region_tag:database_list_backup_operations_sample
+   *
    */
   listBackupOperations(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
@@ -3046,6 +3350,10 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backup_operations.js</caption>
+   * region_tag:database_list_backup_operations_sample
+   *
    */
   listBackupOperationsStream(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
@@ -3140,6 +3448,10 @@ export class DatabaseAdminClient {
    * for await (const response of iterable) {
    *   // process response
    * }
+   *
+   * @example <caption>include:samples/generated/v1/database_admin.list_backup_operations.js</caption>
+   * region_tag:database_list_backup_operations_sample
+   *
    */
   listBackupOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
