@@ -35,6 +35,7 @@ import {google as databaseAdmin} from '../protos/protos';
 import {common as p} from 'protobufjs';
 
 export type CreateBackupCallback = LongRunningCallback<Backup>;
+export type CopyBackupCallback = LongRunningCallback<Backup>;
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
@@ -56,6 +57,28 @@ export interface CreateBackupOptions {
   gaxOptions?: CallOptions;
 }
 
+export interface CopyBackupGaxOperation extends GaxOperation {
+  // Overridden with more specific type for CreateBackup operation
+  metadata: Metadata &
+    databaseAdmin.spanner.admin.database.v1.ICopyBackupMetadata;
+}
+
+export type CopyBackupResponse = [Backup, CopyBackupGaxOperation, IOperation];
+
+export interface CopyBackupOptions {
+  sourcePath: string;
+  expireTime: string | number | p.ITimestamp | PreciseDate;
+  encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICopyBackupEncryptionConfig;
+  gaxOptions?: CallOptions;
+}
+function determineIfCreateOrCopyBackupOptions(
+  toBeDetermined: CreateBackupOptions | CopyBackupOptions
+): toBeDetermined is CreateBackupOptions {
+  if ((toBeDetermined as CreateBackupOptions).databasePath) {
+    return false;
+  }
+  return true;
+}
 /**
  * IBackup structure with backup state enum translated to string form.
  */
@@ -104,19 +127,28 @@ class Backup {
   instanceFormattedName_: string;
   resourceHeader_: {[k: string]: string};
   request: BackupRequest;
+  sourceId: string | undefined;
   metadata?: databaseAdmin.spanner.admin.database.v1.IBackup;
-  constructor(instance: Instance, name: string) {
+  constructor(instance: Instance, name: string, sourceId?: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
+    if (sourceId) {
+      this.sourceId = sourceId;
+    }
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
     };
   }
 
-  create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
-  create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
+  create(
+    options: CreateBackupOptions | CopyBackupOptions
+  ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse>;
+  create(
+    options: CreateBackupOptions | CopyBackupOptions,
+    callback: CreateBackupCallback
+  ): void;
   /**
    * @typedef {object} CreateBackupOptions
    * @property {string} databasePath The database path.
@@ -180,12 +212,15 @@ class Backup {
    * await backupOperation.promise();
    */
   create(
-    options: CreateBackupOptions,
-    callback?: CreateBackupCallback
-  ): Promise<CreateBackupResponse> | void {
+    options: CreateBackupOptions | CopyBackupOptions,
+    callback?: CreateBackupCallback | CopyBackupCallback
+  ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest =
-      {
+    let reqOpts:
+      | databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest
+      | databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest;
+    if (determineIfCreateOrCopyBackupOptions(options)) {
+      reqOpts = {
         parent: this.instanceFormattedName_,
         backupId: this.id,
         backup: {
@@ -194,35 +229,67 @@ class Backup {
           name: this.formattedName_,
         },
       };
-    if ('versionTime' in options) {
-      reqOpts.backup!.versionTime = Spanner.timestamp(
-        options.versionTime
-      ).toStruct();
-    }
-    if (
-      'encryptionConfig' in options &&
-      (options as CreateBackupOptions).encryptionConfig
-    ) {
-      reqOpts.encryptionConfig = (
-        options as CreateBackupOptions
-      ).encryptionConfig;
-    }
-    this.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'createBackup',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err, operation, resp) => {
-        if (err) {
-          callback!(err, null, null, resp);
-          return;
-        }
-        callback!(null, this, operation, resp);
+      if ('versionTime' in options) {
+        reqOpts.backup!.versionTime = Spanner.timestamp(
+          options.versionTime
+        ).toStruct();
       }
-    );
+      if (
+        'encryptionConfig' in options &&
+        (options as CreateBackupOptions).encryptionConfig
+      ) {
+        reqOpts.encryptionConfig = (
+          options as CreateBackupOptions
+        ).encryptionConfig;
+      }
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'createBackup',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            callback!(err, null, null, resp);
+            return;
+          }
+          callback!(null, this, operation, resp);
+        }
+      );
+    } else if (this.sourceId) {
+      reqOpts = {
+        parent: this.instanceFormattedName_,
+        backupId: this.id,
+        sourceBackup: this.sourceId,
+        expireTime: Spanner.timestamp(options.expireTime).toStruct(),
+      };
+      if (
+        'encryptionConfig' in options &&
+        (options as CopyBackupOptions).encryptionConfig
+      ) {
+        reqOpts.encryptionConfig = (
+          options as CopyBackupOptions
+        ).encryptionConfig;
+      }
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'copyBackup',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            callback!(err, null, null, resp);
+            return;
+          }
+          callback!(null, this, operation, resp);
+        }
+      );
+    }
   }
 
   getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;

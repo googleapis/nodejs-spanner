@@ -36,6 +36,8 @@ import {grpc, CallOptions} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
+import ICopyBackupMetadata = google.spanner.admin.database.v1.ICopyBackupMetadata;
+import ICreateBackupMetadata = google.spanner.admin.database.v1.ICreateBackupMetadata;
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const PREFIX = 'gcloud-tests-';
@@ -65,7 +67,14 @@ const GAX_OPTIONS: CallOptions = {
 };
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
-
+function determineIfCreateOrCopyBackupMetadata(
+  toBeDetermined: ICreateBackupMetadata | ICopyBackupMetadata
+): toBeDetermined is ICreateBackupMetadata {
+  if ((toBeDetermined as ICreateBackupMetadata).database) {
+    return false;
+  }
+  return true;
+}
 describe('Spanner', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
@@ -1263,19 +1272,23 @@ describe('Spanner', () => {
         backup1Operation.metadata!.name,
         `${instance.formattedName_}/backups/${backup1Name}`
       );
-      assert.strictEqual(
-        backup1Operation.metadata!.database,
-        database1.formattedName_
-      );
+
+      if (determineIfCreateOrCopyBackupMetadata(backup1Operation.metadata!))
+        assert.strictEqual(
+          backup1Operation.metadata!.database,
+          database1.formattedName_
+        );
 
       assert.strictEqual(
         backup2Operation.metadata!.name,
         `${instance.formattedName_}/backups/${backup2Name}`
       );
-      assert.strictEqual(
-        backup2Operation.metadata!.database,
-        database2.formattedName_
-      );
+
+      if (determineIfCreateOrCopyBackupMetadata(backup2Operation.metadata!))
+        assert.strictEqual(
+          backup2Operation.metadata!.database,
+          database2.formattedName_
+        );
 
       // Wait for backups to finish.
       await backup1Operation.promise();

@@ -249,6 +249,16 @@ class Instance extends common.GrpcServiceObject {
     return new Backup(this, backupId);
   }
 
+  copy_backup(backupId: string, sourceBackupId: string): Backup {
+    if (!backupId || !sourceBackupId) {
+      throw new Error(
+        'A backup ID and source backup ID is required to create a Backup.'
+      );
+    }
+
+    return new Backup(this, backupId, sourceBackupId);
+  }
+
   getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
   getBackups(callback: GetBackupsCallback): void;
   getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
