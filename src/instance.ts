@@ -36,11 +36,12 @@ import {
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
 import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
-import {Backup} from './backup';
+import {Backup, CopyBackupCallback, CopyBackupResponse} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
+import {CopyBackupOptions} from './backup';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -247,6 +248,24 @@ class Instance extends common.GrpcServiceObject {
     }
 
     return new Backup(this, backupId);
+  }
+
+  copyBackup(
+    sourceBackupId: string,
+    backupId: string,
+    options: CopyBackupOptions,
+    callback?: CopyBackupCallback
+  ): Promise<CopyBackupResponse> | void {
+    if (!backupId || !sourceBackupId) {
+      throw new Error(
+        'A backup ID and source backup ID is required to create a Backup.'
+      );
+    }
+    const copyOfBackup = new Backup(this, backupId, sourceBackupId);
+    if (callback !== null) {
+      return copyOfBackup.create(options, callback);
+    }
+    return copyOfBackup.create(options);
   }
 
   getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;

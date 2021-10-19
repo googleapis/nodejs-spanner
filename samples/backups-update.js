@@ -31,6 +31,7 @@ async function updateBackup(instanceId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   // Gets a reference to a Cloud Spanner instance and backup
@@ -40,8 +41,13 @@ async function updateBackup(instanceId, backupId, projectId) {
   // Read backup metadata and update expiry time
   try {
     const currentExpireTime = await backup.getExpireTime();
-    const newExpireTime = new PreciseDate(currentExpireTime);
-    newExpireTime.setDate(newExpireTime.getDate() + 30);
+    const maxExpireTime = await backup.getMaxExpireTime();
+    const wantExpireTime = new PreciseDate(currentExpireTime);
+    wantExpireTime.setDate(wantExpireTime.getDate() + 1);
+    // New expire time should be less than the max expire time
+    const min = (currentExpireTime, maxExpireTime) =>
+      currentExpireTime < maxExpireTime ? currentExpireTime : maxExpireTime;
+    const newExpireTime = new PreciseDate(min(wantExpireTime, maxExpireTime));
     console.log(
       `Backup ${backupId} current expire time: ${currentExpireTime.toISOString()}`
     );
@@ -55,3 +61,4 @@ async function updateBackup(instanceId, backupId, projectId) {
 }
 
 module.exports.updateBackup = updateBackup;
+//updateBackup('test-cross-region', 'backup123', 'appdev-soda-spanner-staging');
