@@ -1457,6 +1457,12 @@ describe('Instance', () => {
         },
       ];
 
+      const COPY_BACKUPS = [
+        {
+          expireTime: new PreciseDate(1000),
+        },
+      ];
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, null, {}];
 
@@ -1629,6 +1635,7 @@ describe('Instance', () => {
 
   describe('backup', () => {
     const BACKUP_NAME = 'backup-name';
+    const COPY_BACKUP_NAME = 'copy-backup-name';
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
@@ -1641,6 +1648,14 @@ describe('Instance', () => {
       assert(backup instanceof FakeBackup);
       assert.strictEqual(backup.calledWith_[0], instance);
       assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);
+    });
+
+    it('should return an instance of Copy Backup', () => {
+      const copy_backup = instance.copy_backup(COPY_BACKUP_NAME, BACKUP_NAME) as {} as FakeBackup;
+      assert(copy_backup instanceof FakeBackup);
+      assert.strictEqual(copy_backup.calledWith_[0], instance);
+      assert.strictEqual(copy_backup.calledWith_[1], COPY_BACKUP_NAME);
+      assert.strictEqual(copy_backup.calledWith_[2], BACKUP_NAME);
     });
   });
 
