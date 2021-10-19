@@ -52,6 +52,7 @@ const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
+const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 const LOCATION_ID = 'regional-us-central1';
@@ -63,6 +64,7 @@ const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
 });
 const LABEL = 'node-sample-tests';
 const GAX_OPTIONS = {
@@ -223,6 +225,7 @@ describe('Spanner', () => {
         instance.database(RESTORE_DATABASE_ID).delete(),
         instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(COPY_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
@@ -1019,6 +1022,22 @@ describe('Spanner', () => {
       new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`)
     );
     assert.include(output, `using encryption key ${key.name}`);
+  });
+
+  // copy_backup
+  it('should create a copy of a backup', async () => {
+    const instance = spanner.instance(INSTANCE_ID);
+    const database = instance.database(DATABASE_ID);
+    const query = {
+      sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
+    };
+    const [rows] = await database.run(query);
+    const versionTime = rows[0].toJSON().Timestamp.toISOString();
+
+    const output = execSync(
+      `${backupsCmd} copyBackup ${INSTANCE_ID} ${DATABASE_ID} ${COPY_BACKUP_ID} ${BACKUP_ID} ${PROJECT_ID} ${versionTime}`
+    );
+    assert.match(output, new RegExp(`Copy backup (.+)${COPY_BACKUP_ID} of size`));
   });
 
   // cancel_backup

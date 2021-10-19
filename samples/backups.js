@@ -16,6 +16,7 @@
 'use strict';
 
 const {createBackup} = require('./backups-create');
+const {copyBackup} = require('./backups-copy');
 const {
   createBackupWithEncryptionKey,
 } = require('./backups-create-with-encryption-key');
@@ -41,6 +42,20 @@ require('yargs')
         opts.instanceName,
         opts.databaseName,
         opts.backupName,
+        opts.projectId,
+        Date.parse(opts.versionTime)
+      )
+  )
+  .command(
+    'copyBackup <instanceName> <databaseName> <backupName> <sourceBackupId> <projectId> <versionTime>',
+    'Copies a backup of a Cloud Spanner database.',
+    {},
+    opts =>
+      copyBackup(
+        opts.instanceName,
+        opts.databaseName,
+        opts.backupName,
+        opts.sourceBackupId,
         opts.projectId,
         Date.parse(opts.versionTime)
       )

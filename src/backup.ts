@@ -65,20 +65,11 @@ export interface CopyBackupGaxOperation extends GaxOperation {
 
 export type CopyBackupResponse = [Backup, CopyBackupGaxOperation, IOperation];
 
-export interface CopyBackupOptions {
-  sourcePath: string;
-  expireTime: string | number | p.ITimestamp | PreciseDate;
-  encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICopyBackupEncryptionConfig;
+export interface CopyBackupOptions
+  extends databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest {
   gaxOptions?: CallOptions;
 }
-function determineIfCreateOrCopyBackupOptions(
-  toBeDetermined: CreateBackupOptions | CopyBackupOptions
-): toBeDetermined is CreateBackupOptions {
-  if ((toBeDetermined as CreateBackupOptions).databasePath) {
-    return false;
-  }
-  return true;
-}
+
 /**
  * IBackup structure with backup state enum translated to string form.
  */
@@ -127,15 +118,15 @@ class Backup {
   instanceFormattedName_: string;
   resourceHeader_: {[k: string]: string};
   request: BackupRequest;
-  sourceId: string | undefined;
+  sourceName: string | undefined;
   metadata?: databaseAdmin.spanner.admin.database.v1.IBackup;
-  constructor(instance: Instance, name: string, sourceId?: string) {
+  constructor(instance: Instance, name: string, sourceName?: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
-    if (sourceId) {
-      this.sourceId = sourceId;
+    if (sourceName) {
+      this.sourceName = sourceName;
     }
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
@@ -216,11 +207,8 @@ class Backup {
     callback?: CreateBackupCallback | CopyBackupCallback
   ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
-    let reqOpts:
-      | databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest
-      | databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest;
-    if (determineIfCreateOrCopyBackupOptions(options)) {
-      reqOpts = {
+    if ('databasePath' in options) {
+      const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
         parent: this.instanceFormattedName_,
         backupId: this.id,
         backup: {
@@ -258,26 +246,13 @@ class Backup {
           callback!(null, this, operation, resp);
         }
       );
-    } else if (this.sourceId) {
-      reqOpts = {
-        parent: this.instanceFormattedName_,
-        backupId: this.id,
-        sourceBackup: this.sourceId,
-        expireTime: Spanner.timestamp(options.expireTime).toStruct(),
-      };
-      if (
-        'encryptionConfig' in options &&
-        (options as CopyBackupOptions).encryptionConfig
-      ) {
-        reqOpts.encryptionConfig = (
-          options as CopyBackupOptions
-        ).encryptionConfig;
-      }
+    } else if (this.sourceName) {
+      delete options.gaxOptions;
       this.request(
         {
           client: 'DatabaseAdminClient',
           method: 'copyBackup',
-          reqOpts,
+          reqOpts: options as databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest,
           gaxOpts,
           headers: this.resourceHeader_,
         },
