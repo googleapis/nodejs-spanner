@@ -28,8 +28,9 @@ async function createTableWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
@@ -73,8 +74,9 @@ async function insertWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -136,8 +138,9 @@ async function queryTableWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -182,8 +185,9 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -241,8 +245,9 @@ async function updateWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -307,8 +312,9 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);

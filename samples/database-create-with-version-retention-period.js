@@ -32,8 +32,9 @@ async function createDatabaseWithVersionRetentionPeriod(
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);

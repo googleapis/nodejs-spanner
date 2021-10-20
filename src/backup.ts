@@ -248,6 +248,9 @@ class Backup {
       );
     } else if (this.sourceName) {
       delete options.gaxOptions;
+      options.backupId = this.id;
+      options.parent = this.instanceFormattedName_;
+      options.sourceBackup = this.sourceName;
       this.request(
         {
           client: 'DatabaseAdminClient',

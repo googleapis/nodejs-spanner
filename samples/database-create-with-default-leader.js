@@ -34,8 +34,9 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
   // Gets a reference to a Cloud Spanner instance and a database. The database does not need to exist.
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);

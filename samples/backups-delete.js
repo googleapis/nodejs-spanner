@@ -30,8 +30,9 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   // Gets a reference to a Cloud Spanner instance and backup
   const instance = spanner.instance(instanceId);

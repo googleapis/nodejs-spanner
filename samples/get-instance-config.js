@@ -31,8 +31,9 @@ function main(projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-    projectId: projectId,
-  });
+     projectId: projectId,
+     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
+   });
 
   async function getInstanceConfig() {
     // Get the instance config for the multi-region North America 6 (NAM6).
