@@ -93,10 +93,12 @@ export type ExistsCallback = NormalCallback<boolean>;
  * @class
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const backup = instance.backup('my-backup');
+ * ```
  */
 class Backup {
   id: string;
@@ -160,6 +162,7 @@ class Backup {
    *     operation will have started, but will not have necessarily completed.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -178,6 +181,7 @@ class Backup {
    * });
    * // Await completion of the backup operation.
    * await backupOperation.promise();
+   * ```
    */
   create(
     options: CreateBackupOptions,
@@ -253,12 +257,14 @@ class Backup {
    * @returns {Promise<GetMetadataResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const [backupInfo] = await backup.getMetadata();
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
+   * ```
    */
   getMetadata(
     gaxOptionsOrCallback?: CallOptions | GetMetadataCallback,
@@ -311,12 +317,14 @@ class Backup {
    *     When resolved, contains the current state of the backup if it exists.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const state = await backup.getState();
    * const backupCompleted = (state === 'READY');
+   * ```
    */
   async getState(): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
@@ -340,12 +348,14 @@ class Backup {
    *     current expire time of the backup if it exists.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const expireTime = await backup.getExpireTime();
    * console.log(`Backup expires on ${expireTime.toISOString()}`);
+   * ```
    */
   async getExpireTime(): Promise<PreciseDate | undefined> {
     const [backupInfo] = await this.getMetadata();
@@ -364,12 +374,14 @@ class Backup {
    *     exists and false if it does not exist.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * const alreadyExists = await backup.exists();
    * console.log(`Does backup exist? ${alreadyExists}`);
+   * ```
    */
   async exists(): Promise<boolean> {
     try {
@@ -424,6 +436,7 @@ class Backup {
    *     the backup's expire time will have been updated.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -431,6 +444,7 @@ class Backup {
    * const oneDay = 1000 * 60 * 60 * 24;
    * const newExpireTime = Spanner.timestamp(Date.now() + oneDay);
    * await backup.updateExpireTime(newExpireTime);
+   * ```
    */
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
@@ -483,11 +497,13 @@ class Backup {
    * @returns {Promise<void>} When resolved, the backup will have been deleted.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
    * await backup.delete();
+   * ```
    */
   delete(
     gaxOptionsOrCallback?: CallOptions | DeleteCallback,
@@ -529,11 +545,13 @@ class Backup {
    * @returns {string}
    *
    * @example
+   * ```
    * Backup.formatName_(
    *   'projects/grape-spaceship-123/instances/my-instance',
    *   'my-backup'
    * );
    * // 'projects/grape-spaceship-123/instances/my-instance/backups/my-backup'
+   * ```
    */
   static formatName_(instanceName: string, name: string) {
     if (name.indexOf('/') > -1) {

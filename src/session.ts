@@ -72,6 +72,7 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
  *     assumed you are going to create it.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
@@ -96,6 +97,7 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
  * // To access a previously-created session, provide a name.
  * //-
  * const session = database.session('session-name');
+ * ```
  */
 export class Session extends common.GrpcServiceObject {
   id!: string;
@@ -116,6 +118,7 @@ export class Session extends common.GrpcServiceObject {
        * @returns {Promise<CreateSessionResponse>}
        *
        * @example
+       * ```
        * session.create(function(err, session, apiResponse) {
        *   if (err) {
        *     // Error handling omitted.
@@ -134,6 +137,7 @@ export class Session extends common.GrpcServiceObject {
        *
        *     // Session created successfully.
        *   });
+       * ```
        */
       create: true,
       /**
@@ -153,6 +157,7 @@ export class Session extends common.GrpcServiceObject {
        * @returns {Promise<SessionExistsResponse>}
        *
        * @example
+       * ```
        * session.exists(function(err, exists) {});
        *
        * //-
@@ -161,6 +166,7 @@ export class Session extends common.GrpcServiceObject {
        * session.exists().then(function(data) {
        *   const exists = data[0];
        * });
+       * ```
        */
       exists: true,
       /**
@@ -190,6 +196,7 @@ export class Session extends common.GrpcServiceObject {
        * @returns {Promise<GetSessionResponse>}
        *
        * @example
+       * ```
        * session.get(function(err, session, apiResponse) {
        *   // `session.metadata` has been populated.
        * });
@@ -201,6 +208,7 @@ export class Session extends common.GrpcServiceObject {
        *   const session = data[0];
        *   const apiResponse = data[0];
        * });
+       * ```
        */
       get: true,
     };
@@ -263,6 +271,7 @@ export class Session extends common.GrpcServiceObject {
    * @returns {Promise<DeleteSessionResponse>}
    *
    * @example
+   * ```
    * session.delete(function(err, apiResponse) {
    *   if (err) {
    *     // Error handling omitted.
@@ -277,6 +286,7 @@ export class Session extends common.GrpcServiceObject {
    * session.delete().then(function(data) {
    *   const apiResponse = data[0];
    * });
+   * ```
    */
   delete(
     optionsOrCallback?: CallOptions | DeleteSessionCallback,
@@ -333,6 +343,7 @@ export class Session extends common.GrpcServiceObject {
    * @returns {Promise<GetSessionMetadataResponse>}
    *
    * @example
+   * ```
    * session.getMetadata(function(err, metadata, apiResponse) {});
    *
    * //-
@@ -342,6 +353,7 @@ export class Session extends common.GrpcServiceObject {
    *   const metadata = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
   getMetadata(
     optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
@@ -384,11 +396,13 @@ export class Session extends common.GrpcServiceObject {
    * @returns {Promise<BasicResponse>}
    *
    * @example
+   * ```
    * session.keepAlive(function(err) {
    *   if (err) {
    *     // An error occurred while trying to keep this session alive.
    *   }
    * });
+   * ```
    */
   keepAlive(
     optionsOrCallback?: CallOptions | KeepAliveCallback,
@@ -420,7 +434,9 @@ export class Session extends common.GrpcServiceObject {
    * @returns {PartitionedDml}
    *
    * @example
+   * ```
    * const transaction = session.partitionedDml();
+   * ```
    */
   partitionedDml() {
     return new PartitionedDml(this);
@@ -433,7 +449,9 @@ export class Session extends common.GrpcServiceObject {
    * @returns {Snapshot}
    *
    * @example
+   * ```
    * const snapshot = session.snapshot({strong: false});
+   * ```
    */
   snapshot(
     options?: TimestampBounds,
@@ -448,7 +466,9 @@ export class Session extends common.GrpcServiceObject {
    * @return {Transaction}
    *
    * @example
+   * ```
    * const transaction = session.transaction();
+   * ```
    */
   transaction(
     queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
@@ -466,9 +486,11 @@ export class Session extends common.GrpcServiceObject {
    * @returns {string}
    *
    * @example
+   * ```
    * Session.formatName_('my-database', 'my-session');
    * // 'projects/grape-spaceship-123/instances/my-instance/' +
    * // 'databases/my-database/sessions/my-session'
+   * ```
    */
   static formatName_(databaseName: string, name: string) {
     if (name.indexOf('/') > -1) {
