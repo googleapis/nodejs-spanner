@@ -348,6 +348,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<CreateInstanceResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -382,6 +383,7 @@ class Spanner extends GrpcService {
    *   .then(function() {
    *     // Instance created successfully.
    *   });
+   * ```
    */
   createInstance(
     name: string,
@@ -505,6 +507,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstancesResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -535,6 +538,7 @@ class Spanner extends GrpcService {
    * spanner.getInstances().then(function(data) {
    *   const instances = data[0];
    * });
+   * ```
    */
   getInstances(
     optionsOrCallback?: GetInstancesOptions | GetInstancesCallback,
@@ -611,6 +615,7 @@ class Spanner extends GrpcService {
    *     instances.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -631,6 +636,7 @@ class Spanner extends GrpcService {
    *   .on('data', function(instance) {
    *     this.end();
    *   });
+   * ```
    */
   getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
@@ -723,6 +729,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstanceConfigsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -753,6 +760,7 @@ class Spanner extends GrpcService {
    * spanner.getInstanceConfigs().then(function(data) {
    *   const instanceConfigs = data[0];
    * });
+   * ```
    */
   getInstanceConfigs(
     optionsOrCallback?: GetInstanceConfigsOptions | GetInstanceConfigsCallback,
@@ -817,6 +825,7 @@ class Spanner extends GrpcService {
    * @returns {ReadableStream} A readable stream that emits instance configs.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -835,6 +844,7 @@ class Spanner extends GrpcService {
    *   .on('data', function(instanceConfig) {
    *     this.end();
    *   });
+   * ```
    */
   getInstanceConfigsStream(
     options: GetInstanceConfigsOptions = {}
@@ -919,6 +929,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstanceConfigResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -932,6 +943,7 @@ class Spanner extends GrpcService {
    * spanner.getInstanceConfig().then(function(data) {
    *   const instanceConfig = data[0];
    * });
+   * ```
    */
   getInstanceConfig(
     name: string,
@@ -976,9 +988,11 @@ class Spanner extends GrpcService {
    * @returns {Instance} An Instance object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
+   * ```
    */
   instance(name: string): Instance {
     if (!name) {
@@ -1139,8 +1153,10 @@ class Spanner extends GrpcService {
    * @returns {SpannerDate}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
+   * ```
    */
   static date(
     dateStringOrYear?: string | number,
@@ -1177,8 +1193,10 @@ class Spanner extends GrpcService {
    * @returns {external:PreciseDate}
    *
    * @example
+   * ```
    * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
    *
+   * ```
    * @example <caption>With a `google.protobuf.Timestamp` object</caption>
    * const [seconds, nanos] = process.hrtime();
    * const timestamp = Spanner.timestamp({seconds, nanos});
@@ -1203,8 +1221,10 @@ class Spanner extends GrpcService {
    * @returns {Float}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const float = Spanner.float(10);
+   * ```
    */
   static float(value): Float {
     return new codec.Float(value);
@@ -1217,8 +1237,10 @@ class Spanner extends GrpcService {
    * @returns {Int}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const int = Spanner.int(10);
+   * ```
    */
   static int(value): Int {
     return new codec.Int(value);
@@ -1231,8 +1253,10 @@ class Spanner extends GrpcService {
    * @returns {Numeric}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const numeric = Spanner.numeric("3.141592653");
+   * ```
    */
   static numeric(value): Numeric {
     return new codec.Numeric(value);
@@ -1245,11 +1269,13 @@ class Spanner extends GrpcService {
    * @returns {Struct}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const struct = Spanner.struct({
    *   user: 'bob',
    *   age: 32
    * });
+   * ```
    */
   static struct(value?): Struct {
     if (Array.isArray(value)) {

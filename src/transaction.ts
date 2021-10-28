@@ -192,6 +192,7 @@ export type CommitCallback =
  * @see [Timestamp Bounds API Documentation](https://cloud.google.com/spanner/docs/timestamp-bounds)
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
@@ -210,6 +211,7 @@ export type CommitCallback =
  *   // It should be called when the snapshot finishes.
  *   transaction.end();
  * });
+ * ```
  */
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
@@ -320,12 +322,14 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<TransactionBeginResponse>}
    *
    * @example
+   * ```
    * transaction.begin(function(err) {
    *   if (!err) {
    *     // transaction began successfully.
    *   }
    * });
    *
+   * ```
    * @example <caption>If the callback is omitted, the function returns a Promise
    * </caption>
    * transaction.begin()
@@ -464,6 +468,7 @@ export class Snapshot extends EventEmitter {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -485,6 +490,7 @@ export class Snapshot extends EventEmitter {
    *     // All results retrieved.
    *   });
    *
+   * ```
    * @example <caption>Provide an array for `query.keys` to read with a
    * composite key.</caption>
    * const query = {
@@ -693,6 +699,7 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<ReadResponse>}
    *
    * @example
+   * ```
    * const query = {
    *   keys: ['1'],
    *   columns: ['SingerId', 'name']
@@ -717,6 +724,7 @@ export class Snapshot extends EventEmitter {
    *   // ]
    * });
    *
+   * ```
    * @example <caption>Provide an array for `query.keys` to read with a
    * composite key.</caption>
    * const query = {
@@ -815,6 +823,7 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<RunResponse>}
    *
    * @example
+   * ```
    * transaction.run(query, function(err, rows) {
    *   if (err) {
    *     // Error handling omitted.
@@ -828,6 +837,7 @@ export class Snapshot extends EventEmitter {
    *   // ]
    * });
    *
+   * ```
    * @example <caption>The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
    * </caption>
@@ -941,6 +951,7 @@ export class Snapshot extends EventEmitter {
    * @returns {ReadableStream}
    *
    * @example
+   * ```
    * const query = 'SELECT * FROM Singers';
    *
    * transaction.runStream(query)
@@ -955,6 +966,7 @@ export class Snapshot extends EventEmitter {
    *     // All results retrieved.
    *   });
    *
+   * ```
    * @example <caption>The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
    * </caption>
@@ -1297,6 +1309,7 @@ promisifyAll(Dml);
  * @param {Session} session The parent Session object.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
@@ -1307,6 +1320,7 @@ promisifyAll(Dml);
  *   // The `transaction` object is ready for use.
  * });
  *
+ * ```
  * @example <caption>To manually control retrying the transaction, use the
  * `getTransaction` method.</caption>
  * database.getTransaction(function(err, transaction) {
@@ -1348,6 +1362,7 @@ export class Transaction extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * const query = 'UPDATE Account SET Balance = 1000 WHERE Key = 1';
    *
    * transaction.runUpdate(query, (err, rowCount) => {
@@ -1355,6 +1370,7 @@ export class Transaction extends Dml {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
   constructor(
     session: Session,
@@ -1427,6 +1443,7 @@ export class Transaction extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * const queries = [
    *   {
    *     sql: 'INSERT INTO MyTable (Key, Value) VALUES (@key, @value)',
@@ -1444,6 +1461,7 @@ export class Transaction extends Dml {
    *   }
    * });
    *
+   * ```
    * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
    * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
    */
@@ -1600,6 +1618,7 @@ export class Transaction extends Dml {
    * @returns {Promise<CommitPromiseResponse>}
    *
    * @example
+   * ```
    * database.runTransaction(function(err, transaction) {
    *   if (err) {
    *     // Error handling omitted.
@@ -1619,6 +1638,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   commit(
     optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
@@ -1773,6 +1793,7 @@ export class Transaction extends Dml {
    * below.
    *
    * @example
+   * ```
    * const keys = ['Id1', 'Id2', 'Id3'];
    *
    * database.runTransaction(function(err, transaction) {
@@ -1792,6 +1813,7 @@ export class Transaction extends Dml {
    *   });
    * });
    *
+   * ```
    * @example <caption>Provide an array for `keys` to delete rows with a
    * composite key.</caption>
    * const keys = [
@@ -1826,6 +1848,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Eddie Wilson'
@@ -1848,6 +1871,7 @@ export class Transaction extends Dml {
    *   });
    * });
    *
+   * ```
    * @example <caption>Multiple rows can be inserted at once.</caption>
    * const row2 = {
    *   SingerId: 'Id3b',
@@ -1888,6 +1912,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -1909,6 +1934,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   replace(table: string, rows: object | object[]): void {
     this._mutate('replace', table, rows);
@@ -1937,6 +1963,7 @@ export class Transaction extends Dml {
    * @returns {Promise<BasicResponse>}
    *
    * @example
+   * ```
    * database.runTransaction(function(err, transaction) {
    *   if (err) {
    *     // Error handling omitted.
@@ -1948,6 +1975,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   rollback(
     gaxOptionsOrCallback?:
@@ -2001,6 +2029,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -2022,6 +2051,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   update(table: string, rows: object | object[]): void {
     this._mutate('update', table, rows);
@@ -2037,6 +2067,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -2058,6 +2089,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   upsert(table: string, rows: object | object[]): void {
     this._mutate('insertOrUpdate', table, rows);
@@ -2176,11 +2208,13 @@ export class PartitionedDml extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * transaction.runUpdate(query, (err, rowRount) => {
    *   if (err) {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
   runUpdate(
     query: string | ExecuteSqlRequest,

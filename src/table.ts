@@ -78,12 +78,14 @@ export type UpsertRowsOptions = MutateRowsOptions;
  * @param {string} name Name of the table.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
  * const table = database.table('my-table');
+ * ```
  */
 class Table {
   database: Database;
@@ -123,6 +125,7 @@ class Table {
    * @returns {Promise<CreateTableResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -163,6 +166,7 @@ class Table {
    *   .then(function() {
    *     // Table created successfully.
    *   });
+   * ```
    */
   create(
     schema: Schema,
@@ -188,6 +192,7 @@ class Table {
    * @returns {PartialResultStream} A readable stream that emits rows.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -238,6 +243,7 @@ class Table {
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   createReadStream(
     request: ReadRequest,
@@ -294,6 +300,7 @@ class Table {
    * @returns {Promise<DropTableResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -324,6 +331,7 @@ class Table {
    *   .then(function() {
    *     // Table deleted successfully.
    *   });
+   * ```
    */
   delete(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
@@ -384,6 +392,7 @@ class Table {
    * @returns {Promise<DeleteRowsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -416,6 +425,7 @@ class Table {
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
+   * ```
    */
   deleteRows(
     keys: Key[],
@@ -445,6 +455,7 @@ class Table {
    * @returns {Promise<DropTableResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -475,6 +486,7 @@ class Table {
    *   .then(function() {
    *     // Table dropped successfully.
    *   });
+   * ```
    */
   drop(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
@@ -530,6 +542,7 @@ class Table {
    * @returns {Promise<InsertRowsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -571,6 +584,7 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    *
+   * ```
    * @example <caption>include:samples/crud.js</caption>
    * region_tag:spanner_insert_data
    * Full example:
@@ -636,6 +650,7 @@ class Table {
    * @returns {Promise<TableReadResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -713,6 +728,7 @@ class Table {
    *     const rows = data[0];
    *   });
    *
+   * ```
    * @example <caption>include:samples/crud.js</caption>
    * region_tag:spanner_read_data
    * Full example:
@@ -791,6 +807,7 @@ class Table {
    * @returns {Promise<ReplaceRowsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -818,6 +835,7 @@ class Table {
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
+   * ```
    */
   replace(
     rows: object | object[],
@@ -874,6 +892,7 @@ class Table {
    * @returns {Promise<UpdateRowsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -902,6 +921,7 @@ class Table {
    *     const apiResponse = data[0];
    *   });
    *
+   * ```
    * @example <caption>include:samples/crud.js</caption>
    * region_tag:spanner_update_data
    * Full example:
@@ -962,6 +982,7 @@ class Table {
    * @returns {Promise<UpsertRowsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -989,6 +1010,7 @@ class Table {
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
+   * ```
    */
   upsert(
     rows: object | object[],
