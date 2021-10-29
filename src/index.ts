@@ -1210,7 +1210,7 @@ class Spanner extends GrpcService {
    * const [seconds, nanos] = process.hrtime();
    * const timestamp = Spanner.timestamp({seconds, nanos});
    * ```
-   * 
+   *
    * @example With a Date timestamp
    * ```
    * const timestamp = Spanner.timestamp(Date.now());

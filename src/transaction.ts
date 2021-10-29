@@ -1003,7 +1003,7 @@ export class Snapshot extends EventEmitter {
    *   .on('data', function(row) {})
    *   .on('end', function() {});
    * ```
-   * 
+   *
    * @example If you anticipate many results, you can end a stream
    * early to prevent unnecessary processing and API requests.
    * ```

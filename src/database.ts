@@ -1654,7 +1654,7 @@ class Database extends common.GrpcServiceObject {
    *   transaction.end();
    * });
    * ```
-   * 
+   *
    * @example If the callback is omitted, we'll return a Promise.
    * ```
    * database.getSnapshot().then(function(data) {
