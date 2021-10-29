@@ -140,19 +140,27 @@ export type TranslateEnumKeys<
  * @see [Cloud Spanner Documentation](https://cloud.google.com/spanner/docs)
  * @see [Cloud Spanner Concepts](https://cloud.google.com/spanner/docs/concepts)
  *
- * @example <caption>Install the client library with <a
- * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
- * @google-cloud/spanner
+ * @example Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:
+ * ```
+ * npm install --save @google-cloud/spanner
+ * ```
  *
- * @example <caption>Create a client that uses <a
+ * @example Create a client that uses <a
  * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
- * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
+ * Default Credentials (ADC)</a>:
+ * ```
+ * const client = new Spanner();
+ * ```
  *
- * @example <caption>Create a client with <a
+ * @example Create a client with <a
  * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
- * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * credentials</a>:
+ * ```
+ * const client = new Spanner({ projectId:
  * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
+ * ```
  *
  * @example <caption>include:samples/quickstart.js</caption>
  * region_tag:spanner_quickstart
@@ -1197,12 +1205,16 @@ class Spanner extends GrpcService {
    * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
    *
    * ```
-   * @example <caption>With a `google.protobuf.Timestamp` object</caption>
+   * @example With a `google.protobuf.Timestamp` object
+   * ```
    * const [seconds, nanos] = process.hrtime();
    * const timestamp = Spanner.timestamp({seconds, nanos});
-   *
-   * @example <caption>With a Date timestamp</caption>
+   * ```
+   * 
+   * @example With a Date timestamp
+   * ```
    * const timestamp = Spanner.timestamp(Date.now());
+   * ```
    */
   static timestamp(
     value?: string | number | p.ITimestamp | PreciseDate
@@ -1312,22 +1324,32 @@ promisifyAll(Spanner, {
  * @module {constructor} @google-cloud/spanner
  * @alias nodejs-spanner
  *
- * @example <caption>Install the client library with <a
- * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
- * @google-cloud/spanner
+ * @example Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:
+ * ```
+ * npm install --save @google-cloud/spanner
+ * ```
  *
- * @example <caption>Import the client library</caption>
+ * @example Import the client library
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
+ * ```
  *
- * @example <caption>Create a client that uses <a
+ * @example Create a client that uses <a
  * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
- * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
+ * Default Credentials (ADC)</a>:
+ * ```
+ * const client = new Spanner();
+ * ```
  *
- * @example <caption>Create a client with <a
+ * @example Create a client with <a
  * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
- * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * credentials</a>:
+ * ```
+ * const client = new Spanner({ projectId:
  * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
+ * ```
  *
  * @example <caption>include:samples/quickstart.js</caption>
  * region_tag:spanner_quickstart

@@ -463,8 +463,10 @@ class Database extends common.GrpcServiceObject {
    * });
    *
    * ```
-   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * const [sessions, response] = await database.batchCreateSessions(count);
+   * ```
    */
   batchCreateSessions(
     options: number | BatchCreateSessionsOptions,
@@ -1651,13 +1653,14 @@ class Database extends common.GrpcServiceObject {
    *   // Should be called when finished with Snapshot.
    *   transaction.end();
    * });
-   *
    * ```
-   * @example <caption>If the callback is omitted, we'll return a Promise.
-   * </caption>
+   * 
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * database.getSnapshot().then(function(data) {
    *   const transaction = data[0];
    * });
+   * ```
    *
    * @example <caption>include:samples/transaction.js</caption>
    * region_tag:spanner_read_only_transaction
@@ -1740,11 +1743,12 @@ class Database extends common.GrpcServiceObject {
    * database.getTransaction(function(err, transaction) {});
    *
    * ```
-   * @example <caption>If the callback is omitted, we'll return a Promise.
-   * </caption>
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * database.getTransaction().then(function(data) {
    *   const transaction = data[0];
    * });
+   * ```
    */
   getTransaction(
     callback?: GetTransactionCallback
