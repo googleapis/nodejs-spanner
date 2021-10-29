@@ -330,12 +330,13 @@ export class Snapshot extends EventEmitter {
    * });
    *
    * ```
-   * @example <caption>If the callback is omitted, the function returns a Promise
-   * </caption>
+   * @example If the callback is omitted, the function returns a Promise
+   * ```
    * transaction.begin()
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
+   * ```
    */
   begin(
     gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
@@ -491,8 +492,9 @@ export class Snapshot extends EventEmitter {
    *   });
    *
    * ```
-   * @example <caption>Provide an array for `query.keys` to read with a
-   * composite key.</caption>
+   * @example Provide an array for `query.keys` to read with a
+   * composite key.
+   * ```
    * const query = {
    *   keys: [
    *     [
@@ -506,10 +508,12 @@ export class Snapshot extends EventEmitter {
    *   ],
    *   // ...
    * };
+   * ```
    *
-   * @example <caption>Rows are returned as an array of object arrays. Each
+   * @example Rows are returned as an array of object arrays. Each
    * object has a `name` and `value` property. To get a serialized object, call
-   * `toJSON()`.</caption>
+   * `toJSON()`.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -524,9 +528,11 @@ export class Snapshot extends EventEmitter {
    *   .on('end', function() {
    *     // All results retrieved.
    *   });
+   * ```
    *
-   * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will perform automatically.</caption>
+   * @example Alternatively, set `query.json` to `true`, and this step
+   * will perform automatically.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name'],
@@ -542,9 +548,11 @@ export class Snapshot extends EventEmitter {
    *   .on('end', function() {
    *     // All results retrieved.
    *   });
+   * ```
    *
-   * @example <caption>If you anticipate many results, you can end a stream
-   * early to prevent unnecessary processing and API requests.</caption>
+   * @example If you anticipate many results, you can end a stream
+   * early to prevent unnecessary processing and API requests.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -552,6 +560,7 @@ export class Snapshot extends EventEmitter {
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   createReadStream(
     table: string,
@@ -615,7 +624,8 @@ export class Snapshot extends EventEmitter {
    * mainly be called for {@link Snapshot} objects, however in certain cases
    * you may want to call them for {@link Transaction} objects as well.
    *
-   * @example <caption>Calling `end` on a read only snapshot</caption>
+   * @example Calling `end` on a read only snapshot
+   * ```
    * database.getSnapshot((err, transaction) => {
    *   if (err) {
    *     // Error handling omitted.
@@ -630,8 +640,10 @@ export class Snapshot extends EventEmitter {
    *     transaction.end();
    *   });
    * });
+   * ```
    *
-   * @example <caption>Calling `end` on a read/write transaction</caption>
+   * @example Calling `end` on a read/write transaction
+   * ```
    * database.runTransaction((err, transaction) => {
    *   if (err) {
    *     // Error handling omitted.
@@ -650,6 +662,7 @@ export class Snapshot extends EventEmitter {
    *     transaction.commit(err => {});
    *   });
    * });
+   * ```
    */
   end(): void {
     if (this.ended) {
@@ -725,8 +738,9 @@ export class Snapshot extends EventEmitter {
    * });
    *
    * ```
-   * @example <caption>Provide an array for `query.keys` to read with a
-   * composite key.</caption>
+   * @example Provide an array for `query.keys` to read with a
+   * composite key.
+   * ```
    * const query = {
    *   keys: [
    *     [
@@ -740,10 +754,12 @@ export class Snapshot extends EventEmitter {
    *   ],
    *   // ...
    * };
+   * ```
    *
-   * @example <caption>Rows are returned as an array of object arrays. Each
+   * @example Rows are returned as an array of object arrays. Each
    * object has a `name` and `value` property. To get a serialized object, call
-   * `toJSON()`.</caption>
+   * `toJSON()`.
+   * ```
    * transaction.read('Singers', query, function(err, rows) {
    *   if (err) {
    *     // Error handling omitted.
@@ -756,9 +772,11 @@ export class Snapshot extends EventEmitter {
    *   //   Name: 'Eddie Wilson'
    *   // }
    * });
+   * ```
    *
-   * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will perform automatically.</caption>
+   * @example Alternatively, set `query.json` to `true`, and this step
+   * will perform automatically.
+   * ```
    * query.json = true;
    *
    * transaction.read('Singers', query, function(err, rows) {
@@ -773,6 +791,7 @@ export class Snapshot extends EventEmitter {
    *   //   Name: 'Eddie Wilson'
    *   // }
    * });
+   * ```
    */
   read(
     table: string,
@@ -838,9 +857,9 @@ export class Snapshot extends EventEmitter {
    * });
    *
    * ```
-   * @example <caption>The SQL query string can contain parameter placeholders.
+   * @example The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name',
    *   params: {
@@ -853,10 +872,11 @@ export class Snapshot extends EventEmitter {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    *
-   * @example <caption>If you need to enforce a specific param type, a types map
+   * @example If you need to enforce a specific param type, a types map
    * can be provided. This is typically useful if your param value can be null.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name AND id = @id',
    *   params: {
@@ -874,6 +894,7 @@ export class Snapshot extends EventEmitter {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
   run(
     query: string | ExecuteSqlRequest,
@@ -967,9 +988,9 @@ export class Snapshot extends EventEmitter {
    *   });
    *
    * ```
-   * @example <caption>The SQL query string can contain parameter placeholders.
+   * @example The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name',
    *   params: {
@@ -981,13 +1002,16 @@ export class Snapshot extends EventEmitter {
    *   .on('error', function(err) {})
    *   .on('data', function(row) {})
    *   .on('end', function() {});
+   * ```
    *
-   * @example <caption>If you anticipate many results, you can end a stream
-   * early to prevent unnecessary processing and API requests.</caption>
+   * @example If you anticipate many results, you can end a stream
+   * early to prevent unnecessary processing and API requests.
+   * ```
    * transaction.runStream(query)
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   runStream(query: string | ExecuteSqlRequest): PartialResultStream {
     if (typeof query === 'string') {
@@ -1321,11 +1345,13 @@ promisifyAll(Dml);
  * });
  *
  * ```
- * @example <caption>To manually control retrying the transaction, use the
- * `getTransaction` method.</caption>
+ * @example To manually control retrying the transaction, use the
+ * `getTransaction` method.
+ * ```
  * database.getTransaction(function(err, transaction) {
  *   // The `transaction` object is ready for use.
  * });
+ * ```
  */
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
@@ -1462,8 +1488,10 @@ export class Transaction extends Dml {
    * });
    *
    * ```
-   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
+   * ```
    */
   batchUpdate(
     queries: Array<string | Statement>,
@@ -1814,8 +1842,9 @@ export class Transaction extends Dml {
    * });
    *
    * ```
-   * @example <caption>Provide an array for `keys` to delete rows with a
-   * composite key.</caption>
+   * @example Provide an array for `keys` to delete rows with a
+   * composite key.
+   * ```
    * const keys = [
    *   [
    *     'Id1',
@@ -1826,6 +1855,7 @@ export class Transaction extends Dml {
    *     'Name2'
    *   ]
    * ];
+   * ```
    */
   deleteRows(table: string, keys: Key[]): void {
     const keySet: spannerClient.spanner.v1.IKeySet = {
@@ -1872,7 +1902,8 @@ export class Transaction extends Dml {
    * });
    *
    * ```
-   * @example <caption>Multiple rows can be inserted at once.</caption>
+   * @example Multiple rows can be inserted at once.
+   * ```
    * const row2 = {
    *   SingerId: 'Id3b',
    *   Name: 'Joe West'
@@ -1897,6 +1928,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   insert(table: string, rows: object | object[]): void {
     this._mutate('insert', table, rows);
