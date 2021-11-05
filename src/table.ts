@@ -104,16 +104,6 @@ class Table {
      */
     this.name = name;
   }
-  create(
-    schema: Schema,
-    gaxOptions?: CallOptions
-  ): Promise<CreateTableResponse>;
-  create(schema: Schema, callback: CreateTableCallback): void;
-  create(
-    schema: Schema,
-    gaxOptions: CallOptions,
-    callback: CreateTableCallback
-  ): void;
   /**
    * Create a table.
    *
@@ -168,6 +158,16 @@ class Table {
    *   });
    * ```
    */
+  create(
+    schema: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<CreateTableResponse>;
+  create(schema: Schema, callback: CreateTableCallback): void;
+  create(
+    schema: Schema,
+    gaxOptions: CallOptions,
+    callback: CreateTableCallback
+  ): void;
   create(
     schema: Schema,
     gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
@@ -269,9 +269,6 @@ class Table {
 
     return proxyStream as PartialResultStream;
   }
-  delete(gaxOptions?: CallOptions): Promise<DropTableResponse>;
-  delete(callback: DropTableCallback): void;
-  delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * @typedef {array} DropTableResponse
    * @property {google.longrunning.Operation} 0 An {@link Operation} object that can be used to check
@@ -333,6 +330,9 @@ class Table {
    *   });
    * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<DropTableResponse>;
+  delete(callback: DropTableCallback): void;
+  delete(gaxOptions: CallOptions, callback: DropTableCallback): void;
   delete(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
     cb?: DropTableCallback
@@ -348,16 +348,6 @@ class Table {
       callback!
     );
   }
-  deleteRows(
-    keys: Key[],
-    options?: DeleteRowsOptions | CallOptions
-  ): Promise<DeleteRowsResponse>;
-  deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
-  deleteRows(
-    keys: Key[],
-    options: DeleteRowsOptions | CallOptions,
-    callback: DeleteRowsCallback
-  ): void;
   /**
    * @typedef {array} DeleteRowsResponse
    * @property {CommitResponse} 0 The commit response.
@@ -429,6 +419,16 @@ class Table {
    */
   deleteRows(
     keys: Key[],
+    options?: DeleteRowsOptions | CallOptions
+  ): Promise<DeleteRowsResponse>;
+  deleteRows(keys: Key[], callback: DeleteRowsCallback): void;
+  deleteRows(
+    keys: Key[],
+    options: DeleteRowsOptions | CallOptions,
+    callback: DeleteRowsCallback
+  ): void;
+  deleteRows(
+    keys: Key[],
     optionsOrCallback?: DeleteRowsOptions | CallOptions | DeleteRowsCallback,
     cb?: DeleteRowsCallback
   ): Promise<DeleteRowsResponse> | void {
@@ -439,9 +439,6 @@ class Table {
 
     return this._mutate('deleteRows', keys, options, callback!);
   }
-  drop(gaxOptions?: CallOptions): Promise<DropTableResponse>;
-  drop(callback: DropTableCallback): void;
-  drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   /**
    * Drop the table.
    *
@@ -488,6 +485,9 @@ class Table {
    *   });
    * ```
    */
+  drop(gaxOptions?: CallOptions): Promise<DropTableResponse>;
+  drop(callback: DropTableCallback): void;
+  drop(gaxOptions: CallOptions, callback: DropTableCallback): void;
   drop(
     gaxOptionsOrCallback?: CallOptions | DropTableCallback,
     cb?: DropTableCallback
@@ -499,16 +499,6 @@ class Table {
 
     return this.delete(gaxOptions, callback!);
   }
-  insert(
-    rows: object | object[],
-    options?: InsertRowsOptions | CallOptions
-  ): Promise<InsertRowsResponse>;
-  insert(rows: object | object[], callback: InsertRowsCallback): void;
-  insert(
-    rows: object | object[],
-    options: InsertRowsOptions | CallOptions,
-    callback: InsertRowsCallback
-  ): void;
   /**
    * @typedef {array} InsertRowsResponse
    * @property {CommitResponse} 0 The commit response.
@@ -591,6 +581,16 @@ class Table {
    */
   insert(
     rows: object | object[],
+    options?: InsertRowsOptions | CallOptions
+  ): Promise<InsertRowsResponse>;
+  insert(rows: object | object[], callback: InsertRowsCallback): void;
+  insert(
+    rows: object | object[],
+    options: InsertRowsOptions | CallOptions,
+    callback: InsertRowsCallback
+  ): void;
+  insert(
+    rows: object | object[],
     optionsOrCallback?: InsertRowsOptions | CallOptions | InsertRowsCallback,
     cb?: InsertRowsCallback
   ): Promise<InsertRowsResponse> | void {
@@ -601,13 +601,6 @@ class Table {
 
     this._mutate('insert', rows, options, callback!);
   }
-  read(request: ReadRequest, options?: TimestampBounds): Promise<ReadResponse>;
-  read(request: ReadRequest, callback: ReadCallback): void;
-  read(
-    request: ReadRequest,
-    options: TimestampBounds,
-    callback: ReadCallback
-  ): void;
   /**
    * Configuration object, describing what to read from the table.
    */
@@ -745,6 +738,13 @@ class Table {
    * region_tag:spanner_read_data_with_storing_index
    * Reading data using a storing index:
    */
+  read(request: ReadRequest, options?: TimestampBounds): Promise<ReadResponse>;
+  read(request: ReadRequest, callback: ReadCallback): void;
+  read(
+    request: ReadRequest,
+    options: TimestampBounds,
+    callback: ReadCallback
+  ): void;
   read(
     request: ReadRequest,
     optionsOrCallback?: TimestampBounds | ReadCallback,
@@ -764,16 +764,6 @@ class Table {
       .on('data', (row: Row) => rows.push(row))
       .on('end', () => callback!(null, rows));
   }
-  replace(
-    rows: object | object[],
-    options?: ReplaceRowsOptions | CallOptions
-  ): Promise<ReplaceRowsResponse>;
-  replace(rows: object | object[], callback: ReplaceRowsCallback): void;
-  replace(
-    rows: object | object[],
-    options: ReplaceRowsOptions | CallOptions,
-    callback: ReplaceRowsCallback
-  ): void;
   /**
    * @typedef {array} ReplaceRowsResponse
    * @property {CommitResponse} 0 The commit response.
@@ -839,6 +829,16 @@ class Table {
    */
   replace(
     rows: object | object[],
+    options?: ReplaceRowsOptions | CallOptions
+  ): Promise<ReplaceRowsResponse>;
+  replace(rows: object | object[], callback: ReplaceRowsCallback): void;
+  replace(
+    rows: object | object[],
+    options: ReplaceRowsOptions | CallOptions,
+    callback: ReplaceRowsCallback
+  ): void;
+  replace(
+    rows: object | object[],
     optionsOrCallback?: ReplaceRowsOptions | CallOptions | ReplaceRowsCallback,
     cb?: ReplaceRowsCallback
   ): Promise<ReplaceRowsResponse> | void {
@@ -849,16 +849,6 @@ class Table {
 
     this._mutate('replace', rows, options, callback!);
   }
-  update(
-    rows: object | object[],
-    options?: UpdateRowsOptions | CallOptions
-  ): Promise<UpdateRowsResponse>;
-  update(rows: object | object[], callback: UpdateRowsCallback): void;
-  update(
-    rows: object | object[],
-    options: UpdateRowsOptions | CallOptions,
-    callback: UpdateRowsCallback
-  ): void;
   /**
    * @typedef {array} UpdateRowsResponse
    * @property {CommitResponse} 0 The commit response.
@@ -928,6 +918,16 @@ class Table {
    */
   update(
     rows: object | object[],
+    options?: UpdateRowsOptions | CallOptions
+  ): Promise<UpdateRowsResponse>;
+  update(rows: object | object[], callback: UpdateRowsCallback): void;
+  update(
+    rows: object | object[],
+    options: UpdateRowsOptions | CallOptions,
+    callback: UpdateRowsCallback
+  ): void;
+  update(
+    rows: object | object[],
     optionsOrCallback?: UpdateRowsOptions | CallOptions | UpdateRowsCallback,
     cb?: UpdateRowsCallback
   ): Promise<UpdateRowsResponse> | void {
@@ -938,16 +938,6 @@ class Table {
 
     this._mutate('update', rows, options, callback!);
   }
-  upsert(
-    rows: object | object[],
-    options?: UpsertRowsOptions | CallOptions
-  ): Promise<UpsertRowsResponse>;
-  upsert(rows: object | object[], callback: UpsertRowsCallback): void;
-  upsert(
-    rows: object | object[],
-    options: UpsertRowsOptions | CallOptions,
-    callback: UpsertRowsCallback
-  ): void;
   /**
    * @typedef {array} UpsertRowsResponse
    * @property {CommitResponse} 0 The commit response.
@@ -1012,6 +1002,16 @@ class Table {
    *   });
    * ```
    */
+  upsert(
+    rows: object | object[],
+    options?: UpsertRowsOptions | CallOptions
+  ): Promise<UpsertRowsResponse>;
+  upsert(rows: object | object[], callback: UpsertRowsCallback): void;
+  upsert(
+    rows: object | object[],
+    options: UpsertRowsOptions | CallOptions,
+    callback: UpsertRowsCallback
+  ): void;
   upsert(
     rows: object | object[],
     optionsOrCallback?: UpsertRowsOptions | CallOptions | UpsertRowsCallback,

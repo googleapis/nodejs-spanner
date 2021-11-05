@@ -74,34 +74,34 @@ export interface SessionPoolInterface extends EventEmitter {
    * @name SessionPoolInterface#close
    * @param {SessionPoolCloseCallback} callback The callback function.
    */
-  close(callback: SessionPoolCloseCallback): void;
   /**
    * Will be called by the Database object, should be used to start creating
    * sessions/etc.
    *
    * @name SessionPoolInterface#open
    */
-  open(): void;
   /**
    * When called returns a read-only session.
    *
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
-  getReadSession(callback: GetReadSessionCallback): void;
   /**
    * When called returns a read-write session with prepared transaction.
    *
    * @name SessionPoolInterface#getWriteSession
    * @param {GetWriteSessionCallback} callback The callback function.
    */
-  getWriteSession(callback: GetWriteSessionCallback): void;
   /**
    * To be called when releasing a session back into the pool.
    *
    * @name SessionPoolInterface#release
    * @param {Session} session The session to be released.
    */
+  close(callback: SessionPoolCloseCallback): void;
+  open(): void;
+  getReadSession(callback: GetReadSessionCallback): void;
+  getWriteSession(callback: GetWriteSessionCallback): void;
   release(session: Session): void;
 }
 

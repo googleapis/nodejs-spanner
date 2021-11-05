@@ -295,15 +295,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  createInstance(
-    name: string,
-    config: CreateInstanceRequest
-  ): Promise<CreateInstanceResponse>;
-  createInstance(
-    name: string,
-    config: CreateInstanceRequest,
-    callback: CreateInstanceCallback
-  ): void;
   /**
    * Config for the new instance.
    *
@@ -395,6 +386,15 @@ class Spanner extends GrpcService {
    */
   createInstance(
     name: string,
+    config: CreateInstanceRequest
+  ): Promise<CreateInstanceResponse>;
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback: CreateInstanceCallback
+  ): void;
+  createInstance(
+    name: string,
     config: CreateInstanceRequest,
     callback?: CreateInstanceCallback
   ): void | Promise<CreateInstanceResponse> {
@@ -458,12 +458,6 @@ class Spanner extends GrpcService {
     );
   }
 
-  getInstances(options?: GetInstancesOptions): Promise<GetInstancesResponse>;
-  getInstances(callback: GetInstancesCallback): void;
-  getInstances(
-    query: GetInstancesOptions,
-    callback: GetInstancesCallback
-  ): void;
   /**
    * Query object for listing instances.
    *
@@ -548,6 +542,12 @@ class Spanner extends GrpcService {
    * });
    * ```
    */
+  getInstances(options?: GetInstancesOptions): Promise<GetInstancesResponse>;
+  getInstances(callback: GetInstancesCallback): void;
+  getInstances(
+    query: GetInstancesOptions,
+    callback: GetInstancesCallback
+  ): void;
   getInstances(
     optionsOrCallback?: GetInstancesOptions | GetInstancesCallback,
     cb?: GetInstancesCallback
@@ -678,14 +678,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  getInstanceConfigs(
-    query?: GetInstanceConfigsOptions
-  ): Promise<GetInstanceConfigsResponse>;
-  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
-  getInstanceConfigs(
-    query: GetInstanceConfigsOptions,
-    callback: GetInstanceConfigsCallback
-  ): void;
   /**
    * Lists the supported instance configurations for a given project.
    *
@@ -770,6 +762,14 @@ class Spanner extends GrpcService {
    * });
    * ```
    */
+  getInstanceConfigs(
+    query?: GetInstanceConfigsOptions
+  ): Promise<GetInstanceConfigsResponse>;
+  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
+  getInstanceConfigs(
+    query: GetInstanceConfigsOptions,
+    callback: GetInstanceConfigsCallback
+  ): void;
   getInstanceConfigs(
     optionsOrCallback?: GetInstanceConfigsOptions | GetInstanceConfigsCallback,
     cb?: GetInstanceConfigsCallback
@@ -888,17 +888,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
-  getInstanceConfig(
-    name: string,
-    options: GetInstanceConfigOptions
-  ): Promise<GetInstanceConfigResponse>;
-  getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
-  getInstanceConfig(
-    name: string,
-    options: GetInstanceConfigOptions,
-    callback: GetInstanceConfigCallback
-  ): void;
   /**
    * Gets the instance configuration with the specified name.
    */
@@ -953,6 +942,17 @@ class Spanner extends GrpcService {
    * });
    * ```
    */
+  getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions
+  ): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions,
+    callback: GetInstanceConfigCallback
+  ): void;
   getInstanceConfig(
     name: string,
     optionsOrCallback?: GetInstanceConfigOptions | GetInstanceConfigCallback,

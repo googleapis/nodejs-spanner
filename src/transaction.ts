@@ -291,9 +291,6 @@ export class Snapshot extends EventEmitter {
     };
   }
 
-  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
-  begin(callback: BeginTransactionCallback): void;
-  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -338,6 +335,9 @@ export class Snapshot extends EventEmitter {
    *   });
    * ```
    */
+  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
+  begin(callback: BeginTransactionCallback): void;
+  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   begin(
     gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
@@ -673,9 +673,6 @@ export class Snapshot extends EventEmitter {
     process.nextTick(() => this.emit('end'));
   }
 
-  read(table: string, request: ReadRequest): Promise<ReadResponse>;
-  read(table: string, callback: ReadCallback): void;
-  read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
    * @typedef {array} ReadResponse
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
@@ -793,6 +790,9 @@ export class Snapshot extends EventEmitter {
    * });
    * ```
    */
+  read(table: string, request: ReadRequest): Promise<ReadResponse>;
+  read(table: string, callback: ReadCallback): void;
+  read(table: string, request: ReadRequest, callback: ReadCallback): void;
   read(
     table: string,
     requestOrCallback: ReadRequest | ReadCallback,
@@ -817,8 +817,6 @@ export class Snapshot extends EventEmitter {
       .on('end', () => callback!(null, rows));
   }
 
-  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
-  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
    *
@@ -896,6 +894,8 @@ export class Snapshot extends EventEmitter {
    * });
    * ```
    */
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
     callback?: RunCallback
@@ -1245,11 +1245,6 @@ promisifyAll(Snapshot, {
  * @class
  */
 export class Dml extends Snapshot {
-  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
-  runUpdate(
-    query: string | ExecuteSqlRequest,
-    callback: RunUpdateCallback
-  ): void;
   /**
    * @typedef {array} RunUpdateResponse
    * @property {number} 0 Affected row count.
@@ -1274,6 +1269,11 @@ export class Dml extends Snapshot {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
@@ -1411,19 +1411,6 @@ export class Transaction extends Dml {
     this.requestOptions = requestOptions;
   }
 
-  batchUpdate(
-    queries: Array<string | Statement>,
-    options?: BatchUpdateOptions | CallOptions
-  ): Promise<BatchUpdateResponse>;
-  batchUpdate(
-    queries: Array<string | Statement>,
-    callback: BatchUpdateCallback
-  ): void;
-  batchUpdate(
-    queries: Array<string | Statement>,
-    options: BatchUpdateOptions | CallOptions,
-    callback: BatchUpdateCallback
-  ): void;
   /**
    * @typedef {error} BatchUpdateError
    * @property {number} code gRPC status code.
@@ -1493,6 +1480,19 @@ export class Transaction extends Dml {
    * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
    * ```
    */
+  batchUpdate(
+    queries: Array<string | Statement>,
+    options?: BatchUpdateOptions | CallOptions
+  ): Promise<BatchUpdateResponse>;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    callback: BatchUpdateCallback
+  ): void;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    options: BatchUpdateOptions | CallOptions,
+    callback: BatchUpdateCallback
+  ): void;
   batchUpdate(
     queries: Array<string | Statement>,
     optionsOrCallback?: BatchUpdateOptions | CallOptions | BatchUpdateCallback,
@@ -1603,9 +1603,6 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
-  commit(callback: CommitCallback): void;
-  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
    * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
@@ -1668,6 +1665,9 @@ export class Transaction extends Dml {
    * });
    * ```
    */
+  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
+  commit(callback: CommitCallback): void;
+  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   commit(
     optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
     cb?: CommitCallback
@@ -1972,12 +1972,6 @@ export class Transaction extends Dml {
     this._mutate('replace', table, rows);
   }
 
-  rollback(gaxOptions?: CallOptions): Promise<void>;
-  rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
-  rollback(
-    gaxOptions: CallOptions,
-    callback: spannerClient.spanner.v1.Spanner.RollbackCallback
-  ): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -2009,6 +2003,12 @@ export class Transaction extends Dml {
    * });
    * ```
    */
+  rollback(gaxOptions?: CallOptions): Promise<void>;
+  rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
+  rollback(
+    gaxOptions: CallOptions,
+    callback: spannerClient.spanner.v1.Spanner.RollbackCallback
+  ): void;
   rollback(
     gaxOptionsOrCallback?:
       | CallOptions
@@ -2218,11 +2218,6 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
-  runUpdate(
-    query: string | ExecuteSqlRequest,
-    callback: RunUpdateCallback
-  ): void;
   /**
    * Execute a DML statement and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
@@ -2248,6 +2243,11 @@ export class PartitionedDml extends Dml {
    * });
    * ```
    */
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
