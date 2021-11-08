@@ -117,8 +117,6 @@ class Backup {
     };
   }
 
-  create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
-  create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   /**
    * @typedef {object} CreateBackupOptions
    * @property {string} databasePath The database path.
@@ -183,6 +181,8 @@ class Backup {
    * await backupOperation.promise();
    * ```
    */
+  create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
+  create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   create(
     options: CreateBackupOptions,
     callback?: CreateBackupCallback
@@ -229,9 +229,6 @@ class Backup {
     );
   }
 
-  getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;
-  getMetadata(callback: GetMetadataCallback): void;
-  getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
   /**
    * @typedef {array} GetMetadataResponse
    * @property {object} 0 The {@link Backup} metadata.
@@ -266,6 +263,9 @@ class Backup {
    * console.log(`${backupInfo.name}: size=${backupInfo.sizeBytes}`);
    * ```
    */
+  getMetadata(gaxOptions?: CallOptions): Promise<GetMetadataResponse>;
+  getMetadata(callback: GetMetadataCallback): void;
+  getMetadata(gaxOptions: CallOptions, callback: GetMetadataCallback): void;
   getMetadata(
     gaxOptionsOrCallback?: CallOptions | GetMetadataCallback,
     cb?: GetMetadataCallback
@@ -298,12 +298,6 @@ class Backup {
     );
   }
 
-  getState(): Promise<
-    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
-    | undefined
-    | null
-  >;
-  getState(callback: GetStateCallback): void;
   /**
    * Retrieves the state of the backup.
    *
@@ -326,6 +320,12 @@ class Backup {
    * const backupCompleted = (state === 'READY');
    * ```
    */
+  getState(): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
+    | undefined
+    | null
+  >;
+  getState(callback: GetStateCallback): void;
   async getState(): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
     | undefined
@@ -335,8 +335,6 @@ class Backup {
     return backupInfo.state;
   }
 
-  getExpireTime(): Promise<PreciseDate | undefined>;
-  getExpireTime(callback: GetExpireTimeCallback): void;
   /**
    * Retrieves the expiry time of the backup.
    *
@@ -357,13 +355,13 @@ class Backup {
    * console.log(`Backup expires on ${expireTime.toISOString()}`);
    * ```
    */
+  getExpireTime(): Promise<PreciseDate | undefined>;
+  getExpireTime(callback: GetExpireTimeCallback): void;
   async getExpireTime(): Promise<PreciseDate | undefined> {
     const [backupInfo] = await this.getMetadata();
     return new PreciseDate(backupInfo.expireTime as DateStruct);
   }
 
-  exists(): Promise<boolean>;
-  exists(callback: ExistsCallback): void;
   /**
    * Checks whether the backup exists.
    *
@@ -383,6 +381,8 @@ class Backup {
    * console.log(`Does backup exist? ${alreadyExists}`);
    * ```
    */
+  exists(): Promise<boolean>;
+  exists(callback: ExistsCallback): void;
   async exists(): Promise<boolean> {
     try {
       // Attempt to read metadata to determine whether backup exists
@@ -398,22 +398,6 @@ class Backup {
     }
   }
 
-  updateExpireTime(
-    expireTime: string | number | p.ITimestamp | PreciseDate
-  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
-  updateExpireTime(
-    expireTime: string | number | p.ITimestamp | PreciseDate,
-    gaxOptions?: CallOptions
-  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
-  updateExpireTime(
-    expireTime: string | number | p.ITimestamp | PreciseDate,
-    callback: UpdateExpireTimeCallback
-  ): void;
-  updateExpireTime(
-    expireTime: string | number | p.ITimestamp | PreciseDate,
-    gaxOptions: CallOptions,
-    callback: UpdateExpireTimeCallback
-  ): void;
   /**
    * @callback UpdateExpireTimeCallback
    * @param {?Error} err Request error, if any.
@@ -446,6 +430,22 @@ class Backup {
    * await backup.updateExpireTime(newExpireTime);
    * ```
    */
+  updateExpireTime(
+    expireTime: string | number | p.ITimestamp | PreciseDate
+  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
+  updateExpireTime(
+    expireTime: string | number | p.ITimestamp | PreciseDate,
+    gaxOptions?: CallOptions
+  ): Promise<databaseAdmin.spanner.admin.database.v1.IBackup>;
+  updateExpireTime(
+    expireTime: string | number | p.ITimestamp | PreciseDate,
+    callback: UpdateExpireTimeCallback
+  ): void;
+  updateExpireTime(
+    expireTime: string | number | p.ITimestamp | PreciseDate,
+    gaxOptions: CallOptions,
+    callback: UpdateExpireTimeCallback
+  ): void;
   updateExpireTime(
     expireTime: string | number | p.ITimestamp | PreciseDate,
     gaxOptionsOrCallback?: CallOptions | UpdateExpireTimeCallback,
@@ -483,9 +483,6 @@ class Backup {
     );
   }
 
-  delete(gaxOptions?: CallOptions): Promise<databaseAdmin.protobuf.IEmpty>;
-  delete(callback: DeleteCallback): void;
-  delete(gaxOptions: CallOptions, callback: DeleteCallback): void;
   /**
    * Deletes a backup.
    *
@@ -505,6 +502,9 @@ class Backup {
    * await backup.delete();
    * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<databaseAdmin.protobuf.IEmpty>;
+  delete(callback: DeleteCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteCallback): void;
   delete(
     gaxOptionsOrCallback?: CallOptions | DeleteCallback,
     cb?: DeleteCallback

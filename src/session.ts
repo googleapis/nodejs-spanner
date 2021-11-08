@@ -253,9 +253,6 @@ export class Session extends common.GrpcServiceObject {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
   }
-  delete(gaxOptions?: CallOptions): Promise<DeleteSessionResponse>;
-  delete(callback: DeleteSessionCallback): void;
-  delete(gaxOptions: CallOptions, callback: DeleteSessionCallback): void;
   /**
    * Delete a session.
    *
@@ -288,6 +285,9 @@ export class Session extends common.GrpcServiceObject {
    * });
    * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<DeleteSessionResponse>;
+  delete(callback: DeleteSessionCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteSessionCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DeleteSessionCallback,
     cb?: DeleteSessionCallback
@@ -311,12 +311,6 @@ export class Session extends common.GrpcServiceObject {
       callback!
     );
   }
-  getMetadata(gaxOptions?: CallOptions): Promise<GetSessionMetadataResponse>;
-  getMetadata(callback: GetSessionMetadataCallback): void;
-  getMetadata(
-    gaxOptions: CallOptions,
-    callback: GetSessionMetadataCallback
-  ): void;
   /**
    * @typedef {array} GetSessionMetadataResponse
    * @property {object} 0 The session's metadata.
@@ -355,6 +349,12 @@ export class Session extends common.GrpcServiceObject {
    * });
    * ```
    */
+  getMetadata(gaxOptions?: CallOptions): Promise<GetSessionMetadataResponse>;
+  getMetadata(callback: GetSessionMetadataCallback): void;
+  getMetadata(
+    gaxOptions: CallOptions,
+    callback: GetSessionMetadataCallback
+  ): void;
   getMetadata(
     optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
     cb?: GetSessionMetadataCallback
@@ -383,9 +383,6 @@ export class Session extends common.GrpcServiceObject {
       }
     );
   }
-  keepAlive(gaxOptions?: CallOptions): Promise<KeepAliveResponse>;
-  keepAlive(callback: KeepAliveCallback): void;
-  keepAlive(gaxOptions: CallOptions, callback: KeepAliveCallback): void;
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
    *
@@ -404,6 +401,9 @@ export class Session extends common.GrpcServiceObject {
    * });
    * ```
    */
+  keepAlive(gaxOptions?: CallOptions): Promise<KeepAliveResponse>;
+  keepAlive(callback: KeepAliveCallback): void;
+  keepAlive(gaxOptions: CallOptions, callback: KeepAliveCallback): void;
   keepAlive(
     optionsOrCallback?: CallOptions | KeepAliveCallback,
     cb?: KeepAliveCallback

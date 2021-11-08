@@ -255,9 +255,6 @@ class Instance extends common.GrpcServiceObject {
     return new Backup(this, backupId);
   }
 
-  getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
-  getBackups(callback: GetBackupsCallback): void;
-  getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
   /**
    * Query object for listing backups.
    *
@@ -323,6 +320,9 @@ class Instance extends common.GrpcServiceObject {
    * } while (pageToken);
    * ```
    */
+  getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
+  getBackups(callback: GetBackupsCallback): void;
+  getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
   getBackups(
     optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
     cb?: GetBackupsCallback
@@ -454,14 +454,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getBackupOperations(
-    options?: GetBackupOperationsOptions
-  ): Promise<GetBackupOperationsResponse>;
-  getBackupOperations(callback: GetBackupOperationsCallback): void;
-  getBackupOperations(
-    options: GetBackupOperationsOptions,
-    callback: GetBackupOperationsCallback
-  ): void;
   /**
    * Query object for listing backup operations.
    *
@@ -489,6 +481,14 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
+  getBackupOperations(
+    options?: GetBackupOperationsOptions
+  ): Promise<GetBackupOperationsResponse>;
+  getBackupOperations(callback: GetBackupOperationsCallback): void;
+  getBackupOperations(
+    options: GetBackupOperationsOptions,
+    callback: GetBackupOperationsCallback
+  ): void;
 
   /**
    * List pending and completed backup operations for all databases in the instance.
@@ -581,14 +581,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  getDatabaseOperations(
-    options?: GetDatabaseOperationsOptions
-  ): Promise<GetDatabaseOperationsResponse>;
-  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
-  getDatabaseOperations(
-    options: GetDatabaseOperationsOptions,
-    callback: GetDatabaseOperationsCallback
-  ): void;
   /**
    * Query object for listing database operations.
    *
@@ -616,6 +608,14 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
+  getDatabaseOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse>;
+  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
+  getDatabaseOperations(
+    options: GetDatabaseOperationsOptions,
+    callback: GetDatabaseOperationsCallback
+  ): void;
 
   /**
    * List pending and completed operations for all databases in the instance.
@@ -709,16 +709,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  createDatabase(
-    name: string,
-    options?: CreateDatabaseOptions
-  ): Promise<CreateDatabaseResponse>;
-  createDatabase(name: string, callback: CreateDatabaseCallback): void;
-  createDatabase(
-    name: string,
-    options: CreateDatabaseOptions,
-    callback: CreateDatabaseCallback
-  ): void;
   /**
    * Config for the new database.
    *
@@ -805,6 +795,16 @@ class Instance extends common.GrpcServiceObject {
    * region_tag:spanner_create_database
    * Full example:
    */
+  createDatabase(
+    name: string,
+    options?: CreateDatabaseOptions
+  ): Promise<CreateDatabaseResponse>;
+  createDatabase(name: string, callback: CreateDatabaseCallback): void;
+  createDatabase(
+    name: string,
+    options: CreateDatabaseOptions,
+    callback: CreateDatabaseCallback
+  ): void;
   createDatabase(
     name: string,
     optionsOrCallback?: CreateDatabaseOptions | CreateDatabaseCallback,
@@ -908,9 +908,6 @@ class Instance extends common.GrpcServiceObject {
     return this.databases_.get(key!)!;
   }
 
-  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceResponse>;
-  delete(callback: DeleteInstanceCallback): void;
-  delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   /**
    * @typedef {array} DeleteInstanceResponse
    * @property {object} 0 The full API response.
@@ -957,6 +954,9 @@ class Instance extends common.GrpcServiceObject {
    * });
    * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceResponse>;
+  delete(callback: DeleteInstanceCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DeleteInstanceCallback,
     cb?: DeleteInstanceCallback
@@ -995,9 +995,6 @@ class Instance extends common.GrpcServiceObject {
       });
   }
 
-  exists(gaxOptions?: CallOptions): Promise<ExistsInstanceResponse>;
-  exists(callback: ExistsInstanceCallback): void;
-  exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   /**
    * @typedef {array} InstanceExistsResponse
    * @property {boolean} 0 Whether the {@link Instance} exists.
@@ -1034,6 +1031,9 @@ class Instance extends common.GrpcServiceObject {
    * });
    * ```
    */
+  exists(gaxOptions?: CallOptions): Promise<ExistsInstanceResponse>;
+  exists(callback: ExistsInstanceCallback): void;
+  exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   exists(
     optionsOrCallback?: CallOptions | ExistsInstanceCallback,
     cb?: ExistsInstanceCallback
@@ -1056,9 +1056,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  get(options?: GetInstanceConfig): Promise<GetInstanceResponse>;
-  get(callback: GetInstanceCallback): void;
-  get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   /**
    * @typedef {array} GetInstanceResponse
    * @property {Instance} 0 The {@link Instance}.
@@ -1107,6 +1104,9 @@ class Instance extends common.GrpcServiceObject {
    * });
    * ```
    */
+  get(options?: GetInstanceConfig): Promise<GetInstanceResponse>;
+  get(callback: GetInstanceCallback): void;
+  get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   get(
     optionsOrCallback?: GetInstanceConfig | GetInstanceCallback,
     cb?: GetInstanceCallback
@@ -1160,12 +1160,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getDatabases(options?: GetDatabasesOptions): Promise<GetDatabasesResponse>;
-  getDatabases(callback: GetDatabasesCallback): void;
-  getDatabases(
-    options: GetDatabasesOptions,
-    callback: GetDatabasesCallback
-  ): void;
   /**
    * Query object for listing databases.
    *
@@ -1236,6 +1230,12 @@ class Instance extends common.GrpcServiceObject {
    * });
    * ```
    */
+  getDatabases(options?: GetDatabasesOptions): Promise<GetDatabasesResponse>;
+  getDatabases(callback: GetDatabasesCallback): void;
+  getDatabases(
+    options: GetDatabasesOptions,
+    callback: GetDatabasesCallback
+  ): void;
   getDatabases(
     optionsOrCallback?: GetDatabasesOptions | GetDatabasesCallback,
     cb?: GetDatabasesCallback
@@ -1370,14 +1370,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getMetadata(
-    options?: GetInstanceMetadataOptions
-  ): Promise<GetInstanceMetadataResponse>;
-  getMetadata(callback: GetInstanceMetadataCallback): void;
-  getMetadata(
-    options: GetInstanceMetadataOptions,
-    callback: GetInstanceMetadataCallback
-  ): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -1440,6 +1432,14 @@ class Instance extends common.GrpcServiceObject {
    * ```
    */
   getMetadata(
+    options?: GetInstanceMetadataOptions
+  ): Promise<GetInstanceMetadataResponse>;
+  getMetadata(callback: GetInstanceMetadataCallback): void;
+  getMetadata(
+    options: GetInstanceMetadataOptions,
+    callback: GetInstanceMetadataCallback
+  ): void;
+  getMetadata(
     optionsOrCallback?:
       | GetInstanceMetadataOptions
       | GetInstanceMetadataCallback,
@@ -1474,16 +1474,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  setMetadata(
-    metadata: IInstance,
-    gaxOptions?: CallOptions
-  ): Promise<SetInstanceMetadataResponse>;
-  setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
-  setMetadata(
-    metadata: IInstance,
-    gaxOptions: CallOptions,
-    callback: SetInstanceMetadataCallback
-  ): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -1532,6 +1522,16 @@ class Instance extends common.GrpcServiceObject {
    * });
    * ```
    */
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions?: CallOptions
+  ): Promise<SetInstanceMetadataResponse>;
+  setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions: CallOptions,
+    callback: SetInstanceMetadataCallback
+  ): void;
   setMetadata(
     metadata: IInstance,
     optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
