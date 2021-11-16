@@ -1457,12 +1457,6 @@ describe('Instance', () => {
         },
       ];
 
-      const COPY_BACKUPS = [
-        {
-          expireTime: new PreciseDate(1000),
-        },
-      ];
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const REQUEST_RESPONSE_ARGS: any = [null, BACKUPS, null, {}];
 
