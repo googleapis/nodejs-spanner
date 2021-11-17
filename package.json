@@ -95,7 +95,7 @@
     "concat-stream": "^2.0.0",
     "dedent": "^0.7.0",
     "duplexify": "^4.1.1",
-    "execa": "^5.0.0",
+    "execa": "^6.0.0",
     "gts": "^2.0.0",
     "jsdoc": "^3.6.2",
     "jsdoc-fresh": "^1.0.1",
