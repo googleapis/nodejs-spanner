@@ -48,11 +48,33 @@ export type CreateBackupResponse = [
   IOperation
 ];
 
+/**
+ * Parameters for creating a backup.
+ */
 export interface CreateBackupOptions {
+  /**
+   * The database path.
+   */
   databasePath: string;
+  /**
+   * The expire time of the backup.
+   */
   expireTime: string | number | p.ITimestamp | PreciseDate;
+  /**
+   * Take a backup of the state of the database at this time.
+   */
   versionTime?: string | number | p.ITimestamp | PreciseDate;
+  /**
+   * An encryption configuration describing the
+   * encryption type and key resources in Cloud KMS to be used to encrypt
+   * the backup.
+   */
   encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig;
+  /**
+   * The request configuration options,
+   * See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   * for more details.
+   */
   gaxOptions?: CallOptions;
 }
 
@@ -118,21 +140,6 @@ class Backup {
   }
 
   /**
-   * @typedef {object} CreateBackupOptions
-   * @property {string} databasePath The database path.
-   * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
-   *     expireTime The expire time of the backup.
-   * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
-   *     versionTime Take a backup of the state of the database at this time.
-   * @property {google.spanner.admin.database.v1.ICreateBackupEncryptionConfig}
-   *     encryptionConfig An encryption configuration describing the
-   *     encryption type and key resources in Cloud KMS to be used to encrypt
-   *     the backup.
-   * @property {object} [gaxOptions] The request configuration options,
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   */
-  /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
    * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
@@ -140,22 +147,7 @@ class Backup {
    * @property {object} 2 The full API response.
    */
   /**
-   * @callback CreateBackupCallback
-   * @param {?Error} err Request error, if any.
-   * @param {Backup} backup The new {@link Backup}.
-   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
-   *     check the status of the request.
-   * @param {object} apiResponse The full API response.
-   */
-  /**
    * Create a backup.
-   *
-   * @method Backup#create
-   * @param {CreateBackupOptions} options Parameters for creating a backup.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   * @param {CreateBackupCallback} [callback] Callback function.
    * @returns {Promise<CreateBackupResponse>} When resolved, the backup
    *     operation will have started, but will not have necessarily completed.
    *

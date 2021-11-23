@@ -24,17 +24,23 @@ import {Session, Database} from '.';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 export interface TransactionIdentifier {
+  /**
+   * The full session name.
+   */
   session: string | Session;
+  /**
+   * The transaction ID.
+   */
   transaction?: string;
+  /**
+   * The transaction read timestamp.
+   */
   timestamp?: google.protobuf.ITimestamp;
 }
 
 /**
  * Use a BatchTransaction object to create partitions and read/query against
  * your Cloud Spanner database.
- *
- * @class
- * @extends Snapshot
  *
  * @param {TimestampBounds} [options] [Timestamp Bounds](https://cloud.google.com/spanner/docs/timestamp-bounds).
  */
@@ -52,7 +58,6 @@ class BatchTransaction extends Snapshot {
    * the transaction is no longer needed anywhere
    *
    * @param {BasicCallback} [callback] Callback function.
-   * @returns {Promise<BasicResponse>}
    *
    * @example
    * ```
@@ -116,7 +121,6 @@ class BatchTransaction extends Snapshot {
    * @param {object} [query.partitionOptions] A map of partition options.
    * @param {object} [query.types] A map of parameter types.
    * @param {CreateQueryPartitionsCallback} [callback] Callback callback function.
-   * @returns {Promise<CreateQueryPartitionsResponse>}
    *
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_client
@@ -189,7 +193,6 @@ class BatchTransaction extends Snapshot {
   }
   /**
    * @typedef {object} ReadPartition
-   * @mixes ReadRequestOptions
    * @property {string} partitionToken The partition token.
    * @property {object} [gaxOptions] Request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
@@ -247,7 +250,6 @@ class BatchTransaction extends Snapshot {
    *     for more details.
    * @param {TransactionRequestReadCallback|RunCallback} [callback] Callback
    *     function.
-   * @returns {Promise<RunResponse>|Promise<TransactionRequestReadResponse>}
    *
    * @example <caption>include:samples/batch.js</caption>
    * region_tag:spanner_batch_execute_partitions
@@ -312,12 +314,7 @@ class BatchTransaction extends Snapshot {
     }
     return this.runStream(partition);
   }
-  /**
-   * @typedef {object} TransactionIdentifier
-   * @property {string|Session} session The full session name.
-   * @property {string} transaction The transaction ID.
-   * @property {string|Date} readTimestamp The transaction read timestamp.
-   */
+
   /**
    * Creates a transaction identifier used to reference the transaction in
    * workers.
