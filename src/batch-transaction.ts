@@ -55,6 +55,7 @@ class BatchTransaction extends Snapshot {
    * @returns {Promise<BasicResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -76,6 +77,7 @@ class BatchTransaction extends Snapshot {
    *   const transaction = data[0];
    *   return transaction.close();
    * });
+   * ```
    */
   close(callback?) {
     this.end();
@@ -267,6 +269,7 @@ class BatchTransaction extends Snapshot {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -301,6 +304,7 @@ class BatchTransaction extends Snapshot {
    *       });
    *   });
    * });
+   * ```
    */
   executeStream(partition) {
     if (is.string(partition.table)) {
@@ -321,6 +325,7 @@ class BatchTransaction extends Snapshot {
    * @returns {TransactionIdentifier}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -330,6 +335,7 @@ class BatchTransaction extends Snapshot {
    * database.createBatchTransaction(function(err, transaction) {
    *   const identifier = transaction.identifier();
    * });
+   * ```
    */
   identifier(): TransactionIdentifier {
     return {

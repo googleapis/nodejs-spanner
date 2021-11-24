@@ -251,10 +251,12 @@ export interface RestoreOptions {
  *     The default query options to use for queries on the database.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
+ * ```
  */
 class Database extends common.GrpcServiceObject {
   private instance: Instance;
@@ -279,6 +281,7 @@ class Database extends common.GrpcServiceObject {
        * @returns {Promise<CreateDatabaseResponse>}
        *
        * @example
+       * ```
        * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        * const instance = spanner.instance('my-instance');
@@ -309,6 +312,7 @@ class Database extends common.GrpcServiceObject {
        *   .then(function() {
        *     // Database created successfully.
        *   });
+       * ```
        */
       create: true,
     };
@@ -395,13 +399,6 @@ class Database extends common.GrpcServiceObject {
     return options;
   }
 
-  batchCreateSessions(
-    options: number | BatchCreateSessionsOptions
-  ): Promise<BatchCreateSessionsResponse>;
-  batchCreateSessions(
-    options: number | BatchCreateSessionsOptions,
-    callback: BatchCreateSessionsCallback
-  ): void;
   /**
    * @typedef {object} BatchCreateSessionsOptions
    * @property {number} count The number of sessions to create.
@@ -441,6 +438,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<BatchCreateSessionsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -457,9 +455,19 @@ class Database extends common.GrpcServiceObject {
    *   // `sessions` is an array of Session objects.
    * });
    *
-   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * ```
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * const [sessions, response] = await database.batchCreateSessions(count);
+   * ```
    */
+  batchCreateSessions(
+    options: number | BatchCreateSessionsOptions
+  ): Promise<BatchCreateSessionsResponse>;
+  batchCreateSessions(
+    options: number | BatchCreateSessionsOptions,
+    callback: BatchCreateSessionsCallback
+  ): void;
   batchCreateSessions(
     options: number | BatchCreateSessionsOptions,
     callback?: BatchCreateSessionsCallback
@@ -512,6 +520,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {BatchTransaction} A batch transaction object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -523,6 +532,7 @@ class Database extends common.GrpcServiceObject {
    *   transaction: 'my-transaction',
    *   readTimestamp: 1518464696657
    * });
+   * ```
    */
   batchTransaction(
     identifier: TransactionIdentifier,
@@ -538,8 +548,6 @@ class Database extends common.GrpcServiceObject {
     transaction.readTimestamp = identifier.timestamp as PreciseDate;
     return transaction;
   }
-  close(callback: SessionPoolCloseCallback): void;
-  close(): Promise<DatabaseCloseResponse>;
   /**
    * @callback CloseDatabaseCallback
    * @param {?Error} err Request error, if any.
@@ -551,6 +559,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -574,7 +583,10 @@ class Database extends common.GrpcServiceObject {
    *     });
    *   }
    * });
+   * ```
    */
+  close(callback: SessionPoolCloseCallback): void;
+  close(): Promise<DatabaseCloseResponse>;
   close(
     callback?: SessionPoolCloseCallback
   ): void | Promise<DatabaseCloseResponse> {
@@ -583,14 +595,6 @@ class Database extends common.GrpcServiceObject {
     (this.parent as any).databases_.delete(key);
     this.pool_.close(callback!);
   }
-  createBatchTransaction(
-    options?: TimestampBounds
-  ): Promise<CreateBatchTransactionResponse>;
-  createBatchTransaction(callback: CreateBatchTransactionCallback): void;
-  createBatchTransaction(
-    options: TimestampBounds,
-    callback: CreateBatchTransactionCallback
-  ): void;
   /**
    * @typedef {array} CreateTransactionResponse
    * @property {BatchTransaction} 0 The {@link BatchTransaction}.
@@ -609,6 +613,14 @@ class Database extends common.GrpcServiceObject {
    * @param {CreateTransactionCallback} [callback] Callback function.
    * @returns {Promise<CreateTransactionResponse>}
    */
+  createBatchTransaction(
+    options?: TimestampBounds
+  ): Promise<CreateBatchTransactionResponse>;
+  createBatchTransaction(callback: CreateBatchTransactionCallback): void;
+  createBatchTransaction(
+    options: TimestampBounds,
+    callback: CreateBatchTransactionCallback
+  ): void;
   createBatchTransaction(
     optionsOrCallback?: TimestampBounds | CreateBatchTransactionCallback,
     cb?: CreateBatchTransactionCallback
@@ -638,12 +650,6 @@ class Database extends common.GrpcServiceObject {
       });
     });
   }
-  createSession(options: CreateSessionOptions): Promise<CreateSessionResponse>;
-  createSession(callback: CreateSessionCallback): void;
-  createSession(
-    options: CreateSessionOptions,
-    callback: CreateSessionCallback
-  ): void;
   /**
    * Create a new session.
    *
@@ -693,6 +699,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<CreateSessionResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -714,7 +721,14 @@ class Database extends common.GrpcServiceObject {
    *   const session = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
+  createSession(options: CreateSessionOptions): Promise<CreateSessionResponse>;
+  createSession(callback: CreateSessionCallback): void;
+  createSession(
+    options: CreateSessionOptions,
+    callback: CreateSessionCallback
+  ): void;
   createSession(
     optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
     cb?: CreateSessionCallback
@@ -753,16 +767,6 @@ class Database extends common.GrpcServiceObject {
       }
     );
   }
-  createTable(
-    schema: Schema,
-    gaxOptions?: CallOptions
-  ): Promise<CreateTableResponse>;
-  createTable(schema: Schema, callback: CreateTableCallback): void;
-  createTable(
-    schema: Schema,
-    gaxOptions: CallOptions,
-    callback: CreateTableCallback
-  ): void;
   /**
    * @typedef {array} CreateTableResponse
    * @property {Table} 0 The new {@link Table}.
@@ -793,6 +797,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<CreateTableResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -832,7 +837,18 @@ class Database extends common.GrpcServiceObject {
    *   .then(function() {
    *     // Table created successfully.
    *   });
+   * ```
    */
+  createTable(
+    schema: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<CreateTableResponse>;
+  createTable(schema: Schema, callback: CreateTableCallback): void;
+  createTable(
+    schema: Schema,
+    gaxOptions: CallOptions,
+    callback: CreateTableCallback
+  ): void;
   createTable(
     schema: Schema,
     gaxOptionsOrCallback?: CallOptions | CreateTableCallback,
@@ -874,9 +890,6 @@ class Database extends common.GrpcServiceObject {
       }
     });
   }
-  delete(gaxOptions?: CallOptions): Promise<DatabaseDeleteResponse>;
-  delete(callback: DatabaseDeleteCallback): void;
-  delete(gaxOptions: CallOptions, callback: DatabaseDeleteCallback): void;
   /**
    * @typedef {array} DatabaseDeleteResponse
    * @property {object} 0 The full API response.
@@ -901,6 +914,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<DatabaseDeleteResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -921,7 +935,11 @@ class Database extends common.GrpcServiceObject {
    * database.delete().then(function(data) {
    *   const apiResponse = data[0];
    * });
+   * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<DatabaseDeleteResponse>;
+  delete(callback: DatabaseDeleteCallback): void;
+  delete(gaxOptions: CallOptions, callback: DatabaseDeleteCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DatabaseDeleteCallback,
     cb?: DatabaseDeleteCallback
@@ -948,9 +966,6 @@ class Database extends common.GrpcServiceObject {
       );
     });
   }
-  exists(gaxOptions?: CallOptions): Promise<[boolean]>;
-  exists(callback: ExistsCallback): void;
-  exists(gaxOptions: CallOptions, callback: ExistsCallback): void;
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -971,6 +986,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<DatabaseExistsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -985,7 +1001,11 @@ class Database extends common.GrpcServiceObject {
    * database.exists().then(function(data) {
    *   const exists = data[0];
    * });
+   * ```
    */
+  exists(gaxOptions?: CallOptions): Promise<[boolean]>;
+  exists(callback: ExistsCallback): void;
+  exists(gaxOptions: CallOptions, callback: ExistsCallback): void;
   exists(
     gaxOptionsOrCallback?: CallOptions | ExistsCallback,
     cb?: ExistsCallback
@@ -1006,9 +1026,6 @@ class Database extends common.GrpcServiceObject {
       callback!(null, exists);
     });
   }
-  get(options?: GetDatabaseConfig): Promise<DatabaseResponse>;
-  get(callback: DatabaseCallback): void;
-  get(options: GetDatabaseConfig, callback: DatabaseCallback): void;
   /**
    * @typedef {array} GetDatabaseResponse
    * @property {Database} 0 The {@link Database}.
@@ -1038,6 +1055,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetDatabaseResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1055,7 +1073,11 @@ class Database extends common.GrpcServiceObject {
    *   const database = data[0];
    *   const apiResponse = data[0];
    * });
+   * ```
    */
+  get(options?: GetDatabaseConfig): Promise<DatabaseResponse>;
+  get(callback: DatabaseCallback): void;
+  get(options: GetDatabaseConfig, callback: DatabaseCallback): void;
   get(
     optionsOrCallback?: GetDatabaseConfig | DatabaseCallback,
     cb?: DatabaseCallback
@@ -1092,12 +1114,6 @@ class Database extends common.GrpcServiceObject {
       callback!(null, this, metadata as r.Response);
     });
   }
-  getMetadata(gaxOptions?: CallOptions): Promise<GetDatabaseMetadataResponse>;
-  getMetadata(callback: GetDatabaseMetadataCallback): void;
-  getMetadata(
-    gaxOptions: CallOptions,
-    callback: GetDatabaseMetadataCallback
-  ): void;
   /**
    * @typedef {array} GetDatabaseMetadataResponse
    * @property {object} 0 The {@link Database} metadata.
@@ -1123,6 +1139,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetDatabaseMetadataResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1144,7 +1161,14 @@ class Database extends common.GrpcServiceObject {
    *   const metadata = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
+  getMetadata(gaxOptions?: CallOptions): Promise<GetDatabaseMetadataResponse>;
+  getMetadata(callback: GetDatabaseMetadataCallback): void;
+  getMetadata(
+    gaxOptions: CallOptions,
+    callback: GetDatabaseMetadataCallback
+  ): void;
   getMetadata(
     gaxOptionsOrCallback?: CallOptions | GetDatabaseMetadataCallback,
     cb?: GetDatabaseMetadataCallback
@@ -1179,11 +1203,6 @@ class Database extends common.GrpcServiceObject {
     );
   }
 
-  getRestoreInfo(
-    options?: CallOptions
-  ): Promise<IRestoreInfoTranslatedEnum | undefined>;
-  getRestoreInfo(callback: GetRestoreInfoCallback): void;
-  getRestoreInfo(options: CallOptions, callback: GetRestoreInfoCallback): void;
   /**
    * {@link google.spanner.admin.database.v1#RestoreInfo} structure with restore
    * source type enum translated to string form.
@@ -1211,13 +1230,20 @@ class Database extends common.GrpcServiceObject {
    *     from a backup.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const restoreInfo = await database.getRestoreInfo();
    * console.log(`Database restored from ${restoreInfo.backupInfo.backup}`);
+   * ```
    */
+  getRestoreInfo(
+    options?: CallOptions
+  ): Promise<IRestoreInfoTranslatedEnum | undefined>;
+  getRestoreInfo(callback: GetRestoreInfoCallback): void;
+  getRestoreInfo(options: CallOptions, callback: GetRestoreInfoCallback): void;
   async getRestoreInfo(
     optionsOrCallback?: CallOptions | GetRestoreInfoCallback
   ): Promise<IRestoreInfoTranslatedEnum | undefined> {
@@ -1228,14 +1254,6 @@ class Database extends common.GrpcServiceObject {
     return metadata.restoreInfo ? metadata.restoreInfo : undefined;
   }
 
-  getState(
-    options?: CallOptions
-  ): Promise<
-    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
-    | undefined
-  >;
-  getState(callback: GetStateCallback): void;
-  getState(options: CallOptions, callback: GetStateCallback): void;
   /**
    * @callback GetStateCallback
    * @param {?Error} err Request error, if any.
@@ -1260,13 +1278,23 @@ class Database extends common.GrpcServiceObject {
    *     is defined.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    * const state = await database.getState();
    * const isReady = (state === 'READY');
+   * ```
    */
+  getState(
+    options?: CallOptions
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
+    | undefined
+  >;
+  getState(callback: GetStateCallback): void;
+  getState(options: CallOptions, callback: GetStateCallback): void;
   async getState(
     optionsOrCallback?: CallOptions | GetStateCallback
   ): Promise<
@@ -1280,9 +1308,6 @@ class Database extends common.GrpcServiceObject {
     return metadata.state || undefined;
   }
 
-  getSchema(options?: CallOptions): Promise<GetSchemaResponse>;
-  getSchema(callback: GetSchemaCallback): void;
-  getSchema(options: CallOptions, callback: GetSchemaCallback): void;
   /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
@@ -1310,6 +1335,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetSchemaResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1325,7 +1351,11 @@ class Database extends common.GrpcServiceObject {
    *   const statements = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
+  getSchema(options?: CallOptions): Promise<GetSchemaResponse>;
+  getSchema(callback: GetSchemaCallback): void;
+  getSchema(options: CallOptions, callback: GetSchemaCallback): void;
   getSchema(
     optionsOrCallback?: CallOptions | GetSchemaCallback,
     cb?: GetSchemaCallback
@@ -1353,9 +1383,6 @@ class Database extends common.GrpcServiceObject {
       }
     );
   }
-  getSessions(options?: GetSessionsOptions): Promise<GetSessionsResponse>;
-  getSessions(callback: GetSessionsCallback): void;
-  getSessions(options: GetSessionsOptions, callback: GetSessionsCallback): void;
   /**
    * Options object for listing sessions.
    *
@@ -1407,6 +1434,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetSessionsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1438,7 +1466,11 @@ class Database extends common.GrpcServiceObject {
    * database.getInstances().then(function(data) {
    *   const sessions = data[0];
    * });
+   * ```
    */
+  getSessions(options?: GetSessionsOptions): Promise<GetSessionsResponse>;
+  getSessions(callback: GetSessionsCallback): void;
+  getSessions(options: GetSessionsOptions, callback: GetSessionsCallback): void;
   getSessions(
     optionsOrCallback?: GetSessionsOptions | GetSessionsCallback,
     cb?: GetSessionsCallback
@@ -1514,6 +1546,7 @@ class Database extends common.GrpcServiceObject {
    *     instances.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1537,6 +1570,7 @@ class Database extends common.GrpcServiceObject {
    *   .on('data', function(session) {
    *     this.end();
    *   });
+   * ```
    */
   getSessionsStream(options: GetSessionsOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
@@ -1570,9 +1604,6 @@ class Database extends common.GrpcServiceObject {
     });
   }
 
-  getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
-  getSnapshot(callback: GetSnapshotCallback): void;
-  getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
   /**
    * @typedef {array} GetSnapshotResponse
    * @property {Snapshot} 0 The snapshot object.
@@ -1604,6 +1635,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetSnapshotResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1618,17 +1650,22 @@ class Database extends common.GrpcServiceObject {
    *   // Should be called when finished with Snapshot.
    *   transaction.end();
    * });
+   * ```
    *
-   * @example <caption>If the callback is omitted, we'll return a Promise.
-   * </caption>
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * database.getSnapshot().then(function(data) {
    *   const transaction = data[0];
    * });
+   * ```
    *
    * @example <caption>include:samples/transaction.js</caption>
    * region_tag:spanner_read_only_transaction
    * Read-only transaction:
    */
+  getSnapshot(options?: TimestampBounds): Promise<[Snapshot]>;
+  getSnapshot(callback: GetSnapshotCallback): void;
+  getSnapshot(options: TimestampBounds, callback: GetSnapshotCallback): void;
   getSnapshot(
     optionsOrCallback?: TimestampBounds | GetSnapshotCallback,
     cb?: GetSnapshotCallback
@@ -1668,8 +1705,6 @@ class Database extends common.GrpcServiceObject {
       });
     });
   }
-  getTransaction(): Promise<[Transaction]>;
-  getTransaction(callback: GetTransactionCallback): void;
   /**
    * @typedef {array} GetTransactionResponse
    * @property {Transaction} 0 The transaction object.
@@ -1696,6 +1731,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<GetTransactionResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1704,12 +1740,16 @@ class Database extends common.GrpcServiceObject {
    *
    * database.getTransaction(function(err, transaction) {});
    *
-   * @example <caption>If the callback is omitted, we'll return a Promise.
-   * </caption>
+   * ```
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * database.getTransaction().then(function(data) {
    *   const transaction = data[0];
    * });
+   * ```
    */
+  getTransaction(): Promise<[Transaction]>;
+  getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
@@ -1721,14 +1761,6 @@ class Database extends common.GrpcServiceObject {
     });
   }
 
-  getOperations(
-    options?: GetDatabaseOperationsOptions
-  ): Promise<GetDatabaseOperationsResponse>;
-  getOperations(callback: GetDatabaseOperationsCallback): void;
-  getOperations(
-    options: GetDatabaseOperationsOptions,
-    callback: GetDatabaseOperationsCallback
-  ): void;
   /**
    * Query object for listing database operations.
    *
@@ -1762,6 +1794,7 @@ class Database extends common.GrpcServiceObject {
    *     a paged list of database operations.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -1783,7 +1816,16 @@ class Database extends common.GrpcServiceObject {
    *   });
    *   pageToken = response.nextPageToken;
    * } while (pageToken);
+   * ```
    */
+  getOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse>;
+  getOperations(callback: GetDatabaseOperationsCallback): void;
+  getOperations(
+    options: GetDatabaseOperationsOptions,
+    callback: GetDatabaseOperationsCallback
+  ): void;
   async getOperations(
     optionsOrCallback?:
       | GetDatabaseOperationsOptions
@@ -1806,11 +1848,6 @@ class Database extends common.GrpcServiceObject {
     return this.instance.getDatabaseOperations(dbSpecificQuery);
   }
 
-  makePooledRequest_(config: RequestConfig): Promise<Session>;
-  makePooledRequest_(
-    config: RequestConfig,
-    callback: PoolRequestCallback
-  ): void;
   /**
    * Make an API request, first assuring an active session is used.
    *
@@ -1819,6 +1856,11 @@ class Database extends common.GrpcServiceObject {
    * @param {object} config Request config
    * @param {function} callback Callback function
    */
+  makePooledRequest_(config: RequestConfig): Promise<Session>;
+  makePooledRequest_(
+    config: RequestConfig,
+    callback: PoolRequestCallback
+  ): void;
   makePooledRequest_(
     config: RequestConfig,
     callback?: PoolRequestCallback
@@ -1887,17 +1929,6 @@ class Database extends common.GrpcServiceObject {
     return waitForSessionStream;
   }
 
-  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
-  restore(
-    backupPath: string,
-    options?: RestoreOptions | CallOptions
-  ): Promise<RestoreDatabaseResponse>;
-  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
-  restore(
-    backupPath: string,
-    options: RestoreOptions | CallOptions,
-    callback: RestoreDatabaseCallback
-  ): void;
   /**
    * @typedef {object} RestoreOptions
    * @property {google.spanner.admin.database.v1.IRestoreDatabaseEncryptionConfig}
@@ -1935,6 +1966,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<RestoreDatabaseResponse>} When resolved, contains the restore operation.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -1959,7 +1991,19 @@ class Database extends common.GrpcServiceObject {
    * );
    * // Wait for restore to complete
    * await restoreWithKeyOperation.promise();
+   * ```
    */
+  restore(backupPath: string): Promise<RestoreDatabaseResponse>;
+  restore(
+    backupPath: string,
+    options?: RestoreOptions | CallOptions
+  ): Promise<RestoreDatabaseResponse>;
+  restore(backupPath: string, callback: RestoreDatabaseCallback): void;
+  restore(
+    backupPath: string,
+    options: RestoreOptions | CallOptions,
+    callback: RestoreDatabaseCallback
+  ): void;
   restore(
     backupName: string,
     optionsOrCallback?: RestoreOptions | CallOptions | RestoreDatabaseCallback,
@@ -2008,17 +2052,6 @@ class Database extends common.GrpcServiceObject {
     );
   }
 
-  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
-  run(
-    query: string | ExecuteSqlRequest,
-    options?: TimestampBounds
-  ): Promise<RunResponse>;
-  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
-  run(
-    query: string | ExecuteSqlRequest,
-    options: TimestampBounds,
-    callback: RunCallback
-  ): void;
   /**
    * Transaction options.
    *
@@ -2063,6 +2096,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<RunResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2162,6 +2196,7 @@ class Database extends common.GrpcServiceObject {
    *   const rows = data[0];
    * });
    *
+   * ```
    * @example <caption>include:samples/crud.js</caption>
    * region_tag:spanner_query_data
    * Full example:
@@ -2170,6 +2205,17 @@ class Database extends common.GrpcServiceObject {
    * region_tag:spanner_query_data_with_index
    * Querying data with an index:
    */
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
+  run(
+    query: string | ExecuteSqlRequest,
+    options?: TimestampBounds
+  ): Promise<RunResponse>;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
+  run(
+    query: string | ExecuteSqlRequest,
+    options: TimestampBounds,
+    callback: RunCallback
+  ): void;
   run(
     query: string | ExecuteSqlRequest,
     optionsOrCallback?: TimestampBounds | RunCallback,
@@ -2202,11 +2248,6 @@ class Database extends common.GrpcServiceObject {
         callback!(null, rows, stats, metadata);
       });
   }
-  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
-  runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
-    callback?: RunUpdateCallback
-  ): void;
   /**
    * Partitioned DML transactions are used to execute DML statements with a
    * different execution strategy that provides different, and often better,
@@ -2221,6 +2262,11 @@ class Database extends common.GrpcServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
+  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
+  runPartitionedUpdate(
+    query: string | ExecuteSqlRequest,
+    callback?: RunUpdateCallback
+  ): void;
   runPartitionedUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
@@ -2284,6 +2330,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {PartialResultStream} A readable stream that emits rows.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2388,6 +2435,7 @@ class Database extends common.GrpcServiceObject {
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   runStream(
     query: string | ExecuteSqlRequest,
@@ -2443,11 +2491,6 @@ class Database extends common.GrpcServiceObject {
     return proxyStream as PartialResultStream;
   }
 
-  runTransaction(runFn: RunTransactionCallback): void;
-  runTransaction(
-    options: RunTransactionOptions,
-    runFn: RunTransactionCallback
-  ): void;
   /**
    * @typedef {object} RunTransactionOptions
    * @property {number} [timeout] The maximum amount of time (in ms) that a
@@ -2499,6 +2542,7 @@ class Database extends common.GrpcServiceObject {
    *     of a transaction.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2531,10 +2575,16 @@ class Database extends common.GrpcServiceObject {
    *   });
    * });
    *
+   * ```
    * @example <caption>include:samples/transaction.js</caption>
    * region_tag:spanner_read_write_transaction
    * Read-write transaction:
    */
+  runTransaction(runFn: RunTransactionCallback): void;
+  runTransaction(
+    options: RunTransactionOptions,
+    runFn: RunTransactionCallback
+  ): void;
   runTransaction(
     optionsOrRunFn: RunTransactionOptions | RunTransactionCallback,
     fn?: RunTransactionCallback
@@ -2628,6 +2678,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2641,6 +2692,7 @@ class Database extends common.GrpcServiceObject {
    *   await transaction.commit();
    *   return data;
    * });
+   * ```
    */
   async runTransactionAsync<T = {}>(
     optionsOrRunFn: RunTransactionOptions | AsyncRunTransactionCallback<T>,
@@ -2696,7 +2748,9 @@ class Database extends common.GrpcServiceObject {
    * @returns {Session} A Session object.
    *
    * @example
+   * ```
    * var session = database.session('session-name');
+   * ```
    */
   session(name?: string) {
     return new Session(this, name);
@@ -2710,6 +2764,7 @@ class Database extends common.GrpcServiceObject {
    * @return {Table} A Table object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2717,6 +2772,7 @@ class Database extends common.GrpcServiceObject {
    * const database = instance.database('my-database');
    *
    * const table = database.table('Singers');
+   * ```
    */
   table(name: string) {
     if (!name) {
@@ -2724,16 +2780,6 @@ class Database extends common.GrpcServiceObject {
     }
     return new Table(this, name);
   }
-  updateSchema(
-    statements: Schema,
-    gaxOptions?: CallOptions
-  ): Promise<UpdateSchemaResponse>;
-  updateSchema(statements: Schema, callback: UpdateSchemaCallback): void;
-  updateSchema(
-    statements: Schema,
-    gaxOptions: CallOptions,
-    callback: UpdateSchemaCallback
-  ): void;
   /**
    * Update the schema of the database by creating/altering/dropping tables,
    * columns, indexes, etc.
@@ -2759,6 +2805,7 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -2798,6 +2845,7 @@ class Database extends common.GrpcServiceObject {
    *     // Database schema updated successfully.
    *   });
    *
+   * ```
    * @example <caption>include:samples/schema.js</caption>
    * region_tag:spanner_add_column
    * Adding a column:
@@ -2810,6 +2858,16 @@ class Database extends common.GrpcServiceObject {
    * region_tag:spanner_create_storing_index
    * Creating a storing index:
    */
+  updateSchema(
+    statements: Schema,
+    gaxOptions?: CallOptions
+  ): Promise<UpdateSchemaResponse>;
+  updateSchema(statements: Schema, callback: UpdateSchemaCallback): void;
+  updateSchema(
+    statements: Schema,
+    gaxOptions: CallOptions,
+    callback: UpdateSchemaCallback
+  ): void;
   updateSchema(
     statements: Schema,
     optionsOrCallback?: CallOptions | UpdateSchemaCallback,
@@ -2853,11 +2911,13 @@ class Database extends common.GrpcServiceObject {
    * @returns {string}
    *
    * @example
+   * ```
    * Database.formatName_(
    *   'projects/grape-spaceship-123/instances/my-instance',
    *   'my-database'
    * );
    * // 'projects/grape-spaceship-123/instances/my-instance/databases/my-database'
+   * ```
    */
   static formatName_(instanceName: string, name: string) {
     if (name.indexOf('/') > -1) {

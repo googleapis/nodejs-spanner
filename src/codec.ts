@@ -65,7 +65,9 @@ type DateFields = [number, number, number];
  * @param {number} [date] Number representing the date.
  *
  * @example
+ * ```
  * Spanner.date('3-3-1933');
+ * ```
  */
 export class SpannerDate extends Date {
   constructor(dateString?: string);
@@ -500,8 +502,10 @@ interface FieldType extends Type {
  * @returns {object}
  *
  * @example
+ * ```
  * codec.getType(NaN);
  * // {type: 'float64'}
+ * ```
  */
 function getType(value: Value): Type {
   const isSpecialNumber =

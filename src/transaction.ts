@@ -192,6 +192,7 @@ export type CommitCallback =
  * @see [Timestamp Bounds API Documentation](https://cloud.google.com/spanner/docs/timestamp-bounds)
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
@@ -210,6 +211,7 @@ export type CommitCallback =
  *   // It should be called when the snapshot finishes.
  *   transaction.end();
  * });
+ * ```
  */
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
@@ -289,9 +291,6 @@ export class Snapshot extends EventEmitter {
     };
   }
 
-  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
-  begin(callback: BeginTransactionCallback): void;
-  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   /**
    * @typedef {object} TransactionResponse
    * @property {string|Buffer} id The transaction ID.
@@ -320,19 +319,25 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<TransactionBeginResponse>}
    *
    * @example
+   * ```
    * transaction.begin(function(err) {
    *   if (!err) {
    *     // transaction began successfully.
    *   }
    * });
    *
-   * @example <caption>If the callback is omitted, the function returns a Promise
-   * </caption>
+   * ```
+   * @example If the callback is omitted, the function returns a Promise
+   * ```
    * transaction.begin()
    *   .then(function(data) {
    *     const apiResponse = data[0];
    *   });
+   * ```
    */
+  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
+  begin(callback: BeginTransactionCallback): void;
+  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   begin(
     gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
@@ -464,6 +469,7 @@ export class Snapshot extends EventEmitter {
    * @returns {ReadableStream} A readable stream that emits rows.
    *
    * @example
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -485,8 +491,10 @@ export class Snapshot extends EventEmitter {
    *     // All results retrieved.
    *   });
    *
-   * @example <caption>Provide an array for `query.keys` to read with a
-   * composite key.</caption>
+   * ```
+   * @example Provide an array for `query.keys` to read with a
+   * composite key.
+   * ```
    * const query = {
    *   keys: [
    *     [
@@ -500,10 +508,12 @@ export class Snapshot extends EventEmitter {
    *   ],
    *   // ...
    * };
+   * ```
    *
-   * @example <caption>Rows are returned as an array of object arrays. Each
+   * @example Rows are returned as an array of object arrays. Each
    * object has a `name` and `value` property. To get a serialized object, call
-   * `toJSON()`.</caption>
+   * `toJSON()`.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -518,9 +528,11 @@ export class Snapshot extends EventEmitter {
    *   .on('end', function() {
    *     // All results retrieved.
    *   });
+   * ```
    *
-   * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will perform automatically.</caption>
+   * @example Alternatively, set `query.json` to `true`, and this step
+   * will perform automatically.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name'],
@@ -536,9 +548,11 @@ export class Snapshot extends EventEmitter {
    *   .on('end', function() {
    *     // All results retrieved.
    *   });
+   * ```
    *
-   * @example <caption>If you anticipate many results, you can end a stream
-   * early to prevent unnecessary processing and API requests.</caption>
+   * @example If you anticipate many results, you can end a stream
+   * early to prevent unnecessary processing and API requests.
+   * ```
    * transaction.createReadStream('Singers', {
    *     keys: ['1'],
    *     columns: ['SingerId', 'name']
@@ -546,6 +560,7 @@ export class Snapshot extends EventEmitter {
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   createReadStream(
     table: string,
@@ -609,7 +624,8 @@ export class Snapshot extends EventEmitter {
    * mainly be called for {@link Snapshot} objects, however in certain cases
    * you may want to call them for {@link Transaction} objects as well.
    *
-   * @example <caption>Calling `end` on a read only snapshot</caption>
+   * @example Calling `end` on a read only snapshot
+   * ```
    * database.getSnapshot((err, transaction) => {
    *   if (err) {
    *     // Error handling omitted.
@@ -624,8 +640,10 @@ export class Snapshot extends EventEmitter {
    *     transaction.end();
    *   });
    * });
+   * ```
    *
-   * @example <caption>Calling `end` on a read/write transaction</caption>
+   * @example Calling `end` on a read/write transaction
+   * ```
    * database.runTransaction((err, transaction) => {
    *   if (err) {
    *     // Error handling omitted.
@@ -644,6 +662,7 @@ export class Snapshot extends EventEmitter {
    *     transaction.commit(err => {});
    *   });
    * });
+   * ```
    */
   end(): void {
     if (this.ended) {
@@ -654,9 +673,6 @@ export class Snapshot extends EventEmitter {
     process.nextTick(() => this.emit('end'));
   }
 
-  read(table: string, request: ReadRequest): Promise<ReadResponse>;
-  read(table: string, callback: ReadCallback): void;
-  read(table: string, request: ReadRequest, callback: ReadCallback): void;
   /**
    * @typedef {array} ReadResponse
    * @property {array[]} 0 Rows are returned as an array of object arrays. Each
@@ -693,6 +709,7 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<ReadResponse>}
    *
    * @example
+   * ```
    * const query = {
    *   keys: ['1'],
    *   columns: ['SingerId', 'name']
@@ -717,8 +734,10 @@ export class Snapshot extends EventEmitter {
    *   // ]
    * });
    *
-   * @example <caption>Provide an array for `query.keys` to read with a
-   * composite key.</caption>
+   * ```
+   * @example Provide an array for `query.keys` to read with a
+   * composite key.
+   * ```
    * const query = {
    *   keys: [
    *     [
@@ -732,10 +751,12 @@ export class Snapshot extends EventEmitter {
    *   ],
    *   // ...
    * };
+   * ```
    *
-   * @example <caption>Rows are returned as an array of object arrays. Each
+   * @example Rows are returned as an array of object arrays. Each
    * object has a `name` and `value` property. To get a serialized object, call
-   * `toJSON()`.</caption>
+   * `toJSON()`.
+   * ```
    * transaction.read('Singers', query, function(err, rows) {
    *   if (err) {
    *     // Error handling omitted.
@@ -748,9 +769,11 @@ export class Snapshot extends EventEmitter {
    *   //   Name: 'Eddie Wilson'
    *   // }
    * });
+   * ```
    *
-   * @example <caption>Alternatively, set `query.json` to `true`, and this step
-   * will perform automatically.</caption>
+   * @example Alternatively, set `query.json` to `true`, and this step
+   * will perform automatically.
+   * ```
    * query.json = true;
    *
    * transaction.read('Singers', query, function(err, rows) {
@@ -765,7 +788,11 @@ export class Snapshot extends EventEmitter {
    *   //   Name: 'Eddie Wilson'
    *   // }
    * });
+   * ```
    */
+  read(table: string, request: ReadRequest): Promise<ReadResponse>;
+  read(table: string, callback: ReadCallback): void;
+  read(table: string, request: ReadRequest, callback: ReadCallback): void;
   read(
     table: string,
     requestOrCallback: ReadRequest | ReadCallback,
@@ -790,8 +817,6 @@ export class Snapshot extends EventEmitter {
       .on('end', () => callback!(null, rows));
   }
 
-  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
-  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   /**
    * Execute a SQL statement on this database inside of a transaction.
    *
@@ -815,6 +840,7 @@ export class Snapshot extends EventEmitter {
    * @returns {Promise<RunResponse>}
    *
    * @example
+   * ```
    * transaction.run(query, function(err, rows) {
    *   if (err) {
    *     // Error handling omitted.
@@ -828,9 +854,10 @@ export class Snapshot extends EventEmitter {
    *   // ]
    * });
    *
-   * @example <caption>The SQL query string can contain parameter placeholders.
+   * ```
+   * @example The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name',
    *   params: {
@@ -843,10 +870,11 @@ export class Snapshot extends EventEmitter {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    *
-   * @example <caption>If you need to enforce a specific param type, a types map
+   * @example If you need to enforce a specific param type, a types map
    * can be provided. This is typically useful if your param value can be null.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name AND id = @id',
    *   params: {
@@ -864,7 +892,10 @@ export class Snapshot extends EventEmitter {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
+  run(query: string | ExecuteSqlRequest): Promise<RunResponse>;
+  run(query: string | ExecuteSqlRequest, callback: RunCallback): void;
   run(
     query: string | ExecuteSqlRequest,
     callback?: RunCallback
@@ -941,6 +972,7 @@ export class Snapshot extends EventEmitter {
    * @returns {ReadableStream}
    *
    * @example
+   * ```
    * const query = 'SELECT * FROM Singers';
    *
    * transaction.runStream(query)
@@ -955,9 +987,10 @@ export class Snapshot extends EventEmitter {
    *     // All results retrieved.
    *   });
    *
-   * @example <caption>The SQL query string can contain parameter placeholders.
+   * ```
+   * @example The SQL query string can contain parameter placeholders.
    * A parameter placeholder consists of '@' followed by the parameter name.
-   * </caption>
+   * ```
    * const query = {
    *   sql: 'SELECT * FROM Singers WHERE name = @name',
    *   params: {
@@ -969,13 +1002,16 @@ export class Snapshot extends EventEmitter {
    *   .on('error', function(err) {})
    *   .on('data', function(row) {})
    *   .on('end', function() {});
+   * ```
    *
-   * @example <caption>If you anticipate many results, you can end a stream
-   * early to prevent unnecessary processing and API requests.</caption>
+   * @example If you anticipate many results, you can end a stream
+   * early to prevent unnecessary processing and API requests.
+   * ```
    * transaction.runStream(query)
    *   .on('data', function(row) {
    *     this.end();
    *   });
+   * ```
    */
   runStream(query: string | ExecuteSqlRequest): PartialResultStream {
     if (typeof query === 'string') {
@@ -1209,11 +1245,6 @@ promisifyAll(Snapshot, {
  * @class
  */
 export class Dml extends Snapshot {
-  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
-  runUpdate(
-    query: string | ExecuteSqlRequest,
-    callback: RunUpdateCallback
-  ): void;
   /**
    * @typedef {array} RunUpdateResponse
    * @property {number} 0 Affected row count.
@@ -1238,6 +1269,11 @@ export class Dml extends Snapshot {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
@@ -1297,6 +1333,7 @@ promisifyAll(Dml);
  * @param {Session} session The parent Session object.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  *
@@ -1307,11 +1344,14 @@ promisifyAll(Dml);
  *   // The `transaction` object is ready for use.
  * });
  *
- * @example <caption>To manually control retrying the transaction, use the
- * `getTransaction` method.</caption>
+ * ```
+ * @example To manually control retrying the transaction, use the
+ * `getTransaction` method.
+ * ```
  * database.getTransaction(function(err, transaction) {
  *   // The `transaction` object is ready for use.
  * });
+ * ```
  */
 export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
@@ -1348,6 +1388,7 @@ export class Transaction extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * const query = 'UPDATE Account SET Balance = 1000 WHERE Key = 1';
    *
    * transaction.runUpdate(query, (err, rowCount) => {
@@ -1355,6 +1396,7 @@ export class Transaction extends Dml {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
   constructor(
     session: Session,
@@ -1369,19 +1411,6 @@ export class Transaction extends Dml {
     this.requestOptions = requestOptions;
   }
 
-  batchUpdate(
-    queries: Array<string | Statement>,
-    options?: BatchUpdateOptions | CallOptions
-  ): Promise<BatchUpdateResponse>;
-  batchUpdate(
-    queries: Array<string | Statement>,
-    callback: BatchUpdateCallback
-  ): void;
-  batchUpdate(
-    queries: Array<string | Statement>,
-    options: BatchUpdateOptions | CallOptions,
-    callback: BatchUpdateCallback
-  ): void;
   /**
    * @typedef {error} BatchUpdateError
    * @property {number} code gRPC status code.
@@ -1427,6 +1456,7 @@ export class Transaction extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * const queries = [
    *   {
    *     sql: 'INSERT INTO MyTable (Key, Value) VALUES (@key, @value)',
@@ -1444,9 +1474,25 @@ export class Transaction extends Dml {
    *   }
    * });
    *
-   * @example <caption>If the callback is omitted, we'll return a Promise.</caption>
+   * ```
+   * @example If the callback is omitted, we'll return a Promise.
+   * ```
    * const [rowCounts, apiResponse] = await transaction.batchUpdate(queries);
+   * ```
    */
+  batchUpdate(
+    queries: Array<string | Statement>,
+    options?: BatchUpdateOptions | CallOptions
+  ): Promise<BatchUpdateResponse>;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    callback: BatchUpdateCallback
+  ): void;
+  batchUpdate(
+    queries: Array<string | Statement>,
+    options: BatchUpdateOptions | CallOptions,
+    callback: BatchUpdateCallback
+  ): void;
   batchUpdate(
     queries: Array<string | Statement>,
     optionsOrCallback?: BatchUpdateOptions | CallOptions | BatchUpdateCallback,
@@ -1557,9 +1603,6 @@ export class Transaction extends Dml {
     return undefined;
   }
 
-  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
-  commit(callback: CommitCallback): void;
-  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   /**
    * @typedef {object} CommitOptions
    * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
@@ -1600,6 +1643,7 @@ export class Transaction extends Dml {
    * @returns {Promise<CommitPromiseResponse>}
    *
    * @example
+   * ```
    * database.runTransaction(function(err, transaction) {
    *   if (err) {
    *     // Error handling omitted.
@@ -1619,7 +1663,11 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
+  commit(options?: CommitOptions | CallOptions): Promise<CommitResponse>;
+  commit(callback: CommitCallback): void;
+  commit(options: CommitOptions | CallOptions, callback: CommitCallback): void;
   commit(
     optionsOrCallback?: CommitOptions | CallOptions | CommitCallback,
     cb?: CommitCallback
@@ -1773,6 +1821,7 @@ export class Transaction extends Dml {
    * below.
    *
    * @example
+   * ```
    * const keys = ['Id1', 'Id2', 'Id3'];
    *
    * database.runTransaction(function(err, transaction) {
@@ -1792,8 +1841,10 @@ export class Transaction extends Dml {
    *   });
    * });
    *
-   * @example <caption>Provide an array for `keys` to delete rows with a
-   * composite key.</caption>
+   * ```
+   * @example Provide an array for `keys` to delete rows with a
+   * composite key.
+   * ```
    * const keys = [
    *   [
    *     'Id1',
@@ -1804,6 +1855,7 @@ export class Transaction extends Dml {
    *     'Name2'
    *   ]
    * ];
+   * ```
    */
   deleteRows(table: string, keys: Key[]): void {
     const keySet: spannerClient.spanner.v1.IKeySet = {
@@ -1826,6 +1878,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Eddie Wilson'
@@ -1848,7 +1901,9 @@ export class Transaction extends Dml {
    *   });
    * });
    *
-   * @example <caption>Multiple rows can be inserted at once.</caption>
+   * ```
+   * @example Multiple rows can be inserted at once.
+   * ```
    * const row2 = {
    *   SingerId: 'Id3b',
    *   Name: 'Joe West'
@@ -1873,6 +1928,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   insert(table: string, rows: object | object[]): void {
     this._mutate('insert', table, rows);
@@ -1888,6 +1944,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -1909,17 +1966,12 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   replace(table: string, rows: object | object[]): void {
     this._mutate('replace', table, rows);
   }
 
-  rollback(gaxOptions?: CallOptions): Promise<void>;
-  rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
-  rollback(
-    gaxOptions: CallOptions,
-    callback: spannerClient.spanner.v1.Spanner.RollbackCallback
-  ): void;
   /**
    * Roll back a transaction, releasing any locks it holds. It is a good idea to
    * call this for any transaction that includes one or more queries that you
@@ -1937,6 +1989,7 @@ export class Transaction extends Dml {
    * @returns {Promise<BasicResponse>}
    *
    * @example
+   * ```
    * database.runTransaction(function(err, transaction) {
    *   if (err) {
    *     // Error handling omitted.
@@ -1948,7 +2001,14 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
+  rollback(gaxOptions?: CallOptions): Promise<void>;
+  rollback(callback: spannerClient.spanner.v1.Spanner.RollbackCallback): void;
+  rollback(
+    gaxOptions: CallOptions,
+    callback: spannerClient.spanner.v1.Spanner.RollbackCallback
+  ): void;
   rollback(
     gaxOptionsOrCallback?:
       | CallOptions
@@ -2001,6 +2061,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -2022,6 +2083,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   update(table: string, rows: object | object[]): void {
     this._mutate('update', table, rows);
@@ -2037,6 +2099,7 @@ export class Transaction extends Dml {
    *     into this table.
    *
    * @example
+   * ```
    * const row = {
    *   SingerId: 'Id3',
    *   Name: 'Joe West'
@@ -2058,6 +2121,7 @@ export class Transaction extends Dml {
    *     }
    *   });
    * });
+   * ```
    */
   upsert(table: string, rows: object | object[]): void {
     this._mutate('insertOrUpdate', table, rows);
@@ -2154,11 +2218,6 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
-  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
-  runUpdate(
-    query: string | ExecuteSqlRequest,
-    callback: RunUpdateCallback
-  ): void;
   /**
    * Execute a DML statement and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
@@ -2176,12 +2235,19 @@ export class PartitionedDml extends Dml {
    * @returns {Promise<RunUpdateResponse>}
    *
    * @example
+   * ```
    * transaction.runUpdate(query, (err, rowRount) => {
    *   if (err) {
    *     // Error handling omitted.
    *   }
    * });
+   * ```
    */
+  runUpdate(query: string | ExecuteSqlRequest): Promise<RunUpdateResponse>;
+  runUpdate(
+    query: string | ExecuteSqlRequest,
+    callback: RunUpdateCallback
+  ): void;
   runUpdate(
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
