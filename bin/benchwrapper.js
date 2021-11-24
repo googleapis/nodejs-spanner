@@ -80,8 +80,8 @@ function Insert(call, callback) {
     call.request.singers.forEach(singer => {
       transaction.insert('Singers', {
         SingerId: singer.id,
-        FirstName: singer.firstName,
-        LastName: singer.lastName
+        FirstName: singer.first_name,
+        LastName: singer.last_name
       });
     });
     transaction.commit(err => {
