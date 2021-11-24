@@ -53,7 +53,7 @@ function Read(call, callback) {
     .getSnapshot()
     .then(data => {
       tx = data[0];
-      return tx.run(call.request.Query);
+      return tx.run(call.request.query);
     })
     .then(data => {
       const [rows] = data;
@@ -81,7 +81,7 @@ function Insert(call, callback) {
       transaction.insert('Singers', {
         SingerId: singer.id,
         FirstName: singer.first_name,
-        LastName: singer.last_name
+        LastName: singer.last_name,
       });
     });
     transaction.commit(err => {
@@ -103,7 +103,7 @@ function Update(call, callback) {
       callback(err);
       return;
     }
-    transaction.batchUpdate(call.request.Queries, (err, rowCounts) => {
+    transaction.batchUpdate(call.request.queries, (err, rowCounts) => {
       if (err) {
         callback(
           new grpc.StatusBuilder()
