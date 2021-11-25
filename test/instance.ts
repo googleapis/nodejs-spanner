@@ -31,9 +31,10 @@ import * as inst from '../src/instance';
 import {Spanner, Database, RequestConfig} from '../src';
 import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
-import {Backup} from '../src/backup';
+import {Backup, CopyBackupOptions} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1644,12 +1645,31 @@ describe('Instance', () => {
       assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);
     });
 
-    it('should return an instance of Copy Backup', () => {
-      const copy_backup = instance.copy_backup(COPY_BACKUP_NAME, BACKUP_NAME) as {} as FakeBackup;
-      assert(copy_backup instanceof FakeBackup);
-      assert.strictEqual(copy_backup.calledWith_[0], instance);
-      assert.strictEqual(copy_backup.calledWith_[1], COPY_BACKUP_NAME);
-      assert.strictEqual(copy_backup.calledWith_[2], BACKUP_NAME);
+    it('should return an instance of Copy Backup', done => {
+      const OPTIONS = {
+      a: 'b',
+    } as CopyBackupOptions;
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, OPTIONS, {
+        parent: instance.formattedName_,
+        backupId: COPY_BACKUP_NAME,
+        sourceBackup: BACKUP_NAME,
+      });
+
+        instance.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'createBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.reqOpts, OPTIONS);
+        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        done();
+      };
+
+      instance.copyBackup(BACKUP_NAME, COPY_BACKUP_NAME, options, assert.ifError);
     });
   });
 

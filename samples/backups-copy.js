@@ -55,26 +55,26 @@ function main(
     const expireTime = Spanner.timestamp(Date.now() + 1000 * 60 * 60 * 24 * 14).toStruct();
 
     // Copy the backup of the database
-    const copyBackup = instance.copy_backup(backupId, sourceBackup.formattedName_);
-    try {
+    try { 
       console.log(`Creating copy of the source backup ${sourceBackup.formattedName_}.`);
-      const [, operation] = await copyBackup.create({
+      const [, operation] = await instance.copyBackup(sourceBackup.formattedName_, backupId, {
         expireTime: expireTime,
       });
 
-      console.log(`Waiting for copy backup ${copyBackup.formattedName_} to complete...`);
+      console.log(`Waiting for backup copy${instance.backup(backupId)} to complete...`);
       await operation.promise();
 
       // Verify the copy backup is ready
+      const copyBackup = instance.backup(backupId)
       const [copyBackupInfo] = await copyBackup.getMetadata();
       if (copyBackupInfo.state === 'READY') {
         console.log(
-          `Copy Backup ${copyBackupInfo.name} of size ` +
+          `Backup copy ${copyBackupInfo.name} of size ` +
             `${copyBackupInfo.sizeBytes} bytes was created at ` +
             `${new PreciseDate(copyBackupInfo.createTime).toISOString()}`
         );
       } else {
-        console.error('ERROR: Copy backup is not ready.');
+        console.error('ERROR: Copy of backup is not ready.');
       }
     } catch (err) {
       console.error('ERROR:', err);

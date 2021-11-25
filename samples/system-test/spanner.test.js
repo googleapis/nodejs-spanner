@@ -1032,7 +1032,7 @@ describe('Spanner', () => {
     const output = execSync(
       `node backups-copy.js ${INSTANCE_ID} ${DATABASE_ID} ${COPY_BACKUP_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp(`(.*)Copy Backup (.*)${COPY_BACKUP_ID} of size(.*)`));
+    assert.match(output, new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`));
   });
 
   // // cancel_backup

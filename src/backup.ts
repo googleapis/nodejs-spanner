@@ -102,7 +102,7 @@ export type ExistsCallback = NormalCallback<boolean>;
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
  *
- * Create a `Backup` object to interact with or create a Cloud Spanner backup or copy backup.
+ * Create a `Backup` object to interact with or create a Cloud Spanner backup or copy a backup.
  *
  * @class
  *
@@ -111,7 +111,13 @@ export type ExistsCallback = NormalCallback<boolean>;
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const backup = instance.backup('my-backup');
- * const sourceName = instance.backup('my-source-backup');
+ * 
+ * @example
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
+ * const sourceBackup = instance.backup('my-source-backup');
+ * const copyBackup = instance.copyBackup('my-copy-backup', 'my-source-backup');
  */
 class Backup {
   id: string;
@@ -119,16 +125,14 @@ class Backup {
   instanceFormattedName_: string;
   resourceHeader_: {[k: string]: string};
   request: BackupRequest;
-  sourceName: string | undefined;
   metadata?: databaseAdmin.spanner.admin.database.v1.IBackup;
+  sourceName: string | undefined;
   constructor(instance: Instance, name: string, sourceName?: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
-    if (sourceName) {
       this.sourceName = sourceName;
-    }
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
     };
@@ -139,7 +143,7 @@ class Backup {
   ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse>;
   create(
     options: CreateBackupOptions | CopyBackupOptions,
-    callback: CreateBackupCallback
+    callback: CreateBackupCallback | CopyBackupCallback
   ): void;
   /**
    * @typedef {object} CreateBackupOptions
@@ -159,7 +163,7 @@ class Backup {
   /**
    * @typedef {object} CopyBackupOptions
    * @property {string|null}
-   *     sourceBackup The source backup path to be copied
+   *     sourceBackup The full path of the backup to be copied
    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
    *     expireTime The expire time of the backup.
    * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig}
@@ -252,25 +256,12 @@ class Backup {
    * const expireTime = Date.now() + oneDay;
    * const versionTime = Date.now() - oneDay;
    * const sourceBackup = instance.backup('my-source-backup');
-   * const [, sourceBackupOperation] = await sourceBackup.create({
-   *   databasePath: 'projects/my-project/instances/my-instance/databases/my-database',
-   *   expireTime: expireTime,
-   *   versionTime: versionTime,
-   *   encryptionConfig: {
-   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
-   *   },
-   * });
-   * // Await completion of the source backup operation.
-   * await sourceBackupOperation.promise();
-   * const copyBackup = instance.backup('my-copy-backup', sourceBackup.formattedName_);
-   * const [, copyBackupOperation] = await copyBackup.create({
+   * const [, copyBackupOperation] = instance.copyBackup(sourceBackup.formattedName_, 'my-copy-backup', {
    *   expireTime: expireTime,
    *   encryptionConfig: {
    *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
    *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
-   *   },
-   * });
+   *   },);
    * // Await completion of the copy backup operation.
    * await copybBackupOperation.promise();
    */
