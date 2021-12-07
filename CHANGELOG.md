@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.15.3](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.2...v5.15.3) (2021-12-07)
+
+
+### Bug Fixes
+
+* **build:** set default branch to main ([#1469](https://www.github.com/googleapis/nodejs-spanner/issues/1469)) ([152985a](https://www.github.com/googleapis/nodejs-spanner/commit/152985a1f783534e6b3e3ce332a1333dec67269d))
+* **cloud-rad:** move comments for TSDoc ([#1509](https://www.github.com/googleapis/nodejs-spanner/issues/1509)) ([1c49922](https://www.github.com/googleapis/nodejs-spanner/commit/1c49922c75bd56dbd0456318bee8a336eb088156))
+
 ### [5.15.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.1...v5.15.2) (2021-09-10)
 
 
