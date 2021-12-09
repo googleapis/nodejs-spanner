@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.16.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.2...v5.16.0) (2021-12-09)
+
+
+### Features
+
+* add eslintignore for sameple generated code ([#1302](https://www.github.com/googleapis/nodejs-spanner/issues/1302)) ([#1520](https://www.github.com/googleapis/nodejs-spanner/issues/1520)) ([f835b72](https://www.github.com/googleapis/nodejs-spanner/commit/f835b721210d01b11d7f5751ee06f13518e7fe0f))
+
+
+### Bug Fixes
+
+* **build:** set default branch to main ([#1469](https://www.github.com/googleapis/nodejs-spanner/issues/1469)) ([152985a](https://www.github.com/googleapis/nodejs-spanner/commit/152985a1f783534e6b3e3ce332a1333dec67269d))
+* **cloud-rad:** move comments for TSDoc ([#1509](https://www.github.com/googleapis/nodejs-spanner/issues/1509)) ([1c49922](https://www.github.com/googleapis/nodejs-spanner/commit/1c49922c75bd56dbd0456318bee8a336eb088156))
+
 ### [5.15.2](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.1...v5.15.2) (2021-09-10)
 
 
