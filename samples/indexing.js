@@ -28,9 +28,9 @@ async function createIndex(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -74,9 +74,9 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -125,9 +125,9 @@ async function queryDataWithIndex(
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -179,9 +179,9 @@ async function readDataWithIndex(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -233,9 +233,9 @@ async function readDataWithStoringIndex(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);

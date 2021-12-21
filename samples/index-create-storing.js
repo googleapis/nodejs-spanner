@@ -36,9 +36,9 @@ function main(
 
   // Instantiates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   async function createStoringIndex() {
     // Gets a reference to a Cloud Spanner instance and database

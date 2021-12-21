@@ -111,7 +111,7 @@ export type ExistsCallback = NormalCallback<boolean>;
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const backup = instance.backup('my-backup');
- * 
+ *
  * @example
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
@@ -132,7 +132,7 @@ class Backup {
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
-      this.sourceName = sourceName;
+    this.sourceName = sourceName;
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
     };
@@ -271,15 +271,16 @@ class Backup {
   ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
     if ('databasePath' in options) {
-      const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest = {
-        parent: this.instanceFormattedName_,
-        backupId: this.id,
-        backup: {
-          database: options.databasePath,
-          expireTime: Spanner.timestamp(options.expireTime).toStruct(),
-          name: this.formattedName_,
-        },
-      };
+      const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest =
+        {
+          parent: this.instanceFormattedName_,
+          backupId: this.id,
+          backup: {
+            database: options.databasePath,
+            expireTime: Spanner.timestamp(options.expireTime).toStruct(),
+            name: this.formattedName_,
+          },
+        };
       if ('versionTime' in options) {
         reqOpts.backup!.versionTime = Spanner.timestamp(
           options.versionTime
@@ -318,7 +319,8 @@ class Backup {
         {
           client: 'DatabaseAdminClient',
           method: 'copyBackup',
-          reqOpts: options as databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest,
+          reqOpts:
+            options as databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest,
           gaxOpts,
           headers: this.resourceHeader_,
         },

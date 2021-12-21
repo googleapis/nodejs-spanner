@@ -31,9 +31,9 @@ function insertUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -82,9 +82,9 @@ function updateUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -127,9 +127,9 @@ function deleteUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -171,9 +171,9 @@ function updateUsingDmlWithTimestamp(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -217,9 +217,9 @@ function writeAndReadUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -274,9 +274,9 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -322,9 +322,9 @@ function writeUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -370,9 +370,9 @@ async function queryDataWithParameter(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -424,9 +424,9 @@ function writeWithTransactionUsingDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -531,9 +531,9 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -567,9 +567,9 @@ async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -603,9 +603,9 @@ async function updateUsingBatchDml(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -659,9 +659,9 @@ async function insertWithCustomTimeoutAndRetrySettings(
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
   const DEADLINE_EXCEEDED_STATUS_CODE = 4;
   const UNAVAILABLE_STATUS_CODE = 14;
   const retryAndTimeoutSettings = {

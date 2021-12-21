@@ -5790,6 +5790,7 @@
                             case 4:
                             case 5:
                             case 6:
+                            case 7:
                                 break;
                             }
                     }
@@ -5893,6 +5894,10 @@
                             case "UNORDERED_LIST":
                             case 6:
                                 message[".google.api.fieldBehavior"][i] = 6;
+                                break;
+                            case "NON_EMPTY_DEFAULT":
+                            case 7:
+                                message[".google.api.fieldBehavior"][i] = 7;
                                 break;
                             }
                     }
@@ -13973,6 +13978,8 @@
                              * @property {google.spanner.admin.database.v1.Backup.State|null} [state] Backup state
                              * @property {Array.<string>|null} [referencingDatabases] Backup referencingDatabases
                              * @property {google.spanner.admin.database.v1.IEncryptionInfo|null} [encryptionInfo] Backup encryptionInfo
+                             * @property {Array.<string>|null} [referencingBackups] Backup referencingBackups
+                             * @property {google.protobuf.ITimestamp|null} [maxExpireTime] Backup maxExpireTime
                              */
     
                             /**
@@ -13985,6 +13992,7 @@
                              */
                             function Backup(properties) {
                                 this.referencingDatabases = [];
+                                this.referencingBackups = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -14064,6 +14072,22 @@
                             Backup.prototype.encryptionInfo = null;
     
                             /**
+                             * Backup referencingBackups.
+                             * @member {Array.<string>} referencingBackups
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.referencingBackups = $util.emptyArray;
+    
+                            /**
+                             * Backup maxExpireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} maxExpireTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.maxExpireTime = null;
+    
+                            /**
                              * Creates a new Backup instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Backup
@@ -14106,6 +14130,11 @@
                                     $root.google.spanner.admin.database.v1.EncryptionInfo.encode(message.encryptionInfo, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                                 if (message.versionTime != null && Object.hasOwnProperty.call(message, "versionTime"))
                                     $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                                if (message.referencingBackups != null && message.referencingBackups.length)
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        writer.uint32(/* id 11, wireType 2 =*/90).string(message.referencingBackups[i]);
+                                if (message.maxExpireTime != null && Object.hasOwnProperty.call(message, "maxExpireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.maxExpireTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                                 return writer;
                             };
     
@@ -14168,6 +14197,14 @@
                                         break;
                                     case 8:
                                         message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32());
+                                        break;
+                                    case 11:
+                                        if (!(message.referencingBackups && message.referencingBackups.length))
+                                            message.referencingBackups = [];
+                                        message.referencingBackups.push(reader.string());
+                                        break;
+                                    case 12:
+                                        message.maxExpireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -14249,6 +14286,18 @@
                                     if (error)
                                         return "encryptionInfo." + error;
                                 }
+                                if (message.referencingBackups != null && message.hasOwnProperty("referencingBackups")) {
+                                    if (!Array.isArray(message.referencingBackups))
+                                        return "referencingBackups: array expected";
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        if (!$util.isString(message.referencingBackups[i]))
+                                            return "referencingBackups: string[] expected";
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.maxExpireTime);
+                                    if (error)
+                                        return "maxExpireTime." + error;
+                                }
                                 return null;
                             };
     
@@ -14318,6 +14367,18 @@
                                         throw TypeError(".google.spanner.admin.database.v1.Backup.encryptionInfo: object expected");
                                     message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.fromObject(object.encryptionInfo);
                                 }
+                                if (object.referencingBackups) {
+                                    if (!Array.isArray(object.referencingBackups))
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.referencingBackups: array expected");
+                                    message.referencingBackups = [];
+                                    for (var i = 0; i < object.referencingBackups.length; ++i)
+                                        message.referencingBackups[i] = String(object.referencingBackups[i]);
+                                }
+                                if (object.maxExpireTime != null) {
+                                    if (typeof object.maxExpireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.maxExpireTime: object expected");
+                                    message.maxExpireTime = $root.google.protobuf.Timestamp.fromObject(object.maxExpireTime);
+                                }
                                 return message;
                             };
     
@@ -14334,8 +14395,10 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.arrays || options.defaults)
+                                if (options.arrays || options.defaults) {
                                     object.referencingDatabases = [];
+                                    object.referencingBackups = [];
+                                }
                                 if (options.defaults) {
                                     object.name = "";
                                     object.database = "";
@@ -14349,6 +14412,7 @@
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                     object.encryptionInfo = null;
                                     object.versionTime = null;
+                                    object.maxExpireTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -14374,6 +14438,13 @@
                                     object.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.toObject(message.encryptionInfo, options);
                                 if (message.versionTime != null && message.hasOwnProperty("versionTime"))
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
+                                if (message.referencingBackups && message.referencingBackups.length) {
+                                    object.referencingBackups = [];
+                                    for (var j = 0; j < message.referencingBackups.length; ++j)
+                                        object.referencingBackups[j] = message.referencingBackups[j];
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime"))
+                                    object.maxExpireTime = $root.google.protobuf.Timestamp.toObject(message.maxExpireTime, options);
                                 return object;
                             };
     
@@ -40788,6 +40859,7 @@
              * @property {number} INPUT_ONLY=4 INPUT_ONLY value
              * @property {number} IMMUTABLE=5 IMMUTABLE value
              * @property {number} UNORDERED_LIST=6 UNORDERED_LIST value
+             * @property {number} NON_EMPTY_DEFAULT=7 NON_EMPTY_DEFAULT value
              */
             api.FieldBehavior = (function() {
                 var valuesById = {}, values = Object.create(valuesById);
@@ -40798,6 +40870,7 @@
                 values[valuesById[4] = "INPUT_ONLY"] = 4;
                 values[valuesById[5] = "IMMUTABLE"] = 5;
                 values[valuesById[6] = "UNORDERED_LIST"] = 6;
+                values[valuesById[7] = "NON_EMPTY_DEFAULT"] = 7;
                 return values;
             })();
     

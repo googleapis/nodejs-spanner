@@ -576,6 +576,18 @@
               ],
               "reserved": [
                 [
+                  4,
+                  4
+                ],
+                [
+                  5,
+                  5
+                ],
+                [
+                  6,
+                  6
+                ],
+                [
                   8,
                   8
                 ],
@@ -1294,6 +1306,22 @@
                             "encryptionInfo": {
                               "type": "EncryptionInfo",
                               "id": 8,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "referencingBackups": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 11,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "maxExpireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 12,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -4451,7 +4479,8 @@
                 "OUTPUT_ONLY": 3,
                 "INPUT_ONLY": 4,
                 "IMMUTABLE": 5,
-                "UNORDERED_LIST": 6
+                "UNORDERED_LIST": 6,
+                "NON_EMPTY_DEFAULT": 7
               }
             },
             "resourceReference": {

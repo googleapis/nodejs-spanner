@@ -31,9 +31,9 @@ function main(projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   async function listInstanceConfigs() {
     // Lists all available instance configurations in the project.

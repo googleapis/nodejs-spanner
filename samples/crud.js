@@ -31,9 +31,9 @@ async function updateData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -73,9 +73,9 @@ async function insertData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -128,9 +128,9 @@ async function deleteData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -201,9 +201,9 @@ async function queryData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -246,9 +246,9 @@ async function readData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
@@ -296,9 +296,9 @@ async function readStaleData(instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);

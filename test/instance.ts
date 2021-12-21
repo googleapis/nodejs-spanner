@@ -35,7 +35,6 @@ import {Backup, CopyBackupOptions} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
-
 let promisified = false;
 const fakePfy = extend({}, pfy, {
   promisifyAll(klass, options) {
@@ -1647,8 +1646,8 @@ describe('Instance', () => {
 
     it('should return an instance of Copy Backup', done => {
       const OPTIONS = {
-      a: 'b',
-    } as CopyBackupOptions;
+        a: 'b',
+      } as CopyBackupOptions;
       const gaxOpts = {
         timeout: 1000,
       };
@@ -1660,7 +1659,7 @@ describe('Instance', () => {
         sourceBackup: BACKUP_NAME,
       });
 
-        instance.request = config => {
+      instance.request = config => {
         assert.strictEqual(config.client, 'DatabaseAdminClient');
         assert.strictEqual(config.method, 'createBackup');
         assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
@@ -1669,7 +1668,12 @@ describe('Instance', () => {
         done();
       };
 
-      instance.copyBackup(BACKUP_NAME, COPY_BACKUP_NAME, options, assert.ifError);
+      instance.copyBackup(
+        BACKUP_NAME,
+        COPY_BACKUP_NAME,
+        options,
+        assert.ifError
+      );
     });
   });
 

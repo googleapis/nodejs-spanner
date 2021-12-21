@@ -41,9 +41,9 @@ function main(
 
   // Instantiates a client
   const spanner = new Spanner({
-     projectId: projectId,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+    projectId: projectId,
+    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  });
 
   async function spannerCopyBackup() {
     // Gets a reference to a Cloud Spanner instance, database and backup
@@ -52,20 +52,30 @@ function main(
     const sourceBackup = instance.backup(sourceBackupId);
 
     // Expire source and copy backup 14 days in the future
-    const expireTime = Spanner.timestamp(Date.now() + 1000 * 60 * 60 * 24 * 14).toStruct();
+    const expireTime = Spanner.timestamp(
+      Date.now() + 1000 * 60 * 60 * 24 * 14
+    ).toStruct();
 
     // Copy the backup of the database
-    try { 
-      console.log(`Creating copy of the source backup ${sourceBackup.formattedName_}.`);
-      const [, operation] = await instance.copyBackup(sourceBackup.formattedName_, backupId, {
-        expireTime: expireTime,
-      });
+    try {
+      console.log(
+        `Creating copy of the source backup ${sourceBackup.formattedName_}.`
+      );
+      const [, operation] = await instance.copyBackup(
+        sourceBackup.formattedName_,
+        backupId,
+        {
+          expireTime: expireTime,
+        }
+      );
 
-      console.log(`Waiting for backup copy${instance.backup(backupId)} to complete...`);
+      console.log(
+        `Waiting for backup copy${instance.backup(backupId)} to complete...`
+      );
       await operation.promise();
 
       // Verify the copy backup is ready
-      const copyBackup = instance.backup(backupId)
+      const copyBackup = instance.backup(backupId);
       const [copyBackupInfo] = await copyBackup.getMetadata();
       if (copyBackupInfo.state === 'READY') {
         console.log(

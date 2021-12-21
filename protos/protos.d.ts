@@ -5417,6 +5417,12 @@ export namespace google {
 
                         /** Backup encryptionInfo */
                         encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
+
+                        /** Backup referencingBackups */
+                        referencingBackups?: (string[]|null);
+
+                        /** Backup maxExpireTime */
+                        maxExpireTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Backup. */
@@ -5454,6 +5460,12 @@ export namespace google {
 
                         /** Backup encryptionInfo. */
                         public encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
+
+                        /** Backup referencingBackups. */
+                        public referencingBackups: string[];
+
+                        /** Backup maxExpireTime. */
+                        public maxExpireTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -16542,7 +16554,8 @@ export namespace google {
             OUTPUT_ONLY = 3,
             INPUT_ONLY = 4,
             IMMUTABLE = 5,
-            UNORDERED_LIST = 6
+            UNORDERED_LIST = 6,
+            NON_EMPTY_DEFAULT = 7
         }
 
         /** Properties of a ResourceDescriptor. */

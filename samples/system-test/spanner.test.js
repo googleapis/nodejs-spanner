@@ -63,9 +63,9 @@ const DEFAULT_LEADER = 'us-central1';
 const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
-     projectId: PROJECT_ID,
-     apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com'
-   });
+  projectId: PROJECT_ID,
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+});
 const LABEL = 'node-sample-tests';
 const GAX_OPTIONS = {
   retry: {
@@ -1032,7 +1032,10 @@ describe('Spanner', () => {
     const output = execSync(
       `node backups-copy.js ${INSTANCE_ID} ${DATABASE_ID} ${COPY_BACKUP_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`));
+    assert.match(
+      output,
+      new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`)
+    );
   });
 
   // // cancel_backup
