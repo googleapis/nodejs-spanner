@@ -37,7 +37,6 @@ function main(
   // Instantiates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   // "Storing" indexes store copies of the columns they index

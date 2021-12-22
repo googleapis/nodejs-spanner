@@ -29,7 +29,6 @@ async function databaseWithQueryOptions(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   // Gets a reference to a Cloud Spanner instance and database
@@ -88,7 +87,6 @@ async function queryWithQueryOptions(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   // Gets a reference to a Cloud Spanner instance and database

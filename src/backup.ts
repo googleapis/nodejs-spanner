@@ -98,6 +98,7 @@ export type GetStateCallback = NormalCallback<
   EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
 >;
 export type GetExpireTimeCallback = NormalCallback<PreciseDate>;
+export type GetMaxExpireTimeCallback = NormalCallback<PreciseDate>;
 export type ExistsCallback = NormalCallback<boolean>;
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
@@ -354,6 +355,7 @@ class Backup {
    *
    * @see {@link #getState}
    * @see {@link #getExpireTime}
+   * @see {@link #getMaxExpireTime}
    *
    * @method Backup#getMetadata
    * @param {object} [gaxOptions] Request configuration options,
@@ -460,6 +462,31 @@ class Backup {
   async getExpireTime(): Promise<PreciseDate | undefined> {
     const [backupInfo] = await this.getMetadata();
     return new PreciseDate(backupInfo.expireTime as DateStruct);
+  }
+
+  getMaxExpireTime(): Promise<PreciseDate | undefined>;
+  getMaxExpireTime(callback: GetExpireTimeCallback): void;
+  /**
+   * Retrieves the max expiry time of the backup.
+   *
+   * @see {@link #updateExpireTime}
+   * @see {@link #getMetadata}
+   *
+   * @method Backup#getMaxExpireTime
+   * @returns {Promise<external:PreciseDate>} When resolved, contains the
+   *     max expire time of the backup if it exists.
+   *
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const backup = instance.backup('my-backup');
+   * const maxExpireTime = await backup.getMaxExpireTime();
+   * console.log(`Backup max expires on ${maxExpireTime.toISOString()}`);
+   */
+  async getMaxExpireTime(): Promise<PreciseDate | undefined> {
+    const [backupInfo] = await this.getMetadata();
+    return new PreciseDate(backupInfo.maxExpireTime as DateStruct);
   }
 
   exists(): Promise<boolean>;
@@ -660,7 +687,7 @@ class Backup {
  * that a callback is omitted.
  */
 promisifyAll(Backup, {
-  exclude: ['getState', 'getExpireTime', 'exists'],
+  exclude: ['getState', 'getExpireTime', 'getMaxExpireTime', 'exists'],
 });
 
 /*! Developer Documentation

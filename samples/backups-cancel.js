@@ -31,7 +31,6 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   // Gets a reference to a Cloud Spanner instance and database

@@ -31,7 +31,7 @@ import * as inst from '../src/instance';
 import {Spanner, Database, RequestConfig} from '../src';
 import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
-import {Backup, CopyBackupOptions} from '../src/backup';
+import {Backup} from '../src/backup';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
@@ -1629,7 +1629,6 @@ describe('Instance', () => {
 
   describe('backup', () => {
     const BACKUP_NAME = 'backup-name';
-    const COPY_BACKUP_NAME = 'copy-backup-name';
 
     it('should throw if a backup ID is not provided', () => {
       assert.throws(() => {
@@ -1642,38 +1641,6 @@ describe('Instance', () => {
       assert(backup instanceof FakeBackup);
       assert.strictEqual(backup.calledWith_[0], instance);
       assert.strictEqual(backup.calledWith_[1], BACKUP_NAME);
-    });
-
-    it('should return an instance of Copy Backup', done => {
-      const OPTIONS = {
-        a: 'b',
-      } as CopyBackupOptions;
-      const gaxOpts = {
-        timeout: 1000,
-      };
-      const options = {a: 'b', gaxOptions: gaxOpts};
-
-      const expectedReqOpts = extend({}, OPTIONS, {
-        parent: instance.formattedName_,
-        backupId: COPY_BACKUP_NAME,
-        sourceBackup: BACKUP_NAME,
-      });
-
-      instance.request = config => {
-        assert.strictEqual(config.client, 'DatabaseAdminClient');
-        assert.strictEqual(config.method, 'createBackup');
-        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
-        assert.notStrictEqual(config.reqOpts, OPTIONS);
-        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
-        done();
-      };
-
-      instance.copyBackup(
-        BACKUP_NAME,
-        COPY_BACKUP_NAME,
-        options,
-        assert.ifError
-      );
     });
   });
 
