@@ -262,7 +262,7 @@ class Instance extends common.GrpcServiceObject {
       );
     }
     const copyOfBackup = new Backup(this, backupId, sourceBackupId);
-    if (callback != null) {
+    if (callback !== null) {
       return copyOfBackup.create(options, callback);
     }
     return copyOfBackup.create(options);

@@ -1027,8 +1027,6 @@ describe('Spanner', () => {
 
   // copy_backup
   it('should create a copy of a backup', async () => {
-    const instance = spanner.instance(INSTANCE_ID);
-
     const output = execSync(
       `node backups-copy.js ${INSTANCE_ID} ${DATABASE_ID} ${COPY_BACKUP_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
