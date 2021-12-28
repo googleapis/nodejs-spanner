@@ -12,5 +12,5 @@
   "requires_billing": true,
   "codeowner_team": "@googleapis/api-spanner-nodejs",
   "api_shortname": "spanner",
-  "library_type": ""
+  "library_type": "GAPIC_COMBO"
 }
