@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.16.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.16.0...v5.16.1) (2021-12-29)
+
+
+### Bug Fixes
+
+* change in region ([#1523](https://www.github.com/googleapis/nodejs-spanner/issues/1523)) ([6caefc4](https://www.github.com/googleapis/nodejs-spanner/commit/6caefc4a0aafaa786a1d4b3fe3501d005d03bf6e))
+
 ## [5.16.0](https://www.github.com/googleapis/nodejs-spanner/compare/v5.15.2...v5.16.0) (2021-12-09)
 
 
