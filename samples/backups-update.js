@@ -61,4 +61,3 @@ async function updateBackup(instanceId, backupId, projectId) {
 }
 
 module.exports.updateBackup = updateBackup;
-//updateBackup('test-cross-region', 'backup123', 'appdev-soda-spanner-staging');

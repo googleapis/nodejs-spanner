@@ -65,6 +65,7 @@ const GAX_OPTIONS: CallOptions = {
 };
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
+
 describe('Spanner', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
