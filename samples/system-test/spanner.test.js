@@ -64,7 +64,6 @@ const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 const LABEL = 'node-sample-tests';
 const GAX_OPTIONS = {

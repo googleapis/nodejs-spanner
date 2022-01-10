@@ -258,7 +258,7 @@ class Instance extends common.GrpcServiceObject {
   ): Promise<CopyBackupResponse> | void {
     if (!backupId || !sourceBackupId) {
       throw new Error(
-        'A backup ID and source backup ID is required to create a Backup.'
+        'A backup ID and source backup ID is required to create a copy of the source backup.'
       );
     }
     const copyOfBackup = new Backup(this, backupId, sourceBackupId);

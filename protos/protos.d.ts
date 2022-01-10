@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16192,7 +16192,8 @@ export namespace google {
             OUTPUT_ONLY = 3,
             INPUT_ONLY = 4,
             IMMUTABLE = 5,
-            UNORDERED_LIST = 6
+            UNORDERED_LIST = 6,
+            NON_EMPTY_DEFAULT = 7
         }
 
         /** Properties of a ResourceDescriptor. */

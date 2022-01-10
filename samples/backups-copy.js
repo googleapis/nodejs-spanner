@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Read data using an existing index.
-//  usage: node spannerCopyBackup <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Copies a source backup
+//  usage: node spannerCopyBackup <INSTANCE_ID> <DATABASE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -32,7 +32,7 @@ function main(
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const backupId = 'my-backup',
-  // sourceBackupId = 'my-source-backup',
+  // const sourceBackupId = 'my-source-backup',
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud Spanner client library
@@ -50,7 +50,7 @@ function main(
     const database = instance.database(databaseId);
     const sourceBackup = instance.backup(sourceBackupId);
 
-    // Expire source and copy backup 14 days in the future
+    // Expire copy backup 14 days in the future
     const expireTime = Spanner.timestamp(
       Date.now() + 1000 * 60 * 60 * 24 * 14
     ).toStruct();
