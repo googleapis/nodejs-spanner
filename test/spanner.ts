@@ -54,6 +54,9 @@ import RequestOptions = google.spanner.v1.RequestOptions;
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
+import TypeCode = google.spanner.v1.TypeCode;
+import NullValue = google.protobuf.NullValue;
+import Struct = google.protobuf.Struct;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -3388,6 +3391,143 @@ describe('Spanner with mock server', () => {
         }
       }
     });
+
+    it('should return all values from PartialResultSet with chunked array of struct', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        metadata: createArrayOfStructMetadata(),
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  structValue: Struct.create({
+                    fields: {
+                      innerArray: {
+                        listValue: {
+                          values: [{stringValue: 'One'}],
+                        },
+                      },
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      });
+      const prs2 = PartialResultSet.create({
+        resumeToken: Buffer.from('00000001'),
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  structValue: Struct.create({
+                    fields: {
+                      innerArray: {
+                        listValue: {
+                          values: [
+                            {nullValue: NullValue.NULL_VALUE},
+                            {stringValue: 'Two'},
+                          ],
+                        },
+                      },
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+        chunkedValue: true,
+      });
+      const prs3 = PartialResultSet.create({
+        resumeToken: Buffer.from('00000002'),
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  structValue: {
+                    fields: {
+                      innerArray: {
+                        listValue: {
+                          values: [{stringValue: 'Three'}],
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {
+                  structValue: {
+                    fields: {
+                      innerArray: {
+                        listValue: {
+                          values: [
+                            {stringValue: 'Four'},
+                            {stringValue: 'Five'},
+                          ],
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+      setupResultsAndErrors(sql, [prs1, prs2, prs3], []);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 3);
+      } finally {
+        await database.close();
+      }
+    });
+
+    function createArrayOfStructMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'outerArray',
+          type: protobuf.Type.create({
+            code: protobuf.TypeCode.ARRAY,
+            arrayElementType: protobuf.Type.create({
+              code: protobuf.TypeCode.STRUCT,
+              structType: protobuf.StructType.create({
+                fields: [
+                  {
+                    name: 'innerArray',
+                    type: protobuf.Type.create({
+                      code: TypeCode.ARRAY,
+                      arrayElementType: protobuf.Type.create({
+                        code: TypeCode.STRING,
+                      }),
+                    }),
+                  },
+                ],
+              }),
+            }),
+          }),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
 
     it('should reset to the chunked value of the last PartialResultSet with a resume token on retry', async () => {
       // This tests the following scenario:
