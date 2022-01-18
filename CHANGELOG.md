@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.16.2](https://github.com/googleapis/nodejs-spanner/compare/v5.16.1...v5.16.2) (2022-01-17)
+
+
+### Bug Fixes
+
+* fix for new @types/node version ([#1542](https://github.com/googleapis/nodejs-spanner/issues/1542)) ([4b56c58](https://github.com/googleapis/nodejs-spanner/commit/4b56c584fa85ab8b22867157566ce7245daa8d8d))
+
 ### [5.16.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.16.0...v5.16.1) (2021-12-29)
 
 
