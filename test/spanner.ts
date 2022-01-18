@@ -34,9 +34,6 @@ import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseOperationsOptions} from '../src/instance';
-import TypeCode = google.spanner.v1.TypeCode;
-import NullValue = google.protobuf.NullValue;
-import Struct = google.protobuf.Struct;
 import {
   isSessionNotFoundError,
   SessionLeakError,
@@ -57,6 +54,8 @@ import RequestOptions = google.spanner.v1.RequestOptions;
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
+import TypeCode = google.spanner.v1.TypeCode;
+import NullValue = google.protobuf.NullValue;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -3392,7 +3391,7 @@ describe('Spanner with mock server', () => {
       }
     });
 
-    it('should return all values from PartialResultSet with chunked array of struct', async () => {
+    it('should return all values from PartialResultSet with chunked struct with a null array field', async () => {
       const sql = 'SELECT * FROM TestTable';
       const prs1 = PartialResultSet.create({
         metadata: createArrayOfStructMetadata(),
@@ -3401,62 +3400,29 @@ describe('Spanner with mock server', () => {
             listValue: {
               values: [
                 {
-                  structValue: Struct.create({
-                    fields: {
-                      innerArray: {
-                        listValue: {
-                          values: [{stringValue: 'One'}],
-                        },
-                      },
-                    },
-                  }),
+                  listValue: {
+                    values: [
+                      // The array field is NULL.
+                      {nullValue: NullValue.NULL_VALUE},
+                    ],
+                  },
                 },
               ],
             },
           },
         ],
-      });
-      const prs2 = PartialResultSet.create({
-        resumeToken: Buffer.from('00000001'),
-        values: [
-          {
-            listValue: {
-              values: [
-                {
-                  structValue: Struct.create({
-                    fields: {
-                      innerArray: {
-                        listValue: {
-                          values: [
-                            {nullValue: NullValue.NULL_VALUE},
-                            {stringValue: 'Two'},
-                          ],
-                        },
-                      },
-                    },
-                  }),
-                },
-              ],
-            },
-          },
-        ],
+        // This PartialResultSet is chunked, and the last value was the NULL value for the ARRAY field.
+        // This means that the next value will be the STRING field.
         chunkedValue: true,
       });
-      const prs3 = PartialResultSet.create({
-        resumeToken: Buffer.from('00000002'),
+      const prs2 = PartialResultSet.create({
         values: [
           {
             listValue: {
               values: [
                 {
-                  structValue: {
-                    fields: {
-                      innerArray: {
-                        listValue: {
-                          values: [{stringValue: 'Three'}],
-                        },
-                      },
-                    },
+                  listValue: {
+                    values: [{stringValue: 'First row'}],
                   },
                 },
               ],
@@ -3466,17 +3432,11 @@ describe('Spanner with mock server', () => {
             listValue: {
               values: [
                 {
-                  structValue: {
-                    fields: {
-                      innerArray: {
-                        listValue: {
-                          values: [
-                            {stringValue: 'Four'},
-                            {stringValue: 'Five'},
-                          ],
-                        },
-                      },
-                    },
+                  listValue: {
+                    values: [
+                      {listValue: {values: [{stringValue: '1'}]}},
+                      {stringValue: 'Second row'},
+                    ],
                   },
                 },
               ],
@@ -3484,14 +3444,24 @@ describe('Spanner with mock server', () => {
           },
         ],
       });
-      setupResultsAndErrors(sql, [prs1, prs2, prs3], []);
+      setupResultsAndErrors(sql, [prs1, prs2], []);
       const database = newTestDatabase();
       try {
         const [rows] = (await database.run({
           sql,
           json: true,
         })) as Json[];
-        assert.strictEqual(rows.length, 3);
+        assert.strictEqual(rows.length, 2);
+        assert.strictEqual(rows[0].outerArray.length, 1);
+        assert.strictEqual(rows[0].outerArray[0].innerField, 'First row');
+        assert.ok(
+          rows[0].outerArray[0].innerArray === null,
+          'Inner array should be null'
+        );
+        assert.strictEqual(rows[1].outerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerField, 'Second row');
+        assert.strictEqual(rows[1].outerArray[0].innerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerArray[0], '1');
       } finally {
         await database.close();
       }
@@ -3515,6 +3485,10 @@ describe('Spanner with mock server', () => {
                         code: TypeCode.STRING,
                       }),
                     }),
+                  },
+                  {
+                    name: 'innerField',
+                    type: protobuf.Type.create({code: TypeCode.STRING}),
                   },
                 ],
               }),

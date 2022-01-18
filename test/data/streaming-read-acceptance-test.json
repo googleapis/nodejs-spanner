@@ -337,24 +337,25 @@
       "result": {
         "value": [
           [
+            [
               [
                 [
                   [
-                    "ab"
+                    "abc"
                   ],
-                  null,
                   null,
                   [
                     "def"
                   ]
                 ]
               ]
+            ]
           ]
         ]
       },
       "chunks": [
-        "{\n  \"metadata\": {\n    \"rowType\": {\n      \"fields\": [{\n        \"name\": \"f1\",\n        \"type\": {\n          \"code\": \"ARRAY\",\n          \"arrayElementType\": {\n            \"code\": \"STRUCT\",\n            \"structType\": {\n              \"fields\": [{\n                \"name\": \"f11\",\n                \"type\": {\n                  \"code\": \"ARRAY\",\n                  \"arrayElementType\": {\n                    \"code\": \"STRING\"\n                  }\n                }\n              }]\n            }\n          }\n        }\n      }]\n    }\n  },\n  \"values\": [[[[\"ab\"], null]]],\n  \"chunkedValue\": true\n}",
-        "{\n  \"values\": [[[null,[\"def\"]]]]\n}"
+        "{\n  \"metadata\": {\n    \"rowType\": {\n      \"fields\": [{\n        \"name\": \"f1\",\n        \"type\": {\n          \"code\": \"ARRAY\",\n          \"arrayElementType\": {\n            \"code\": \"STRUCT\",\n            \"structType\": {\n              \"fields\": [{\n                \"name\": \"f11\",\n                \"type\": {\n                  \"code\": \"ARRAY\",\n                  \"arrayElementType\": {\n                    \"code\": \"STRUCT\",\n                    \"structType\": {\n                      \"fields\": [{\n                        \"name\": \"f12\",\n                        \"type\": {\n                          \"code\": \"STRING\"\n                        }\n                      }]\n                    }\n                  }\n                }\n              }]\n            }\n          }\n        }\n      }]\n    }\n  },\n  \"values\": [[[[[\"abc\"], null]]]],\n  \"chunkedValue\": true\n}",
+        "{\n  \"values\": [[[[[\"def\"]]]]]\n}"
       ],
       "name": "Nested Struct Array Chunking Test With null"
     }
