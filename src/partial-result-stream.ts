@@ -368,6 +368,9 @@ export class PartialResultStream extends Transform implements ResultEvents {
       type.code === google.spanner.v1.TypeCode.STRUCT ||
       type.code === 'STRUCT'
     ) {
+      if (head === null || tail === null) {
+        return [head, tail];
+      }
       return [PartialResultStream.mergeLists(type, head, tail)];
     }
 
