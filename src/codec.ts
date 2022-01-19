@@ -20,6 +20,7 @@ import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
+import {GoogleError} from 'google-gax';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
@@ -150,7 +151,7 @@ export class Int extends WrappedNumber {
   valueOf(): number {
     const num = Number(this.value);
     if (num > Number.MAX_SAFE_INTEGER) {
-      throw new Error(`Integer ${this.value} is out of bounds.`);
+      throw new GoogleError(`Integer ${this.value} is out of bounds.`);
     }
     return num;
   }

@@ -32,7 +32,7 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
-import {grpc, GrpcClientOptions, CallOptions} from 'google-gax';
+import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
@@ -198,7 +198,7 @@ class Spanner extends GrpcService {
         endpointWithPort.startsWith('http:') ||
         endpointWithPort.startsWith('https:')
       ) {
-        throw new Error(
+        throw new GoogleError(
           'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
         );
       }
@@ -207,7 +207,7 @@ class Spanner extends GrpcService {
         const portName = endpointWithPort.substring(index + 1);
         const port = +portName;
         if (!port || port < 1 || port > 65535) {
-          throw new Error(`Invalid port number: ${portName}`);
+          throw new GoogleError(`Invalid port number: ${portName}`);
         }
         return {
           endpoint: endpointWithPort.substring(0, index),
@@ -338,8 +338,8 @@ class Spanner extends GrpcService {
    * @see {@link v1.InstanceAdminClient#createInstance}
    * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
    *
-   * @throws {Error} If a name is not provided.
-   * @throws {Error} If a configuration object is not provided.
+   * @throws {GoogleError} If a name is not provided.
+   * @throws {GoogleError} If a configuration object is not provided.
    *
    * @param {string} name The name of the instance to be created.
    * @param {CreateInstanceRequest} config Configuration object.
@@ -399,10 +399,10 @@ class Spanner extends GrpcService {
     callback?: CreateInstanceCallback
   ): void | Promise<CreateInstanceResponse> {
     if (!name) {
-      throw new Error('A name is required to create an instance.');
+      throw new GoogleError('A name is required to create an instance.');
     }
     if (!config) {
-      throw new Error(
+      throw new GoogleError(
         ['A configuration object is required to create an instance.'].join('')
       );
     }
@@ -423,7 +423,7 @@ class Spanner extends GrpcService {
     };
 
     if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
-      throw new Error(
+      throw new GoogleError(
         ['Only one of nodeCount or processingUnits can be specified.'].join('')
       );
     }
@@ -990,7 +990,7 @@ class Spanner extends GrpcService {
   /**
    * Get a reference to an Instance object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the instance.
    * @returns {Instance} An Instance object.
@@ -1004,7 +1004,7 @@ class Spanner extends GrpcService {
    */
   instance(name: string): Instance {
     if (!name) {
-      throw new Error('A name is required to access an Instance object.');
+      throw new GoogleError('A name is required to access an Instance object.');
     }
     const key = name.split('/').pop()!;
     if (!this.instances_.has(key)) {

@@ -22,7 +22,7 @@ import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {grpc} from 'google-gax';
+import {GoogleError, grpc} from 'google-gax';
 import trace = require('stack-trace');
 
 /**
@@ -166,7 +166,7 @@ const DEFAULTS: SessionPoolOptions = {
  *
  * @private
  */
-export class ReleaseError extends Error {
+export class ReleaseError extends GoogleError {
   resource: unknown;
   constructor(resource: unknown) {
     super('Unable to release unknown resource.');
@@ -179,7 +179,7 @@ export class ReleaseError extends Error {
  *
  * @private
  */
-export class SessionLeakError extends Error {
+export class SessionLeakError extends GoogleError {
   messages: string[];
   constructor(leaks: string[]) {
     super(`${leaks.length} session leak(s) detected.`);
@@ -192,7 +192,7 @@ export class SessionLeakError extends Error {
 /**
  * Error to be thrown when the session pool is exhausted.
  */
-export class SessionPoolExhaustedError extends Error {
+export class SessionPoolExhaustedError extends GoogleError {
   messages: string[];
   constructor(leaks: string[]) {
     super(errors.Exhausted);
@@ -687,7 +687,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   async _acquire(type: types): Promise<Session> {
     if (!this.isOpen) {
-      throw new Error(errors.Closed);
+      throw new GoogleError(errors.Closed);
     }
 
     // Get the stacktrace of the caller before we call any async methods, as calling an async method will break the stacktrace.
@@ -701,7 +701,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       const elapsed = Date.now() - startTime;
 
       if (elapsed >= timeout!) {
-        throw new Error(errors.Timeout);
+        throw new GoogleError(errors.Timeout);
       }
 
       const session = await this._getSession(type, startTime);
@@ -1003,7 +1003,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const availableEvent = type + '-available';
     const promises = [
       this._onClose.then(() => {
-        throw new Error(errors.Closed);
+        throw new GoogleError(errors.Closed);
       }),
       new Promise(resolve => {
         this.once(availableEvent, resolve);
