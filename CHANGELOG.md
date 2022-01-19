@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.2...v5.16.3) (2022-01-19)
+
+
+### Bug Fixes
+
+* for merging when array/struct chunks contain null ([#1541](https://github.com/googleapis/nodejs-spanner/issues/1541)) ([72871fc](https://github.com/googleapis/nodejs-spanner/commit/72871fca5b67aec3af633484ff70a73be55372be))
+
 ### [5.16.2](https://github.com/googleapis/nodejs-spanner/compare/v5.16.1...v5.16.2) (2022-01-17)
 
 
