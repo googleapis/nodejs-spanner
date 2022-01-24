@@ -4,6 +4,27 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.16.3) (2022-01-21)
+
+
+### Miscellaneous Chores
+
+* Release-As: 5.16.3 ([#1556](https://github.com/googleapis/nodejs-spanner/issues/1556)) ([31f5fbc](https://github.com/googleapis/nodejs-spanner/commit/31f5fbc6d890fd7296497d6992a7d186ea786476))
+
+### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.2...v5.16.3) (2022-01-19)
+
+
+### Bug Fixes
+
+* for merging when array/struct chunks contain null ([#1541](https://github.com/googleapis/nodejs-spanner/issues/1541)) ([72871fc](https://github.com/googleapis/nodejs-spanner/commit/72871fca5b67aec3af633484ff70a73be55372be))
+
+### [5.16.2](https://github.com/googleapis/nodejs-spanner/compare/v5.16.1...v5.16.2) (2022-01-17)
+
+
+### Bug Fixes
+
+* fix for new @types/node version ([#1542](https://github.com/googleapis/nodejs-spanner/issues/1542)) ([4b56c58](https://github.com/googleapis/nodejs-spanner/commit/4b56c584fa85ab8b22867157566ce7245daa8d8d))
+
 ### [5.16.1](https://www.github.com/googleapis/nodejs-spanner/compare/v5.16.0...v5.16.1) (2021-12-29)
 
 

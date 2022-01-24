@@ -18,7 +18,7 @@ import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
 import {EventEmitter} from 'events';
-import {grpc, CallOptions, ServiceError, Status} from 'google-gax';
+import {grpc, CallOptions, ServiceError, Status, GoogleError} from 'google-gax';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {Readable, PassThrough} from 'stream';
@@ -2151,7 +2151,7 @@ export class Transaction extends Dml {
       const missingColumns = columns.filter(column => !keys.includes(column));
 
       if (missingColumns.length > 0) {
-        throw new Error(
+        throw new GoogleError(
           [
             `Row at index ${index} does not contain the correct number of columns.`,
             `Missing columns: ${JSON.stringify(missingColumns)}`,

@@ -28,7 +28,12 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {CallOptions, grpc, Operation as GaxOperation} from 'google-gax';
+import {
+  CallOptions,
+  GoogleError,
+  grpc,
+  Operation as GaxOperation,
+} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {
@@ -2758,7 +2763,7 @@ class Database extends common.GrpcServiceObject {
   /**
    * Get a reference to a Table object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the table.
    * @return {Table} A Table object.
@@ -2776,7 +2781,7 @@ class Database extends common.GrpcServiceObject {
    */
   table(name: string) {
     if (!name) {
-      throw new Error('A name is required to access a Table object.');
+      throw new GoogleError('A name is required to access a Table object.');
     }
     return new Table(this, name);
   }
