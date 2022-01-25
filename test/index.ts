@@ -85,6 +85,7 @@ const fakePfy = extend({}, pfy, {
       'instance',
       'int',
       'numeric',
+      'pgNumeric',
       'operation',
       'timestamp',
     ]);
@@ -511,6 +512,23 @@ describe('Spanner', () => {
 
       const numeric = Spanner.numeric(value);
       assert.strictEqual(numeric, customValue);
+    });
+  });
+
+  describe('pgNumeric', () => {
+    it('should create a PGNumeric instance', () => {
+      const value = '3.145';
+      const customValue = {value: '3.145'};
+
+      fakeCodec.PGNumeric = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const pgNumeric = Spanner.pgNumeric(value);
+      assert.strictEqual(pgNumeric, customValue);
     });
   });
 

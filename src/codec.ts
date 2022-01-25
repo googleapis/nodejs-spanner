@@ -217,6 +217,26 @@ export class Numeric {
 }
 
 /**
+ * @typedef PGNumeric
+ * @see Spanner.pgNumeric
+ */
+export class PGNumeric {
+  value: string;
+  constructor(pgValue: string) {
+    this.value = pgValue;
+  }
+  valueOf(): Big {
+    if (this.value.toLowerCase() === 'nan') {
+      throw new Error(`${this.value} cannot be converted to a numeric value`);
+    }
+    return new Big(this.value);
+  }
+  toJSON(): string {
+    return this.valueOf().toJSON();
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -333,6 +353,13 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       break;
     case spannerClient.spanner.v1.TypeCode.NUMERIC:
     case 'NUMERIC':
+      if (
+        type.typeAnnotation ===
+        spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC
+      ) {
+        decoded = new PGNumeric(decoded);
+        break;
+      }
       decoded = new Numeric(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.TIMESTAMP:
@@ -413,6 +440,10 @@ function encodeValue(value: Value): Value {
     return value.value;
   }
 
+  if (value instanceof PGNumeric) {
+    return value.value;
+  }
+
   if (Buffer.isBuffer(value)) {
     return value.toString('base64');
   }
@@ -446,6 +477,7 @@ const TypeCode: {
   int64: 'INT64',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
+  pgNumeric: 'NUMERIC',
   timestamp: 'TIMESTAMP',
   date: 'DATE',
   string: 'STRING',
@@ -522,6 +554,10 @@ function getType(value: Value): Type {
 
   if (value instanceof Numeric) {
     return {type: 'numeric'};
+  }
+
+  if (value instanceof PGNumeric) {
+    return {type: 'pgNumeric'};
   }
 
   if (is.boolean(value)) {
@@ -639,7 +675,7 @@ function createTypeObject(
     friendlyType = 'unspecified';
   }
 
-  if (is.string(friendlyType)) {
+  if (typeof friendlyType === 'string') {
     friendlyType = {type: friendlyType} as Type;
   }
 
@@ -662,6 +698,10 @@ function createTypeObject(
     };
   }
 
+  if (friendlyType.type === 'pgNumeric') {
+    type.typeAnnotation =
+      spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC;
+  }
   return type;
 }
 
@@ -674,6 +714,7 @@ export const codec = {
   Float,
   Int,
   Numeric,
+  PGNumeric,
   convertFieldsToJson,
   decode,
   encode,
