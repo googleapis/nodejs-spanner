@@ -37,7 +37,7 @@ async function createInstance(instanceId, projectId) {
   try {
     console.log(`Creating instance ${instance.formattedName_}.`);
     const [, operation] = await instance.create({
-      config: 'regional-us-central1',
+      config: 'regional-us-west1',
       nodes: 1,
       displayName: 'This is a display name.',
       labels: {

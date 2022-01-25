@@ -35,7 +35,12 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
+import {
+  grpc,
+  Operation as GaxOperation,
+  CallOptions,
+  GoogleError,
+} from 'google-gax';
 import {Backup} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
@@ -234,7 +239,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Backup object.
    *
-   * @throws {Error} If any parameter is not provided.
+   * @throws {GoogleError} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
    * @return {Backup} A Backup object.
@@ -249,7 +254,7 @@ class Instance extends common.GrpcServiceObject {
    */
   backup(backupId: string): Backup {
     if (!backupId) {
-      throw new Error('A backup ID is required to create a Backup.');
+      throw new GoogleError('A backup ID is required to create a Backup.');
     }
 
     return new Backup(this, backupId);
@@ -739,7 +744,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#createDatabase}
    * @see [CreateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase)
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {name} name The name of the database to create.
    * @param {CreateDatabaseRequest} [options] Configuration object.
@@ -811,7 +816,7 @@ class Instance extends common.GrpcServiceObject {
     cb?: CreateDatabaseCallback
   ): void | Promise<CreateDatabaseResponse> {
     if (!name) {
-      throw new Error('A name is required to create a database.');
+      throw new GoogleError('A name is required to create a database.');
     }
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -860,7 +865,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Database object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
@@ -886,7 +891,7 @@ class Instance extends common.GrpcServiceObject {
     queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ): Database {
     if (!name) {
-      throw new Error('A name is required to access a Database object.');
+      throw new GoogleError('A name is required to access a Database object.');
     }
     // Only add an additional key for SessionPoolOptions and QueryOptions if an
     // options object with at least one value was passed in.
