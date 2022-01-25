@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,10 +44,11 @@ const version = require('../../../package.json').version;
 /**
  *  Cloud Spanner Database Admin API
  *
- *  The Cloud Spanner Database Admin API can be used to create, drop, and
- *  list databases. It also enables updating the schema of pre-existing
- *  databases. It can be also used to create, delete and list backups for a
- *  database and to restore from an existing backup.
+ *  The Cloud Spanner Database Admin API can be used to:
+ *    * create, drop, and list databases
+ *    * update the schema of pre-existing databases
+ *    * create, delete and list backups for a database
+ *    * restore a database from an existing backup
  * @class
  * @memberof v1
  */
@@ -522,6 +523,8 @@ export class DatabaseAdminClient {
    * Drops (aka deletes) a Cloud Spanner database.
    * Completed backups for the database will be retained according to their
    * `expire_time`.
+   * Note: Cloud Spanner might continue to accept requests for a few seconds
+   * after the database has been deleted.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1316,6 +1319,8 @@ export class DatabaseAdminClient {
    *   Optional. The encryption configuration for the database. If this field is not
    *   specified, Cloud Spanner will encrypt/decrypt all data at rest using
    *   Google default encryption.
+   * @param {google.spanner.admin.database.v1.DatabaseDialect} [request.databaseDialect]
+   *   Optional. The dialect of the Cloud Spanner Database.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
