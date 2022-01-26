@@ -54,6 +54,8 @@ import RequestOptions = google.spanner.v1.RequestOptions;
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
+import TypeCode = google.spanner.v1.TypeCode;
+import NullValue = google.protobuf.NullValue;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -3388,6 +3390,118 @@ describe('Spanner with mock server', () => {
         }
       }
     });
+
+    it('should return all values from PartialResultSet with chunked struct with a null array field', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        metadata: createArrayOfStructMetadata(),
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [
+                      // The array field is NULL.
+                      {nullValue: NullValue.NULL_VALUE},
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        // This PartialResultSet is chunked, and the last value was the NULL value for the ARRAY field.
+        // This means that the next value will be the STRING field.
+        chunkedValue: true,
+      });
+      const prs2 = PartialResultSet.create({
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [{stringValue: 'First row'}],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [
+                      {listValue: {values: [{stringValue: '1'}]}},
+                      {stringValue: 'Second row'},
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+      setupResultsAndErrors(sql, [prs1, prs2], []);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 2);
+        assert.strictEqual(rows[0].outerArray.length, 1);
+        assert.strictEqual(rows[0].outerArray[0].innerField, 'First row');
+        assert.ok(
+          rows[0].outerArray[0].innerArray === null,
+          'Inner array should be null'
+        );
+        assert.strictEqual(rows[1].outerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerField, 'Second row');
+        assert.strictEqual(rows[1].outerArray[0].innerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerArray[0], '1');
+      } finally {
+        await database.close();
+      }
+    });
+
+    function createArrayOfStructMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'outerArray',
+          type: protobuf.Type.create({
+            code: protobuf.TypeCode.ARRAY,
+            arrayElementType: protobuf.Type.create({
+              code: protobuf.TypeCode.STRUCT,
+              structType: protobuf.StructType.create({
+                fields: [
+                  {
+                    name: 'innerArray',
+                    type: protobuf.Type.create({
+                      code: TypeCode.ARRAY,
+                      arrayElementType: protobuf.Type.create({
+                        code: TypeCode.STRING,
+                      }),
+                    }),
+                  },
+                  {
+                    name: 'innerField',
+                    type: protobuf.Type.create({code: TypeCode.STRING}),
+                  },
+                ],
+              }),
+            }),
+          }),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
 
     it('should reset to the chunked value of the last PartialResultSet with a resume token on retry', async () => {
       // This tests the following scenario:
