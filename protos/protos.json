@@ -1309,6 +1309,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "databaseDialect": {
+                              "type": "DatabaseDialect",
+                              "id": 10,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -1611,6 +1618,13 @@
                                 "CUSTOMER_MANAGED_ENCRYPTION": 2
                               }
                             }
+                          }
+                        },
+                        "DatabaseDialect": {
+                          "values": {
+                            "DATABASE_DIALECT_UNSPECIFIED": 0,
+                            "GOOGLE_STANDARD_SQL": 1,
+                            "POSTGRESQL": 2
                           }
                         },
                         "DatabaseAdmin": {
@@ -2081,6 +2095,13 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "databaseDialect": {
+                              "type": "DatabaseDialect",
+                              "id": 10,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -2155,6 +2176,13 @@
                             "encryptionConfig": {
                               "type": "EncryptionConfig",
                               "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "databaseDialect": {
+                              "type": "DatabaseDialect",
+                              "id": 5,
                               "options": {
                                 "(google.api.field_behavior)": "OPTIONAL"
                               }
@@ -3167,6 +3195,13 @@
                     }
                   },
                   "nested": {
+                    "Kind": {
+                      "values": {
+                        "KIND_UNSPECIFIED": 0,
+                        "RELATIONAL": 1,
+                        "SCALAR": 2
+                      }
+                    },
                     "ChildLink": {
                       "fields": {
                         "childIndex": {
@@ -3194,13 +3229,6 @@
                           "type": "int32",
                           "id": 2
                         }
-                      }
-                    },
-                    "Kind": {
-                      "values": {
-                        "KIND_UNSPECIFIED": 0,
-                        "RELATIONAL": 1,
-                        "SCALAR": 2
                       }
                     }
                   }
@@ -3421,6 +3449,10 @@
                     "structType": {
                       "type": "StructType",
                       "id": 3
+                    },
+                    "typeAnnotation": {
+                      "type": "TypeAnnotationCode",
+                      "id": 4
                     }
                   }
                 },
@@ -3461,6 +3493,12 @@
                     "STRUCT": 9,
                     "NUMERIC": 10,
                     "JSON": 11
+                  }
+                },
+                "TypeAnnotationCode": {
+                  "values": {
+                    "TYPE_ANNOTATION_CODE_UNSPECIFIED": 0,
+                    "PG_NUMERIC": 2
                   }
                 },
                 "Spanner": {
@@ -3967,6 +4005,13 @@
                     }
                   },
                   "nested": {
+                    "QueryMode": {
+                      "values": {
+                        "NORMAL": 0,
+                        "PLAN": 1,
+                        "PROFILE": 2
+                      }
+                    },
                     "QueryOptions": {
                       "fields": {
                         "optimizerVersion": {
@@ -3977,13 +4022,6 @@
                           "type": "string",
                           "id": 2
                         }
-                      }
-                    },
-                    "QueryMode": {
-                      "values": {
-                        "NORMAL": 0,
-                        "PLAN": 1,
-                        "PROFILE": 2
                       }
                     }
                   }
@@ -4325,6 +4363,93 @@
             "cc_enable_arenas": true
           },
           "nested": {
+            "http": {
+              "type": "HttpRule",
+              "id": 72295728,
+              "extend": "google.protobuf.MethodOptions"
+            },
+            "Http": {
+              "fields": {
+                "rules": {
+                  "rule": "repeated",
+                  "type": "HttpRule",
+                  "id": 1
+                },
+                "fullyDecodeReservedExpansion": {
+                  "type": "bool",
+                  "id": 2
+                }
+              }
+            },
+            "HttpRule": {
+              "oneofs": {
+                "pattern": {
+                  "oneof": [
+                    "get",
+                    "put",
+                    "post",
+                    "delete",
+                    "patch",
+                    "custom"
+                  ]
+                }
+              },
+              "fields": {
+                "selector": {
+                  "type": "string",
+                  "id": 1
+                },
+                "get": {
+                  "type": "string",
+                  "id": 2
+                },
+                "put": {
+                  "type": "string",
+                  "id": 3
+                },
+                "post": {
+                  "type": "string",
+                  "id": 4
+                },
+                "delete": {
+                  "type": "string",
+                  "id": 5
+                },
+                "patch": {
+                  "type": "string",
+                  "id": 6
+                },
+                "custom": {
+                  "type": "CustomHttpPattern",
+                  "id": 8
+                },
+                "body": {
+                  "type": "string",
+                  "id": 7
+                },
+                "responseBody": {
+                  "type": "string",
+                  "id": 12
+                },
+                "additionalBindings": {
+                  "rule": "repeated",
+                  "type": "HttpRule",
+                  "id": 11
+                }
+              }
+            },
+            "CustomHttpPattern": {
+              "fields": {
+                "kind": {
+                  "type": "string",
+                  "id": 1
+                },
+                "path": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
             "fieldBehavior": {
               "rule": "repeated",
               "type": "google.api.FieldBehavior",
@@ -4415,93 +4540,6 @@
                   "id": 1
                 },
                 "childType": {
-                  "type": "string",
-                  "id": 2
-                }
-              }
-            },
-            "http": {
-              "type": "HttpRule",
-              "id": 72295728,
-              "extend": "google.protobuf.MethodOptions"
-            },
-            "Http": {
-              "fields": {
-                "rules": {
-                  "rule": "repeated",
-                  "type": "HttpRule",
-                  "id": 1
-                },
-                "fullyDecodeReservedExpansion": {
-                  "type": "bool",
-                  "id": 2
-                }
-              }
-            },
-            "HttpRule": {
-              "oneofs": {
-                "pattern": {
-                  "oneof": [
-                    "get",
-                    "put",
-                    "post",
-                    "delete",
-                    "patch",
-                    "custom"
-                  ]
-                }
-              },
-              "fields": {
-                "selector": {
-                  "type": "string",
-                  "id": 1
-                },
-                "get": {
-                  "type": "string",
-                  "id": 2
-                },
-                "put": {
-                  "type": "string",
-                  "id": 3
-                },
-                "post": {
-                  "type": "string",
-                  "id": 4
-                },
-                "delete": {
-                  "type": "string",
-                  "id": 5
-                },
-                "patch": {
-                  "type": "string",
-                  "id": 6
-                },
-                "custom": {
-                  "type": "CustomHttpPattern",
-                  "id": 8
-                },
-                "body": {
-                  "type": "string",
-                  "id": 7
-                },
-                "responseBody": {
-                  "type": "string",
-                  "id": 12
-                },
-                "additionalBindings": {
-                  "rule": "repeated",
-                  "type": "HttpRule",
-                  "id": 11
-                }
-              }
-            },
-            "CustomHttpPattern": {
-              "fields": {
-                "kind": {
-                  "type": "string",
-                  "id": 1
-                },
-                "path": {
                   "type": "string",
                   "id": 2
                 }
