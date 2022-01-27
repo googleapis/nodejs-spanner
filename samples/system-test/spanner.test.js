@@ -46,6 +46,7 @@ const INSTANCE_ID =
 const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
+const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
@@ -55,8 +56,9 @@ const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
-const LOCATION_ID = 'regional-us-west1';
-const KEY_LOCATION_ID = 'us-west1';
+const LOCATION_ID = 'regional-us-central1';
+const PG_LOCATION_ID = 'regional-us-west2';
+const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
 const DEFAULT_LEADER = 'us-central1';
@@ -222,6 +224,7 @@ describe('Spanner', () => {
     } else {
       await Promise.all([
         instance.database(DATABASE_ID).delete(),
+        instance.database(PG_DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
         instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
@@ -1312,6 +1315,78 @@ describe('Spanner', () => {
         )
       );
       assert.include(output, 'CREATE TABLE Singers');
+    });
+  });
+
+  describe('postgreSQL', () => {
+    before(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      const [, operation] = await instance.create({
+        config: PG_LOCATION_ID,
+        nodes: 1,
+        displayName: 'PostgreSQL Test',
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
+      });
+      await operation.promise();
+    });
+
+    after(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await instance.delete();
+    });
+
+    // create_pg_database
+    it('should create an example postgreSQL database', async () => {
+      const output = execSync(
+        `node pg-database-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${PG_DATABASE_ID} on instance ${SAMPLE_INSTANCE_ID} with dialect POSTGRESQL.`
+        )
+      );
+    });
+
+    // add_pg_numeric_table
+    it('should add a table with PostgreSQL Numeric column', async () => {
+      const output = execSync(
+        `node pg-numeric-add-table.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Added table Revenues to database ${PG_DATABASE_ID}.`)
+      );
+    });
+
+    // insert_pg_numeric_data
+    it('should insert data to table with pg numeric column', async () => {
+      const output = execSync(
+        `node pg-numeric-insert-data.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp(`/Inserted data./`));
+    });
+
+    // query_with_pg_numeric_parameter
+    it('should query data with a pg numeric parameter from a table with PostgreSQL Numeric column.', async () => {
+      const output = execSync(
+        `node pg-numeric-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('/VenueId: 4, Revenue: 97372.3863/'));
+      assert.match(output, new RegExp('/VenueId: 19, Revenue: 7629/'));
+      assert.match(output, new RegExp('/VenueId: 398, Revenue: 0.000000123/'));
+      assert.match(output, new RegExp('/VenueId: 728, Revenue: 7629/'));
     });
   });
 });
