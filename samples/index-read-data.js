@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// sample-metadata:
+//  title: Read data using an existing index.
+//  usage: node readDataWithIndex <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+
 'use strict';
 
 function main(

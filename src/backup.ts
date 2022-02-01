@@ -58,7 +58,7 @@ export interface CreateBackupOptions {
 }
 
 export interface CopyBackupGaxOperation extends GaxOperation {
-  // Overridden with more specific type for CreateBackup operation
+  // Overridden with more specific type for CopyBackup operation
   metadata: Metadata &
     databaseAdmin.spanner.admin.database.v1.ICopyBackupMetadata;
 }
@@ -69,6 +69,7 @@ export interface CopyBackupOptions
   extends databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest {
   gaxOptions?: CallOptions;
 }
+
 
 /**
  * IBackup structure with backup state enum translated to string form.
@@ -98,7 +99,6 @@ export type GetStateCallback = NormalCallback<
   EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Backup.State>
 >;
 export type GetExpireTimeCallback = NormalCallback<PreciseDate>;
-export type GetMaxExpireTimeCallback = NormalCallback<PreciseDate>;
 export type ExistsCallback = NormalCallback<boolean>;
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
@@ -113,6 +113,14 @@ export type ExistsCallback = NormalCallback<boolean>;
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
  * const backup = instance.backup('my-backup');
+ * ```
+ *
+ * ```
+ * * @example
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
+ * const sourceBackup = instance.backup('my-source-backup');
  * const copyBackup = instance.copyBackup('my-copy-backup', 'my-source-backup');
  * ```
  */
@@ -135,7 +143,6 @@ class Backup {
     };
   }
 
-
   /**
    * @typedef {object} CreateBackupOptions
    * @property {string} databasePath The database path.
@@ -152,20 +159,6 @@ class Backup {
    *     for more details.
    */
   /**
-   * @typedef {object} CopyBackupOptions
-   * @property {string|null}
-   *     sourceBackup The full path of the backup to be copied
-   * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
-   *     expireTime The expire time of the backup.
-   * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig}
-   *     encryptionConfig An encryption configuration describing the
-   *     encryption type and key resources in Cloud KMS to be used to encrypt
-   *     the copy backup.
-   * @property {object} [gaxOptions] The request configuration options,
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   */
-  /**
    * @typedef {array} CreateBackupResponse
    * @property {Backup} 0 The new {@link Backup}.
    * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
@@ -173,22 +166,7 @@ class Backup {
    * @property {object} 2 The full API response.
    */
   /**
-   * @typedef {array} CopyBackupResponse
-   * @property {Backup} 0 The new {@link Backup}.
-   * @property {google.longrunning.Operation} 1 An {@link Operation} object that can be used to check
-   *     the status of the request.
-   * @property {object} 2 The full API response.
-   */
-  /**
    * @callback CreateBackupCallback
-   * @param {?Error} err Request error, if any.
-   * @param {Backup} backup The new {@link Backup}.
-   * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
-   *     check the status of the request.
-   * @param {object} apiResponse The full API response.
-   */
-  /**
-   * @callback CopyBackupCallback
    * @param {?Error} err Request error, if any.
    * @param {Backup} backup The new {@link Backup}.
    * @param {google.longrunning.Operation} operation An {@link Operation} object that can be used to
@@ -228,35 +206,6 @@ class Backup {
    * // Await completion of the backup operation.
    * await backupOperation.promise();
    * ```
-   */
-  /**
-   * Copy a backup.
-   *
-   * @method Backup#create
-   * @param {CopyBackupOptions} options Parameters for copying a backup.
-   * @param {CallOptions} [options.gaxOptions] The request configuration
-   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   * @param {CopyBackupCallback} [callback] Callback function.
-   * @returns {Promise<CopyBackupResponse>} When resolved, the copy backup
-   *     operation will have started, but will not have necessarily completed.
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   * const instance = spanner.instance('my-instance');
-   * const oneDay = 1000 * 60 * 60 * 24;
-   * const expireTime = Date.now() + oneDay;
-   * const versionTime = Date.now() - oneDay;
-   * const sourceBackup = instance.backup('my-source-backup');
-   * const [, copyBackupOperation] = instance.copyBackup(sourceBackup.formattedName_, 'my-copy-backup', {
-   *   expireTime: expireTime,
-   *   encryptionConfig: {
-   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
-   *   },);
-   * // Await completion of the copy backup operation.
-   * await copybBackupOperation.promise();
    */
   create(
     options: CreateBackupOptions | CopyBackupOptions
@@ -351,7 +300,6 @@ class Backup {
    *
    * @see {@link #getState}
    * @see {@link #getExpireTime}
-   * @see {@link #getMaxExpireTime}
    *
    * @method Backup#getMetadata
    * @param {object} [gaxOptions] Request configuration options,
@@ -469,33 +417,6 @@ class Backup {
     return new PreciseDate(backupInfo.expireTime as DateStruct);
   }
 
-  getMaxExpireTime(): Promise<PreciseDate | undefined>;
-  getMaxExpireTime(callback: GetExpireTimeCallback): void;
-  /**
-   * Retrieves the max expiry time of the backup.
-   *
-   * @see {@link #updateExpireTime}
-   * @see {@link #getMetadata}
-   *
-   * @method Backup#getMaxExpireTime
-   * @returns {Promise<external:PreciseDate>} When resolved, contains the
-   *     max expire time of the backup if it exists.
-   *
-   * @example
-   * const {Spanner} = require('@google-cloud/spanner');
-   * const spanner = new Spanner();
-   * const instance = spanner.instance('my-instance');
-   * const backup = instance.backup('my-backup');
-   * const maxExpireTime = await backup.getMaxExpireTime();
-   * console.log(`Backup max expires on ${maxExpireTime.toISOString()}`);
-   */
-  async getMaxExpireTime(): Promise<PreciseDate | undefined> {
-    const [backupInfo] = await this.getMetadata();
-    return new PreciseDate(backupInfo.maxExpireTime as DateStruct);
-  }
-
-  exists(): Promise<boolean>;
-  exists(callback: ExistsCallback): void;
   /**
    * Checks whether the backup exists.
    *
@@ -702,7 +623,7 @@ class Backup {
  * that a callback is omitted.
  */
 promisifyAll(Backup, {
-  exclude: ['getState', 'getExpireTime', 'getMaxExpireTime', 'exists'],
+  exclude: ['getState', 'getExpireTime', 'exists'],
 });
 
 /*! Developer Documentation

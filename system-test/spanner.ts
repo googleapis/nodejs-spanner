@@ -1263,23 +1263,23 @@ describe('Spanner', () => {
         backup1Operation.metadata!.name,
         `${instance.formattedName_}/backups/${backup1Name}`
       );
-
-      if ('database' in backup1Operation.metadata)
+      if ('database' in backup1Operation.metadata) {
         assert.strictEqual(
           backup1Operation.metadata!.database,
           database1.formattedName_
         );
+      }
 
       assert.strictEqual(
         backup2Operation.metadata!.name,
         `${instance.formattedName_}/backups/${backup2Name}`
       );
-
-      if ('database' in backup2Operation.metadata)
+      if ('database' in backup2Operation.metadata) {
         assert.strictEqual(
           backup2Operation.metadata!.database,
           database2.formattedName_
         );
+      }
 
       // Wait for backups to finish.
       await backup1Operation.promise();

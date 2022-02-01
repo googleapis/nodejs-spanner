@@ -14,15 +14,14 @@
 
 // sample-metadata:
 //  title: Copies a source backup
-//  usage: node spannerCopyBackup <INSTANCE_ID> <DATABASE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>
+//  usage: node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>
 
 'use strict';
 
 function main(
   instanceId = 'my-instance',
-  databaseId = 'my-database',
   backupId = 'my-backup',
-  sourceBackupId = 'my-source-backup',
+  sourceBackupPath = 'projects/my-project-id/instances/my-source-instance/backups/my-source-backup',
   projectId = 'my-project-id'
 ) {
   // [START spanner_copy_backup]
@@ -30,9 +29,8 @@ function main(
    * TODO(developer): Uncomment these variables before running the sample.
    */
   // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
   // const backupId = 'my-backup',
-  // const sourceBackupId = 'my-source-backup',
+  // const sourceBackupPath = 'projects/my-project-id/instances/my-source-instance/backups/my-source-backup',
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud Spanner client library
@@ -45,23 +43,19 @@ function main(
   });
 
   async function spannerCopyBackup() {
-    // Gets a reference to a Cloud Spanner instance, database and backup
+    // Gets a reference to a Cloud Spanner instance and backup
     const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
-    const sourceBackup = instance.backup(sourceBackupId);
 
     // Expire copy backup 14 days in the future
     const expireTime = Spanner.timestamp(
       Date.now() + 1000 * 60 * 60 * 24 * 14
     ).toStruct();
 
-    // Copy the backup of the database
+    // Copy the backup of the backup
     try {
-      console.log(
-        `Creating copy of the source backup ${sourceBackup.formattedName_}.`
-      );
+      console.log(`Creating copy of the source backup ${sourceBackupPath}.`);
       const [, operation] = await instance.copyBackup(
-        sourceBackup.formattedName_,
+        sourceBackupPath,
         backupId,
         {
           expireTime: expireTime,
@@ -69,7 +63,9 @@ function main(
       );
 
       console.log(
-        `Waiting for backup copy${instance.backup(backupId)} to complete...`
+        `Waiting for backup copy ${
+          instance.backup(backupId).formattedName_
+        } to complete...`
       );
       await operation.promise();
 
@@ -80,16 +76,15 @@ function main(
         console.log(
           `Backup copy ${copyBackupInfo.name} of size ` +
             `${copyBackupInfo.sizeBytes} bytes was created at ` +
-            `${new PreciseDate(copyBackupInfo.createTime).toISOString()}`
+            `${new PreciseDate(copyBackupInfo.createTime).toISOString()} ` +
+            'with version time' +
+            `${new PreciseDate(copyBackupInfo.versionTime).toISOString()}`
         );
       } else {
         console.error('ERROR: Copy of backup is not ready.');
       }
     } catch (err) {
       console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      await database.close();
     }
   }
   spannerCopyBackup();

@@ -1026,8 +1026,9 @@ describe('Spanner', () => {
 
   // copy_backup
   it('should create a copy of a backup', async () => {
+    const sourceBackupPath = `projects/${PROJECT_ID}/instances/${INSTANCE_ID}/backups/${BACKUP_ID}`;
     const output = execSync(
-      `node backups-copy.js ${INSTANCE_ID} ${DATABASE_ID} ${COPY_BACKUP_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `node backups-copy.js ${INSTANCE_ID} ${COPY_BACKUP_ID} ${sourceBackupPath} ${PROJECT_ID}`
     );
     assert.match(
       output,
