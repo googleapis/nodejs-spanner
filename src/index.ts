@@ -32,7 +32,7 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
-import {grpc, GrpcClientOptions, CallOptions} from 'google-gax';
+import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
@@ -140,19 +140,27 @@ export type TranslateEnumKeys<
  * @see [Cloud Spanner Documentation](https://cloud.google.com/spanner/docs)
  * @see [Cloud Spanner Concepts](https://cloud.google.com/spanner/docs/concepts)
  *
- * @example <caption>Install the client library with <a
- * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
- * @google-cloud/spanner
+ * @example Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:
+ * ```
+ * npm install --save @google-cloud/spanner
+ * ```
  *
- * @example <caption>Create a client that uses <a
+ * @example Create a client that uses <a
  * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
- * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
+ * Default Credentials (ADC)</a>:
+ * ```
+ * const client = new Spanner();
+ * ```
  *
- * @example <caption>Create a client with <a
+ * @example Create a client with <a
  * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
- * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * credentials</a>:
+ * ```
+ * const client = new Spanner({ projectId:
  * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
+ * ```
  *
  * @example <caption>include:samples/quickstart.js</caption>
  * region_tag:spanner_quickstart
@@ -190,7 +198,7 @@ class Spanner extends GrpcService {
         endpointWithPort.startsWith('http:') ||
         endpointWithPort.startsWith('https:')
       ) {
-        throw new Error(
+        throw new GoogleError(
           'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
         );
       }
@@ -199,7 +207,7 @@ class Spanner extends GrpcService {
         const portName = endpointWithPort.substring(index + 1);
         const port = +portName;
         if (!port || port < 1 || port > 65535) {
-          throw new Error(`Invalid port number: ${portName}`);
+          throw new GoogleError(`Invalid port number: ${portName}`);
         }
         return {
           endpoint: endpointWithPort.substring(0, index),
@@ -287,15 +295,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  createInstance(
-    name: string,
-    config: CreateInstanceRequest
-  ): Promise<CreateInstanceResponse>;
-  createInstance(
-    name: string,
-    config: CreateInstanceRequest,
-    callback: CreateInstanceCallback
-  ): void;
   /**
    * Config for the new instance.
    *
@@ -339,8 +338,8 @@ class Spanner extends GrpcService {
    * @see {@link v1.InstanceAdminClient#createInstance}
    * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
    *
-   * @throws {Error} If a name is not provided.
-   * @throws {Error} If a configuration object is not provided.
+   * @throws {GoogleError} If a name is not provided.
+   * @throws {GoogleError} If a configuration object is not provided.
    *
    * @param {string} name The name of the instance to be created.
    * @param {CreateInstanceRequest} config Configuration object.
@@ -348,6 +347,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<CreateInstanceResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -382,17 +382,27 @@ class Spanner extends GrpcService {
    *   .then(function() {
    *     // Instance created successfully.
    *   });
+   * ```
    */
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest
+  ): Promise<CreateInstanceResponse>;
+  createInstance(
+    name: string,
+    config: CreateInstanceRequest,
+    callback: CreateInstanceCallback
+  ): void;
   createInstance(
     name: string,
     config: CreateInstanceRequest,
     callback?: CreateInstanceCallback
   ): void | Promise<CreateInstanceResponse> {
     if (!name) {
-      throw new Error('A name is required to create an instance.');
+      throw new GoogleError('A name is required to create an instance.');
     }
     if (!config) {
-      throw new Error(
+      throw new GoogleError(
         ['A configuration object is required to create an instance.'].join('')
       );
     }
@@ -413,7 +423,7 @@ class Spanner extends GrpcService {
     };
 
     if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
-      throw new Error(
+      throw new GoogleError(
         ['Only one of nodeCount or processingUnits can be specified.'].join('')
       );
     }
@@ -448,12 +458,6 @@ class Spanner extends GrpcService {
     );
   }
 
-  getInstances(options?: GetInstancesOptions): Promise<GetInstancesResponse>;
-  getInstances(callback: GetInstancesCallback): void;
-  getInstances(
-    query: GetInstancesOptions,
-    callback: GetInstancesCallback
-  ): void;
   /**
    * Query object for listing instances.
    *
@@ -505,6 +509,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstancesResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -535,7 +540,14 @@ class Spanner extends GrpcService {
    * spanner.getInstances().then(function(data) {
    *   const instances = data[0];
    * });
+   * ```
    */
+  getInstances(options?: GetInstancesOptions): Promise<GetInstancesResponse>;
+  getInstances(callback: GetInstancesCallback): void;
+  getInstances(
+    query: GetInstancesOptions,
+    callback: GetInstancesCallback
+  ): void;
   getInstances(
     optionsOrCallback?: GetInstancesOptions | GetInstancesCallback,
     cb?: GetInstancesCallback
@@ -611,6 +623,7 @@ class Spanner extends GrpcService {
    *     instances.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -631,6 +644,7 @@ class Spanner extends GrpcService {
    *   .on('data', function(instance) {
    *     this.end();
    *   });
+   * ```
    */
   getInstancesStream(options: GetInstancesOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
@@ -664,14 +678,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  getInstanceConfigs(
-    query?: GetInstanceConfigsOptions
-  ): Promise<GetInstanceConfigsResponse>;
-  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
-  getInstanceConfigs(
-    query: GetInstanceConfigsOptions,
-    callback: GetInstanceConfigsCallback
-  ): void;
   /**
    * Lists the supported instance configurations for a given project.
    *
@@ -723,6 +729,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstanceConfigsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -753,7 +760,16 @@ class Spanner extends GrpcService {
    * spanner.getInstanceConfigs().then(function(data) {
    *   const instanceConfigs = data[0];
    * });
+   * ```
    */
+  getInstanceConfigs(
+    query?: GetInstanceConfigsOptions
+  ): Promise<GetInstanceConfigsResponse>;
+  getInstanceConfigs(callback: GetInstanceConfigsCallback): void;
+  getInstanceConfigs(
+    query: GetInstanceConfigsOptions,
+    callback: GetInstanceConfigsCallback
+  ): void;
   getInstanceConfigs(
     optionsOrCallback?: GetInstanceConfigsOptions | GetInstanceConfigsCallback,
     cb?: GetInstanceConfigsCallback
@@ -817,6 +833,7 @@ class Spanner extends GrpcService {
    * @returns {ReadableStream} A readable stream that emits instance configs.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -835,6 +852,7 @@ class Spanner extends GrpcService {
    *   .on('data', function(instanceConfig) {
    *     this.end();
    *   });
+   * ```
    */
   getInstanceConfigsStream(
     options: GetInstanceConfigsOptions = {}
@@ -870,17 +888,6 @@ class Spanner extends GrpcService {
     });
   }
 
-  getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
-  getInstanceConfig(
-    name: string,
-    options: GetInstanceConfigOptions
-  ): Promise<GetInstanceConfigResponse>;
-  getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
-  getInstanceConfig(
-    name: string,
-    options: GetInstanceConfigOptions,
-    callback: GetInstanceConfigCallback
-  ): void;
   /**
    * Gets the instance configuration with the specified name.
    */
@@ -919,6 +926,7 @@ class Spanner extends GrpcService {
    * @returns {Promise<GetInstanceConfigResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -932,7 +940,19 @@ class Spanner extends GrpcService {
    * spanner.getInstanceConfig().then(function(data) {
    *   const instanceConfig = data[0];
    * });
+   * ```
    */
+  getInstanceConfig(name: string): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions
+  ): Promise<GetInstanceConfigResponse>;
+  getInstanceConfig(name: string, callback: GetInstanceConfigCallback): void;
+  getInstanceConfig(
+    name: string,
+    options: GetInstanceConfigOptions,
+    callback: GetInstanceConfigCallback
+  ): void;
   getInstanceConfig(
     name: string,
     optionsOrCallback?: GetInstanceConfigOptions | GetInstanceConfigCallback,
@@ -970,19 +990,21 @@ class Spanner extends GrpcService {
   /**
    * Get a reference to an Instance object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the instance.
    * @returns {Instance} An Instance object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
+   * ```
    */
   instance(name: string): Instance {
     if (!name) {
-      throw new Error('A name is required to access an Instance object.');
+      throw new GoogleError('A name is required to access an Instance object.');
     }
     const key = name.split('/').pop()!;
     if (!this.instances_.has(key)) {
@@ -1139,8 +1161,10 @@ class Spanner extends GrpcService {
    * @returns {SpannerDate}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const date = Spanner.date('08-20-1969');
+   * ```
    */
   static date(
     dateStringOrYear?: string | number,
@@ -1177,14 +1201,20 @@ class Spanner extends GrpcService {
    * @returns {external:PreciseDate}
    *
    * @example
+   * ```
    * const timestamp = Spanner.timestamp('2019-02-08T10:34:29.481145231Z');
    *
-   * @example <caption>With a `google.protobuf.Timestamp` object</caption>
+   * ```
+   * @example With a `google.protobuf.Timestamp` object
+   * ```
    * const [seconds, nanos] = process.hrtime();
    * const timestamp = Spanner.timestamp({seconds, nanos});
+   * ```
    *
-   * @example <caption>With a Date timestamp</caption>
+   * @example With a Date timestamp
+   * ```
    * const timestamp = Spanner.timestamp(Date.now());
+   * ```
    */
   static timestamp(
     value?: string | number | p.ITimestamp | PreciseDate
@@ -1203,8 +1233,10 @@ class Spanner extends GrpcService {
    * @returns {Float}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const float = Spanner.float(10);
+   * ```
    */
   static float(value): Float {
     return new codec.Float(value);
@@ -1217,8 +1249,10 @@ class Spanner extends GrpcService {
    * @returns {Int}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const int = Spanner.int(10);
+   * ```
    */
   static int(value): Int {
     return new codec.Int(value);
@@ -1231,8 +1265,10 @@ class Spanner extends GrpcService {
    * @returns {Numeric}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const numeric = Spanner.numeric("3.141592653");
+   * ```
    */
   static numeric(value): Numeric {
     return new codec.Numeric(value);
@@ -1245,11 +1281,13 @@ class Spanner extends GrpcService {
    * @returns {Struct}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const struct = Spanner.struct({
    *   user: 'bob',
    *   age: 32
    * });
+   * ```
    */
   static struct(value?): Struct {
     if (Array.isArray(value)) {
@@ -1286,22 +1324,32 @@ promisifyAll(Spanner, {
  * @module {constructor} @google-cloud/spanner
  * @alias nodejs-spanner
  *
- * @example <caption>Install the client library with <a
- * href="https://www.npmjs.com/">npm</a>:</caption> npm install --save
- * @google-cloud/spanner
+ * @example Install the client library with <a
+ * href="https://www.npmjs.com/">npm</a>:
+ * ```
+ * npm install --save @google-cloud/spanner
+ * ```
  *
- * @example <caption>Import the client library</caption>
+ * @example Import the client library
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
+ * ```
  *
- * @example <caption>Create a client that uses <a
+ * @example Create a client that uses <a
  * href="https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application">Application
- * Default Credentials (ADC)</a>:</caption> const client = new Spanner();
+ * Default Credentials (ADC)</a>:
+ * ```
+ * const client = new Spanner();
+ * ```
  *
- * @example <caption>Create a client with <a
+ * @example Create a client with <a
  * href="https://cloud.google.com/docs/authentication/production#obtaining_and_providing_service_account_credentials_manually">explicit
- * credentials</a>:</caption> const client = new Spanner({ projectId:
+ * credentials</a>:
+ * ```
+ * const client = new Spanner({ projectId:
  * 'your-project-id', keyFilename: '/path/to/keyfile.json'
  * });
+ * ```
  *
  * @example <caption>include:samples/quickstart.js</caption>
  * region_tag:spanner_quickstart

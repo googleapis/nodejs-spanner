@@ -20,6 +20,7 @@ import {Big} from 'big.js';
 import * as is from 'is';
 import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
+import {GoogleError} from 'google-gax';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
@@ -65,7 +66,9 @@ type DateFields = [number, number, number];
  * @param {number} [date] Number representing the date.
  *
  * @example
+ * ```
  * Spanner.date('3-3-1933');
+ * ```
  */
 export class SpannerDate extends Date {
   constructor(dateString?: string);
@@ -148,7 +151,7 @@ export class Int extends WrappedNumber {
   valueOf(): number {
     const num = Number(this.value);
     if (num > Number.MAX_SAFE_INTEGER) {
-      throw new Error(`Integer ${this.value} is out of bounds.`);
+      throw new GoogleError(`Integer ${this.value} is out of bounds.`);
     }
     return num;
   }
@@ -500,8 +503,10 @@ interface FieldType extends Type {
  * @returns {object}
  *
  * @example
+ * ```
  * codec.getType(NaN);
  * // {type: 'float64'}
+ * ```
  */
 function getType(value: Value): Type {
   const isSpecialNumber =

@@ -35,7 +35,12 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
+import {
+  grpc,
+  Operation as GaxOperation,
+  CallOptions,
+  GoogleError,
+} from 'google-gax';
 import {Backup, CopyBackupCallback, CopyBackupResponse} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
@@ -142,9 +147,11 @@ interface InstanceRequest {
  * @param {string} name Name of the instance.
  *
  * @example
+ * ```
  * const {Spanner} = require('@google-cloud/spanner');
  * const spanner = new Spanner();
  * const instance = spanner.instance('my-instance');
+ * ```
  */
 class Instance extends common.GrpcServiceObject {
   formattedName_: string;
@@ -170,6 +177,7 @@ class Instance extends common.GrpcServiceObject {
        * @returns {Promise<CreateInstanceResponse>}
        *
        * @example
+       * ```
        * const {Spanner} = require('@google-cloud/spanner');
        * const spanner = new Spanner();
        *
@@ -200,6 +208,7 @@ class Instance extends common.GrpcServiceObject {
        *   .then(function() {
        *     // Instance created successfully.
        *   });
+       * ```
        */
       create: true,
     };
@@ -231,20 +240,22 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Backup object.
    *
-   * @throws {Error} If any parameter is not provided.
+   * @throws {GoogleError} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
    * @return {Backup} A Backup object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
    * const backup = instance.backup('my-backup');
+   * ```
    */
   backup(backupId: string): Backup {
     if (!backupId) {
-      throw new Error('A backup ID is required to create a Backup.');
+      throw new GoogleError('A backup ID is required to create a Backup.');
     }
 
     return new Backup(this, backupId);
@@ -313,6 +324,7 @@ class Instance extends common.GrpcServiceObject {
    *     of backups.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -333,7 +345,11 @@ class Instance extends common.GrpcServiceObject {
    *   });
    *   pageToken = response.nextPageToken;
    * } while (pageToken);
+   * ```
    */
+  getBackups(options?: GetBackupsOptions): Promise<GetBackupsResponse>;
+  getBackups(callback: GetBackupsCallback): void;
+  getBackups(options: GetBackupsOptions, callback: GetBackupsCallback): void;
   getBackups(
     optionsOrCallback?: GetBackupsOptions | GetBackupsCallback,
     cb?: GetBackupsCallback
@@ -408,6 +424,7 @@ class Instance extends common.GrpcServiceObject {
    *     instances.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -430,6 +447,7 @@ class Instance extends common.GrpcServiceObject {
    *   .on('data', function(database) {
    *     this.end();
    *   });
+   * ```
    */
   getBackupsStream(options: GetBackupsOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
@@ -463,14 +481,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getBackupOperations(
-    options?: GetBackupOperationsOptions
-  ): Promise<GetBackupOperationsResponse>;
-  getBackupOperations(callback: GetBackupOperationsCallback): void;
-  getBackupOperations(
-    options: GetBackupOperationsOptions,
-    callback: GetBackupOperationsCallback
-  ): void;
   /**
    * Query object for listing backup operations.
    *
@@ -498,6 +508,14 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
+  getBackupOperations(
+    options?: GetBackupOperationsOptions
+  ): Promise<GetBackupOperationsResponse>;
+  getBackupOperations(callback: GetBackupOperationsCallback): void;
+  getBackupOperations(
+    options: GetBackupOperationsOptions,
+    callback: GetBackupOperationsCallback
+  ): void;
 
   /**
    * List pending and completed backup operations for all databases in the instance.
@@ -513,6 +531,7 @@ class Instance extends common.GrpcServiceObject {
    *     paged list of backup operations.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -533,6 +552,7 @@ class Instance extends common.GrpcServiceObject {
    *   });
    *   pageToken = response.nextPageToken;
    * } while (pageToken);
+   * ```
    */
   getBackupOperations(
     optionsOrCallback?:
@@ -588,14 +608,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  getDatabaseOperations(
-    options?: GetDatabaseOperationsOptions
-  ): Promise<GetDatabaseOperationsResponse>;
-  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
-  getDatabaseOperations(
-    options: GetDatabaseOperationsOptions,
-    callback: GetDatabaseOperationsCallback
-  ): void;
   /**
    * Query object for listing database operations.
    *
@@ -623,6 +635,14 @@ class Instance extends common.GrpcServiceObject {
    * @param {object} nextQuery A query object to receive more results.
    * @param {object} apiResponse The full API response.
    */
+  getDatabaseOperations(
+    options?: GetDatabaseOperationsOptions
+  ): Promise<GetDatabaseOperationsResponse>;
+  getDatabaseOperations(callback: GetDatabaseOperationsCallback): void;
+  getDatabaseOperations(
+    options: GetDatabaseOperationsOptions,
+    callback: GetDatabaseOperationsCallback
+  ): void;
 
   /**
    * List pending and completed operations for all databases in the instance.
@@ -638,6 +658,7 @@ class Instance extends common.GrpcServiceObject {
    *     paged list of database operations.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
@@ -659,6 +680,7 @@ class Instance extends common.GrpcServiceObject {
    *   });
    *   pageToken = response.nextPageToken;
    * } while (pageToken);
+   * ```
    */
   getDatabaseOperations(
     optionsOrCallback?:
@@ -714,16 +736,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  createDatabase(
-    name: string,
-    options?: CreateDatabaseOptions
-  ): Promise<CreateDatabaseResponse>;
-  createDatabase(name: string, callback: CreateDatabaseCallback): void;
-  createDatabase(
-    name: string,
-    options: CreateDatabaseOptions,
-    callback: CreateDatabaseCallback
-  ): void;
   /**
    * Config for the new database.
    *
@@ -754,7 +766,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#createDatabase}
    * @see [CreateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase)
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {name} name The name of the database to create.
    * @param {CreateDatabaseRequest} [options] Configuration object.
@@ -762,6 +774,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<CreateDatabaseResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -804,17 +817,28 @@ class Instance extends common.GrpcServiceObject {
    *     // Database created successfully.
    *   });
    *
+   * ```
    * @example <caption>include:samples/schema.js</caption>
    * region_tag:spanner_create_database
    * Full example:
    */
   createDatabase(
     name: string,
+    options?: CreateDatabaseOptions
+  ): Promise<CreateDatabaseResponse>;
+  createDatabase(name: string, callback: CreateDatabaseCallback): void;
+  createDatabase(
+    name: string,
+    options: CreateDatabaseOptions,
+    callback: CreateDatabaseCallback
+  ): void;
+  createDatabase(
+    name: string,
     optionsOrCallback?: CreateDatabaseOptions | CreateDatabaseCallback,
     cb?: CreateDatabaseCallback
   ): void | Promise<CreateDatabaseResponse> {
     if (!name) {
-      throw new Error('A name is required to create a database.');
+      throw new GoogleError('A name is required to create a database.');
     }
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -863,7 +887,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Database object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
@@ -875,11 +899,13 @@ class Instance extends common.GrpcServiceObject {
    * @return {Database} A Database object.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
+   * ```
    */
   database(
     name: string,
@@ -887,7 +913,7 @@ class Instance extends common.GrpcServiceObject {
     queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ): Database {
     if (!name) {
-      throw new Error('A name is required to access a Database object.');
+      throw new GoogleError('A name is required to access a Database object.');
     }
     // Only add an additional key for SessionPoolOptions and QueryOptions if an
     // options object with at least one value was passed in.
@@ -909,9 +935,6 @@ class Instance extends common.GrpcServiceObject {
     return this.databases_.get(key!)!;
   }
 
-  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceResponse>;
-  delete(callback: DeleteInstanceCallback): void;
-  delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   /**
    * @typedef {array} DeleteInstanceResponse
    * @property {object} 0 The full API response.
@@ -936,6 +959,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<DeleteInstanceResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -955,7 +979,11 @@ class Instance extends common.GrpcServiceObject {
    * instance.delete().then(function(data) {
    *   const apiResponse = data[0];
    * });
+   * ```
    */
+  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceResponse>;
+  delete(callback: DeleteInstanceCallback): void;
+  delete(gaxOptions: CallOptions, callback: DeleteInstanceCallback): void;
   delete(
     optionsOrCallback?: CallOptions | DeleteInstanceCallback,
     cb?: DeleteInstanceCallback
@@ -994,9 +1022,6 @@ class Instance extends common.GrpcServiceObject {
       });
   }
 
-  exists(gaxOptions?: CallOptions): Promise<ExistsInstanceResponse>;
-  exists(callback: ExistsInstanceCallback): void;
-  exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   /**
    * @typedef {array} InstanceExistsResponse
    * @property {boolean} 0 Whether the {@link Instance} exists.
@@ -1017,6 +1042,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<InstanceExistsResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1030,7 +1056,11 @@ class Instance extends common.GrpcServiceObject {
    * instance.exists().then(function(data) {
    *   const exists = data[0];
    * });
+   * ```
    */
+  exists(gaxOptions?: CallOptions): Promise<ExistsInstanceResponse>;
+  exists(callback: ExistsInstanceCallback): void;
+  exists(gaxOptions: CallOptions, callback: ExistsInstanceCallback): void;
   exists(
     optionsOrCallback?: CallOptions | ExistsInstanceCallback,
     cb?: ExistsInstanceCallback
@@ -1053,9 +1083,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  get(options?: GetInstanceConfig): Promise<GetInstanceResponse>;
-  get(callback: GetInstanceCallback): void;
-  get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   /**
    * @typedef {array} GetInstanceResponse
    * @property {Instance} 0 The {@link Instance}.
@@ -1085,6 +1112,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<GetInstanceResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1101,7 +1129,11 @@ class Instance extends common.GrpcServiceObject {
    *   const instance = data[0];
    *   const apiResponse = data[0];
    * });
+   * ```
    */
+  get(options?: GetInstanceConfig): Promise<GetInstanceResponse>;
+  get(callback: GetInstanceCallback): void;
+  get(options: GetInstanceConfig, callback: GetInstanceCallback): void;
   get(
     optionsOrCallback?: GetInstanceConfig | GetInstanceCallback,
     cb?: GetInstanceCallback
@@ -1155,12 +1187,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getDatabases(options?: GetDatabasesOptions): Promise<GetDatabasesResponse>;
-  getDatabases(callback: GetDatabasesCallback): void;
-  getDatabases(
-    options: GetDatabasesOptions,
-    callback: GetDatabasesCallback
-  ): void;
   /**
    * Query object for listing databases.
    *
@@ -1198,6 +1224,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<GetDatabasesResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1228,7 +1255,14 @@ class Instance extends common.GrpcServiceObject {
    * instance.getDatabases().then(function(data) {
    *   const databases = data[0];
    * });
+   * ```
    */
+  getDatabases(options?: GetDatabasesOptions): Promise<GetDatabasesResponse>;
+  getDatabases(callback: GetDatabasesCallback): void;
+  getDatabases(
+    options: GetDatabasesOptions,
+    callback: GetDatabasesCallback
+  ): void;
   getDatabases(
     optionsOrCallback?: GetDatabasesOptions | GetDatabasesCallback,
     cb?: GetDatabasesCallback
@@ -1306,6 +1340,7 @@ class Instance extends common.GrpcServiceObject {
    *     instances.
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1328,6 +1363,7 @@ class Instance extends common.GrpcServiceObject {
    *   .on('data', function(database) {
    *     this.end();
    *   });
+   * ```
    */
   getDatabasesStream(options: GetDatabasesOptions = {}): NodeJS.ReadableStream {
     const gaxOpts = extend(true, {}, options.gaxOptions);
@@ -1361,14 +1397,6 @@ class Instance extends common.GrpcServiceObject {
     });
   }
 
-  getMetadata(
-    options?: GetInstanceMetadataOptions
-  ): Promise<GetInstanceMetadataResponse>;
-  getMetadata(callback: GetInstanceMetadataCallback): void;
-  getMetadata(
-    options: GetInstanceMetadataOptions,
-    callback: GetInstanceMetadataCallback
-  ): void;
   /**
    * @typedef {array} GetInstanceMetadataResponse
    * @property {object} 0 The {@link Instance} metadata.
@@ -1396,6 +1424,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<GetInstanceMetadataResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1427,7 +1456,16 @@ class Instance extends common.GrpcServiceObject {
    *   const metadata = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
+  getMetadata(
+    options?: GetInstanceMetadataOptions
+  ): Promise<GetInstanceMetadataResponse>;
+  getMetadata(callback: GetInstanceMetadataCallback): void;
+  getMetadata(
+    options: GetInstanceMetadataOptions,
+    callback: GetInstanceMetadataCallback
+  ): void;
   getMetadata(
     optionsOrCallback?:
       | GetInstanceMetadataOptions
@@ -1463,16 +1501,6 @@ class Instance extends common.GrpcServiceObject {
     );
   }
 
-  setMetadata(
-    metadata: IInstance,
-    gaxOptions?: CallOptions
-  ): Promise<SetInstanceMetadataResponse>;
-  setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
-  setMetadata(
-    metadata: IInstance,
-    gaxOptions: CallOptions,
-    callback: SetInstanceMetadataCallback
-  ): void;
   /**
    * Update the metadata for this instance. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
@@ -1490,6 +1518,7 @@ class Instance extends common.GrpcServiceObject {
    * @returns {Promise<LongRunningOperationResponse>}
    *
    * @example
+   * ```
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    *
@@ -1518,7 +1547,18 @@ class Instance extends common.GrpcServiceObject {
    *   const operation = data[0];
    *   const apiResponse = data[1];
    * });
+   * ```
    */
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions?: CallOptions
+  ): Promise<SetInstanceMetadataResponse>;
+  setMetadata(metadata: IInstance, callback: SetInstanceMetadataCallback): void;
+  setMetadata(
+    metadata: IInstance,
+    gaxOptions: CallOptions,
+    callback: SetInstanceMetadataCallback
+  ): void;
   setMetadata(
     metadata: IInstance,
     optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
@@ -1561,8 +1601,10 @@ class Instance extends common.GrpcServiceObject {
    * @returns {string}
    *
    * @example
+   * ```
    * Instance.formatName_('grape-spaceship-123', 'my-instance');
    * // 'projects/grape-spaceship-123/instances/my-instance'
+   * ```
    */
   static formatName_(projectId: string, name: string) {
     if (name.indexOf('/') > -1) {

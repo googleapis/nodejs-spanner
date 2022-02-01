@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -399,6 +399,24 @@ export class InstanceAdminClient {
   // -------------------
   // -- Service calls --
   // -------------------
+  /**
+   * Gets information about a particular instance configuration.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the requested instance configuration. Values are of
+   *   the form `projects/<project>/instanceConfigs/<config>`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [InstanceConfig]{@link google.spanner.admin.instance.v1.InstanceConfig}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetInstanceConfig_async
+   */
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     options?: CallOptions
@@ -433,24 +451,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Gets information about a particular instance configuration.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   *   Required. The name of the requested instance configuration. Values are of
-   *   the form `projects/<project>/instanceConfigs/<config>`.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [InstanceConfig]{@link google.spanner.admin.instance.v1.InstanceConfig}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.getInstanceConfig(request);
-   */
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
     optionsOrCallback?:
@@ -497,6 +497,28 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.getInstanceConfig(request, options, callback);
   }
+  /**
+   * Gets information about a particular instance.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the requested instance. Values are of the form
+   *   `projects/<project>/instances/<instance>`.
+   * @param {google.protobuf.FieldMask} request.fieldMask
+   *   If field_mask is present, specifies the subset of {@link google.spanner.admin.instance.v1.Instance|Instance} fields that
+   *   should be returned.
+   *   If absent, all {@link google.spanner.admin.instance.v1.Instance|Instance} fields are returned.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Instance]{@link google.spanner.admin.instance.v1.Instance}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetInstance_async
+   */
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     options?: CallOptions
@@ -528,28 +550,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Gets information about a particular instance.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   *   Required. The name of the requested instance. Values are of the form
-   *   `projects/<project>/instances/<instance>`.
-   * @param {google.protobuf.FieldMask} request.fieldMask
-   *   If field_mask is present, specifies the subset of {@link google.spanner.admin.instance.v1.Instance|Instance} fields that
-   *   should be returned.
-   *   If absent, all {@link google.spanner.admin.instance.v1.Instance|Instance} fields are returned.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Instance]{@link google.spanner.admin.instance.v1.Instance}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.getInstance(request);
-   */
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
     optionsOrCallback?:
@@ -593,6 +593,34 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.getInstance(request, options, callback);
   }
+  /**
+   * Deletes an instance.
+   *
+   * Immediately upon completion of the request:
+   *
+   *   * Billing ceases for all of the instance's reserved resources.
+   *
+   * Soon afterward:
+   *
+   *   * The instance and *all of its databases* immediately and
+   *     irrevocably disappear from the API. All data in the databases
+   *     is permanently deleted.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the instance to be deleted. Values are of the form
+   *   `projects/<project>/instances/<instance>`
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.delete_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_DeleteInstance_async
+   */
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     options?: CallOptions
@@ -627,34 +655,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Deletes an instance.
-   *
-   * Immediately upon completion of the request:
-   *
-   *   * Billing ceases for all of the instance's reserved resources.
-   *
-   * Soon afterward:
-   *
-   *   * The instance and *all of its databases* immediately and
-   *     irrevocably disappear from the API. All data in the databases
-   *     is permanently deleted.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   *   Required. The name of the instance to be deleted. Values are of the form
-   *   `projects/<project>/instances/<instance>`
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.deleteInstance(request);
-   */
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
     optionsOrCallback?:
@@ -701,6 +701,33 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.deleteInstance(request, options, callback);
   }
+  /**
+   * Sets the access control policy on an instance resource. Replaces any
+   * existing policy.
+   *
+   * Authorization requires `spanner.instances.setIamPolicy` on
+   * {@link google.iam.v1.SetIamPolicyRequest.resource|resource}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy is being specified.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {google.iam.v1.Policy} request.policy
+   *   REQUIRED: The complete policy to be applied to the `resource`. The size of
+   *   the policy is limited to a few 10s of KB. An empty policy is a
+   *   valid policy but certain Cloud Platform services (such as Projects)
+   *   might reject them.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.set_iam_policy.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_SetIamPolicy_async
+   */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
     options?: CallOptions
@@ -728,33 +755,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Sets the access control policy on an instance resource. Replaces any
-   * existing policy.
-   *
-   * Authorization requires `spanner.instances.setIamPolicy` on
-   * {@link google.iam.v1.SetIamPolicyRequest.resource|resource}.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy is being specified.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {google.iam.v1.Policy} request.policy
-   *   REQUIRED: The complete policy to be applied to the `resource`. The size of
-   *   the policy is limited to a few 10s of KB. An empty policy is a
-   *   valid policy but certain Cloud Platform services (such as Projects)
-   *   might reject them.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.setIamPolicy(request);
-   */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
     optionsOrCallback?:
@@ -794,6 +794,31 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
+  /**
+   * Gets the access control policy for an instance resource. Returns an empty
+   * policy if an instance exists but does not have a policy set.
+   *
+   * Authorization requires `spanner.instances.getIamPolicy` on
+   * {@link google.iam.v1.GetIamPolicyRequest.resource|resource}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy is being requested.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {google.iam.v1.GetPolicyOptions} request.options
+   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+   *   `GetIamPolicy`. This field is only used by Cloud IAM.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_iam_policy.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetIamPolicy_async
+   */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
     options?: CallOptions
@@ -821,31 +846,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Gets the access control policy for an instance resource. Returns an empty
-   * policy if an instance exists but does not have a policy set.
-   *
-   * Authorization requires `spanner.instances.getIamPolicy` on
-   * {@link google.iam.v1.GetIamPolicyRequest.resource|resource}.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {google.iam.v1.GetPolicyOptions} request.options
-   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
-   *   `GetIamPolicy`. This field is only used by Cloud IAM.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.getIamPolicy(request);
-   */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
     optionsOrCallback?:
@@ -885,6 +885,34 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
+  /**
+   * Returns permissions that the caller has on the specified instance resource.
+   *
+   * Attempting this RPC on a non-existent Cloud Spanner instance resource will
+   * result in a NOT_FOUND error if the user has `spanner.instances.list`
+   * permission on the containing Google Cloud Project. Otherwise returns an
+   * empty set of permissions.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.resource
+   *   REQUIRED: The resource for which the policy detail is being requested.
+   *   See the operation documentation for the appropriate value for this field.
+   * @param {string[]} request.permissions
+   *   The set of permissions to check for the `resource`. Permissions with
+   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+   *   information see
+   *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.test_iam_permissions.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_TestIamPermissions_async
+   */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     options?: CallOptions
@@ -912,34 +940,6 @@ export class InstanceAdminClient {
       {} | null | undefined
     >
   ): void;
-  /**
-   * Returns permissions that the caller has on the specified instance resource.
-   *
-   * Attempting this RPC on a non-existent Cloud Spanner instance resource will
-   * result in a NOT_FOUND error if the user has `spanner.instances.list`
-   * permission on the containing Google Cloud Project. Otherwise returns an
-   * empty set of permissions.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
-   *   The set of permissions to check for the `resource`. Permissions with
-   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see
-   *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example
-   * const [response] = await client.testIamPermissions(request);
-   */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
     optionsOrCallback?:
@@ -980,42 +980,6 @@ export class InstanceAdminClient {
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
-  createInstance(
-    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  >;
-  createInstance(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    options: CallOptions,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createInstance(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
   /**
    * Creates an instance and begins preparing it to begin serving. The
    * returned {@link google.longrunning.Operation|long-running operation}
@@ -1073,10 +1037,45 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example
-   * const [operation] = await client.createInstance(request);
-   * const [response] = await operation.promise();
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstance_async
    */
+  createInstance(
+    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  createInstance(
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createInstance(
+    request: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   createInstance(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
     optionsOrCallback?:
@@ -1134,11 +1133,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example
-   * const decodedOperation = await checkCreateInstanceProgress(name);
-   * console.log(decodedOperation.result);
-   * console.log(decodedOperation.done);
-   * console.log(decodedOperation.metadata);
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstance_async
    */
   async checkCreateInstanceProgress(
     name: string
@@ -1162,42 +1158,6 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.CreateInstanceMetadata
     >;
   }
-  updateInstance(
-    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  >;
-  updateInstance(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    options: CallOptions,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  updateInstance(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstance,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
   /**
    * Updates an instance, and begins allocating or releasing resources
    * as requested. The returned [long-running
@@ -1259,10 +1219,45 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example
-   * const [operation] = await client.updateInstance(request);
-   * const [response] = await operation.promise();
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstance_async
    */
+  updateInstance(
+    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  updateInstance(
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateInstance(
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstance,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
   updateInstance(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
     optionsOrCallback?:
@@ -1320,11 +1315,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example
-   * const decodedOperation = await checkUpdateInstanceProgress(name);
-   * console.log(decodedOperation.result);
-   * console.log(decodedOperation.done);
-   * console.log(decodedOperation.metadata);
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstance_async
    */
   async checkUpdateInstanceProgress(
     name: string
@@ -1348,6 +1340,35 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.UpdateInstanceMetadata
     >;
   }
+  /**
+   * Lists the supported instance configurations for a given project.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the project for which a list of supported instance
+   *   configurations is requested. Values are of the form
+   *   `projects/<project>`.
+   * @param {number} request.pageSize
+   *   Number of instance configurations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
+   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [InstanceConfig]{@link google.spanner.admin.instance.v1.InstanceConfig}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listInstanceConfigsAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   */
   listInstanceConfigs(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     options?: CallOptions
@@ -1379,35 +1400,6 @@ export class InstanceAdminClient {
       protos.google.spanner.admin.instance.v1.IInstanceConfig
     >
   ): void;
-  /**
-   * Lists the supported instance configurations for a given project.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The name of the project for which a list of supported instance
-   *   configurations is requested. Values are of the form
-   *   `projects/<project>`.
-   * @param {number} request.pageSize
-   *   Number of instance configurations to be returned in the response. If 0 or
-   *   less, defaults to the server's maximum allowed page size.
-   * @param {string} request.pageToken
-   *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
-   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [InstanceConfig]{@link google.spanner.admin.instance.v1.InstanceConfig}.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed and will merge results from all the pages into this array.
-   *   Note that it can affect your quota.
-   *   We recommend using `listInstanceConfigsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   */
   listInstanceConfigs(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
     optionsOrCallback?:
@@ -1528,11 +1520,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example
-   * const iterable = client.listInstanceConfigsAsync(request);
-   * for await (const response of iterable) {
-   *   // process response
-   * }
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_configs.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstanceConfigs_async
    */
   listInstanceConfigsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -1546,7 +1535,6 @@ export class InstanceAdminClient {
       gax.routingHeader.fromParams({
         parent: request.parent || '',
       });
-    options = options || {};
     const defaultCallSettings = this._defaults['listInstanceConfigs'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
@@ -1556,37 +1544,6 @@ export class InstanceAdminClient {
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
-  listInstances(
-    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.spanner.admin.instance.v1.IInstance[],
-      protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstancesResponse
-    ]
-  >;
-  listInstances(
-    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    options: CallOptions,
-    callback: PaginationCallback<
-      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
-      | null
-      | undefined,
-      protos.google.spanner.admin.instance.v1.IInstance
-    >
-  ): void;
-  listInstances(
-    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-    callback: PaginationCallback<
-      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
-      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
-      | null
-      | undefined,
-      protos.google.spanner.admin.instance.v1.IInstance
-    >
-  ): void;
   /**
    * Lists all instances in the given project.
    *
@@ -1635,6 +1592,37 @@ export class InstanceAdminClient {
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
    */
+  listInstances(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.instance.v1.IInstance[],
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancesResponse
+    ]
+  >;
+  listInstances(
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstance
+    >
+  ): void;
+  listInstances(
+    request: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancesRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstance
+    >
+  ): void;
   listInstances(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
     optionsOrCallback?:
@@ -1793,11 +1781,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example
-   * const iterable = client.listInstancesAsync(request);
-   * for await (const response of iterable) {
-   *   // process response
-   * }
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instances.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstances_async
    */
   listInstancesAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,
@@ -1811,7 +1796,6 @@ export class InstanceAdminClient {
       gax.routingHeader.fromParams({
         parent: request.parent || '',
       });
-    options = options || {};
     const defaultCallSettings = this._defaults['listInstances'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();

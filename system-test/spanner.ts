@@ -75,7 +75,7 @@ describe('Spanner', () => {
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
+    config: 'regional-us-west1',
     nodes: 1,
     labels: {
       [LABEL]: 'true',

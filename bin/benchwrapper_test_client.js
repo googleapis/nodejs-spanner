@@ -45,9 +45,9 @@ const readReq = {
   Query: 'SELECT 1 AS COL1 UNION ALL SELECT 2 AS COL1',
 };
 const insertReq = {
-  users: [
-    {name: 'foo', age: '50'},
-    {name: 'bar', age: '40'},
+  singers: [
+    {id: '1', firstName: 'Lana', lastName: 'Del Rey'},
+    {id: '2', firstName: 'Taylor', lastName: 'Swift'},
   ],
 };
 const updateReq = {
