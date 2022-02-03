@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "@grpc/proto-loader": "^0.6.0",
-    "@types/concat-stream": "^1.6.0",
+    "@types/concat-stream": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
     "@types/lodash.snakecase": "^4.1.4",
