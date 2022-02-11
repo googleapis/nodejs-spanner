@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_datatype_casting]
+  // [START spanner_postgresql_cast_data_type]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -75,7 +75,7 @@ function main(
     }
   }
   pgDatatypeCasting();
-  // [END spanner_pg_datatype_casting]
+  // [END spanner_postgresql_cast_data_type]
 }
 
 process.on('unhandledRejection', err => {

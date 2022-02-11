@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_ordering_nulls]
+  // [START spanner_postgresql_order_nulls]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -118,7 +118,7 @@ function main(
     }
   }
   pgOrderingNulls();
-  // [END spanner_pg_ordering_nulls]
+  // [END spanner_postgresql_order_nulls]
 }
 
 function printAuthors(rows) {

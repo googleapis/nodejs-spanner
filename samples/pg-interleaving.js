@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_interleaving]
+  // [START spanner_postgresql_interleaved_table]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -70,7 +70,7 @@ function main(
     );
   }
   pgInterleaving();
-  // [END spanner_pg_interleaving]
+  // [END spanner_postgresql_interleaved_table]
 }
 
 process.on('unhandledRejection', err => {

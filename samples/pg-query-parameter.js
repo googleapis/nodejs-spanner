@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_query_with_pg_parameter]
+  // [START spanner_postgresql_query_parameter]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -78,7 +78,7 @@ function main(
     }
   }
   queryWithPgParameter();
-  // [END spanner_query_with_pg_parameter]
+  // [END spanner_postgresql_query_parameter]
 }
 
 process.on('unhandledRejection', err => {

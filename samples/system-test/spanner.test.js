@@ -532,7 +532,7 @@ describe('Spanner', () => {
     );
   });
 
-  // read_only_transaction
+  // read_only_transactioni
   it('should read an example table using transactions', async () => {
     const output = execSync(
       `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
@@ -1449,10 +1449,10 @@ describe('Spanner', () => {
       );
     });
 
-    // add_pg_numeric_table
-    it('should add a table with PostgreSQL Numeric column', async () => {
+    // pg_numeric_data_type
+    it('should create a table, insert and query pg numeric data', async () => {
       const output = execSync(
-        `node pg-numeric-add-table.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-numeric-data-type.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1460,23 +1460,9 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp(`Added table Revenues to database ${PG_DATABASE_ID}.`)
-      );
-    });
-
-    // insert_pg_numeric_data
-    it('should insert data to table with pg numeric column', async () => {
-      const output = execSync(
-        `node pg-numeric-insert-data.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        new RegExp(`Added table venues to database ${PG_DATABASE_ID}.`)
       );
       assert.match(output, new RegExp('Inserted data.'));
-    });
-
-    // query_with_pg_numeric_parameter
-    it('should query data with a pg numeric parameter from a table with PostgreSQL Numeric column.', async () => {
-      const output = execSync(
-        `node pg-numeric-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
-      );
       assert.match(output, new RegExp('VenueId: 4, Revenue: 97372.3863'));
       assert.match(output, new RegExp('VenueId: 19, Revenue: 7629'));
       assert.match(output, new RegExp('VenueId: 398, Revenue: 0.000000123'));

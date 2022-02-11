@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_batch_dml]
+  // [START spanner_postgresql_batch_dml]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -95,7 +95,7 @@ function main(
     }
   }
   pgBatchDml();
-  // [END spanner_pg_batch_dml]
+  // [END spanner_postgresql_batch_dml]
 }
 
 process.on('unhandledRejection', err => {

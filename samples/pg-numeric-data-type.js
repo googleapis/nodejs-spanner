@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Inserts data to table with pg numeric column.
-//  usage: node insertPgNumericData <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.
+//  usage: node pgNumericDataType <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_insert_pg_numeric_data]
+  // [START spanner_postgresql_numeric_data_type]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -39,10 +39,24 @@ function main(
     projectId: projectId,
   });
 
-  async function insertPgNumericData() {
+  async function pgNumericDataType() {
     // Gets a reference to a Cloud Spanner instance and database.
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
+
+    const request = [
+      `CREATE TABLE Venues 
+        (VenueId  bigint NOT NULL PRIMARY KEY,
+        Name      varchar(1024) NOT NULL,
+        Revenues  numeric
+        );`,
+    ];
+
+    // Updates schema by adding a new table.
+    const [operation] = await database.updateSchema(request);
+    console.log(`Waiting for operation on ${databaseId} to complete...`);
+    await operation.promise();
+    console.log(`Added table venues to database ${databaseId}.`);
 
     // Instantiate Spanner table objects.
     const venuesTable = database.table('venues');
@@ -98,13 +112,45 @@ function main(
       console.log('Inserted data.');
     } catch (err) {
       console.error('ERROR:', err);
+    }
+
+    const fieldType = {
+      type: 'pgNumeric',
+    };
+
+    const exampleNumeric = Spanner.pgNumeric('100000');
+
+    const query = {
+      sql: `SELECT venueid, revenues FROM venues
+            WHERE revenues < $1`,
+      params: {
+        p1: exampleNumeric,
+      },
+      types: {
+        p1: fieldType,
+      },
+    };
+
+    // Queries rows from the Venues table.
+    try {
+      const [rows] = await database.run(query);
+
+      rows.forEach(row => {
+        const json = row.toJSON();
+        // Check if revenue field is Null
+        const revenue =
+          json.revenues === null ? json.revenues : json.revenues.value;
+        console.log(`VenueId: ${json.venueid}, Revenue: ${revenue}`);
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
     } finally {
       // Close the database when finished.
       database.close();
     }
   }
-  insertPgNumericData();
-  // [END spanner_insert_pg_numeric_data]
+  pgNumericDataType();
+  // [END spanner_postgresql_numeric_data_type]
 }
 
 process.on('unhandledRejection', err => {

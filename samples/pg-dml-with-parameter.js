@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_dml_with_parameters]
+  // [START spanner_postgresql_dml_with_parameters]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -51,8 +51,18 @@ function main(
       }
       try {
         const [rowCounts] = await transaction.runUpdate({
-          sql: `INSERT INTO Singers (SingerId, FirstName, LastName)
-          VALUES (11, 'Timothy', 'Campbell')`,
+          sql: `INSERT INTO singers (singerid, firstname, lastname)
+                VALUES ($1, $2, $3)`,
+          params: {
+            p1: 11,
+            p2: 'Timothy',
+            p3: 'Campbell',
+          },
+          types: {
+            p1: 'int64',
+            p2: 'string',
+            p3: 'string',
+          },
         });
         await transaction.commit();
         console.log(
@@ -67,7 +77,7 @@ function main(
     });
   }
   pgDmlWithParameters();
-  // [END spanner_pg_dml_with_parameters]
+  // [END spanner_postgresql_dml_with_parameters]
 }
 
 process.on('unhandledRejection', err => {

@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_schema_information]
+  // [START spanner_postgresql_information_schema]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -74,7 +74,7 @@ function main(
     }
   }
   pgSchemaInformation();
-  // [END spanner_pg_schema_information]
+  // [END spanner_postgresql_information_schema]
 }
 
 process.on('unhandledRejection', err => {

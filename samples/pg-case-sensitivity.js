@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_case_sensitivity]
+  // [START spanner_postgresql_case_sensitivity]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -51,7 +51,7 @@ function main(
     const statements = [
       `CREATE TABLE Concerts
        (
-           -- ConcertId will be folded to "singerid"
+           -- ConcertId will be folded to "concertid"
            ConcertId    bigint        NOT NULL PRIMARY KEY,
            -- Location and Time are double-quoted and will therefore retain their
            -- mixed case and are case-sensitive. This means that any statement that
@@ -153,7 +153,7 @@ function main(
     }
   }
   pgCaseSensitivity();
-  // [END spanner_pg_case_sensitivity]
+  // [END spanner_postgresql_case_sensitivity]
 }
 
 process.on('unhandledRejection', err => {

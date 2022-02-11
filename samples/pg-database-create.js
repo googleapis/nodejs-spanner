@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_pg_create_database]
+  // [START spanner_postgresql_create_database]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -84,7 +84,7 @@ function main(
     console.log('Updated schema');
   }
   createPgDatabase();
-  // [END spanner_pg_create_database]
+  // [END spanner_postgresql_create_database]
 }
 
 process.on('unhandledRejection', err => {
