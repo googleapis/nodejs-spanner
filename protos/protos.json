@@ -2758,18 +2758,25 @@
                           "fields": {
                             "name": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
                             },
                             "config": {
                               "type": "string",
                               "id": 2,
                               "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
                               }
                             },
                             "displayName": {
                               "type": "string",
-                              "id": 3
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
                             },
                             "nodeCount": {
                               "type": "int32",
@@ -3134,7 +3141,10 @@
                       "fields": {
                         "table": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "columns": {
                           "rule": "repeated",
@@ -3152,11 +3162,17 @@
                       "fields": {
                         "table": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "keySet": {
                           "type": "KeySet",
-                          "id": 2
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         }
                       }
                     }
@@ -3792,7 +3808,10 @@
                     },
                     "session": {
                       "type": "Session",
-                      "id": 2
+                      "id": 2,
+                      "options": {
+                        "(google.api.field_behavior)": "REQUIRED"
+                      }
                     }
                   }
                 },
@@ -4068,7 +4087,10 @@
                       "fields": {
                         "sql": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "params": {
                           "type": "google.protobuf.Struct",

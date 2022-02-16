@@ -376,7 +376,7 @@ export class SpannerClient {
    * @param {string} request.database
    *   Required. The database in which the new session is created.
    * @param {google.spanner.v1.Session} request.session
-   *   The session to create.
+   *   Required. The session to create.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
