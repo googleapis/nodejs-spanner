@@ -3352,9 +3352,8 @@ export class DatabaseAdminClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    this.initialize();
-    if (!this._terminated) {
-      return this.databaseAdminStub!.then(stub => {
+    if (this.databaseAdminStub && !this._terminated) {
+      return this.databaseAdminStub.then(stub => {
         this._terminated = true;
         stub.close();
         this.operationsClient.close();
