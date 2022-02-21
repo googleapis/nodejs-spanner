@@ -355,7 +355,8 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'NUMERIC':
       if (
         type.typeAnnotation ===
-        spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC
+          spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC ||
+        type.typeAnnotation === 'PG_NUMERIC'
       ) {
         decoded = new PGNumeric(decoded);
         break;

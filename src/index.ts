@@ -41,7 +41,7 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
-import {google as instanceAdmin} from '../protos/protos';
+import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
   PagedResponse,
