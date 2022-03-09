@@ -356,6 +356,22 @@ describe('Instance', () => {
 
         instance.createDatabase(NAME, options, assert.ifError);
       });
+
+      it('should arrify and rename to extraStatements from array style schema filed', done => {
+        const SCHEMA = ['schema', 'schema2'];
+
+        const options = extend({}, OPTIONS, {
+          schema: SCHEMA,
+        });
+
+        instance.request = config => {
+          assert.deepStrictEqual(config.reqOpts.extraStatements, SCHEMA);
+          assert.strictEqual(config.reqOpts.schema, undefined);
+          done();
+        };
+
+        instance.createDatabase(NAME, options, assert.ifError);
+      });
     });
 
     describe('error', () => {
