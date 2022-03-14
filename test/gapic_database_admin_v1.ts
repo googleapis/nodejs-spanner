@@ -183,12 +183,27 @@ describe('v1.DatabaseAdminClient', () => {
     assert(client.databaseAdminStub);
   });
 
-  it('has close method', () => {
+  it('has close method for the initialized client', done => {
     const client = new databaseadminModule.v1.DatabaseAdminClient({
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
-    client.close();
+    client.initialize();
+    assert(client.databaseAdminStub);
+    client.close().then(() => {
+      done();
+    });
+  });
+
+  it('has close method for the non-initialized client', done => {
+    const client = new databaseadminModule.v1.DatabaseAdminClient({
+      credentials: {client_email: 'bogus', private_key: 'bogus'},
+      projectId: 'bogus',
+    });
+    assert.strictEqual(client.databaseAdminStub, undefined);
+    client.close().then(() => {
+      done();
+    });
   });
 
   it('has getProjectId method', async () => {
@@ -334,6 +349,22 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it('invokes getDatabase with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
+      );
+      request.name = '';
+      const expectedHeaderRequestParams = 'name=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getDatabase(request), expectedError);
+    });
   });
 
   describe('dropDatabase', () => {
@@ -444,6 +475,22 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes dropDatabase with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
+      );
+      request.database = '';
+      const expectedHeaderRequestParams = 'database=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.dropDatabase(request), expectedError);
     });
   });
 
@@ -556,6 +603,22 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it('invokes getDatabaseDdl with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
+      );
+      request.database = '';
+      const expectedHeaderRequestParams = 'database=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getDatabaseDdl(request), expectedError);
+    });
   });
 
   describe('setIamPolicy', () => {
@@ -667,6 +730,22 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it('invokes setIamPolicy with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.iam.v1.SetIamPolicyRequest()
+      );
+      request.resource = '';
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.setIamPolicy(request), expectedError);
+    });
   });
 
   describe('getIamPolicy', () => {
@@ -777,6 +856,22 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes getIamPolicy with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.iam.v1.GetIamPolicyRequest()
+      );
+      request.resource = '';
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getIamPolicy(request), expectedError);
     });
   });
 
@@ -890,6 +985,22 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it('invokes testIamPermissions with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.iam.v1.TestIamPermissionsRequest()
+      );
+      request.resource = '';
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.testIamPermissions(request), expectedError);
+    });
   });
 
   describe('getBackup', () => {
@@ -997,6 +1108,22 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes getBackup with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetBackupRequest()
+      );
+      request.name = '';
+      const expectedHeaderRequestParams = 'name=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getBackup(request), expectedError);
     });
   });
 
@@ -1112,6 +1239,23 @@ describe('v1.DatabaseAdminClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it('invokes updateBackup with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
+      );
+      request.backup = {};
+      request.backup.name = '';
+      const expectedHeaderRequestParams = 'backup.name=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.updateBackup(request), expectedError);
+    });
   });
 
   describe('deleteBackup', () => {
@@ -1222,6 +1366,22 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
+    });
+
+    it('invokes deleteBackup with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
+      );
+      request.name = '';
+      const expectedHeaderRequestParams = 'name=';
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.deleteBackup(request), expectedError);
     });
   });
 
