@@ -101,7 +101,7 @@ describe('Spanner', () => {
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
-    const [, operationGoogleSql] = await DATABASE.create({
+    const [, googleSqlOperation] = await DATABASE.create({
       schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
@@ -109,15 +109,15 @@ describe('Spanner', () => {
           ) PRIMARY KEY(SingerId)`,
       gaxOptions: GAX_OPTIONS,
     });
-    await operationGoogleSql.promise();
+    await googleSqlOperation.promise();
     RESOURCES_TO_CLEAN.push(DATABASE);
 
     if (!IS_EMULATOR_ENABLED) {
-      const [pg_database, operationPostgrSQL] = await PG_DATABASE.create({
+      const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
         databaseDialect: Spanner.POSTGRESQL,
         gaxOptions: GAX_OPTIONS,
       });
-      await operationPostgrSQL.promise();
+      await postgreSqlOperation.promise();
       const schema = [
         `
        CREATE TABLE ${TABLE_NAME} (
@@ -126,10 +126,10 @@ describe('Spanner', () => {
          PRIMARY KEY (SingerId)
        );`,
       ];
-      const [operationUpdateDDLPostgreSQL] = await pg_database.updateSchema(
+      const [postgreSqlOperationUpdateDDL] = await pg_database.updateSchema(
         schema
       );
-      await operationUpdateDDLPostgreSQL.promise();
+      await postgreSqlOperationUpdateDDL.promise();
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
     }
   });
@@ -553,7 +553,7 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should throw for of bounds integersL', done => {
+      it('GOOGLE_STANDARD_SQL should throw for of bounds integers', done => {
         int64OutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
@@ -755,7 +755,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should write null numeric valuesL', done => {
+      it('GOOGLE_STANDARD_SQL should write null numeric values', done => {
         numericInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
@@ -764,6 +764,13 @@ describe('Spanner', () => {
           this.skip();
         }
         numericInsert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('POSTGRESQL should bind NaN', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        numericInsert(done, Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
       });
 
       const numericInsertOutOfBounds = (done, dialect, value) => {
@@ -1450,14 +1457,17 @@ describe('Spanner', () => {
       });
     });
 
-    const createTable = (done, database, createTableStatement) => {
+    const createTable = (done, database, dialect, createTableStatement) => {
       database.updateSchema(
         [createTableStatement],
         execAfterOperationComplete(err => {
           assert.ifError(err);
 
-          function replaceNewLinesAndSpacing(str) {
-            return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+          function replaceNewLinesAndSpacing(str, dialect) {
+            const schema = str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+            if (dialect === Spanner.GOOGLE_STANDARD_SQL) {
+              return schema;
+            } else return schema.toLowerCase();
           }
 
           database.getSchema((err, statements) => {
@@ -1465,8 +1475,8 @@ describe('Spanner', () => {
             assert.ok(
               statements!.some(
                 s =>
-                  replaceNewLinesAndSpacing(s).toLowerCase() ===
-                  replaceNewLinesAndSpacing(createTableStatement).toLowerCase()
+                  replaceNewLinesAndSpacing(s, dialect) ===
+                  replaceNewLinesAndSpacing(createTableStatement, dialect)
               )
             );
             done();
@@ -1483,7 +1493,12 @@ describe('Spanner', () => {
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
         ) PRIMARY KEY(SingerId)`;
-      createTable(done, DATABASE, createTableStatement);
+      createTable(
+        done,
+        DATABASE,
+        Spanner.GOOGLE_STANDARD_SQL,
+        createTableStatement
+      );
     });
 
     it('POSTGRESQL should create a table', function (done) {
@@ -1498,7 +1513,7 @@ describe('Spanner', () => {
           SingerInfo BYTEA,
           PRIMARY KEY(SingerId)
         )`;
-      createTable(done, PG_DATABASE, createTableStatement);
+      createTable(done, PG_DATABASE, Spanner.POSTGRESQL, createTableStatement);
     });
 
     it('should list database operations on an instance', async function () {
@@ -2186,6 +2201,9 @@ describe('Spanner', () => {
         )
         .then(onPromiseOperationComplete)
         .then(() => {
+          if (IS_EMULATOR_ENABLED) {
+            return;
+          }
           return postgreSqlTable.create(
             `
             CREATE TABLE ${TABLE_NAME} (
