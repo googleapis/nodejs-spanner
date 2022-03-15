@@ -360,7 +360,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getInstanceConfig(request), expectedError);
@@ -487,7 +486,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getInstance(request), expectedError);
@@ -614,7 +612,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.deleteInstance(request), expectedError);
@@ -741,7 +738,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.setIamPolicy(request), expectedError);
@@ -868,7 +864,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getIamPolicy(request), expectedError);
@@ -996,7 +991,6 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.testIamPermissions(request), expectedError);

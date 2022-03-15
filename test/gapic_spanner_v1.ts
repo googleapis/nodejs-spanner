@@ -349,7 +349,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.CreateSessionRequest()
       );
       request.database = '';
-      const expectedHeaderRequestParams = 'database=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.createSession(request), expectedError);
@@ -477,7 +476,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
       request.database = '';
-      const expectedHeaderRequestParams = 'database=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.batchCreateSessions(request), expectedError);
@@ -604,7 +602,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.GetSessionRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getSession(request), expectedError);
@@ -731,7 +728,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.deleteSession(request), expectedError);
@@ -858,7 +854,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.executeSql(request), expectedError);
@@ -985,7 +980,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.executeBatchDml(request), expectedError);
@@ -1108,7 +1102,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.ReadRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.read(request), expectedError);
@@ -1235,7 +1228,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.beginTransaction(request), expectedError);
@@ -1359,7 +1351,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.CommitRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.commit(request), expectedError);
@@ -1483,7 +1474,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.RollbackRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.rollback(request), expectedError);
@@ -1610,7 +1600,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.partitionQuery(request), expectedError);
@@ -1737,7 +1726,6 @@ describe('v1.SpannerClient', () => {
         new protos.google.spanner.v1.PartitionReadRequest()
       );
       request.session = '';
-      const expectedHeaderRequestParams = 'session=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.partitionRead(request), expectedError);
@@ -1841,6 +1829,7 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
+      request.session = '';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       const stream = client.executeStreamingSql(request);
@@ -1956,6 +1945,7 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
+      request.session = '';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       const stream = client.streamingRead(request);
