@@ -360,7 +360,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getDatabase(request), expectedError);
@@ -487,7 +486,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
       request.database = '';
-      const expectedHeaderRequestParams = 'database=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.dropDatabase(request), expectedError);
@@ -614,7 +612,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
       request.database = '';
-      const expectedHeaderRequestParams = 'database=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getDatabaseDdl(request), expectedError);
@@ -741,7 +738,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.setIamPolicy(request), expectedError);
@@ -868,7 +864,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getIamPolicy(request), expectedError);
@@ -996,7 +991,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
       request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.testIamPermissions(request), expectedError);
@@ -1120,7 +1114,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getBackup(request), expectedError);
@@ -1251,7 +1244,6 @@ describe('v1.DatabaseAdminClient', () => {
       );
       request.backup = {};
       request.backup.name = '';
-      const expectedHeaderRequestParams = 'backup.name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.updateBackup(request), expectedError);
@@ -1378,7 +1370,6 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
       request.name = '';
-      const expectedHeaderRequestParams = 'name=';
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.deleteBackup(request), expectedError);
