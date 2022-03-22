@@ -88,7 +88,7 @@ export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
-  schema?: string;
+  schema?: string | string[];
   gaxOptions?: CallOptions;
 }
 export type GetDatabasesOptions = PagedOptions;

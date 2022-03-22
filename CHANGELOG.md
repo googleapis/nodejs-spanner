@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.17.0](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.17.0) (2022-03-09)
+
+
+### Features
+
+* Refactor create database options schema to accept array ([#1578](https://github.com/googleapis/nodejs-spanner/issues/1578)) ([b1c88ac](https://github.com/googleapis/nodejs-spanner/commit/b1c88accee3770bb94e6a7d73e767eaa426a86a3))
+
+### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.16.3) (2022-01-31)
+
+
+### Miscellaneous Chores
+
+* Release-As: 5.16.3 ([#1556](https://github.com/googleapis/nodejs-spanner/issues/1556)) ([31f5fbc](https://github.com/googleapis/nodejs-spanner/commit/31f5fbc6d890fd7296497d6992a7d186ea786476))
+
 ### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.16.3) (2022-01-21)
 
 
