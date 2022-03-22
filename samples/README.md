@@ -15,6 +15,7 @@ and automatic, synchronous replication for high availability.
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
   * [Backups-cancel](#backups-cancel)
+  * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
   * [Backups-create](#backups-create)
   * [Backups-delete](#backups-delete)
@@ -88,6 +89,23 @@ __Usage:__
 
 
 `node samples/backups-cancel.js`
+
+
+-----
+
+
+
+
+### Copies a source backup
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md)
+
+__Usage:__
+
+
+`node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>`
 
 
 -----
