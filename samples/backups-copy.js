@@ -51,7 +51,7 @@ function main(
       Date.now() + 1000 * 60 * 60 * 24 * 14
     ).toStruct();
 
-    // Copy the backup of the backup
+    // Copy the source backup
     try {
       console.log(`Creating copy of the source backup ${sourceBackupPath}.`);
       const [, operation] = await instance.copyBackup(
@@ -77,7 +77,7 @@ function main(
           `Backup copy ${copyBackupInfo.name} of size ` +
             `${copyBackupInfo.sizeBytes} bytes was created at ` +
             `${new PreciseDate(copyBackupInfo.createTime).toISOString()} ` +
-            'with version time' +
+            'with version time ' +
             `${new PreciseDate(copyBackupInfo.versionTime).toISOString()}`
         );
       } else {

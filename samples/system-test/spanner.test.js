@@ -1063,13 +1063,19 @@ describe('Spanner', () => {
   // list_backup_operations
   it('should list backup operations in the instance', async () => {
     const output = execSync(
-      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Create Backup Operations:/);
     assert.match(
       output,
       new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`)
     );
+    assert.match(output, /Copy Backup Operations:/);
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${COPY_BACKUP_ID} (.+) is 100% complete`)
+    );
+    console.log(output);
   });
 
   // update_backup_expire_time
