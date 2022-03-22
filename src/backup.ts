@@ -70,7 +70,6 @@ export interface CopyBackupOptions
   gaxOptions?: CallOptions;
 }
 
-
 /**
  * IBackup structure with backup state enum translated to string form.
  */

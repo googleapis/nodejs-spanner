@@ -1075,7 +1075,6 @@ describe('Spanner', () => {
       output,
       new RegExp(`Backup (.+)${COPY_BACKUP_ID} (.+) is 100% complete`)
     );
-    console.log(output);
   });
 
   // update_backup_expire_time
