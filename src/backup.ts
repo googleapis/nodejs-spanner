@@ -35,6 +35,7 @@ import {google as databaseAdmin} from '../protos/protos';
 import {common as p} from 'protobufjs';
 
 export type CreateBackupCallback = LongRunningCallback<Backup>;
+export type CopyBackupCallback = LongRunningCallback<Backup>;
 
 export interface CreateBackupGaxOperation extends GaxOperation {
   // Overridden with more specific type for CreateBackup operation
@@ -53,6 +54,19 @@ export interface CreateBackupOptions {
   expireTime: string | number | p.ITimestamp | PreciseDate;
   versionTime?: string | number | p.ITimestamp | PreciseDate;
   encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig;
+  gaxOptions?: CallOptions;
+}
+
+export interface CopyBackupGaxOperation extends GaxOperation {
+  // Overridden with more specific type for CopyBackup operation
+  metadata: Metadata &
+    databaseAdmin.spanner.admin.database.v1.ICopyBackupMetadata;
+}
+
+export type CopyBackupResponse = [Backup, CopyBackupGaxOperation, IOperation];
+
+export interface CopyBackupOptions
+  extends databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest {
   gaxOptions?: CallOptions;
 }
 
@@ -88,7 +102,7 @@ export type ExistsCallback = NormalCallback<boolean>;
 /**
  * The {@link Backup} class represents a Cloud Spanner backup.
  *
- * Create a `Backup` object to interact with or create a Cloud Spanner backup.
+ * Create a `Backup` object to interact with or create a Cloud Spanner backup or copy a backup.
  *
  * @class
  *
@@ -99,6 +113,15 @@ export type ExistsCallback = NormalCallback<boolean>;
  * const instance = spanner.instance('my-instance');
  * const backup = instance.backup('my-backup');
  * ```
+ *
+ * ```
+ * * @example
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instance('my-instance');
+ * const sourceBackup = instance.backup('my-source-backup');
+ * const copyBackup = instance.copyBackup('my-copy-backup', 'my-source-backup');
+ * ```
  */
 class Backup {
   id: string;
@@ -107,11 +130,13 @@ class Backup {
   resourceHeader_: {[k: string]: string};
   request: BackupRequest;
   metadata?: databaseAdmin.spanner.admin.database.v1.IBackup;
-  constructor(instance: Instance, name: string) {
+  sourceName: string | undefined;
+  constructor(instance: Instance, name: string, sourceName?: string) {
     this.request = instance.request;
     this.instanceFormattedName_ = instance.formattedName_;
     this.formattedName_ = Backup.formatName_(instance.formattedName_, name);
     this.id = this.formattedName_.split('/').pop() || '';
+    this.sourceName = sourceName;
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.instanceFormattedName_,
     };
@@ -181,52 +206,81 @@ class Backup {
    * await backupOperation.promise();
    * ```
    */
-  create(options: CreateBackupOptions): Promise<CreateBackupResponse>;
-  create(options: CreateBackupOptions, callback: CreateBackupCallback): void;
   create(
-    options: CreateBackupOptions,
-    callback?: CreateBackupCallback
-  ): Promise<CreateBackupResponse> | void {
+    options: CreateBackupOptions | CopyBackupOptions
+  ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse>;
+  create(
+    options: CreateBackupOptions | CopyBackupOptions,
+    callback: CreateBackupCallback | CopyBackupCallback
+  ): void;
+  create(
+    options: CreateBackupOptions | CopyBackupOptions,
+    callback?: CreateBackupCallback | CopyBackupCallback
+  ): Promise<CreateBackupResponse> | Promise<CopyBackupResponse> | void {
     const gaxOpts = options.gaxOptions;
-    const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest =
-      {
-        parent: this.instanceFormattedName_,
-        backupId: this.id,
-        backup: {
-          database: options.databasePath,
-          expireTime: Spanner.timestamp(options.expireTime).toStruct(),
-          name: this.formattedName_,
-        },
-      };
-    if ('versionTime' in options) {
-      reqOpts.backup!.versionTime = Spanner.timestamp(
-        options.versionTime
-      ).toStruct();
-    }
-    if (
-      'encryptionConfig' in options &&
-      (options as CreateBackupOptions).encryptionConfig
-    ) {
-      reqOpts.encryptionConfig = (
-        options as CreateBackupOptions
-      ).encryptionConfig;
-    }
-    this.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'createBackup',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err, operation, resp) => {
-        if (err) {
-          callback!(err, null, null, resp);
-          return;
-        }
-        callback!(null, this, operation, resp);
+    if ('databasePath' in options) {
+      const reqOpts: databaseAdmin.spanner.admin.database.v1.ICreateBackupRequest =
+        {
+          parent: this.instanceFormattedName_,
+          backupId: this.id,
+          backup: {
+            database: options.databasePath,
+            expireTime: Spanner.timestamp(options.expireTime).toStruct(),
+            name: this.formattedName_,
+          },
+        };
+      if ('versionTime' in options) {
+        reqOpts.backup!.versionTime = Spanner.timestamp(
+          options.versionTime
+        ).toStruct();
       }
-    );
+      if (
+        'encryptionConfig' in options &&
+        (options as CreateBackupOptions).encryptionConfig
+      ) {
+        reqOpts.encryptionConfig = (
+          options as CreateBackupOptions
+        ).encryptionConfig;
+      }
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'createBackup',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            callback!(err, null, null, resp);
+            return;
+          }
+          callback!(null, this, operation, resp);
+        }
+      );
+    } else if (this.sourceName) {
+      delete options.gaxOptions;
+      options.backupId = this.id;
+      options.parent = this.instanceFormattedName_;
+      options.sourceBackup = this.sourceName;
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'copyBackup',
+          reqOpts:
+            options as databaseAdmin.spanner.admin.database.v1.ICopyBackupRequest,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            callback!(err, null, null, resp);
+            return;
+          }
+          callback!(null, this, operation, resp);
+        }
+      );
+    }
   }
 
   /**

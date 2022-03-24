@@ -52,6 +52,7 @@ const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
+const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 const LOCATION_ID = 'regional-us-west1';
@@ -214,6 +215,7 @@ describe('Spanner', () => {
       await Promise.all([
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(COPY_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
       await instance.delete(GAX_OPTIONS);
@@ -223,6 +225,7 @@ describe('Spanner', () => {
         instance.database(RESTORE_DATABASE_ID).delete(),
         instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
+        instance.backup(COPY_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(CANCELLED_BACKUP_ID).delete(GAX_OPTIONS),
       ]);
@@ -1021,6 +1024,18 @@ describe('Spanner', () => {
     assert.include(output, `using encryption key ${key.name}`);
   });
 
+  // copy_backup
+  it('should create a copy of a backup', async () => {
+    const sourceBackupPath = `projects/${PROJECT_ID}/instances/${INSTANCE_ID}/backups/${BACKUP_ID}`;
+    const output = execSync(
+      `node backups-copy.js ${INSTANCE_ID} ${COPY_BACKUP_ID} ${sourceBackupPath} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`(.*)Backup copy(.*)${COPY_BACKUP_ID} of size(.*)`)
+    );
+  });
+
   // cancel_backup
   it('should cancel a backup of the database', async () => {
     const output = execSync(
@@ -1048,12 +1063,17 @@ describe('Spanner', () => {
   // list_backup_operations
   it('should list backup operations in the instance', async () => {
     const output = execSync(
-      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Create Backup Operations:/);
     assert.match(
       output,
       new RegExp(`Backup (.+)${BACKUP_ID} (.+) is 100% complete`)
+    );
+    assert.match(output, /Copy Backup Operations:/);
+    assert.match(
+      output,
+      new RegExp(`Backup (.+)${COPY_BACKUP_ID} (.+) is 100% complete`)
     );
   });
 
