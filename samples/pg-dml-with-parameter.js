@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Execute a DML statement with parameters on a Spanner PostgreSQL database.
-//  usage: node pgDmlWithParameters <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-dml-with-parameter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

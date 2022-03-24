@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Execute a Partitioned DML on a Spanner PostgreSQL database.
-//  usage: node pgPartitionedDml <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-dml-partitioned.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

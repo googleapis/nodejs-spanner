@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Execute a batch of DML statements on a Spanner PostgreSQL database.
-//  usage: node pgBatchDml <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-dml-batch.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

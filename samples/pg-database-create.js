@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Creates a PostgreSQL Database.
-//  usage: node createPgDatabase <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-database-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

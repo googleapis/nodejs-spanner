@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Execute a query with parameters on a Spanner PostgreSQL database.
-//  usage: node queryWithPgParameter <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-query-parameter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

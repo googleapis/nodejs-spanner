@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.
-//  usage: node pgNumericDataType <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node ppg-numeric-data-type.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

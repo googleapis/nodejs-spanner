@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Use cast operator to cast from one data type to another in a Spanner PostgreSQL database.
-//  usage: node pgDatatypeCasting <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-datatypes-casting.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

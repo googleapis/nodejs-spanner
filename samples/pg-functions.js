@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Calls a server side function on a Spanner PostgreSQL database.
-//  usage: node pgFunctions <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-functions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

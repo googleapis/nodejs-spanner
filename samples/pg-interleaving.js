@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Created interleaved table hierarchy using PostgreSQL dialect.
-//  usage: node pgInterleaving <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-interleaving.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

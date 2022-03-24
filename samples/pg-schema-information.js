@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Query the information schema metadata in a Spanner PostgreSQL database.
-//  usage: node pgSchemaInformation <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-schema-information.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

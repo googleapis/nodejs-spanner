@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Showcases how a Spanner PostgreSQL database orders null values in a query.
-//  usage: node pgOrderingNulls <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-ordering-nulls.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

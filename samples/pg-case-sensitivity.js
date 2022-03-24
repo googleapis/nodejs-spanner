@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.
-//  usage: node pgCaseSensitivity <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-case-sensitivity.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
