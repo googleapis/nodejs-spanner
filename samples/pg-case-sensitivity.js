@@ -90,7 +90,7 @@ function main(
         sql: 'SELECT * FROM Concerts',
       });
 
-      console.log(`Concerts Table Data using Mutations:`);
+      console.log('Concerts Table Data using Mutations:');
       rows.forEach(row => {
         const json = row.toJSON();
         // Queries: ConcertId is automatically folded to lower case. Accessing the column by its name in
@@ -113,7 +113,7 @@ function main(
           '"Location" AS "venue", "Time" FROM Concerts',
       });
 
-      console.log(`Concerts Table Data using Aliases:`);
+      console.log('Concerts Table Data using Aliases:');
       rows.forEach(row => {
         const json = row.toJSON();
         // The aliases are double-quoted and therefore retains their mixed case.

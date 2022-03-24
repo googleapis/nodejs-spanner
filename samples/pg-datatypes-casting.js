@@ -57,7 +57,7 @@ function main(
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `Data types after casting \n` +
+          'Data types after casting \n' +
             `String: ${json.str} \n` +
             `Int: ${json.int} \n` +
             `Decimal: ${json.dec.value} \n` +
