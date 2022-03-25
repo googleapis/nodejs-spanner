@@ -888,10 +888,17 @@ class Instance extends common.GrpcServiceObject {
 
     const poolOptions = options.poolOptions;
     const poolCtor = options.poolCtor;
+    let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
+    if (
+      databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL ===
+      options.databaseDialect
+    ) {
+      createStatement = 'CREATE DATABASE "' + name.split('/').pop() + '"';
+    }
     const reqOpts = extend(
       {
         parent: this.formattedName_,
-        createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`',
+        createStatement: createStatement,
       },
       options
     );

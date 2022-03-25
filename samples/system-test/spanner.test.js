@@ -46,6 +46,7 @@ const INSTANCE_ID =
 const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
+const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
@@ -55,8 +56,9 @@ const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
-const LOCATION_ID = 'regional-us-west1';
-const KEY_LOCATION_ID = 'us-west1';
+const LOCATION_ID = 'regional-us-central1';
+const PG_LOCATION_ID = 'regional-us-west2';
+const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
 const DEFAULT_LEADER = 'us-central1';
@@ -222,6 +224,7 @@ describe('Spanner', () => {
     } else {
       await Promise.all([
         instance.database(DATABASE_ID).delete(),
+        instance.database(PG_DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
         instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
@@ -529,7 +532,7 @@ describe('Spanner', () => {
     );
   });
 
-  // read_only_transaction
+  // read_only_transactioni
   it('should read an example table using transactions', async () => {
     const output = execSync(
       `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
@@ -1312,6 +1315,190 @@ describe('Spanner', () => {
         )
       );
       assert.include(output, 'CREATE TABLE Singers');
+    });
+  });
+
+  describe('postgreSQL', () => {
+    before(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      const [, operation] = await instance.create({
+        config: PG_LOCATION_ID,
+        nodes: 1,
+        displayName: 'PostgreSQL Test',
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
+      });
+      await operation.promise();
+    });
+
+    after(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await instance.delete();
+    });
+
+    // create_pg_database
+    it('should create an example PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-database-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${PG_DATABASE_ID} on instance ${SAMPLE_INSTANCE_ID} with dialect POSTGRESQL.`
+        )
+      );
+    });
+
+    // pg_interleaving
+    it('should create an interleaved table hierarchy using PostgreSQL dialect', async () => {
+      const output = execSync(
+        `node pg-interleaving.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created an interleaved table hierarchy in database ${PG_DATABASE_ID} using PostgreSQL dialect.`
+        )
+      );
+    });
+
+    // pg_dml_with_parameter
+    it('should execute a DML statement with parameters on a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-with-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully executed 1 postgreSQL statements using DML')
+      );
+    });
+
+    // pg_dml_batch
+    it('should execute a batch of DML statements on a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-batch.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Successfully executed 3 postgreSQL statements using Batch DML.'
+        )
+      );
+    });
+
+    // pg_dml_partitioned
+    it('should execute a partitioned DML on a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-partitioned.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Successfully deleted 1 record.'));
+    });
+
+    // pg_query_with_parameters
+    it('should execute a query with parameters on a Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node pg-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson')
+      );
+    });
+
+    // pg_schema_information
+    it('should query the information schema metadata in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-schema-information.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Table: ${PG_DATABASE_ID}.public.albums`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Table: ${PG_DATABASE_ID}.public.author`)
+      );
+      assert.match(output, new RegExp(`Table: ${PG_DATABASE_ID}.public.book`));
+      assert.match(
+        output,
+        new RegExp(`Table: ${PG_DATABASE_ID}.public.singers`)
+      );
+    });
+
+    // pg_ordering_nulls
+    it('should order nulls as per clause in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-ordering-nulls.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Author ORDER BY FirstName'));
+      assert.match(output, new RegExp('Author ORDER BY FirstName DESC'));
+      assert.match(output, new RegExp('Author ORDER BY FirstName NULLS FIRST'));
+      assert.match(
+        output,
+        new RegExp('Author ORDER BY FirstName DESC NULLS LAST')
+      );
+    });
+
+    // pg_numeric_data_type
+    it('should create a table, insert and query pg numeric data', async () => {
+      const output = execSync(
+        `node pg-numeric-data-type.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Added table venues to database ${PG_DATABASE_ID}.`)
+      );
+      assert.match(output, new RegExp('Inserted data.'));
+      assert.match(output, new RegExp('VenueId: 4, Revenue: 97372.3863'));
+      assert.match(output, new RegExp('VenueId: 19, Revenue: 7629'));
+      assert.match(output, new RegExp('VenueId: 398, Revenue: 0.000000123'));
+    });
+
+    // pg_case_sensitivity
+    it('should create case sensitive table and query the information in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-case-sensitivity.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created table with case sensitive names in database ${PG_DATABASE_ID} using PostgreSQL dialect.`
+        )
+      );
+      assert.match(output, new RegExp('Inserted data using mutations.'));
+      assert.match(output, new RegExp('Concerts Table Data using Mutations:'));
+      assert.match(output, new RegExp('Concerts Table Data using Aliases:'));
+      assert.match(output, new RegExp('Inserted data using DML.'));
+    });
+
+    // pg_datatypes_casting
+    it('should use cast operator to cast from one data type to another in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-datatypes-casting.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Data types after casting'));
+    });
+
+    // pg_functions
+    it('should call a server side function on a Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node pg-functions.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('1284352323 seconds after epoch is'));
     });
   });
 });
