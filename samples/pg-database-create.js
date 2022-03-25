@@ -62,7 +62,7 @@ function main(
       `Created database ${databaseId} on instance ${instanceId} with dialect ${database.metadata.databaseDialect}.`
     );
 
-    // Create a couple of tables using a separate request. We can use PostgreSQL style DDL as the
+    // Create a couple of tables using a separate request. We must use PostgreSQL style DDL as the
     // database has been created with the PostgreSQL dialect.
     const statements = [
       `CREATE TABLE Singers 
