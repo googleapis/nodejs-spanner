@@ -890,7 +890,7 @@ __Usage:__
 
 
 
-### Created interleaved table hierarchy using PostgreSQL dialect.
+### Create interleaved table hierarchy using PostgreSQL dialect.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-interleaving.js).
 
