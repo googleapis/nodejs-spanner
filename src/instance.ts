@@ -41,7 +41,12 @@ import {
   CallOptions,
   GoogleError,
 } from 'google-gax';
-import {Backup} from './backup';
+import {
+  Backup,
+  CopyBackupCallback,
+  CopyBackupResponse,
+  CopyBackupOptions,
+} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
@@ -83,7 +88,7 @@ export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
-  schema?: string;
+  schema?: string | string[];
   gaxOptions?: CallOptions;
 }
 export type GetDatabasesOptions = PagedOptions;
@@ -258,6 +263,62 @@ class Instance extends common.GrpcServiceObject {
     }
 
     return new Backup(this, backupId);
+  }
+
+  /**
+   * Get a reference to a Backup object.
+   *
+   * @throws {GoogleError} If any parameter is not provided.
+   *
+   * @typedef {object} CopyBackupOptions
+   *    * @property {string|null}
+   *    *     sourceBackup The full path of the backup to be copied
+   *    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *    *     expireTime The expire time of the backup.
+   *    * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig}
+   *    *     encryptionConfig An encryption configuration describing the
+   *    *     encryption type and key resources in Cloud KMS to be used to encrypt
+   *    *     the copy backup.
+   *    * @property {object} [gaxOptions] The request configuration options,
+   *    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *    *     for more details.
+   *    */
+  /**
+   * @callback CopyBackupCallback
+   * @param {string} sourceBackupId Full path of the source backup to be copied.
+   * @param {string} backupId The name of the backup.
+   * @param {CopyBackupOptions}
+   * @return {Backup} A Backup object.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const backup = instance.backup('my-source-backup','my-backup',{
+   *   expireTime: expireTime,
+   *   encryptionConfig: {
+   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *   },);
+   * ```
+   */
+  copyBackup(
+    sourceBackupId: string,
+    backupId: string,
+    options: CopyBackupOptions,
+    callback?: CopyBackupCallback
+  ): Promise<CopyBackupResponse> | void {
+    if (!backupId || !sourceBackupId) {
+      throw new GoogleError(
+        'A backup ID and source backup ID is required to create a copy of the source backup.'
+      );
+    }
+    const copyOfBackup = new Backup(this, backupId, sourceBackupId);
+    if (callback) {
+      return copyOfBackup.create(options, callback);
+    }
+    return copyOfBackup.create(options);
   }
 
   /**
@@ -827,10 +888,17 @@ class Instance extends common.GrpcServiceObject {
 
     const poolOptions = options.poolOptions;
     const poolCtor = options.poolCtor;
+    let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
+    if (
+      databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL ===
+      options.databaseDialect
+    ) {
+      createStatement = 'CREATE DATABASE "' + name.split('/').pop() + '"';
+    }
     const reqOpts = extend(
       {
         parent: this.formattedName_,
-        createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`',
+        createStatement: createStatement,
       },
       options
     );

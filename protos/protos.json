@@ -1316,6 +1316,22 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "referencingBackups": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 11,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "maxExpireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -1375,6 +1391,73 @@
                               "id": 2,
                               "options": {
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 3
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "CopyBackupRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
+                              }
+                            },
+                            "backupId": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "sourceBackup": {
+                              "type": "string",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "expireTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "encryptionConfig": {
+                              "type": "CopyBackupEncryptionConfig",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "CopyBackupMetadata": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
+                              }
+                            },
+                            "sourceBackup": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Backup"
                               }
                             },
                             "progress": {
@@ -1552,6 +1635,35 @@
                               "values": {
                                 "ENCRYPTION_TYPE_UNSPECIFIED": 0,
                                 "USE_DATABASE_ENCRYPTION": 1,
+                                "GOOGLE_DEFAULT_ENCRYPTION": 2,
+                                "CUSTOMER_MANAGED_ENCRYPTION": 3
+                              }
+                            }
+                          }
+                        },
+                        "CopyBackupEncryptionConfig": {
+                          "fields": {
+                            "encryptionType": {
+                              "type": "EncryptionType",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "kmsKeyName": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "EncryptionType": {
+                              "values": {
+                                "ENCRYPTION_TYPE_UNSPECIFIED": 0,
+                                "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION": 1,
                                 "GOOGLE_DEFAULT_ENCRYPTION": 2,
                                 "CUSTOMER_MANAGED_ENCRYPTION": 3
                               }
@@ -1863,6 +1975,34 @@
                                   "(google.longrunning.operation_info)": {
                                     "response_type": "google.spanner.admin.database.v1.Backup",
                                     "metadata_type": "google.spanner.admin.database.v1.CreateBackupMetadata"
+                                  }
+                                }
+                              ]
+                            },
+                            "CopyBackup": {
+                              "requestType": "CopyBackupRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/backups:copy",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "parent,backup_id,source_backup,expire_time",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.database.v1.Backup",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.database.v1.CopyBackupMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{parent=projects/*/instances/*}/backups:copy",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent,backup_id,source_backup,expire_time"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.database.v1.Backup",
+                                    "metadata_type": "google.spanner.admin.database.v1.CopyBackupMetadata"
                                   }
                                 }
                               ]
@@ -2758,18 +2898,25 @@
                           "fields": {
                             "name": {
                               "type": "string",
-                              "id": 1
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
                             },
                             "config": {
                               "type": "string",
                               "id": 2,
                               "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
                               }
                             },
                             "displayName": {
                               "type": "string",
-                              "id": 3
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
                             },
                             "nodeCount": {
                               "type": "int32",
@@ -3134,7 +3281,10 @@
                       "fields": {
                         "table": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "columns": {
                           "rule": "repeated",
@@ -3152,11 +3302,17 @@
                       "fields": {
                         "table": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "keySet": {
                           "type": "KeySet",
-                          "id": 2
+                          "id": 2,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         }
                       }
                     }
@@ -3792,7 +3948,10 @@
                     },
                     "session": {
                       "type": "Session",
-                      "id": 2
+                      "id": 2,
+                      "options": {
+                        "(google.api.field_behavior)": "REQUIRED"
+                      }
                     }
                   }
                 },
@@ -4068,7 +4227,10 @@
                       "fields": {
                         "sql": {
                           "type": "string",
-                          "id": 1
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
                         },
                         "params": {
                           "type": "google.protobuf.Struct",
@@ -4363,93 +4525,6 @@
             "cc_enable_arenas": true
           },
           "nested": {
-            "http": {
-              "type": "HttpRule",
-              "id": 72295728,
-              "extend": "google.protobuf.MethodOptions"
-            },
-            "Http": {
-              "fields": {
-                "rules": {
-                  "rule": "repeated",
-                  "type": "HttpRule",
-                  "id": 1
-                },
-                "fullyDecodeReservedExpansion": {
-                  "type": "bool",
-                  "id": 2
-                }
-              }
-            },
-            "HttpRule": {
-              "oneofs": {
-                "pattern": {
-                  "oneof": [
-                    "get",
-                    "put",
-                    "post",
-                    "delete",
-                    "patch",
-                    "custom"
-                  ]
-                }
-              },
-              "fields": {
-                "selector": {
-                  "type": "string",
-                  "id": 1
-                },
-                "get": {
-                  "type": "string",
-                  "id": 2
-                },
-                "put": {
-                  "type": "string",
-                  "id": 3
-                },
-                "post": {
-                  "type": "string",
-                  "id": 4
-                },
-                "delete": {
-                  "type": "string",
-                  "id": 5
-                },
-                "patch": {
-                  "type": "string",
-                  "id": 6
-                },
-                "custom": {
-                  "type": "CustomHttpPattern",
-                  "id": 8
-                },
-                "body": {
-                  "type": "string",
-                  "id": 7
-                },
-                "responseBody": {
-                  "type": "string",
-                  "id": 12
-                },
-                "additionalBindings": {
-                  "rule": "repeated",
-                  "type": "HttpRule",
-                  "id": 11
-                }
-              }
-            },
-            "CustomHttpPattern": {
-              "fields": {
-                "kind": {
-                  "type": "string",
-                  "id": 1
-                },
-                "path": {
-                  "type": "string",
-                  "id": 2
-                }
-              }
-            },
             "fieldBehavior": {
               "rule": "repeated",
               "type": "google.api.FieldBehavior",
@@ -4540,6 +4615,93 @@
                   "id": 1
                 },
                 "childType": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "http": {
+              "type": "HttpRule",
+              "id": 72295728,
+              "extend": "google.protobuf.MethodOptions"
+            },
+            "Http": {
+              "fields": {
+                "rules": {
+                  "rule": "repeated",
+                  "type": "HttpRule",
+                  "id": 1
+                },
+                "fullyDecodeReservedExpansion": {
+                  "type": "bool",
+                  "id": 2
+                }
+              }
+            },
+            "HttpRule": {
+              "oneofs": {
+                "pattern": {
+                  "oneof": [
+                    "get",
+                    "put",
+                    "post",
+                    "delete",
+                    "patch",
+                    "custom"
+                  ]
+                }
+              },
+              "fields": {
+                "selector": {
+                  "type": "string",
+                  "id": 1
+                },
+                "get": {
+                  "type": "string",
+                  "id": 2
+                },
+                "put": {
+                  "type": "string",
+                  "id": 3
+                },
+                "post": {
+                  "type": "string",
+                  "id": 4
+                },
+                "delete": {
+                  "type": "string",
+                  "id": 5
+                },
+                "patch": {
+                  "type": "string",
+                  "id": 6
+                },
+                "custom": {
+                  "type": "CustomHttpPattern",
+                  "id": 8
+                },
+                "body": {
+                  "type": "string",
+                  "id": 7
+                },
+                "responseBody": {
+                  "type": "string",
+                  "id": 12
+                },
+                "additionalBindings": {
+                  "rule": "repeated",
+                  "type": "HttpRule",
+                  "id": 11
+                }
+              }
+            },
+            "CustomHttpPattern": {
+              "fields": {
+                "kind": {
+                  "type": "string",
+                  "id": 1
+                },
+                "path": {
                   "type": "string",
                   "id": 2
                 }
