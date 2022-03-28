@@ -2181,44 +2181,41 @@ describe('Spanner', () => {
     const googleSqlTable = DATABASE.table(TABLE_NAME);
     const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-    before(() => {
-      return googleSqlTable
-        .create(
-          `
-            CREATE TABLE ${TABLE_NAME} (
-              SingerId STRING(1024) NOT NULL,
-              Name STRING(1024),
-              Float FLOAT64,
-              Int INT64,
-              Info BYTES(MAX),
-              Created TIMESTAMP,
-              DOB DATE,
-              Accents ARRAY<STRING(1024)>,
-              PhoneNumbers ARRAY<INT64>,
-              HasGear BOOL,
-            ) PRIMARY KEY(SingerId)`,
+    before(async () => {
+      const googleSqlCreateTable = await googleSqlTable.create(
+        `CREATE TABLE ${TABLE_NAME}
+                (
+                  SingerId     STRING(1024) NOT NULL,
+                  Name         STRING(1024),
+                  Float        FLOAT64,
+                  Int          INT64,
+                  Info         BYTES( MAX),
+                  Created      TIMESTAMP,
+                  DOB          DATE,
+                  Accents      ARRAY<STRING(1024)>,
+                  PhoneNumbers ARRAY<INT64>,
+                  HasGear      BOOL,
+                ) PRIMARY KEY(SingerId)`,
+        GAX_OPTIONS
+      );
+      onPromiseOperationComplete(googleSqlCreateTable);
+
+      if (!IS_EMULATOR_ENABLED) {
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+              (
+                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+                "Name"     VARCHAR(1024),
+                "Float"    DOUBLE PRECISION,
+                "Int"      BIGINT,
+                "Info"     BYTEA,
+                "Created"  TIMESTAMPTZ,
+                "HasGear"  BOOL
+              )`,
           GAX_OPTIONS
-        )
-        .then(onPromiseOperationComplete)
-        .then(() => {
-          if (IS_EMULATOR_ENABLED) {
-            return;
-          }
-          return postgreSqlTable.create(
-            `
-            CREATE TABLE ${TABLE_NAME} (
-              "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
-              "Name" VARCHAR(1024),
-              "Float" DOUBLE PRECISION ,
-              "Int" BIGINT,
-              "Info" BYTEA,
-              "Created" TIMESTAMPTZ,
-              "HasGear" BOOL
-            )`,
-            GAX_OPTIONS
-          );
-        })
-        .then(onPromiseOperationComplete);
+        );
+        onPromiseOperationComplete(postgreSqlCreateTable);
+      }
     });
 
     const nonExistantTable = (done, database) => {
@@ -4388,36 +4385,33 @@ describe('Spanner', () => {
           return Buffer.from(bytes, 'base64');
         }
 
-        before(() => {
-          return googleSqlTable
-            .create(
-              `
+        before(async () => {
+          const googleSqlCreateTable = await googleSqlTable.create(
+            `
               CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                StringValue STRING(MAX),
-                StringArray ARRAY<STRING(MAX)>,
-                BytesValue BYTES(MAX),
-                BytesArray ARRAY<BYTES(MAX)>
-              ) PRIMARY KEY (Key)`
-            )
-            .then(onPromiseOperationComplete)
-            .then(() => {
-              return postgreSqlTable.create(
-                `
-              CREATE TABLE ${TABLE_NAME} (
-                "Key" VARCHAR NOT NULL PRIMARY KEY,
-                "StringValue" VARCHAR,
-                "BytesValue" BYTEA
-              )`
-              );
-            })
-            .then(onPromiseOperationComplete)
-            .then(() => {
-              return googleSqlTable.insert(googleSqlExpectedRow);
-            })
-            .then(() => {
-              return postgreSqlTable.insert(postgreSqlExpectedRow);
-            });
+                                           Key STRING(MAX) NOT NULL,
+                                           StringValue STRING(MAX),
+                                           StringArray ARRAY<STRING(MAX)>,
+                                           BytesValue BYTES(MAX),
+                                           BytesArray ARRAY<BYTES(MAX)>
+              ) PRIMARY KEY (Key)`,
+            GAX_OPTIONS
+          );
+          onPromiseOperationComplete(googleSqlCreateTable);
+          await googleSqlTable.insert(googleSqlExpectedRow);
+
+          if (!IS_EMULATOR_ENABLED) {
+            const postgreSqlCreateTable = await postgreSqlTable.create(
+              `CREATE TABLE ${TABLE_NAME} (
+                                            "Key" VARCHAR NOT NULL PRIMARY KEY,
+                                            "StringValue" VARCHAR,
+                                            "BytesValue" BYTEA
+               )`,
+              GAX_OPTIONS
+            );
+            onPromiseOperationComplete(postgreSqlCreateTable);
+            await postgreSqlTable.insert(postgreSqlExpectedRow);
+          }
         });
 
         it('GOOGLE_STANDARD_SQL should read large datasets', done => {
@@ -4649,62 +4643,45 @@ describe('Spanner', () => {
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
 
-      before(() => {
-        return googleSqlTable
-          .create(
-            `
+      before(async () => {
+        const googleSqlCreateTable = await googleSqlTable.create(
+          `
             CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)`,
-            GAX_OPTIONS
-          )
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return DATABASE.updateSchema(`
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(googleSqlCreateTable);
+        const googleSqlCreateIndex = await DATABASE.updateSchema(`
               CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return postgreSqlTable.create(
-              `
-            CREATE TABLE ${TABLE_NAME} (
-              "Key" VARCHAR NOT NULL PRIMARY KEY,
-              "StringValue" VARCHAR
-            )`,
-              GAX_OPTIONS
-            );
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return PG_DATABASE.updateSchema(`
-              CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            const data: Array<{}> = [];
+        await onPromiseOperationComplete(googleSqlCreateIndex);
 
-            for (let i = 0; i < 15; ++i) {
-              data.push({
-                Key: 'k' + i,
-                StringValue: 'v' + i,
-              });
-            }
+        const data: Array<{}> = [];
 
-            return googleSqlTable.insert(data);
-          })
-          .then(() => {
-            const data: Array<{}> = [];
-
-            for (let i = 0; i < 15; ++i) {
-              data.push({
-                Key: 'k' + i,
-                StringValue: 'v' + i,
-              });
-            }
-
-            return postgreSqlTable.insert(data);
+        for (let i = 0; i < 15; ++i) {
+          data.push({
+            Key: 'k' + i,
+            StringValue: 'v' + i,
           });
+        }
+        await googleSqlTable.insert(data);
+
+        if (!IS_EMULATOR_ENABLED) {
+          const postgreSqlCreateTable = await postgreSqlTable.create(
+            `
+                CREATE TABLE ${TABLE_NAME} (
+                                             "Key" VARCHAR NOT NULL PRIMARY KEY,
+                                             "StringValue" VARCHAR
+                )`,
+            GAX_OPTIONS
+          );
+          await onPromiseOperationComplete(postgreSqlCreateTable);
+          const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
+              CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
+          await onPromiseOperationComplete(postgreSqlCreateIndex);
+          await postgreSqlTable.insert(data);
+        }
       });
 
       // all of these tests require testing with and without an index,
@@ -5263,13 +5240,6 @@ describe('Spanner', () => {
     const postgreSqlRecords = [];
 
     before(async () => {
-      await onPromiseOperationComplete(
-        await googleSqlTable.create(googleSqlSchema, GAX_OPTIONS)
-      );
-      await onPromiseOperationComplete(
-        await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
-      );
-
       const insertRecords = async function (table, records) {
         for (let i = 0; i < 5; i++) {
           const entry = {Key: `k${i}`, StringValue: `v${i}`};
@@ -5284,8 +5254,17 @@ describe('Spanner', () => {
           await wait(1000);
         }
       };
+      await onPromiseOperationComplete(
+        await googleSqlTable.create(googleSqlSchema, GAX_OPTIONS)
+      );
       await insertRecords(googleSqlTable, googleSqlRecords);
-      await insertRecords(postgreSqlTable, postgreSqlRecords);
+
+      if (!IS_EMULATOR_ENABLED) {
+        await onPromiseOperationComplete(
+          await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
+        );
+        await insertRecords(postgreSqlTable, postgreSqlRecords);
+      }
     });
 
     describe('snapshots', () => {
@@ -5724,7 +5703,11 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              transaction!.commit(postgresUpdateDmlDatabase);
+              if (!IS_EMULATOR_ENABLED) {
+                transaction!.commit(postgresUpdateDmlDatabase);
+              } else {
+                transaction!.commit(done);
+              }
             }
           );
         });
