@@ -49,7 +49,7 @@ function main(
     // are only available for PostgreSQL databases.
     const query = {
       sql:
-        'SELECT table_catalog, table_schema, table_name, ' +
+        'SELECT table_schema, table_name, ' +
         'user_defined_type_catalog, ' +
         'user_defined_type_schema, ' +
         'user_defined_type_name ' +
@@ -62,7 +62,7 @@ function main(
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `Table: ${json.table_catalog}.${json.table_schema}.${json.table_name} ` +
+          `Table: ${json.table_schema}.${json.table_name} ` +
             `(User defined type: ${json.user_defined_type_catalog}.${json.user_defined_type_schema}.${json.user_defined_type_name})`
         );
       });
