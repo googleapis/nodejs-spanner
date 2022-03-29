@@ -4671,14 +4671,14 @@ describe('Spanner', () => {
           const postgreSqlCreateTable = await postgreSqlTable.create(
             `
                 CREATE TABLE ${TABLE_NAME} (
-                                             "Key" VARCHAR NOT NULL PRIMARY KEY,
-                                             "StringValue" VARCHAR
+                    "Key" VARCHAR NOT NULL PRIMARY KEY, 
+                    "StringValue" VARCHAR
                 )`,
             GAX_OPTIONS
           );
           await onPromiseOperationComplete(postgreSqlCreateTable);
           const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
-              CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
+              CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
           await onPromiseOperationComplete(postgreSqlCreateIndex);
           await postgreSqlTable.insert(data);
         }
