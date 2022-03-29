@@ -1420,19 +1420,10 @@ describe('Spanner', () => {
       const output = execSync(
         `node pg-schema-information.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.albums`)
-      );
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.author`)
-      );
-      assert.match(output, new RegExp(`Table: ${PG_DATABASE_ID}.public.book`));
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.singers`)
-      );
+      assert.match(output, new RegExp('Table: public.albums'));
+      assert.match(output, new RegExp('Table: public.author'));
+      assert.match(output, new RegExp('Table: public.book'));
+      assert.match(output, new RegExp('Table: public.singers'));
     });
 
     // pg_ordering_nulls

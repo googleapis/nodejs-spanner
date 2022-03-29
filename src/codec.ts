@@ -18,10 +18,9 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import {Big} from 'big.js';
 import * as is from 'is';
-import {common as p, util} from 'protobufjs';
+import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
 import {GoogleError} from 'google-gax';
-import float = util.float;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
