@@ -2198,7 +2198,7 @@ describe('Spanner', () => {
                 ) PRIMARY KEY(SingerId)`,
         GAX_OPTIONS
       );
-      onPromiseOperationComplete(googleSqlCreateTable);
+      await onPromiseOperationComplete(googleSqlCreateTable);
 
       if (!IS_EMULATOR_ENABLED) {
         const postgreSqlCreateTable = await postgreSqlTable.create(
@@ -2214,11 +2214,11 @@ describe('Spanner', () => {
               )`,
           GAX_OPTIONS
         );
-        onPromiseOperationComplete(postgreSqlCreateTable);
+        await onPromiseOperationComplete(postgreSqlCreateTable);
       }
     });
 
-    const nonExistantTable = (done, database) => {
+    const nonExistentTable = (done, database) => {
       const table = database.table(generateName('nope'));
 
       table.insert(
@@ -2233,14 +2233,14 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should throw an error for non-existent tables', done => {
-      nonExistantTable(done, DATABASE);
+      nonExistentTable(done, DATABASE);
     });
 
     it('POSTGRESQL should throw an error for non-existent tables', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      nonExistantTable(done, PG_DATABASE);
+      nonExistentTable(done, PG_DATABASE);
     });
 
     const nonExistentColumn = (done, table) => {
@@ -4397,7 +4397,7 @@ describe('Spanner', () => {
               ) PRIMARY KEY (Key)`,
             GAX_OPTIONS
           );
-          onPromiseOperationComplete(googleSqlCreateTable);
+          await onPromiseOperationComplete(googleSqlCreateTable);
           await googleSqlTable.insert(googleSqlExpectedRow);
 
           if (!IS_EMULATOR_ENABLED) {
@@ -4409,7 +4409,7 @@ describe('Spanner', () => {
                )`,
               GAX_OPTIONS
             );
-            onPromiseOperationComplete(postgreSqlCreateTable);
+            await onPromiseOperationComplete(postgreSqlCreateTable);
             await postgreSqlTable.insert(postgreSqlExpectedRow);
           }
         });
