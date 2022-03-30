@@ -1395,7 +1395,14 @@ describe('Spanner', () => {
         assert.ifError(err);
         assert.strictEqual(metadata!.name, database.formattedName_);
         assert.strictEqual(metadata!.state, 'READY');
-        assert.strictEqual(metadata!.databaseDialect, dialect);
+        if (IS_EMULATOR_ENABLED) {
+          assert.strictEqual(
+            metadata!.databaseDialect,
+            'DATABASE_DIALECT_UNSPECIFIED'
+          );
+        } else {
+          assert.strictEqual(metadata!.databaseDialect, dialect);
+        }
         done();
       });
     };
