@@ -315,7 +315,7 @@ describe('Spanner', () => {
           table = postgreSqlTable;
           database = PG_DATABASE;
           query = {
-            sql: `SELECT * FROM ${table.name.toLowerCase()} WHERE "Key" = $1 OR "Key" = $2`,
+            sql: `SELECT * FROM ${table.name} WHERE "Key" = $1 OR "Key" = $2`,
             params: {
               p1: data[0].Key,
               p2: data[1].Key,
@@ -1390,24 +1390,25 @@ describe('Spanner', () => {
       autoCreateDatabase(done, 'pg-db');
     });
 
-    const createDatabase = (done, database) => {
+    const createDatabase = (done, database, dialect) => {
       database.getMetadata((err, metadata) => {
         assert.ifError(err);
         assert.strictEqual(metadata!.name, database.formattedName_);
         assert.strictEqual(metadata!.state, 'READY');
+        assert.strictEqual(metadata!.databaseDialect, dialect);
         done();
       });
     };
 
     it('GOOGLE_STANDARD_SQL should have created the database', done => {
-      createDatabase(done, DATABASE);
+      createDatabase(done, DATABASE, 1);
     });
 
     it('POSTGRESQL should have created the database', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      createDatabase(done, PG_DATABASE);
+      createDatabase(done, PG_DATABASE, 2);
     });
 
     it('should list the databases from an instance', done => {
@@ -1467,7 +1468,9 @@ describe('Spanner', () => {
             const schema = str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
             if (dialect === Spanner.GOOGLE_STANDARD_SQL) {
               return schema;
-            } else return schema.toLowerCase();
+            } else {
+              return schema.toLowerCase();
+            }
           }
 
           database.getSchema((err, statements) => {
@@ -1648,9 +1651,9 @@ describe('Spanner', () => {
 
       const schema = [
         `CREATE TABLE Albums (
-            AlbumId VARCHAR NOT NULL PRIMARY KEY,
+        AlbumId VARCHAR NOT NULL PRIMARY KEY,
         AlbumTitle VARCHAR NOT NULL
-    );`,
+        );`,
       ];
       const [postgreSqlDatabase2UpdateOperation] =
         await postgreSqlDatabase2.updateSchema(schema);
@@ -1794,10 +1797,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should have completed a backup', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should have completed a backup', async () => {
       await completedBackup(
         postgreSqlBackup1,
         postgreSqlBackup1Name,
@@ -1828,10 +1828,7 @@ describe('Spanner', () => {
       await pastBackupExpirationTimeError(googleSqlDatabase1);
     });
 
-    it('POSTGRESQL should return error for backup expiration time in the past', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should return error for backup expiration time in the past', async () => {
       await pastBackupExpirationTimeError(postgreSqlDatabase1);
     });
 
@@ -1965,10 +1962,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should restore a backup', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should restore a backup', async () => {
       await restoreBackup(
         postgreSqlRestoreDatabase,
         postgreSqlBackup1,
@@ -1994,10 +1988,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should not be able to restore to an existing database', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should not be able to restore to an existing database', async () => {
       await restoreExistingDatabaseFail(
         postgreSqlRestoreDatabase,
         postgreSqlBackup1
@@ -2025,10 +2016,7 @@ describe('Spanner', () => {
       await updateBackupExpiry(googleSqlBackup1);
     });
 
-    it('POSTGRESQL should update backup expiry', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should update backup expiry', async () => {
       await updateBackupExpiry(postgreSqlBackup1);
     });
 
@@ -2050,10 +2038,7 @@ describe('Spanner', () => {
       await pastBackupUpdateExpiryDateFail(googleSqlBackup1);
     });
 
-    it('POSTGRESQL should not update backup expiry to the past', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should not update backup expiry to the past', async () => {
       await pastBackupUpdateExpiryDateFail(postgreSqlBackup1);
     });
 
@@ -2075,10 +2060,7 @@ describe('Spanner', () => {
       await deleteBackup(googleSqlBackup2);
     });
 
-    it('POSTGRESQL should delete backup', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should delete backup', async () => {
       await deleteBackup(postgreSqlBackup2);
     });
 
@@ -2121,10 +2103,7 @@ describe('Spanner', () => {
       await listBackupOperations(googleSqlBackup1, googleSqlDatabase1);
     });
 
-    it('POSTGRESQL should delete backup', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    it('POSTGRESQL should delete backup', async () => {
       await listBackupOperations(postgreSqlBackup1, postgreSqlDatabase1);
     });
   });
