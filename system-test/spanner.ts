@@ -1408,14 +1408,14 @@ describe('Spanner', () => {
     };
 
     it('GOOGLE_STANDARD_SQL should have created the database', done => {
-      createDatabase(done, DATABASE, 1);
+      createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
     });
 
     it('POSTGRESQL should have created the database', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      createDatabase(done, PG_DATABASE, 2);
+      createDatabase(done, PG_DATABASE, 'GOOGLE_STANDARD_SQL');
     });
 
     it('should list the databases from an instance', done => {
