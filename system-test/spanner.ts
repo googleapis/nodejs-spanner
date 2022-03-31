@@ -1415,7 +1415,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      createDatabase(done, PG_DATABASE, 'GOOGLE_STANDARD_SQL');
+      createDatabase(done, PG_DATABASE, 'POSTGRESQL');
     });
 
     it('should list the databases from an instance', done => {
@@ -1613,6 +1613,8 @@ describe('Spanner', () => {
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
+    const SKIP_POSTGRESQL_BACKUP_TESTS = true;
+
     before(async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
@@ -1804,7 +1806,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should have completed a backup', async () => {
+    it.skip('POSTGRESQL should have completed a backup', async () => {
       await completedBackup(
         postgreSqlBackup1,
         postgreSqlBackup1Name,
@@ -1835,7 +1837,7 @@ describe('Spanner', () => {
       await pastBackupExpirationTimeError(googleSqlDatabase1);
     });
 
-    it('POSTGRESQL should return error for backup expiration time in the past', async () => {
+    it.skip('POSTGRESQL should return error for backup expiration time in the past', async () => {
       await pastBackupExpirationTimeError(postgreSqlDatabase1);
     });
 
@@ -1856,7 +1858,7 @@ describe('Spanner', () => {
           backup => backup.formattedName_ === googleSqlBackup1.formattedName_
         )
       );
-      if (!IS_EMULATOR_ENABLED) {
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           backups.find(
             backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
@@ -1877,7 +1879,7 @@ describe('Spanner', () => {
       });
 
       let page3size = 2;
-      if (!IS_EMULATOR_ENABLED) {
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         page3size = 4;
       }
       const [page3] = await instance.getBackups({
@@ -1898,7 +1900,7 @@ describe('Spanner', () => {
           backup => backup.formattedName_ === googleSqlBackup2.formattedName_
         )
       );
-      if (!IS_EMULATOR_ENABLED) {
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
         assert.ok(
           page3.find(
             backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
@@ -1969,7 +1971,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should restore a backup', async () => {
+    it.skip('POSTGRESQL should restore a backup', async () => {
       await restoreBackup(
         postgreSqlRestoreDatabase,
         postgreSqlBackup1,
@@ -1995,7 +1997,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should not be able to restore to an existing database', async () => {
+    it.skip('POSTGRESQL should not be able to restore to an existing database', async () => {
       await restoreExistingDatabaseFail(
         postgreSqlRestoreDatabase,
         postgreSqlBackup1
@@ -2023,7 +2025,7 @@ describe('Spanner', () => {
       await updateBackupExpiry(googleSqlBackup1);
     });
 
-    it('POSTGRESQL should update backup expiry', async () => {
+    it.skip('POSTGRESQL should update backup expiry', async () => {
       await updateBackupExpiry(postgreSqlBackup1);
     });
 
@@ -2045,7 +2047,7 @@ describe('Spanner', () => {
       await pastBackupUpdateExpiryDateFail(googleSqlBackup1);
     });
 
-    it('POSTGRESQL should not update backup expiry to the past', async () => {
+    it.skip('POSTGRESQL should not update backup expiry to the past', async () => {
       await pastBackupUpdateExpiryDateFail(postgreSqlBackup1);
     });
 
@@ -2067,7 +2069,7 @@ describe('Spanner', () => {
       await deleteBackup(googleSqlBackup2);
     });
 
-    it('POSTGRESQL should delete backup', async () => {
+    it.skip('POSTGRESQL should delete backup', async () => {
       await deleteBackup(postgreSqlBackup2);
     });
 
@@ -2110,7 +2112,7 @@ describe('Spanner', () => {
       await listBackupOperations(googleSqlBackup1, googleSqlDatabase1);
     });
 
-    it('POSTGRESQL should delete backup', async () => {
+    it.skip('POSTGRESQL should delete backup', async () => {
       await listBackupOperations(postgreSqlBackup1, postgreSqlDatabase1);
     });
   });
