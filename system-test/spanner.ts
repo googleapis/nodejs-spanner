@@ -212,78 +212,79 @@ describe('Spanner', () => {
       });
     }
 
-    before(done => {
+    before(async () => {
       if (IS_EMULATOR_ENABLED) {
-        DATABASE.updateSchema(
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
-            CREATE TABLE ${TABLE_NAME} (
-              Key STRING(MAX) NOT NULL,
-              BytesValue BYTES(MAX),
-              BoolValue BOOL,
-              DateValue DATE,
-              FloatValue FLOAT64,
-              IntValue INT64,
-              NumericValue NUMERIC,
-              StringValue STRING(MAX),
-              TimestampValue TIMESTAMP,
-              BytesArray ARRAY<BYTES(MAX)>,
-              BoolArray ARRAY<BOOL>,
-              DateArray ARRAY<DATE>,
-              FloatArray ARRAY<FLOAT64>,
-              IntArray ARRAY<INT64>,
-              NumericArray ARRAY<NUMERIC>,
-              StringArray ARRAY<STRING(MAX)>,
-              TimestampArray ARRAY<TIMESTAMP>,
-              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-            ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
-        );
-      } else {
-        const postgresCreateDatabase = () => {
-          PG_DATABASE.updateSchema(
-            `
-              CREATE TABLE ${TABLE_NAME} (
-                "Key" VARCHAR NOT NULL PRIMARY KEY,
-                "BytesValue" BYTEA,
-                "BoolValue" BOOL,
-                "FloatValue" DOUBLE PRECISION,
-                "IntValue" BIGINT,
-                "NumericValue" NUMERIC,
-                "StringValue" VARCHAR,
-                "TimestampValue" TIMESTAMPTZ
-              ); 
-            `,
-            execAfterOperationComplete(done)
-          );
-        };
-        DATABASE.updateSchema(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                BytesValue BYTES(MAX),
-                BoolValue BOOL,
-                DateValue DATE,
-                FloatValue FLOAT64,
-                JsonValue JSON,
-                IntValue INT64,
-                NumericValue NUMERIC,
-                StringValue STRING(MAX),
-                TimestampValue TIMESTAMP,
-                BytesArray ARRAY<BYTES(MAX)>,
-                BoolArray ARRAY<BOOL>,
-                DateArray ARRAY<DATE>,
-                FloatArray ARRAY<FLOAT64>,
-                JsonArray ARRAY<JSON>,
-                IntArray ARRAY<INT64>,
-                NumericArray ARRAY<NUMERIC>,
-                StringArray ARRAY<STRING(MAX)>,
-                TimestampArray ARRAY<TIMESTAMP>,
-                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
-            `,
-          postgresCreateDatabase
+            `
         );
+        await googleSqlOperationUpdateDDL.promise();
+      } else {
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                JsonValue       JSON,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                JsonArray       ARRAY<JSON>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
+              ) PRIMARY KEY (Key)
+            `
+        );
+        await googleSqlOperationUpdateDDL.promise();
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"            VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"     BYTEA,
+                  "BoolValue"      BOOL,
+                  "FloatValue"     DOUBLE PRECISION,
+                  "IntValue"       BIGINT,
+                  "NumericValue"   NUMERIC,
+                  "StringValue"    VARCHAR,
+                  "TimestampValue" TIMESTAMPTZ
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
       }
     });
 
@@ -1590,6 +1591,8 @@ describe('Spanner', () => {
   });
 
   describe('Backups', () => {
+    const SKIP_POSTGRESQL_BACKUP_TESTS = true;
+
     let googleSqlDatabase1: Database;
     let googleSqlDatabase2: Database;
     let googleSqlRestoreDatabase: Database;
@@ -1612,8 +1615,6 @@ describe('Spanner', () => {
 
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
-
-    const SKIP_POSTGRESQL_BACKUP_TESTS = true;
 
     before(async function () {
       if (IS_EMULATOR_ENABLED) {
@@ -1650,25 +1651,26 @@ describe('Spanner', () => {
       await googleSqlDatabase2CreateOperation.promise();
       RESOURCES_TO_CLEAN.push(googleSqlDatabase2);
 
-      postgreSqlDatabase2 = instance.database(generateName('pg-db'));
-      const [, postgreSqlDatabase2CreateOperation] =
-        await postgreSqlDatabase2.create({
-          databaseDialect: Spanner.POSTGRESQL,
-          gaxOptions: GAX_OPTIONS,
-        });
-      await postgreSqlDatabase2CreateOperation.promise();
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
+        postgreSqlDatabase2 = instance.database(generateName('pg-db'));
+        const [, postgreSqlDatabase2CreateOperation] =
+          await postgreSqlDatabase2.create({
+            databaseDialect: Spanner.POSTGRESQL,
+            gaxOptions: GAX_OPTIONS,
+          });
+        await postgreSqlDatabase2CreateOperation.promise();
 
-      const schema = [
-        `CREATE TABLE Albums (
-        AlbumId VARCHAR NOT NULL PRIMARY KEY,
-        AlbumTitle VARCHAR NOT NULL
+        const schema = [
+          `CREATE TABLE Albums (
+            AlbumId VARCHAR NOT NULL PRIMARY KEY,
+            AlbumTitle VARCHAR NOT NULL
         );`,
-      ];
-      const [postgreSqlDatabase2UpdateOperation] =
-        await postgreSqlDatabase2.updateSchema(schema);
-      await postgreSqlDatabase2UpdateOperation.promise();
-      RESOURCES_TO_CLEAN.push(postgreSqlDatabase2);
-
+        ];
+        const [postgreSqlDatabase2UpdateOperation] =
+          await postgreSqlDatabase2.updateSchema(schema);
+        await postgreSqlDatabase2UpdateOperation.promise();
+        RESOURCES_TO_CLEAN.push(postgreSqlDatabase2);
+      }
       // Initialize a database instance to restore to.
       googleSqlRestoreDatabase = instance.database(generateName('database'));
       postgreSqlRestoreDatabase = instance.database(generateName('pg-db'));
@@ -1683,19 +1685,6 @@ describe('Spanner', () => {
       });
       const [, googleSqlBackup2Operation] = await googleSqlBackup2.create({
         databasePath: googleSqlDatabase2.formattedName_,
-        expireTime: backupExpiryDate,
-        gaxOptions: GAX_OPTIONS,
-      });
-
-      postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
-      postgreSqlBackup2 = instance.backup(postgreSqlBackup2Name);
-      const [, postgreSqlBackup1Operation] = await postgreSqlBackup1.create({
-        databasePath: postgreSqlDatabase1.formattedName_,
-        expireTime: backupExpiryDate,
-        gaxOptions: GAX_OPTIONS,
-      });
-      const [, postgreSqlBackup2Operation] = await postgreSqlBackup2.create({
-        databasePath: postgreSqlDatabase2.formattedName_,
         expireTime: backupExpiryDate,
         gaxOptions: GAX_OPTIONS,
       });
@@ -1726,44 +1715,57 @@ describe('Spanner', () => {
           googleSqlDatabase2.formattedName_
         );
       }
-      if ('database' in postgreSqlBackup1Operation.metadata) {
-        assert.strictEqual(
-          postgreSqlBackup1Operation.metadata!.name,
-          `${instance.formattedName_}/backups/${postgreSqlBackup1Name}`
-        );
-      }
-      if ('database' in postgreSqlBackup1Operation.metadata) {
-        assert.strictEqual(
-          postgreSqlBackup1Operation.metadata!.database,
-          postgreSqlDatabase1.formattedName_
-        );
-      }
-      if ('database' in postgreSqlBackup2Operation.metadata) {
-        assert.strictEqual(
-          postgreSqlBackup2Operation.metadata!.name,
-          `${instance.formattedName_}/backups/${postgreSqlBackup2Name}`
-        );
-      }
-      if ('database' in postgreSqlBackup2Operation.metadata) {
-        assert.strictEqual(
-          postgreSqlBackup2Operation.metadata!.database,
-          postgreSqlDatabase2.formattedName_
-        );
-      }
 
       // Wait for backups to finish.
       await googleSqlBackup1Operation.promise();
       await googleSqlBackup2Operation.promise();
-      await postgreSqlBackup1Operation.promise();
-      await postgreSqlBackup2Operation.promise();
-      RESOURCES_TO_CLEAN.push(
-        ...[
-          googleSqlBackup1,
-          googleSqlBackup2,
-          postgreSqlBackup1,
-          postgreSqlBackup2,
-        ]
-      );
+      RESOURCES_TO_CLEAN.push(...[googleSqlBackup1, googleSqlBackup2]);
+
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
+        postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
+        postgreSqlBackup2 = instance.backup(postgreSqlBackup2Name);
+        const [, postgreSqlBackup1Operation] = await postgreSqlBackup1.create({
+          databasePath: postgreSqlDatabase1.formattedName_,
+          expireTime: backupExpiryDate,
+          gaxOptions: GAX_OPTIONS,
+        });
+        const [, postgreSqlBackup2Operation] = await postgreSqlBackup2.create({
+          databasePath: postgreSqlDatabase2.formattedName_,
+          expireTime: backupExpiryDate,
+          gaxOptions: GAX_OPTIONS,
+        });
+
+        if ('database' in postgreSqlBackup1Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup1Operation.metadata!.name,
+            `${instance.formattedName_}/backups/${postgreSqlBackup1Name}`
+          );
+        }
+        if ('database' in postgreSqlBackup1Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup1Operation.metadata!.database,
+            postgreSqlDatabase1.formattedName_
+          );
+        }
+        if ('database' in postgreSqlBackup2Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup2Operation.metadata!.name,
+            `${instance.formattedName_}/backups/${postgreSqlBackup2Name}`
+          );
+        }
+        if ('database' in postgreSqlBackup2Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup2Operation.metadata!.database,
+            postgreSqlDatabase2.formattedName_
+          );
+        }
+
+        // Wait for backups to finish.
+        await postgreSqlBackup1Operation.promise();
+        await postgreSqlBackup2Operation.promise();
+
+        RESOURCES_TO_CLEAN.push(...[postgreSqlBackup1, postgreSqlBackup2]);
+      }
     });
 
     function futureDateByHours(futureHours: number): number {
