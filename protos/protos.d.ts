@@ -7580,6 +7580,20 @@ export namespace google {
                          * @returns Promise
                          */
                         public listBackupOperations(request: google.spanner.admin.database.v1.IListBackupOperationsRequest): Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>;
+
+                        /**
+                         * Calls ListDatabaseRoles.
+                         * @param request ListDatabaseRolesRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListDatabaseRolesResponse
+                         */
+                        public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRolesCallback): void;
+
+                        /**
+                         * Calls ListDatabaseRoles.
+                         * @param request ListDatabaseRolesRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest): Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>;
                     }
 
                     namespace DatabaseAdmin {
@@ -7709,6 +7723,13 @@ export namespace google {
                          * @param [response] ListBackupOperationsResponse
                          */
                         type ListBackupOperationsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupOperationsResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseRoles}.
+                         * @param error Error, if any
+                         * @param [response] ListDatabaseRolesResponse
+                         */
+                        type ListDatabaseRolesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseRolesResponse) => void;
                     }
 
                     /** Properties of a RestoreInfo. */
@@ -9588,6 +9609,294 @@ export namespace google {
                     enum RestoreSourceType {
                         TYPE_UNSPECIFIED = 0,
                         BACKUP = 1
+                    }
+
+                    /** Properties of a DatabaseRole. */
+                    interface IDatabaseRole {
+
+                        /** DatabaseRole name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a DatabaseRole. */
+                    class DatabaseRole implements IDatabaseRole {
+
+                        /**
+                         * Constructs a new DatabaseRole.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDatabaseRole);
+
+                        /** DatabaseRole name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new DatabaseRole instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DatabaseRole instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDatabaseRole): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Encodes the specified DatabaseRole message. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                         * @param message DatabaseRole message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDatabaseRole, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DatabaseRole message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                         * @param message DatabaseRole message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDatabaseRole, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DatabaseRole message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DatabaseRole
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Decodes a DatabaseRole message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DatabaseRole
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Verifies a DatabaseRole message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DatabaseRole message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DatabaseRole
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Creates a plain object from a DatabaseRole message. Also converts values to other types if specified.
+                         * @param message DatabaseRole
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.DatabaseRole, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DatabaseRole to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListDatabaseRolesRequest. */
+                    interface IListDatabaseRolesRequest {
+
+                        /** ListDatabaseRolesRequest parent */
+                        parent?: (string|null);
+
+                        /** ListDatabaseRolesRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListDatabaseRolesRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabaseRolesRequest. */
+                    class ListDatabaseRolesRequest implements IListDatabaseRolesRequest {
+
+                        /**
+                         * Constructs a new ListDatabaseRolesRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabaseRolesRequest);
+
+                        /** ListDatabaseRolesRequest parent. */
+                        public parent: string;
+
+                        /** ListDatabaseRolesRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListDatabaseRolesRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListDatabaseRolesRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabaseRolesRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabaseRolesRequest): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                         * @param message ListDatabaseRolesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabaseRolesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                         * @param message ListDatabaseRolesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabaseRolesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabaseRolesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabaseRolesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Verifies a ListDatabaseRolesRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabaseRolesRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabaseRolesRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Creates a plain object from a ListDatabaseRolesRequest message. Also converts values to other types if specified.
+                         * @param message ListDatabaseRolesRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabaseRolesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabaseRolesRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListDatabaseRolesResponse. */
+                    interface IListDatabaseRolesResponse {
+
+                        /** ListDatabaseRolesResponse databaseRoles */
+                        databaseRoles?: (google.spanner.admin.database.v1.IDatabaseRole[]|null);
+
+                        /** ListDatabaseRolesResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabaseRolesResponse. */
+                    class ListDatabaseRolesResponse implements IListDatabaseRolesResponse {
+
+                        /**
+                         * Constructs a new ListDatabaseRolesResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabaseRolesResponse);
+
+                        /** ListDatabaseRolesResponse databaseRoles. */
+                        public databaseRoles: google.spanner.admin.database.v1.IDatabaseRole[];
+
+                        /** ListDatabaseRolesResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListDatabaseRolesResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabaseRolesResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabaseRolesResponse): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                         * @param message ListDatabaseRolesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabaseRolesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                         * @param message ListDatabaseRolesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabaseRolesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabaseRolesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabaseRolesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Verifies a ListDatabaseRolesResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabaseRolesResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabaseRolesResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Creates a plain object from a ListDatabaseRolesResponse message. Also converts values to other types if specified.
+                         * @param message ListDatabaseRolesResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabaseRolesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabaseRolesResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
                     }
                 }
             }
