@@ -59,6 +59,7 @@ and automatic, synchronous replication for high availability.
   * [Use cast operator to cast from one data type to another in a Spanner PostgreSQL database.](#use-cast-operator-to-cast-from-one-data-type-to-another-in-a-spanner-postgresql-database.)
   * [Execute a batch of DML statements on a Spanner PostgreSQL database.](#execute-a-batch-of-dml-statements-on-a-spanner-postgresql-database.)
   * [Execute a Partitioned DML on a Spanner PostgreSQL database.](#execute-a-partitioned-dml-on-a-spanner-postgresql-database.)
+  * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Execute a DML statement with parameters on a Spanner PostgreSQL database.](#execute-a-dml-statement-with-parameters-on-a-spanner-postgresql-database.)
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Created interleaved table hierarchy using PostgreSQL dialect.](#created-interleaved-table-hierarchy-using-postgresql-dialect.)
@@ -93,7 +94,7 @@ Before running the samples, make sure you've followed the steps outlined in
 
 ### Backups-cancel
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-cancel.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-cancel.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-cancel.js,samples/README.md)
 
@@ -110,7 +111,7 @@ __Usage:__
 
 ### Copies a source backup
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-copy.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-copy.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-copy.js,samples/README.md)
 
@@ -127,7 +128,7 @@ __Usage:__
 
 ### Backups-create-with-encryption-key
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create-with-encryption-key.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-create-with-encryption-key.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create-with-encryption-key.js,samples/README.md)
 
@@ -144,7 +145,7 @@ __Usage:__
 
 ### Backups-create
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-create.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-create.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-create.js,samples/README.md)
 
@@ -161,7 +162,7 @@ __Usage:__
 
 ### Backups-delete
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-delete.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-delete.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-delete.js,samples/README.md)
 
@@ -178,7 +179,7 @@ __Usage:__
 
 ### Backups-get-database-operations
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-get-database-operations.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get-database-operations.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get-database-operations.js,samples/README.md)
 
@@ -195,7 +196,7 @@ __Usage:__
 
 ### Backups-get-operations
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-get-operations.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get-operations.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get-operations.js,samples/README.md)
 
@@ -212,7 +213,7 @@ __Usage:__
 
 ### Backups-get
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-get.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-get.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-get.js,samples/README.md)
 
@@ -229,7 +230,7 @@ __Usage:__
 
 ### Backups-restore-with-encryption-key
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore-with-encryption-key.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-restore-with-encryption-key.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore-with-encryption-key.js,samples/README.md)
 
@@ -246,7 +247,7 @@ __Usage:__
 
 ### Backups-restore
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-restore.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-restore.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-restore.js,samples/README.md)
 
@@ -263,7 +264,7 @@ __Usage:__
 
 ### Backups-update
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups-update.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups-update.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups-update.js,samples/README.md)
 
@@ -280,7 +281,7 @@ __Usage:__
 
 ### Backups
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/backups.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/backups.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/backups.js,samples/README.md)
 
@@ -297,7 +298,7 @@ __Usage:__
 
 ### Batch
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/batch.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/batch.js,samples/README.md)
 
@@ -314,7 +315,7 @@ __Usage:__
 
 ### CRUD
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/crud.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/crud.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/crud.js,samples/README.md)
 
@@ -331,7 +332,7 @@ __Usage:__
 
 ### Creates a new database with a specific default leader
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-default-leader.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-default-leader.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-default-leader.js,samples/README.md)
 
@@ -348,7 +349,7 @@ __Usage:__
 
 ### Database-create-with-encryption-key
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-encryption-key.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-encryption-key.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-encryption-key.js,samples/README.md)
 
@@ -365,7 +366,7 @@ __Usage:__
 
 ### Database-create-with-version-retention-period
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-version-retention-period.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-create-with-version-retention-period.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-version-retention-period.js,samples/README.md)
 
@@ -382,7 +383,7 @@ __Usage:__
 
 ### Gets the schema definition of an existing database
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-get-ddl.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-get-ddl.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-get-ddl.js,samples/README.md)
 
@@ -399,7 +400,7 @@ __Usage:__
 
 ### Gets the default leader option of an existing database
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-get-default-leader.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-get-default-leader.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-get-default-leader.js,samples/README.md)
 
@@ -416,7 +417,7 @@ __Usage:__
 
 ### Updates the default leader of an existing database
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-update-default-leader.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/database-update-default-leader.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-update-default-leader.js,samples/README.md)
 
@@ -433,7 +434,7 @@ __Usage:__
 
 ### Datatypes
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/datatypes.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/datatypes.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/datatypes.js,samples/README.md)
 
@@ -450,7 +451,7 @@ __Usage:__
 
 ### DML
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/dml.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml.js,samples/README.md)
 
@@ -467,7 +468,7 @@ __Usage:__
 
 ### Get-commit-stats
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-commit-stats.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-commit-stats.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-commit-stats.js,samples/README.md)
 
@@ -484,7 +485,7 @@ __Usage:__
 
 ### Gets the instance config metadata for the configuration nam6
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-instance-config.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/get-instance-config.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-instance-config.js,samples/README.md)
 
@@ -501,7 +502,7 @@ __Usage:__
 
 ### Creates a new value-storing index
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/index-create-storing.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-create-storing.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-create-storing.js,samples/README.md)
 
@@ -518,7 +519,7 @@ __Usage:__
 
 ### Creates a new index
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/index-create.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-create.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-create.js,samples/README.md)
 
@@ -535,7 +536,7 @@ __Usage:__
 
 ### Executes a read-only SQL query using an existing index.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/index-query-data.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-query-data.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-query-data.js,samples/README.md)
 
@@ -552,7 +553,7 @@ __Usage:__
 
 ### Reads data using an existing storing index.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/index-read-data-with-storing.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-read-data-with-storing.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-read-data-with-storing.js,samples/README.md)
 
@@ -569,7 +570,7 @@ __Usage:__
 
 ### Read data using an existing index.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/index-read-data.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/index-read-data.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/index-read-data.js,samples/README.md)
 
@@ -586,7 +587,7 @@ __Usage:__
 
 ### Indexing
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/indexing.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/indexing.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/indexing.js,samples/README.md)
 
@@ -603,7 +604,7 @@ __Usage:__
 
 ### Instance-with-processing-units
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-processing-units.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance-with-processing-units.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-processing-units.js,samples/README.md)
 
@@ -620,7 +621,7 @@ __Usage:__
 
 ### Instance
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/instance.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance.js,samples/README.md)
 
@@ -637,7 +638,7 @@ __Usage:__
 
 ### Json-add-column
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/json-add-column.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-add-column.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-add-column.js,samples/README.md)
 
@@ -654,7 +655,7 @@ __Usage:__
 
 ### Json-query-parameter
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/json-query-parameter.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-query-parameter.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-query-parameter.js,samples/README.md)
 
@@ -671,7 +672,7 @@ __Usage:__
 
 ### Json-update-data
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/json-update-data.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/json-update-data.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/json-update-data.js,samples/README.md)
 
@@ -688,7 +689,7 @@ __Usage:__
 
 ### Lists all databases on the selected instance
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/list-databases.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-databases.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-databases.js,samples/README.md)
 
@@ -705,7 +706,7 @@ __Usage:__
 
 ### Lists all the available instance configs for the selected project.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/list-instance-configs.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/list-instance-configs.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/list-instance-configs.js,samples/README.md)
 
@@ -722,7 +723,7 @@ __Usage:__
 
 ### Numeric-add-column
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/numeric-add-column.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-add-column.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-add-column.js,samples/README.md)
 
@@ -739,7 +740,7 @@ __Usage:__
 
 ### Numeric-query-parameter
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/numeric-query-parameter.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-query-parameter.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-query-parameter.js,samples/README.md)
 
@@ -756,7 +757,7 @@ __Usage:__
 
 ### Numeric-update-data
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/numeric-update-data.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/numeric-update-data.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/numeric-update-data.js,samples/README.md)
 
@@ -773,7 +774,7 @@ __Usage:__
 
 ### Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-case-sensitivity.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-case-sensitivity.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-case-sensitivity.js,samples/README.md)
 
@@ -790,7 +791,7 @@ __Usage:__
 
 ### Creates a PostgreSQL Database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-database-create.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-database-create.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-database-create.js,samples/README.md)
 
@@ -807,7 +808,7 @@ __Usage:__
 
 ### Use cast operator to cast from one data type to another in a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-datatypes-casting.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-datatypes-casting.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-datatypes-casting.js,samples/README.md)
 
@@ -824,7 +825,7 @@ __Usage:__
 
 ### Execute a batch of DML statements on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-batch.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-dml-batch.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-batch.js,samples/README.md)
 
@@ -841,7 +842,7 @@ __Usage:__
 
 ### Execute a Partitioned DML on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-partitioned.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-dml-partitioned.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-partitioned.js,samples/README.md)
 
@@ -856,9 +857,26 @@ __Usage:__
 
 
 
+### Adds a column to an existing table in a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-dml-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Execute a DML statement with parameters on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-with-parameter.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-dml-with-parameter.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-with-parameter.js,samples/README.md)
 
@@ -875,7 +893,7 @@ __Usage:__
 
 ### Calls a server side function on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-functions.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-functions.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-functions.js,samples/README.md)
 
@@ -892,7 +910,7 @@ __Usage:__
 
 ### Created interleaved table hierarchy using PostgreSQL dialect.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-interleaving.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-interleaving.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-interleaving.js,samples/README.md)
 
@@ -909,7 +927,7 @@ __Usage:__
 
 ### Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-numeric-data-type.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-numeric-data-type.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-numeric-data-type.js,samples/README.md)
 
@@ -926,7 +944,7 @@ __Usage:__
 
 ### Showcases how a Spanner PostgreSQL database orders null values in a query.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-ordering-nulls.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-ordering-nulls.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-ordering-nulls.js,samples/README.md)
 
@@ -943,7 +961,7 @@ __Usage:__
 
 ### Execute a query with parameters on a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-query-parameter.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-query-parameter.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-query-parameter.js,samples/README.md)
 
@@ -960,7 +978,7 @@ __Usage:__
 
 ### Query the information schema metadata in a Spanner PostgreSQL database.
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-schema-information.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/pg-schema-information.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-schema-information.js,samples/README.md)
 
@@ -977,7 +995,7 @@ __Usage:__
 
 ### Queryoptions
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/queryoptions.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/queryoptions.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/queryoptions.js,samples/README.md)
 
@@ -994,7 +1012,7 @@ __Usage:__
 
 ### Quickstart
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/quickstart.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/quickstart.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/quickstart.js,samples/README.md)
 
@@ -1011,7 +1029,7 @@ __Usage:__
 
 ### Sets a request tag for a single query
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/request-tag.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/request-tag.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/request-tag.js,samples/README.md)
 
@@ -1028,7 +1046,7 @@ __Usage:__
 
 ### Rpc-priority
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/rpc-priority.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority.js,samples/README.md)
 
@@ -1045,7 +1063,7 @@ __Usage:__
 
 ### Schema
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/schema.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/schema.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/schema.js,samples/README.md)
 
@@ -1062,7 +1080,7 @@ __Usage:__
 
 ### Struct
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/struct.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/struct.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/struct.js,samples/README.md)
 
@@ -1079,7 +1097,7 @@ __Usage:__
 
 ### Timestamp
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/timestamp.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/timestamp.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/timestamp.js,samples/README.md)
 
@@ -1096,7 +1114,7 @@ __Usage:__
 
 ### Executes a read/write transaction with transaction and request tags
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/transaction-tag.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction-tag.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction-tag.js,samples/README.md)
 
@@ -1113,7 +1131,7 @@ __Usage:__
 
 ### Transaction
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/transaction.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/transaction.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/transaction.js,samples/README.md)
 

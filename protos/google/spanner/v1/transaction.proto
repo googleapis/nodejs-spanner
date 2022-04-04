@@ -16,6 +16,7 @@ syntax = "proto3";
 
 package google.spanner.v1;
 
+import "google/api/annotations.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 

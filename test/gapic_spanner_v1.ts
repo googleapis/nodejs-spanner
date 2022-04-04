@@ -172,27 +172,12 @@ describe('v1.SpannerClient', () => {
     assert(client.spannerStub);
   });
 
-  it('has close method for the initialized client', done => {
+  it('has close method', () => {
     const client = new spannerModule.v1.SpannerClient({
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
-    client.initialize();
-    assert(client.spannerStub);
-    client.close().then(() => {
-      done();
-    });
-  });
-
-  it('has close method for the non-initialized client', done => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
-    });
-    assert.strictEqual(client.spannerStub, undefined);
-    client.close().then(() => {
-      done();
-    });
+    client.close();
   });
 
   it('has getProjectId method', async () => {
@@ -338,21 +323,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes createSession with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CreateSessionRequest()
-      );
-      request.database = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.createSession(request), expectedError);
-    });
   });
 
   describe('batchCreateSessions', () => {
@@ -465,21 +435,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes batchCreateSessions with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BatchCreateSessionsRequest()
-      );
-      request.database = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.batchCreateSessions(request), expectedError);
-    });
   });
 
   describe('getSession', () => {
@@ -590,21 +545,6 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
-    });
-
-    it('invokes getSession with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.GetSessionRequest()
-      );
-      request.name = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.getSession(request), expectedError);
     });
   });
 
@@ -717,21 +657,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes deleteSession with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.DeleteSessionRequest()
-      );
-      request.name = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.deleteSession(request), expectedError);
-    });
   });
 
   describe('executeSql', () => {
@@ -842,21 +767,6 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
-    });
-
-    it('invokes executeSql with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.executeSql(request), expectedError);
     });
   });
 
@@ -969,21 +879,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes executeBatchDml with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteBatchDmlRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.executeBatchDml(request), expectedError);
-    });
   });
 
   describe('read', () => {
@@ -1090,21 +985,6 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
-    });
-
-    it('invokes read with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.read(request), expectedError);
     });
   });
 
@@ -1217,21 +1097,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes beginTransaction with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.BeginTransactionRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.beginTransaction(request), expectedError);
-    });
   });
 
   describe('commit', () => {
@@ -1340,21 +1205,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes commit with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.CommitRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.commit(request), expectedError);
-    });
   });
 
   describe('rollback', () => {
@@ -1462,21 +1312,6 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions, undefined)
       );
-    });
-
-    it('invokes rollback with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.RollbackRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.rollback(request), expectedError);
     });
   });
 
@@ -1589,21 +1424,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes partitionQuery with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionQueryRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.partitionQuery(request), expectedError);
-    });
   });
 
   describe('partitionRead', () => {
@@ -1715,21 +1535,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
-
-    it('invokes partitionRead with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.PartitionReadRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      await assert.rejects(client.partitionRead(request), expectedError);
-    });
   });
 
   describe('executeStreamingSql', () => {
@@ -1819,33 +1624,6 @@ describe('v1.SpannerClient', () => {
           .calledWith(request, expectedOptions)
       );
     });
-
-    it('invokes executeStreamingSql with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ExecuteSqlRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      const stream = client.executeStreamingSql(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
-        });
-      });
-      await assert.rejects(promise, expectedError);
-    });
   });
 
   describe('streamingRead', () => {
@@ -1934,33 +1712,6 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(request, expectedOptions)
       );
-    });
-
-    it('invokes streamingRead with closed client', async () => {
-      const client = new spannerModule.v1.SpannerClient({
-        credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus',
-      });
-      client.initialize();
-      const request = generateSampleMessage(
-        new protos.google.spanner.v1.ReadRequest()
-      );
-      request.session = '';
-      const expectedError = new Error('The client has already been closed.');
-      client.close();
-      const stream = client.streamingRead(request);
-      const promise = new Promise((resolve, reject) => {
-        stream.on(
-          'data',
-          (response: protos.google.spanner.v1.PartialResultSet) => {
-            resolve(response);
-          }
-        );
-        stream.on('error', (err: Error) => {
-          reject(err);
-        });
-      });
-      await assert.rejects(promise, expectedError);
     });
   });
 
