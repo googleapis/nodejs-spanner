@@ -79,6 +79,11 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "CopyBackup": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "GetBackup": {
           "timeout_millis": 3600000,
           "retry_codes_name": "idempotent",
@@ -113,10 +118,6 @@
           "timeout_millis": 3600000,
           "retry_codes_name": "idempotent",
           "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
-        },
-        "ListDatabaseRoles": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
         }
       }
     }

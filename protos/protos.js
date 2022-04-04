@@ -13979,6 +13979,8 @@
                              * @property {Array.<string>|null} [referencingDatabases] Backup referencingDatabases
                              * @property {google.spanner.admin.database.v1.IEncryptionInfo|null} [encryptionInfo] Backup encryptionInfo
                              * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] Backup databaseDialect
+                             * @property {Array.<string>|null} [referencingBackups] Backup referencingBackups
+                             * @property {google.protobuf.ITimestamp|null} [maxExpireTime] Backup maxExpireTime
                              */
     
                             /**
@@ -13991,6 +13993,7 @@
                              */
                             function Backup(properties) {
                                 this.referencingDatabases = [];
+                                this.referencingBackups = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -14078,6 +14081,22 @@
                             Backup.prototype.databaseDialect = 0;
     
                             /**
+                             * Backup referencingBackups.
+                             * @member {Array.<string>} referencingBackups
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.referencingBackups = $util.emptyArray;
+    
+                            /**
+                             * Backup maxExpireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} maxExpireTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.maxExpireTime = null;
+    
+                            /**
                              * Creates a new Backup instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Backup
@@ -14122,6 +14141,11 @@
                                     $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                                 if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
                                     writer.uint32(/* id 10, wireType 0 =*/80).int32(message.databaseDialect);
+                                if (message.referencingBackups != null && message.referencingBackups.length)
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        writer.uint32(/* id 11, wireType 2 =*/90).string(message.referencingBackups[i]);
+                                if (message.maxExpireTime != null && Object.hasOwnProperty.call(message, "maxExpireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.maxExpireTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                                 return writer;
                             };
     
@@ -14187,6 +14211,14 @@
                                         break;
                                     case 10:
                                         message.databaseDialect = reader.int32();
+                                        break;
+                                    case 11:
+                                        if (!(message.referencingBackups && message.referencingBackups.length))
+                                            message.referencingBackups = [];
+                                        message.referencingBackups.push(reader.string());
+                                        break;
+                                    case 12:
+                                        message.maxExpireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -14277,6 +14309,18 @@
                                     case 2:
                                         break;
                                     }
+                                if (message.referencingBackups != null && message.hasOwnProperty("referencingBackups")) {
+                                    if (!Array.isArray(message.referencingBackups))
+                                        return "referencingBackups: array expected";
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        if (!$util.isString(message.referencingBackups[i]))
+                                            return "referencingBackups: string[] expected";
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.maxExpireTime);
+                                    if (error)
+                                        return "maxExpireTime." + error;
+                                }
                                 return null;
                             };
     
@@ -14360,6 +14404,18 @@
                                     message.databaseDialect = 2;
                                     break;
                                 }
+                                if (object.referencingBackups) {
+                                    if (!Array.isArray(object.referencingBackups))
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.referencingBackups: array expected");
+                                    message.referencingBackups = [];
+                                    for (var i = 0; i < object.referencingBackups.length; ++i)
+                                        message.referencingBackups[i] = String(object.referencingBackups[i]);
+                                }
+                                if (object.maxExpireTime != null) {
+                                    if (typeof object.maxExpireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.maxExpireTime: object expected");
+                                    message.maxExpireTime = $root.google.protobuf.Timestamp.fromObject(object.maxExpireTime);
+                                }
                                 return message;
                             };
     
@@ -14376,8 +14432,10 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.arrays || options.defaults)
+                                if (options.arrays || options.defaults) {
                                     object.referencingDatabases = [];
+                                    object.referencingBackups = [];
+                                }
                                 if (options.defaults) {
                                     object.name = "";
                                     object.database = "";
@@ -14392,6 +14450,7 @@
                                     object.encryptionInfo = null;
                                     object.versionTime = null;
                                     object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
+                                    object.maxExpireTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -14419,6 +14478,13 @@
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
                                     object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                if (message.referencingBackups && message.referencingBackups.length) {
+                                    object.referencingBackups = [];
+                                    for (var j = 0; j < message.referencingBackups.length; ++j)
+                                        object.referencingBackups[j] = message.referencingBackups[j];
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime"))
+                                    object.maxExpireTime = $root.google.protobuf.Timestamp.toObject(message.maxExpireTime, options);
                                 return object;
                             };
     
@@ -14978,6 +15044,556 @@
                             };
     
                             return CreateBackupMetadata;
+                        })();
+    
+                        v1.CopyBackupRequest = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupRequest
+                             * @property {string|null} [parent] CopyBackupRequest parent
+                             * @property {string|null} [backupId] CopyBackupRequest backupId
+                             * @property {string|null} [sourceBackup] CopyBackupRequest sourceBackup
+                             * @property {google.protobuf.ITimestamp|null} [expireTime] CopyBackupRequest expireTime
+                             * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null} [encryptionConfig] CopyBackupRequest encryptionConfig
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupRequest.
+                             * @implements ICopyBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest=} [properties] Properties to set
+                             */
+                            function CopyBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.parent = "";
+    
+                            /**
+                             * CopyBackupRequest backupId.
+                             * @member {string} backupId
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.backupId = "";
+    
+                            /**
+                             * CopyBackupRequest sourceBackup.
+                             * @member {string} sourceBackup
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.sourceBackup = "";
+    
+                            /**
+                             * CopyBackupRequest expireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} expireTime
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.expireTime = null;
+    
+                            /**
+                             * CopyBackupRequest encryptionConfig.
+                             * @member {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null|undefined} encryptionConfig
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.encryptionConfig = null;
+    
+                            /**
+                             * Creates a new CopyBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest instance
+                             */
+                            CopyBackupRequest.create = function create(properties) {
+                                return new CopyBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} message CopyBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.backupId != null && Object.hasOwnProperty.call(message, "backupId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.backupId);
+                                if (message.sourceBackup != null && Object.hasOwnProperty.call(message, "sourceBackup"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.sourceBackup);
+                                if (message.expireTime != null && Object.hasOwnProperty.call(message, "expireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.expireTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.encryptionConfig != null && Object.hasOwnProperty.call(message, "encryptionConfig"))
+                                    $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} message CopyBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.backupId = reader.string();
+                                        break;
+                                    case 3:
+                                        message.sourceBackup = reader.string();
+                                        break;
+                                    case 4:
+                                        message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 5:
+                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    if (!$util.isString(message.backupId))
+                                        return "backupId: string expected";
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    if (!$util.isString(message.sourceBackup))
+                                        return "sourceBackup: string expected";
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.expireTime);
+                                    if (error)
+                                        return "expireTime." + error;
+                                }
+                                if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig")) {
+                                    var error = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify(message.encryptionConfig);
+                                    if (error)
+                                        return "encryptionConfig." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             */
+                            CopyBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.backupId != null)
+                                    message.backupId = String(object.backupId);
+                                if (object.sourceBackup != null)
+                                    message.sourceBackup = String(object.sourceBackup);
+                                if (object.expireTime != null) {
+                                    if (typeof object.expireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupRequest.expireTime: object expected");
+                                    message.expireTime = $root.google.protobuf.Timestamp.fromObject(object.expireTime);
+                                }
+                                if (object.encryptionConfig != null) {
+                                    if (typeof object.encryptionConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupRequest.encryptionConfig: object expected");
+                                    message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.fromObject(object.encryptionConfig);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupRequest} message CopyBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.backupId = "";
+                                    object.sourceBackup = "";
+                                    object.expireTime = null;
+                                    object.encryptionConfig = null;
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    object.backupId = message.backupId;
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    object.sourceBackup = message.sourceBackup;
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime"))
+                                    object.expireTime = $root.google.protobuf.Timestamp.toObject(message.expireTime, options);
+                                if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig"))
+                                    object.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.toObject(message.encryptionConfig, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CopyBackupRequest;
+                        })();
+    
+                        v1.CopyBackupMetadata = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupMetadata
+                             * @property {string|null} [name] CopyBackupMetadata name
+                             * @property {string|null} [sourceBackup] CopyBackupMetadata sourceBackup
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] CopyBackupMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] CopyBackupMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupMetadata.
+                             * @implements ICopyBackupMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata=} [properties] Properties to set
+                             */
+                            function CopyBackupMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupMetadata name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.name = "";
+    
+                            /**
+                             * CopyBackupMetadata sourceBackup.
+                             * @member {string} sourceBackup
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.sourceBackup = "";
+    
+                            /**
+                             * CopyBackupMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.progress = null;
+    
+                            /**
+                             * CopyBackupMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new CopyBackupMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata instance
+                             */
+                            CopyBackupMetadata.create = function create(properties) {
+                                return new CopyBackupMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata} message CopyBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.sourceBackup != null && Object.hasOwnProperty.call(message, "sourceBackup"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.sourceBackup);
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata} message CopyBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.sourceBackup = reader.string();
+                                        break;
+                                    case 3:
+                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                        break;
+                                    case 4:
+                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    if (!$util.isString(message.sourceBackup))
+                                        return "sourceBackup: string expected";
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             */
+                            CopyBackupMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupMetadata();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.sourceBackup != null)
+                                    message.sourceBackup = String(object.sourceBackup);
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupMetadata} message CopyBackupMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.sourceBackup = "";
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    object.sourceBackup = message.sourceBackup;
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CopyBackupMetadata;
                         })();
     
                         v1.UpdateBackupRequest = (function() {
@@ -17059,6 +17675,257 @@
                             return CreateBackupEncryptionConfig;
                         })();
     
+                        v1.CopyBackupEncryptionConfig = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupEncryptionConfig.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupEncryptionConfig
+                             * @property {google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType|null} [encryptionType] CopyBackupEncryptionConfig encryptionType
+                             * @property {string|null} [kmsKeyName] CopyBackupEncryptionConfig kmsKeyName
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupEncryptionConfig.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupEncryptionConfig.
+                             * @implements ICopyBackupEncryptionConfig
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig=} [properties] Properties to set
+                             */
+                            function CopyBackupEncryptionConfig(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupEncryptionConfig encryptionType.
+                             * @member {google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType} encryptionType
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             */
+                            CopyBackupEncryptionConfig.prototype.encryptionType = 0;
+    
+                            /**
+                             * CopyBackupEncryptionConfig kmsKeyName.
+                             * @member {string} kmsKeyName
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             */
+                            CopyBackupEncryptionConfig.prototype.kmsKeyName = "";
+    
+                            /**
+                             * Creates a new CopyBackupEncryptionConfig instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig instance
+                             */
+                            CopyBackupEncryptionConfig.create = function create(properties) {
+                                return new CopyBackupEncryptionConfig(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig} message CopyBackupEncryptionConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupEncryptionConfig.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.encryptionType != null && Object.hasOwnProperty.call(message, "encryptionType"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.encryptionType);
+                                if (message.kmsKeyName != null && Object.hasOwnProperty.call(message, "kmsKeyName"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.kmsKeyName);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig} message CopyBackupEncryptionConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupEncryptionConfig.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupEncryptionConfig.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.encryptionType = reader.int32();
+                                        break;
+                                    case 2:
+                                        message.kmsKeyName = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupEncryptionConfig.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupEncryptionConfig message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupEncryptionConfig.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
+                                    switch (message.encryptionType) {
+                                    default:
+                                        return "encryptionType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                    case 3:
+                                        break;
+                                    }
+                                if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
+                                    if (!$util.isString(message.kmsKeyName))
+                                        return "kmsKeyName: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupEncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             */
+                            CopyBackupEncryptionConfig.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
+                                switch (object.encryptionType) {
+                                case "ENCRYPTION_TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.encryptionType = 0;
+                                    break;
+                                case "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION":
+                                case 1:
+                                    message.encryptionType = 1;
+                                    break;
+                                case "GOOGLE_DEFAULT_ENCRYPTION":
+                                case 2:
+                                    message.encryptionType = 2;
+                                    break;
+                                case "CUSTOMER_MANAGED_ENCRYPTION":
+                                case 3:
+                                    message.encryptionType = 3;
+                                    break;
+                                }
+                                if (object.kmsKeyName != null)
+                                    message.kmsKeyName = String(object.kmsKeyName);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupEncryptionConfig message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} message CopyBackupEncryptionConfig
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupEncryptionConfig.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.encryptionType = options.enums === String ? "ENCRYPTION_TYPE_UNSPECIFIED" : 0;
+                                    object.kmsKeyName = "";
+                                }
+                                if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
+                                    object.kmsKeyName = message.kmsKeyName;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupEncryptionConfig to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupEncryptionConfig.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * EncryptionType enum.
+                             * @name google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
+                             * @enum {number}
+                             * @property {number} ENCRYPTION_TYPE_UNSPECIFIED=0 ENCRYPTION_TYPE_UNSPECIFIED value
+                             * @property {number} USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION=1 USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION value
+                             * @property {number} GOOGLE_DEFAULT_ENCRYPTION=2 GOOGLE_DEFAULT_ENCRYPTION value
+                             * @property {number} CUSTOMER_MANAGED_ENCRYPTION=3 CUSTOMER_MANAGED_ENCRYPTION value
+                             */
+                            CopyBackupEncryptionConfig.EncryptionType = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "ENCRYPTION_TYPE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION"] = 1;
+                                values[valuesById[2] = "GOOGLE_DEFAULT_ENCRYPTION"] = 2;
+                                values[valuesById[3] = "CUSTOMER_MANAGED_ENCRYPTION"] = 3;
+                                return values;
+                            })();
+    
+                            return CopyBackupEncryptionConfig;
+                        })();
+    
                         v1.OperationProgress = (function() {
     
                             /**
@@ -18138,6 +19005,39 @@
                              */
     
                             /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#copyBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef CopyBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls CopyBackup.
+                             * @function copyBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} request CopyBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.CopyBackupCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.copyBackup = function copyBackup(request, callback) {
+                                return this.rpcCall(copyBackup, $root.google.spanner.admin.database.v1.CopyBackupRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "CopyBackup" });
+    
+                            /**
+                             * Calls CopyBackup.
+                             * @function copyBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} request CopyBackupRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef GetBackupCallback
@@ -18365,39 +19265,6 @@
                              * @instance
                              * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} request ListBackupOperationsRequest message or plain object
                              * @returns {Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>} Promise
-                             * @variation 2
-                             */
-    
-                            /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseRoles}.
-                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
-                             * @typedef ListDatabaseRolesCallback
-                             * @type {function}
-                             * @param {Error|null} error Error, if any
-                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesResponse} [response] ListDatabaseRolesResponse
-                             */
-    
-                            /**
-                             * Calls ListDatabaseRoles.
-                             * @function listDatabaseRoles
-                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
-                             * @instance
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} request ListDatabaseRolesRequest message or plain object
-                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRolesCallback} callback Node-style callback called with the error, if any, and ListDatabaseRolesResponse
-                             * @returns {undefined}
-                             * @variation 1
-                             */
-                            Object.defineProperty(DatabaseAdmin.prototype.listDatabaseRoles = function listDatabaseRoles(request, callback) {
-                                return this.rpcCall(listDatabaseRoles, $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest, $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse, request, callback);
-                            }, "name", { value: "ListDatabaseRoles" });
-    
-                            /**
-                             * Calls ListDatabaseRoles.
-                             * @function listDatabaseRoles
-                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
-                             * @instance
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} request ListDatabaseRolesRequest message or plain object
-                             * @returns {Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>} Promise
                              * @variation 2
                              */
     
@@ -23040,656 +23907,6 @@
                             values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
                             values[valuesById[1] = "BACKUP"] = 1;
                             return values;
-                        })();
-    
-                        v1.DatabaseRole = (function() {
-    
-                            /**
-                             * Properties of a DatabaseRole.
-                             * @memberof google.spanner.admin.database.v1
-                             * @interface IDatabaseRole
-                             * @property {string|null} [name] DatabaseRole name
-                             */
-    
-                            /**
-                             * Constructs a new DatabaseRole.
-                             * @memberof google.spanner.admin.database.v1
-                             * @classdesc Represents a DatabaseRole.
-                             * @implements IDatabaseRole
-                             * @constructor
-                             * @param {google.spanner.admin.database.v1.IDatabaseRole=} [properties] Properties to set
-                             */
-                            function DatabaseRole(properties) {
-                                if (properties)
-                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                        if (properties[keys[i]] != null)
-                                            this[keys[i]] = properties[keys[i]];
-                            }
-    
-                            /**
-                             * DatabaseRole name.
-                             * @member {string} name
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @instance
-                             */
-                            DatabaseRole.prototype.name = "";
-    
-                            /**
-                             * Creates a new DatabaseRole instance using the specified properties.
-                             * @function create
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IDatabaseRole=} [properties] Properties to set
-                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole instance
-                             */
-                            DatabaseRole.create = function create(properties) {
-                                return new DatabaseRole(properties);
-                            };
-    
-                            /**
-                             * Encodes the specified DatabaseRole message. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
-                             * @function encode
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IDatabaseRole} message DatabaseRole message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            DatabaseRole.encode = function encode(message, writer) {
-                                if (!writer)
-                                    writer = $Writer.create();
-                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-                                return writer;
-                            };
-    
-                            /**
-                             * Encodes the specified DatabaseRole message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
-                             * @function encodeDelimited
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IDatabaseRole} message DatabaseRole message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            DatabaseRole.encodeDelimited = function encodeDelimited(message, writer) {
-                                return this.encode(message, writer).ldelim();
-                            };
-    
-                            /**
-                             * Decodes a DatabaseRole message from the specified reader or buffer.
-                             * @function decode
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @param {number} [length] Message length if known beforehand
-                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            DatabaseRole.decode = function decode(reader, length) {
-                                if (!(reader instanceof $Reader))
-                                    reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.DatabaseRole();
-                                while (reader.pos < end) {
-                                    var tag = reader.uint32();
-                                    switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    default:
-                                        reader.skipType(tag & 7);
-                                        break;
-                                    }
-                                }
-                                return message;
-                            };
-    
-                            /**
-                             * Decodes a DatabaseRole message from the specified reader or buffer, length delimited.
-                             * @function decodeDelimited
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            DatabaseRole.decodeDelimited = function decodeDelimited(reader) {
-                                if (!(reader instanceof $Reader))
-                                    reader = new $Reader(reader);
-                                return this.decode(reader, reader.uint32());
-                            };
-    
-                            /**
-                             * Verifies a DatabaseRole message.
-                             * @function verify
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {Object.<string,*>} message Plain object to verify
-                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                             */
-                            DatabaseRole.verify = function verify(message) {
-                                if (typeof message !== "object" || message === null)
-                                    return "object expected";
-                                if (message.name != null && message.hasOwnProperty("name"))
-                                    if (!$util.isString(message.name))
-                                        return "name: string expected";
-                                return null;
-                            };
-    
-                            /**
-                             * Creates a DatabaseRole message from a plain object. Also converts values to their respective internal types.
-                             * @function fromObject
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {Object.<string,*>} object Plain object
-                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
-                             */
-                            DatabaseRole.fromObject = function fromObject(object) {
-                                if (object instanceof $root.google.spanner.admin.database.v1.DatabaseRole)
-                                    return object;
-                                var message = new $root.google.spanner.admin.database.v1.DatabaseRole();
-                                if (object.name != null)
-                                    message.name = String(object.name);
-                                return message;
-                            };
-    
-                            /**
-                             * Creates a plain object from a DatabaseRole message. Also converts values to other types if specified.
-                             * @function toObject
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @static
-                             * @param {google.spanner.admin.database.v1.DatabaseRole} message DatabaseRole
-                             * @param {$protobuf.IConversionOptions} [options] Conversion options
-                             * @returns {Object.<string,*>} Plain object
-                             */
-                            DatabaseRole.toObject = function toObject(message, options) {
-                                if (!options)
-                                    options = {};
-                                var object = {};
-                                if (options.defaults)
-                                    object.name = "";
-                                if (message.name != null && message.hasOwnProperty("name"))
-                                    object.name = message.name;
-                                return object;
-                            };
-    
-                            /**
-                             * Converts this DatabaseRole to JSON.
-                             * @function toJSON
-                             * @memberof google.spanner.admin.database.v1.DatabaseRole
-                             * @instance
-                             * @returns {Object.<string,*>} JSON object
-                             */
-                            DatabaseRole.prototype.toJSON = function toJSON() {
-                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                            };
-    
-                            return DatabaseRole;
-                        })();
-    
-                        v1.ListDatabaseRolesRequest = (function() {
-    
-                            /**
-                             * Properties of a ListDatabaseRolesRequest.
-                             * @memberof google.spanner.admin.database.v1
-                             * @interface IListDatabaseRolesRequest
-                             * @property {string|null} [parent] ListDatabaseRolesRequest parent
-                             * @property {number|null} [pageSize] ListDatabaseRolesRequest pageSize
-                             * @property {string|null} [pageToken] ListDatabaseRolesRequest pageToken
-                             */
-    
-                            /**
-                             * Constructs a new ListDatabaseRolesRequest.
-                             * @memberof google.spanner.admin.database.v1
-                             * @classdesc Represents a ListDatabaseRolesRequest.
-                             * @implements IListDatabaseRolesRequest
-                             * @constructor
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest=} [properties] Properties to set
-                             */
-                            function ListDatabaseRolesRequest(properties) {
-                                if (properties)
-                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                        if (properties[keys[i]] != null)
-                                            this[keys[i]] = properties[keys[i]];
-                            }
-    
-                            /**
-                             * ListDatabaseRolesRequest parent.
-                             * @member {string} parent
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @instance
-                             */
-                            ListDatabaseRolesRequest.prototype.parent = "";
-    
-                            /**
-                             * ListDatabaseRolesRequest pageSize.
-                             * @member {number} pageSize
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @instance
-                             */
-                            ListDatabaseRolesRequest.prototype.pageSize = 0;
-    
-                            /**
-                             * ListDatabaseRolesRequest pageToken.
-                             * @member {string} pageToken
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @instance
-                             */
-                            ListDatabaseRolesRequest.prototype.pageToken = "";
-    
-                            /**
-                             * Creates a new ListDatabaseRolesRequest instance using the specified properties.
-                             * @function create
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest=} [properties] Properties to set
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest instance
-                             */
-                            ListDatabaseRolesRequest.create = function create(properties) {
-                                return new ListDatabaseRolesRequest(properties);
-                            };
-    
-                            /**
-                             * Encodes the specified ListDatabaseRolesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
-                             * @function encode
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} message ListDatabaseRolesRequest message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            ListDatabaseRolesRequest.encode = function encode(message, writer) {
-                                if (!writer)
-                                    writer = $Writer.create();
-                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
-                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
-                                if (message.pageSize != null && Object.hasOwnProperty.call(message, "pageSize"))
-                                    writer.uint32(/* id 2, wireType 0 =*/16).int32(message.pageSize);
-                                if (message.pageToken != null && Object.hasOwnProperty.call(message, "pageToken"))
-                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.pageToken);
-                                return writer;
-                            };
-    
-                            /**
-                             * Encodes the specified ListDatabaseRolesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
-                             * @function encodeDelimited
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} message ListDatabaseRolesRequest message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            ListDatabaseRolesRequest.encodeDelimited = function encodeDelimited(message, writer) {
-                                return this.encode(message, writer).ldelim();
-                            };
-    
-                            /**
-                             * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer.
-                             * @function decode
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @param {number} [length] Message length if known beforehand
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            ListDatabaseRolesRequest.decode = function decode(reader, length) {
-                                if (!(reader instanceof $Reader))
-                                    reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest();
-                                while (reader.pos < end) {
-                                    var tag = reader.uint32();
-                                    switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.pageToken = reader.string();
-                                        break;
-                                    default:
-                                        reader.skipType(tag & 7);
-                                        break;
-                                    }
-                                }
-                                return message;
-                            };
-    
-                            /**
-                             * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer, length delimited.
-                             * @function decodeDelimited
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            ListDatabaseRolesRequest.decodeDelimited = function decodeDelimited(reader) {
-                                if (!(reader instanceof $Reader))
-                                    reader = new $Reader(reader);
-                                return this.decode(reader, reader.uint32());
-                            };
-    
-                            /**
-                             * Verifies a ListDatabaseRolesRequest message.
-                             * @function verify
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {Object.<string,*>} message Plain object to verify
-                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                             */
-                            ListDatabaseRolesRequest.verify = function verify(message) {
-                                if (typeof message !== "object" || message === null)
-                                    return "object expected";
-                                if (message.parent != null && message.hasOwnProperty("parent"))
-                                    if (!$util.isString(message.parent))
-                                        return "parent: string expected";
-                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
-                                    if (!$util.isInteger(message.pageSize))
-                                        return "pageSize: integer expected";
-                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
-                                    if (!$util.isString(message.pageToken))
-                                        return "pageToken: string expected";
-                                return null;
-                            };
-    
-                            /**
-                             * Creates a ListDatabaseRolesRequest message from a plain object. Also converts values to their respective internal types.
-                             * @function fromObject
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {Object.<string,*>} object Plain object
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
-                             */
-                            ListDatabaseRolesRequest.fromObject = function fromObject(object) {
-                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest)
-                                    return object;
-                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest();
-                                if (object.parent != null)
-                                    message.parent = String(object.parent);
-                                if (object.pageSize != null)
-                                    message.pageSize = object.pageSize | 0;
-                                if (object.pageToken != null)
-                                    message.pageToken = String(object.pageToken);
-                                return message;
-                            };
-    
-                            /**
-                             * Creates a plain object from a ListDatabaseRolesRequest message. Also converts values to other types if specified.
-                             * @function toObject
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @static
-                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesRequest} message ListDatabaseRolesRequest
-                             * @param {$protobuf.IConversionOptions} [options] Conversion options
-                             * @returns {Object.<string,*>} Plain object
-                             */
-                            ListDatabaseRolesRequest.toObject = function toObject(message, options) {
-                                if (!options)
-                                    options = {};
-                                var object = {};
-                                if (options.defaults) {
-                                    object.parent = "";
-                                    object.pageSize = 0;
-                                    object.pageToken = "";
-                                }
-                                if (message.parent != null && message.hasOwnProperty("parent"))
-                                    object.parent = message.parent;
-                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
-                                    object.pageSize = message.pageSize;
-                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
-                                    object.pageToken = message.pageToken;
-                                return object;
-                            };
-    
-                            /**
-                             * Converts this ListDatabaseRolesRequest to JSON.
-                             * @function toJSON
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
-                             * @instance
-                             * @returns {Object.<string,*>} JSON object
-                             */
-                            ListDatabaseRolesRequest.prototype.toJSON = function toJSON() {
-                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                            };
-    
-                            return ListDatabaseRolesRequest;
-                        })();
-    
-                        v1.ListDatabaseRolesResponse = (function() {
-    
-                            /**
-                             * Properties of a ListDatabaseRolesResponse.
-                             * @memberof google.spanner.admin.database.v1
-                             * @interface IListDatabaseRolesResponse
-                             * @property {Array.<google.spanner.admin.database.v1.IDatabaseRole>|null} [databaseRoles] ListDatabaseRolesResponse databaseRoles
-                             * @property {string|null} [nextPageToken] ListDatabaseRolesResponse nextPageToken
-                             */
-    
-                            /**
-                             * Constructs a new ListDatabaseRolesResponse.
-                             * @memberof google.spanner.admin.database.v1
-                             * @classdesc Represents a ListDatabaseRolesResponse.
-                             * @implements IListDatabaseRolesResponse
-                             * @constructor
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse=} [properties] Properties to set
-                             */
-                            function ListDatabaseRolesResponse(properties) {
-                                this.databaseRoles = [];
-                                if (properties)
-                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                        if (properties[keys[i]] != null)
-                                            this[keys[i]] = properties[keys[i]];
-                            }
-    
-                            /**
-                             * ListDatabaseRolesResponse databaseRoles.
-                             * @member {Array.<google.spanner.admin.database.v1.IDatabaseRole>} databaseRoles
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @instance
-                             */
-                            ListDatabaseRolesResponse.prototype.databaseRoles = $util.emptyArray;
-    
-                            /**
-                             * ListDatabaseRolesResponse nextPageToken.
-                             * @member {string} nextPageToken
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @instance
-                             */
-                            ListDatabaseRolesResponse.prototype.nextPageToken = "";
-    
-                            /**
-                             * Creates a new ListDatabaseRolesResponse instance using the specified properties.
-                             * @function create
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse=} [properties] Properties to set
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse instance
-                             */
-                            ListDatabaseRolesResponse.create = function create(properties) {
-                                return new ListDatabaseRolesResponse(properties);
-                            };
-    
-                            /**
-                             * Encodes the specified ListDatabaseRolesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
-                             * @function encode
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse} message ListDatabaseRolesResponse message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            ListDatabaseRolesResponse.encode = function encode(message, writer) {
-                                if (!writer)
-                                    writer = $Writer.create();
-                                if (message.databaseRoles != null && message.databaseRoles.length)
-                                    for (var i = 0; i < message.databaseRoles.length; ++i)
-                                        $root.google.spanner.admin.database.v1.DatabaseRole.encode(message.databaseRoles[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                                if (message.nextPageToken != null && Object.hasOwnProperty.call(message, "nextPageToken"))
-                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
-                                return writer;
-                            };
-    
-                            /**
-                             * Encodes the specified ListDatabaseRolesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
-                             * @function encodeDelimited
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse} message ListDatabaseRolesResponse message or plain object to encode
-                             * @param {$protobuf.Writer} [writer] Writer to encode to
-                             * @returns {$protobuf.Writer} Writer
-                             */
-                            ListDatabaseRolesResponse.encodeDelimited = function encodeDelimited(message, writer) {
-                                return this.encode(message, writer).ldelim();
-                            };
-    
-                            /**
-                             * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer.
-                             * @function decode
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @param {number} [length] Message length if known beforehand
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            ListDatabaseRolesResponse.decode = function decode(reader, length) {
-                                if (!(reader instanceof $Reader))
-                                    reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse();
-                                while (reader.pos < end) {
-                                    var tag = reader.uint32();
-                                    switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.databaseRoles && message.databaseRoles.length))
-                                            message.databaseRoles = [];
-                                        message.databaseRoles.push($root.google.spanner.admin.database.v1.DatabaseRole.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
-                                    default:
-                                        reader.skipType(tag & 7);
-                                        break;
-                                    }
-                                }
-                                return message;
-                            };
-    
-                            /**
-                             * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer, length delimited.
-                             * @function decodeDelimited
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
-                             * @throws {Error} If the payload is not a reader or valid buffer
-                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                             */
-                            ListDatabaseRolesResponse.decodeDelimited = function decodeDelimited(reader) {
-                                if (!(reader instanceof $Reader))
-                                    reader = new $Reader(reader);
-                                return this.decode(reader, reader.uint32());
-                            };
-    
-                            /**
-                             * Verifies a ListDatabaseRolesResponse message.
-                             * @function verify
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {Object.<string,*>} message Plain object to verify
-                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                             */
-                            ListDatabaseRolesResponse.verify = function verify(message) {
-                                if (typeof message !== "object" || message === null)
-                                    return "object expected";
-                                if (message.databaseRoles != null && message.hasOwnProperty("databaseRoles")) {
-                                    if (!Array.isArray(message.databaseRoles))
-                                        return "databaseRoles: array expected";
-                                    for (var i = 0; i < message.databaseRoles.length; ++i) {
-                                        var error = $root.google.spanner.admin.database.v1.DatabaseRole.verify(message.databaseRoles[i]);
-                                        if (error)
-                                            return "databaseRoles." + error;
-                                    }
-                                }
-                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
-                                    if (!$util.isString(message.nextPageToken))
-                                        return "nextPageToken: string expected";
-                                return null;
-                            };
-    
-                            /**
-                             * Creates a ListDatabaseRolesResponse message from a plain object. Also converts values to their respective internal types.
-                             * @function fromObject
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {Object.<string,*>} object Plain object
-                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
-                             */
-                            ListDatabaseRolesResponse.fromObject = function fromObject(object) {
-                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse)
-                                    return object;
-                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse();
-                                if (object.databaseRoles) {
-                                    if (!Array.isArray(object.databaseRoles))
-                                        throw TypeError(".google.spanner.admin.database.v1.ListDatabaseRolesResponse.databaseRoles: array expected");
-                                    message.databaseRoles = [];
-                                    for (var i = 0; i < object.databaseRoles.length; ++i) {
-                                        if (typeof object.databaseRoles[i] !== "object")
-                                            throw TypeError(".google.spanner.admin.database.v1.ListDatabaseRolesResponse.databaseRoles: object expected");
-                                        message.databaseRoles[i] = $root.google.spanner.admin.database.v1.DatabaseRole.fromObject(object.databaseRoles[i]);
-                                    }
-                                }
-                                if (object.nextPageToken != null)
-                                    message.nextPageToken = String(object.nextPageToken);
-                                return message;
-                            };
-    
-                            /**
-                             * Creates a plain object from a ListDatabaseRolesResponse message. Also converts values to other types if specified.
-                             * @function toObject
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @static
-                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesResponse} message ListDatabaseRolesResponse
-                             * @param {$protobuf.IConversionOptions} [options] Conversion options
-                             * @returns {Object.<string,*>} Plain object
-                             */
-                            ListDatabaseRolesResponse.toObject = function toObject(message, options) {
-                                if (!options)
-                                    options = {};
-                                var object = {};
-                                if (options.arrays || options.defaults)
-                                    object.databaseRoles = [];
-                                if (options.defaults)
-                                    object.nextPageToken = "";
-                                if (message.databaseRoles && message.databaseRoles.length) {
-                                    object.databaseRoles = [];
-                                    for (var j = 0; j < message.databaseRoles.length; ++j)
-                                        object.databaseRoles[j] = $root.google.spanner.admin.database.v1.DatabaseRole.toObject(message.databaseRoles[j], options);
-                                }
-                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
-                                    object.nextPageToken = message.nextPageToken;
-                                return object;
-                            };
-    
-                            /**
-                             * Converts this ListDatabaseRolesResponse to JSON.
-                             * @function toJSON
-                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
-                             * @instance
-                             * @returns {Object.<string,*>} JSON object
-                             */
-                            ListDatabaseRolesResponse.prototype.toJSON = function toJSON() {
-                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                            };
-    
-                            return ListDatabaseRolesResponse;
                         })();
     
                         return v1;
@@ -35146,7 +35363,6 @@
                      * @property {Object.<string,string>|null} [labels] Session labels
                      * @property {google.protobuf.ITimestamp|null} [createTime] Session createTime
                      * @property {google.protobuf.ITimestamp|null} [approximateLastUseTime] Session approximateLastUseTime
-                     * @property {string|null} [creatorRole] Session creatorRole
                      */
     
                     /**
@@ -35198,14 +35414,6 @@
                     Session.prototype.approximateLastUseTime = null;
     
                     /**
-                     * Session creatorRole.
-                     * @member {string} creatorRole
-                     * @memberof google.spanner.v1.Session
-                     * @instance
-                     */
-                    Session.prototype.creatorRole = "";
-    
-                    /**
                      * Creates a new Session instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Session
@@ -35238,8 +35446,6 @@
                             $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.approximateLastUseTime != null && Object.hasOwnProperty.call(message, "approximateLastUseTime"))
                             $root.google.protobuf.Timestamp.encode(message.approximateLastUseTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                        if (message.creatorRole != null && Object.hasOwnProperty.call(message, "creatorRole"))
-                            writer.uint32(/* id 5, wireType 2 =*/42).string(message.creatorRole);
                         return writer;
                     };
     
@@ -35305,9 +35511,6 @@
                             case 4:
                                 message.approximateLastUseTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                 break;
-                            case 5:
-                                message.creatorRole = reader.string();
-                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35364,9 +35567,6 @@
                             if (error)
                                 return "approximateLastUseTime." + error;
                         }
-                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
-                            if (!$util.isString(message.creatorRole))
-                                return "creatorRole: string expected";
                         return null;
                     };
     
@@ -35401,8 +35601,6 @@
                                 throw TypeError(".google.spanner.v1.Session.approximateLastUseTime: object expected");
                             message.approximateLastUseTime = $root.google.protobuf.Timestamp.fromObject(object.approximateLastUseTime);
                         }
-                        if (object.creatorRole != null)
-                            message.creatorRole = String(object.creatorRole);
                         return message;
                     };
     
@@ -35425,7 +35623,6 @@
                             object.name = "";
                             object.createTime = null;
                             object.approximateLastUseTime = null;
-                            object.creatorRole = "";
                         }
                         if (message.name != null && message.hasOwnProperty("name"))
                             object.name = message.name;
@@ -35439,8 +35636,6 @@
                             object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                         if (message.approximateLastUseTime != null && message.hasOwnProperty("approximateLastUseTime"))
                             object.approximateLastUseTime = $root.google.protobuf.Timestamp.toObject(message.approximateLastUseTime, options);
-                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
-                            object.creatorRole = message.creatorRole;
                         return object;
                     };
     
@@ -40838,6 +41033,667 @@
              */
             var api = {};
     
+            /**
+             * FieldBehavior enum.
+             * @name google.api.FieldBehavior
+             * @enum {number}
+             * @property {number} FIELD_BEHAVIOR_UNSPECIFIED=0 FIELD_BEHAVIOR_UNSPECIFIED value
+             * @property {number} OPTIONAL=1 OPTIONAL value
+             * @property {number} REQUIRED=2 REQUIRED value
+             * @property {number} OUTPUT_ONLY=3 OUTPUT_ONLY value
+             * @property {number} INPUT_ONLY=4 INPUT_ONLY value
+             * @property {number} IMMUTABLE=5 IMMUTABLE value
+             * @property {number} UNORDERED_LIST=6 UNORDERED_LIST value
+             * @property {number} NON_EMPTY_DEFAULT=7 NON_EMPTY_DEFAULT value
+             */
+            api.FieldBehavior = (function() {
+                var valuesById = {}, values = Object.create(valuesById);
+                values[valuesById[0] = "FIELD_BEHAVIOR_UNSPECIFIED"] = 0;
+                values[valuesById[1] = "OPTIONAL"] = 1;
+                values[valuesById[2] = "REQUIRED"] = 2;
+                values[valuesById[3] = "OUTPUT_ONLY"] = 3;
+                values[valuesById[4] = "INPUT_ONLY"] = 4;
+                values[valuesById[5] = "IMMUTABLE"] = 5;
+                values[valuesById[6] = "UNORDERED_LIST"] = 6;
+                values[valuesById[7] = "NON_EMPTY_DEFAULT"] = 7;
+                return values;
+            })();
+    
+            api.ResourceDescriptor = (function() {
+    
+                /**
+                 * Properties of a ResourceDescriptor.
+                 * @memberof google.api
+                 * @interface IResourceDescriptor
+                 * @property {string|null} [type] ResourceDescriptor type
+                 * @property {Array.<string>|null} [pattern] ResourceDescriptor pattern
+                 * @property {string|null} [nameField] ResourceDescriptor nameField
+                 * @property {google.api.ResourceDescriptor.History|null} [history] ResourceDescriptor history
+                 * @property {string|null} [plural] ResourceDescriptor plural
+                 * @property {string|null} [singular] ResourceDescriptor singular
+                 * @property {Array.<google.api.ResourceDescriptor.Style>|null} [style] ResourceDescriptor style
+                 */
+    
+                /**
+                 * Constructs a new ResourceDescriptor.
+                 * @memberof google.api
+                 * @classdesc Represents a ResourceDescriptor.
+                 * @implements IResourceDescriptor
+                 * @constructor
+                 * @param {google.api.IResourceDescriptor=} [properties] Properties to set
+                 */
+                function ResourceDescriptor(properties) {
+                    this.pattern = [];
+                    this.style = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * ResourceDescriptor type.
+                 * @member {string} type
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.type = "";
+    
+                /**
+                 * ResourceDescriptor pattern.
+                 * @member {Array.<string>} pattern
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.pattern = $util.emptyArray;
+    
+                /**
+                 * ResourceDescriptor nameField.
+                 * @member {string} nameField
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.nameField = "";
+    
+                /**
+                 * ResourceDescriptor history.
+                 * @member {google.api.ResourceDescriptor.History} history
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.history = 0;
+    
+                /**
+                 * ResourceDescriptor plural.
+                 * @member {string} plural
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.plural = "";
+    
+                /**
+                 * ResourceDescriptor singular.
+                 * @member {string} singular
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.singular = "";
+    
+                /**
+                 * ResourceDescriptor style.
+                 * @member {Array.<google.api.ResourceDescriptor.Style>} style
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 */
+                ResourceDescriptor.prototype.style = $util.emptyArray;
+    
+                /**
+                 * Creates a new ResourceDescriptor instance using the specified properties.
+                 * @function create
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {google.api.IResourceDescriptor=} [properties] Properties to set
+                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor instance
+                 */
+                ResourceDescriptor.create = function create(properties) {
+                    return new ResourceDescriptor(properties);
+                };
+    
+                /**
+                 * Encodes the specified ResourceDescriptor message. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {google.api.IResourceDescriptor} message ResourceDescriptor message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ResourceDescriptor.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
+                    if (message.pattern != null && message.pattern.length)
+                        for (var i = 0; i < message.pattern.length; ++i)
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.pattern[i]);
+                    if (message.nameField != null && Object.hasOwnProperty.call(message, "nameField"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.nameField);
+                    if (message.history != null && Object.hasOwnProperty.call(message, "history"))
+                        writer.uint32(/* id 4, wireType 0 =*/32).int32(message.history);
+                    if (message.plural != null && Object.hasOwnProperty.call(message, "plural"))
+                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.plural);
+                    if (message.singular != null && Object.hasOwnProperty.call(message, "singular"))
+                        writer.uint32(/* id 6, wireType 2 =*/50).string(message.singular);
+                    if (message.style != null && message.style.length) {
+                        writer.uint32(/* id 10, wireType 2 =*/82).fork();
+                        for (var i = 0; i < message.style.length; ++i)
+                            writer.int32(message.style[i]);
+                        writer.ldelim();
+                    }
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified ResourceDescriptor message, length delimited. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {google.api.IResourceDescriptor} message ResourceDescriptor message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ResourceDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a ResourceDescriptor message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ResourceDescriptor.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.api.ResourceDescriptor();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.type = reader.string();
+                            break;
+                        case 2:
+                            if (!(message.pattern && message.pattern.length))
+                                message.pattern = [];
+                            message.pattern.push(reader.string());
+                            break;
+                        case 3:
+                            message.nameField = reader.string();
+                            break;
+                        case 4:
+                            message.history = reader.int32();
+                            break;
+                        case 5:
+                            message.plural = reader.string();
+                            break;
+                        case 6:
+                            message.singular = reader.string();
+                            break;
+                        case 10:
+                            if (!(message.style && message.style.length))
+                                message.style = [];
+                            if ((tag & 7) === 2) {
+                                var end2 = reader.uint32() + reader.pos;
+                                while (reader.pos < end2)
+                                    message.style.push(reader.int32());
+                            } else
+                                message.style.push(reader.int32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a ResourceDescriptor message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ResourceDescriptor.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a ResourceDescriptor message.
+                 * @function verify
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ResourceDescriptor.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.type != null && message.hasOwnProperty("type"))
+                        if (!$util.isString(message.type))
+                            return "type: string expected";
+                    if (message.pattern != null && message.hasOwnProperty("pattern")) {
+                        if (!Array.isArray(message.pattern))
+                            return "pattern: array expected";
+                        for (var i = 0; i < message.pattern.length; ++i)
+                            if (!$util.isString(message.pattern[i]))
+                                return "pattern: string[] expected";
+                    }
+                    if (message.nameField != null && message.hasOwnProperty("nameField"))
+                        if (!$util.isString(message.nameField))
+                            return "nameField: string expected";
+                    if (message.history != null && message.hasOwnProperty("history"))
+                        switch (message.history) {
+                        default:
+                            return "history: enum value expected";
+                        case 0:
+                        case 1:
+                        case 2:
+                            break;
+                        }
+                    if (message.plural != null && message.hasOwnProperty("plural"))
+                        if (!$util.isString(message.plural))
+                            return "plural: string expected";
+                    if (message.singular != null && message.hasOwnProperty("singular"))
+                        if (!$util.isString(message.singular))
+                            return "singular: string expected";
+                    if (message.style != null && message.hasOwnProperty("style")) {
+                        if (!Array.isArray(message.style))
+                            return "style: array expected";
+                        for (var i = 0; i < message.style.length; ++i)
+                            switch (message.style[i]) {
+                            default:
+                                return "style: enum value[] expected";
+                            case 0:
+                            case 1:
+                                break;
+                            }
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a ResourceDescriptor message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
+                 */
+                ResourceDescriptor.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.api.ResourceDescriptor)
+                        return object;
+                    var message = new $root.google.api.ResourceDescriptor();
+                    if (object.type != null)
+                        message.type = String(object.type);
+                    if (object.pattern) {
+                        if (!Array.isArray(object.pattern))
+                            throw TypeError(".google.api.ResourceDescriptor.pattern: array expected");
+                        message.pattern = [];
+                        for (var i = 0; i < object.pattern.length; ++i)
+                            message.pattern[i] = String(object.pattern[i]);
+                    }
+                    if (object.nameField != null)
+                        message.nameField = String(object.nameField);
+                    switch (object.history) {
+                    case "HISTORY_UNSPECIFIED":
+                    case 0:
+                        message.history = 0;
+                        break;
+                    case "ORIGINALLY_SINGLE_PATTERN":
+                    case 1:
+                        message.history = 1;
+                        break;
+                    case "FUTURE_MULTI_PATTERN":
+                    case 2:
+                        message.history = 2;
+                        break;
+                    }
+                    if (object.plural != null)
+                        message.plural = String(object.plural);
+                    if (object.singular != null)
+                        message.singular = String(object.singular);
+                    if (object.style) {
+                        if (!Array.isArray(object.style))
+                            throw TypeError(".google.api.ResourceDescriptor.style: array expected");
+                        message.style = [];
+                        for (var i = 0; i < object.style.length; ++i)
+                            switch (object.style[i]) {
+                            default:
+                            case "STYLE_UNSPECIFIED":
+                            case 0:
+                                message.style[i] = 0;
+                                break;
+                            case "DECLARATIVE_FRIENDLY":
+                            case 1:
+                                message.style[i] = 1;
+                                break;
+                            }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a ResourceDescriptor message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {google.api.ResourceDescriptor} message ResourceDescriptor
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ResourceDescriptor.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults) {
+                        object.pattern = [];
+                        object.style = [];
+                    }
+                    if (options.defaults) {
+                        object.type = "";
+                        object.nameField = "";
+                        object.history = options.enums === String ? "HISTORY_UNSPECIFIED" : 0;
+                        object.plural = "";
+                        object.singular = "";
+                    }
+                    if (message.type != null && message.hasOwnProperty("type"))
+                        object.type = message.type;
+                    if (message.pattern && message.pattern.length) {
+                        object.pattern = [];
+                        for (var j = 0; j < message.pattern.length; ++j)
+                            object.pattern[j] = message.pattern[j];
+                    }
+                    if (message.nameField != null && message.hasOwnProperty("nameField"))
+                        object.nameField = message.nameField;
+                    if (message.history != null && message.hasOwnProperty("history"))
+                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] : message.history;
+                    if (message.plural != null && message.hasOwnProperty("plural"))
+                        object.plural = message.plural;
+                    if (message.singular != null && message.hasOwnProperty("singular"))
+                        object.singular = message.singular;
+                    if (message.style && message.style.length) {
+                        object.style = [];
+                        for (var j = 0; j < message.style.length; ++j)
+                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this ResourceDescriptor to JSON.
+                 * @function toJSON
+                 * @memberof google.api.ResourceDescriptor
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ResourceDescriptor.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * History enum.
+                 * @name google.api.ResourceDescriptor.History
+                 * @enum {number}
+                 * @property {number} HISTORY_UNSPECIFIED=0 HISTORY_UNSPECIFIED value
+                 * @property {number} ORIGINALLY_SINGLE_PATTERN=1 ORIGINALLY_SINGLE_PATTERN value
+                 * @property {number} FUTURE_MULTI_PATTERN=2 FUTURE_MULTI_PATTERN value
+                 */
+                ResourceDescriptor.History = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "HISTORY_UNSPECIFIED"] = 0;
+                    values[valuesById[1] = "ORIGINALLY_SINGLE_PATTERN"] = 1;
+                    values[valuesById[2] = "FUTURE_MULTI_PATTERN"] = 2;
+                    return values;
+                })();
+    
+                /**
+                 * Style enum.
+                 * @name google.api.ResourceDescriptor.Style
+                 * @enum {number}
+                 * @property {number} STYLE_UNSPECIFIED=0 STYLE_UNSPECIFIED value
+                 * @property {number} DECLARATIVE_FRIENDLY=1 DECLARATIVE_FRIENDLY value
+                 */
+                ResourceDescriptor.Style = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "STYLE_UNSPECIFIED"] = 0;
+                    values[valuesById[1] = "DECLARATIVE_FRIENDLY"] = 1;
+                    return values;
+                })();
+    
+                return ResourceDescriptor;
+            })();
+    
+            api.ResourceReference = (function() {
+    
+                /**
+                 * Properties of a ResourceReference.
+                 * @memberof google.api
+                 * @interface IResourceReference
+                 * @property {string|null} [type] ResourceReference type
+                 * @property {string|null} [childType] ResourceReference childType
+                 */
+    
+                /**
+                 * Constructs a new ResourceReference.
+                 * @memberof google.api
+                 * @classdesc Represents a ResourceReference.
+                 * @implements IResourceReference
+                 * @constructor
+                 * @param {google.api.IResourceReference=} [properties] Properties to set
+                 */
+                function ResourceReference(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * ResourceReference type.
+                 * @member {string} type
+                 * @memberof google.api.ResourceReference
+                 * @instance
+                 */
+                ResourceReference.prototype.type = "";
+    
+                /**
+                 * ResourceReference childType.
+                 * @member {string} childType
+                 * @memberof google.api.ResourceReference
+                 * @instance
+                 */
+                ResourceReference.prototype.childType = "";
+    
+                /**
+                 * Creates a new ResourceReference instance using the specified properties.
+                 * @function create
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {google.api.IResourceReference=} [properties] Properties to set
+                 * @returns {google.api.ResourceReference} ResourceReference instance
+                 */
+                ResourceReference.create = function create(properties) {
+                    return new ResourceReference(properties);
+                };
+    
+                /**
+                 * Encodes the specified ResourceReference message. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {google.api.IResourceReference} message ResourceReference message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ResourceReference.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
+                    if (message.childType != null && Object.hasOwnProperty.call(message, "childType"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.childType);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified ResourceReference message, length delimited. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {google.api.IResourceReference} message ResourceReference message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ResourceReference.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a ResourceReference message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.api.ResourceReference} ResourceReference
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ResourceReference.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.api.ResourceReference();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.type = reader.string();
+                            break;
+                        case 2:
+                            message.childType = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a ResourceReference message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.api.ResourceReference} ResourceReference
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ResourceReference.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a ResourceReference message.
+                 * @function verify
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ResourceReference.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.type != null && message.hasOwnProperty("type"))
+                        if (!$util.isString(message.type))
+                            return "type: string expected";
+                    if (message.childType != null && message.hasOwnProperty("childType"))
+                        if (!$util.isString(message.childType))
+                            return "childType: string expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a ResourceReference message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.api.ResourceReference} ResourceReference
+                 */
+                ResourceReference.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.api.ResourceReference)
+                        return object;
+                    var message = new $root.google.api.ResourceReference();
+                    if (object.type != null)
+                        message.type = String(object.type);
+                    if (object.childType != null)
+                        message.childType = String(object.childType);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a ResourceReference message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {google.api.ResourceReference} message ResourceReference
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ResourceReference.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults) {
+                        object.type = "";
+                        object.childType = "";
+                    }
+                    if (message.type != null && message.hasOwnProperty("type"))
+                        object.type = message.type;
+                    if (message.childType != null && message.hasOwnProperty("childType"))
+                        object.childType = message.childType;
+                    return object;
+                };
+    
+                /**
+                 * Converts this ResourceReference to JSON.
+                 * @function toJSON
+                 * @memberof google.api.ResourceReference
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ResourceReference.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return ResourceReference;
+            })();
+    
             api.Http = (function() {
     
                 /**
@@ -41740,667 +42596,6 @@
                 };
     
                 return CustomHttpPattern;
-            })();
-    
-            /**
-             * FieldBehavior enum.
-             * @name google.api.FieldBehavior
-             * @enum {number}
-             * @property {number} FIELD_BEHAVIOR_UNSPECIFIED=0 FIELD_BEHAVIOR_UNSPECIFIED value
-             * @property {number} OPTIONAL=1 OPTIONAL value
-             * @property {number} REQUIRED=2 REQUIRED value
-             * @property {number} OUTPUT_ONLY=3 OUTPUT_ONLY value
-             * @property {number} INPUT_ONLY=4 INPUT_ONLY value
-             * @property {number} IMMUTABLE=5 IMMUTABLE value
-             * @property {number} UNORDERED_LIST=6 UNORDERED_LIST value
-             * @property {number} NON_EMPTY_DEFAULT=7 NON_EMPTY_DEFAULT value
-             */
-            api.FieldBehavior = (function() {
-                var valuesById = {}, values = Object.create(valuesById);
-                values[valuesById[0] = "FIELD_BEHAVIOR_UNSPECIFIED"] = 0;
-                values[valuesById[1] = "OPTIONAL"] = 1;
-                values[valuesById[2] = "REQUIRED"] = 2;
-                values[valuesById[3] = "OUTPUT_ONLY"] = 3;
-                values[valuesById[4] = "INPUT_ONLY"] = 4;
-                values[valuesById[5] = "IMMUTABLE"] = 5;
-                values[valuesById[6] = "UNORDERED_LIST"] = 6;
-                values[valuesById[7] = "NON_EMPTY_DEFAULT"] = 7;
-                return values;
-            })();
-    
-            api.ResourceDescriptor = (function() {
-    
-                /**
-                 * Properties of a ResourceDescriptor.
-                 * @memberof google.api
-                 * @interface IResourceDescriptor
-                 * @property {string|null} [type] ResourceDescriptor type
-                 * @property {Array.<string>|null} [pattern] ResourceDescriptor pattern
-                 * @property {string|null} [nameField] ResourceDescriptor nameField
-                 * @property {google.api.ResourceDescriptor.History|null} [history] ResourceDescriptor history
-                 * @property {string|null} [plural] ResourceDescriptor plural
-                 * @property {string|null} [singular] ResourceDescriptor singular
-                 * @property {Array.<google.api.ResourceDescriptor.Style>|null} [style] ResourceDescriptor style
-                 */
-    
-                /**
-                 * Constructs a new ResourceDescriptor.
-                 * @memberof google.api
-                 * @classdesc Represents a ResourceDescriptor.
-                 * @implements IResourceDescriptor
-                 * @constructor
-                 * @param {google.api.IResourceDescriptor=} [properties] Properties to set
-                 */
-                function ResourceDescriptor(properties) {
-                    this.pattern = [];
-                    this.style = [];
-                    if (properties)
-                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                            if (properties[keys[i]] != null)
-                                this[keys[i]] = properties[keys[i]];
-                }
-    
-                /**
-                 * ResourceDescriptor type.
-                 * @member {string} type
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.type = "";
-    
-                /**
-                 * ResourceDescriptor pattern.
-                 * @member {Array.<string>} pattern
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.pattern = $util.emptyArray;
-    
-                /**
-                 * ResourceDescriptor nameField.
-                 * @member {string} nameField
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.nameField = "";
-    
-                /**
-                 * ResourceDescriptor history.
-                 * @member {google.api.ResourceDescriptor.History} history
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.history = 0;
-    
-                /**
-                 * ResourceDescriptor plural.
-                 * @member {string} plural
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.plural = "";
-    
-                /**
-                 * ResourceDescriptor singular.
-                 * @member {string} singular
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.singular = "";
-    
-                /**
-                 * ResourceDescriptor style.
-                 * @member {Array.<google.api.ResourceDescriptor.Style>} style
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 */
-                ResourceDescriptor.prototype.style = $util.emptyArray;
-    
-                /**
-                 * Creates a new ResourceDescriptor instance using the specified properties.
-                 * @function create
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {google.api.IResourceDescriptor=} [properties] Properties to set
-                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor instance
-                 */
-                ResourceDescriptor.create = function create(properties) {
-                    return new ResourceDescriptor(properties);
-                };
-    
-                /**
-                 * Encodes the specified ResourceDescriptor message. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
-                 * @function encode
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {google.api.IResourceDescriptor} message ResourceDescriptor message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                ResourceDescriptor.encode = function encode(message, writer) {
-                    if (!writer)
-                        writer = $Writer.create();
-                    if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
-                    if (message.pattern != null && message.pattern.length)
-                        for (var i = 0; i < message.pattern.length; ++i)
-                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.pattern[i]);
-                    if (message.nameField != null && Object.hasOwnProperty.call(message, "nameField"))
-                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.nameField);
-                    if (message.history != null && Object.hasOwnProperty.call(message, "history"))
-                        writer.uint32(/* id 4, wireType 0 =*/32).int32(message.history);
-                    if (message.plural != null && Object.hasOwnProperty.call(message, "plural"))
-                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.plural);
-                    if (message.singular != null && Object.hasOwnProperty.call(message, "singular"))
-                        writer.uint32(/* id 6, wireType 2 =*/50).string(message.singular);
-                    if (message.style != null && message.style.length) {
-                        writer.uint32(/* id 10, wireType 2 =*/82).fork();
-                        for (var i = 0; i < message.style.length; ++i)
-                            writer.int32(message.style[i]);
-                        writer.ldelim();
-                    }
-                    return writer;
-                };
-    
-                /**
-                 * Encodes the specified ResourceDescriptor message, length delimited. Does not implicitly {@link google.api.ResourceDescriptor.verify|verify} messages.
-                 * @function encodeDelimited
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {google.api.IResourceDescriptor} message ResourceDescriptor message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                ResourceDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
-                    return this.encode(message, writer).ldelim();
-                };
-    
-                /**
-                 * Decodes a ResourceDescriptor message from the specified reader or buffer.
-                 * @function decode
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @param {number} [length] Message length if known beforehand
-                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                ResourceDescriptor.decode = function decode(reader, length) {
-                    if (!(reader instanceof $Reader))
-                        reader = $Reader.create(reader);
-                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.api.ResourceDescriptor();
-                    while (reader.pos < end) {
-                        var tag = reader.uint32();
-                        switch (tag >>> 3) {
-                        case 1:
-                            message.type = reader.string();
-                            break;
-                        case 2:
-                            if (!(message.pattern && message.pattern.length))
-                                message.pattern = [];
-                            message.pattern.push(reader.string());
-                            break;
-                        case 3:
-                            message.nameField = reader.string();
-                            break;
-                        case 4:
-                            message.history = reader.int32();
-                            break;
-                        case 5:
-                            message.plural = reader.string();
-                            break;
-                        case 6:
-                            message.singular = reader.string();
-                            break;
-                        case 10:
-                            if (!(message.style && message.style.length))
-                                message.style = [];
-                            if ((tag & 7) === 2) {
-                                var end2 = reader.uint32() + reader.pos;
-                                while (reader.pos < end2)
-                                    message.style.push(reader.int32());
-                            } else
-                                message.style.push(reader.int32());
-                            break;
-                        default:
-                            reader.skipType(tag & 7);
-                            break;
-                        }
-                    }
-                    return message;
-                };
-    
-                /**
-                 * Decodes a ResourceDescriptor message from the specified reader or buffer, length delimited.
-                 * @function decodeDelimited
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                ResourceDescriptor.decodeDelimited = function decodeDelimited(reader) {
-                    if (!(reader instanceof $Reader))
-                        reader = new $Reader(reader);
-                    return this.decode(reader, reader.uint32());
-                };
-    
-                /**
-                 * Verifies a ResourceDescriptor message.
-                 * @function verify
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {Object.<string,*>} message Plain object to verify
-                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                 */
-                ResourceDescriptor.verify = function verify(message) {
-                    if (typeof message !== "object" || message === null)
-                        return "object expected";
-                    if (message.type != null && message.hasOwnProperty("type"))
-                        if (!$util.isString(message.type))
-                            return "type: string expected";
-                    if (message.pattern != null && message.hasOwnProperty("pattern")) {
-                        if (!Array.isArray(message.pattern))
-                            return "pattern: array expected";
-                        for (var i = 0; i < message.pattern.length; ++i)
-                            if (!$util.isString(message.pattern[i]))
-                                return "pattern: string[] expected";
-                    }
-                    if (message.nameField != null && message.hasOwnProperty("nameField"))
-                        if (!$util.isString(message.nameField))
-                            return "nameField: string expected";
-                    if (message.history != null && message.hasOwnProperty("history"))
-                        switch (message.history) {
-                        default:
-                            return "history: enum value expected";
-                        case 0:
-                        case 1:
-                        case 2:
-                            break;
-                        }
-                    if (message.plural != null && message.hasOwnProperty("plural"))
-                        if (!$util.isString(message.plural))
-                            return "plural: string expected";
-                    if (message.singular != null && message.hasOwnProperty("singular"))
-                        if (!$util.isString(message.singular))
-                            return "singular: string expected";
-                    if (message.style != null && message.hasOwnProperty("style")) {
-                        if (!Array.isArray(message.style))
-                            return "style: array expected";
-                        for (var i = 0; i < message.style.length; ++i)
-                            switch (message.style[i]) {
-                            default:
-                                return "style: enum value[] expected";
-                            case 0:
-                            case 1:
-                                break;
-                            }
-                    }
-                    return null;
-                };
-    
-                /**
-                 * Creates a ResourceDescriptor message from a plain object. Also converts values to their respective internal types.
-                 * @function fromObject
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {Object.<string,*>} object Plain object
-                 * @returns {google.api.ResourceDescriptor} ResourceDescriptor
-                 */
-                ResourceDescriptor.fromObject = function fromObject(object) {
-                    if (object instanceof $root.google.api.ResourceDescriptor)
-                        return object;
-                    var message = new $root.google.api.ResourceDescriptor();
-                    if (object.type != null)
-                        message.type = String(object.type);
-                    if (object.pattern) {
-                        if (!Array.isArray(object.pattern))
-                            throw TypeError(".google.api.ResourceDescriptor.pattern: array expected");
-                        message.pattern = [];
-                        for (var i = 0; i < object.pattern.length; ++i)
-                            message.pattern[i] = String(object.pattern[i]);
-                    }
-                    if (object.nameField != null)
-                        message.nameField = String(object.nameField);
-                    switch (object.history) {
-                    case "HISTORY_UNSPECIFIED":
-                    case 0:
-                        message.history = 0;
-                        break;
-                    case "ORIGINALLY_SINGLE_PATTERN":
-                    case 1:
-                        message.history = 1;
-                        break;
-                    case "FUTURE_MULTI_PATTERN":
-                    case 2:
-                        message.history = 2;
-                        break;
-                    }
-                    if (object.plural != null)
-                        message.plural = String(object.plural);
-                    if (object.singular != null)
-                        message.singular = String(object.singular);
-                    if (object.style) {
-                        if (!Array.isArray(object.style))
-                            throw TypeError(".google.api.ResourceDescriptor.style: array expected");
-                        message.style = [];
-                        for (var i = 0; i < object.style.length; ++i)
-                            switch (object.style[i]) {
-                            default:
-                            case "STYLE_UNSPECIFIED":
-                            case 0:
-                                message.style[i] = 0;
-                                break;
-                            case "DECLARATIVE_FRIENDLY":
-                            case 1:
-                                message.style[i] = 1;
-                                break;
-                            }
-                    }
-                    return message;
-                };
-    
-                /**
-                 * Creates a plain object from a ResourceDescriptor message. Also converts values to other types if specified.
-                 * @function toObject
-                 * @memberof google.api.ResourceDescriptor
-                 * @static
-                 * @param {google.api.ResourceDescriptor} message ResourceDescriptor
-                 * @param {$protobuf.IConversionOptions} [options] Conversion options
-                 * @returns {Object.<string,*>} Plain object
-                 */
-                ResourceDescriptor.toObject = function toObject(message, options) {
-                    if (!options)
-                        options = {};
-                    var object = {};
-                    if (options.arrays || options.defaults) {
-                        object.pattern = [];
-                        object.style = [];
-                    }
-                    if (options.defaults) {
-                        object.type = "";
-                        object.nameField = "";
-                        object.history = options.enums === String ? "HISTORY_UNSPECIFIED" : 0;
-                        object.plural = "";
-                        object.singular = "";
-                    }
-                    if (message.type != null && message.hasOwnProperty("type"))
-                        object.type = message.type;
-                    if (message.pattern && message.pattern.length) {
-                        object.pattern = [];
-                        for (var j = 0; j < message.pattern.length; ++j)
-                            object.pattern[j] = message.pattern[j];
-                    }
-                    if (message.nameField != null && message.hasOwnProperty("nameField"))
-                        object.nameField = message.nameField;
-                    if (message.history != null && message.hasOwnProperty("history"))
-                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] : message.history;
-                    if (message.plural != null && message.hasOwnProperty("plural"))
-                        object.plural = message.plural;
-                    if (message.singular != null && message.hasOwnProperty("singular"))
-                        object.singular = message.singular;
-                    if (message.style && message.style.length) {
-                        object.style = [];
-                        for (var j = 0; j < message.style.length; ++j)
-                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
-                    }
-                    return object;
-                };
-    
-                /**
-                 * Converts this ResourceDescriptor to JSON.
-                 * @function toJSON
-                 * @memberof google.api.ResourceDescriptor
-                 * @instance
-                 * @returns {Object.<string,*>} JSON object
-                 */
-                ResourceDescriptor.prototype.toJSON = function toJSON() {
-                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                };
-    
-                /**
-                 * History enum.
-                 * @name google.api.ResourceDescriptor.History
-                 * @enum {number}
-                 * @property {number} HISTORY_UNSPECIFIED=0 HISTORY_UNSPECIFIED value
-                 * @property {number} ORIGINALLY_SINGLE_PATTERN=1 ORIGINALLY_SINGLE_PATTERN value
-                 * @property {number} FUTURE_MULTI_PATTERN=2 FUTURE_MULTI_PATTERN value
-                 */
-                ResourceDescriptor.History = (function() {
-                    var valuesById = {}, values = Object.create(valuesById);
-                    values[valuesById[0] = "HISTORY_UNSPECIFIED"] = 0;
-                    values[valuesById[1] = "ORIGINALLY_SINGLE_PATTERN"] = 1;
-                    values[valuesById[2] = "FUTURE_MULTI_PATTERN"] = 2;
-                    return values;
-                })();
-    
-                /**
-                 * Style enum.
-                 * @name google.api.ResourceDescriptor.Style
-                 * @enum {number}
-                 * @property {number} STYLE_UNSPECIFIED=0 STYLE_UNSPECIFIED value
-                 * @property {number} DECLARATIVE_FRIENDLY=1 DECLARATIVE_FRIENDLY value
-                 */
-                ResourceDescriptor.Style = (function() {
-                    var valuesById = {}, values = Object.create(valuesById);
-                    values[valuesById[0] = "STYLE_UNSPECIFIED"] = 0;
-                    values[valuesById[1] = "DECLARATIVE_FRIENDLY"] = 1;
-                    return values;
-                })();
-    
-                return ResourceDescriptor;
-            })();
-    
-            api.ResourceReference = (function() {
-    
-                /**
-                 * Properties of a ResourceReference.
-                 * @memberof google.api
-                 * @interface IResourceReference
-                 * @property {string|null} [type] ResourceReference type
-                 * @property {string|null} [childType] ResourceReference childType
-                 */
-    
-                /**
-                 * Constructs a new ResourceReference.
-                 * @memberof google.api
-                 * @classdesc Represents a ResourceReference.
-                 * @implements IResourceReference
-                 * @constructor
-                 * @param {google.api.IResourceReference=} [properties] Properties to set
-                 */
-                function ResourceReference(properties) {
-                    if (properties)
-                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                            if (properties[keys[i]] != null)
-                                this[keys[i]] = properties[keys[i]];
-                }
-    
-                /**
-                 * ResourceReference type.
-                 * @member {string} type
-                 * @memberof google.api.ResourceReference
-                 * @instance
-                 */
-                ResourceReference.prototype.type = "";
-    
-                /**
-                 * ResourceReference childType.
-                 * @member {string} childType
-                 * @memberof google.api.ResourceReference
-                 * @instance
-                 */
-                ResourceReference.prototype.childType = "";
-    
-                /**
-                 * Creates a new ResourceReference instance using the specified properties.
-                 * @function create
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {google.api.IResourceReference=} [properties] Properties to set
-                 * @returns {google.api.ResourceReference} ResourceReference instance
-                 */
-                ResourceReference.create = function create(properties) {
-                    return new ResourceReference(properties);
-                };
-    
-                /**
-                 * Encodes the specified ResourceReference message. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
-                 * @function encode
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {google.api.IResourceReference} message ResourceReference message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                ResourceReference.encode = function encode(message, writer) {
-                    if (!writer)
-                        writer = $Writer.create();
-                    if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
-                    if (message.childType != null && Object.hasOwnProperty.call(message, "childType"))
-                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.childType);
-                    return writer;
-                };
-    
-                /**
-                 * Encodes the specified ResourceReference message, length delimited. Does not implicitly {@link google.api.ResourceReference.verify|verify} messages.
-                 * @function encodeDelimited
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {google.api.IResourceReference} message ResourceReference message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                ResourceReference.encodeDelimited = function encodeDelimited(message, writer) {
-                    return this.encode(message, writer).ldelim();
-                };
-    
-                /**
-                 * Decodes a ResourceReference message from the specified reader or buffer.
-                 * @function decode
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @param {number} [length] Message length if known beforehand
-                 * @returns {google.api.ResourceReference} ResourceReference
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                ResourceReference.decode = function decode(reader, length) {
-                    if (!(reader instanceof $Reader))
-                        reader = $Reader.create(reader);
-                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.api.ResourceReference();
-                    while (reader.pos < end) {
-                        var tag = reader.uint32();
-                        switch (tag >>> 3) {
-                        case 1:
-                            message.type = reader.string();
-                            break;
-                        case 2:
-                            message.childType = reader.string();
-                            break;
-                        default:
-                            reader.skipType(tag & 7);
-                            break;
-                        }
-                    }
-                    return message;
-                };
-    
-                /**
-                 * Decodes a ResourceReference message from the specified reader or buffer, length delimited.
-                 * @function decodeDelimited
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {google.api.ResourceReference} ResourceReference
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                ResourceReference.decodeDelimited = function decodeDelimited(reader) {
-                    if (!(reader instanceof $Reader))
-                        reader = new $Reader(reader);
-                    return this.decode(reader, reader.uint32());
-                };
-    
-                /**
-                 * Verifies a ResourceReference message.
-                 * @function verify
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {Object.<string,*>} message Plain object to verify
-                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                 */
-                ResourceReference.verify = function verify(message) {
-                    if (typeof message !== "object" || message === null)
-                        return "object expected";
-                    if (message.type != null && message.hasOwnProperty("type"))
-                        if (!$util.isString(message.type))
-                            return "type: string expected";
-                    if (message.childType != null && message.hasOwnProperty("childType"))
-                        if (!$util.isString(message.childType))
-                            return "childType: string expected";
-                    return null;
-                };
-    
-                /**
-                 * Creates a ResourceReference message from a plain object. Also converts values to their respective internal types.
-                 * @function fromObject
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {Object.<string,*>} object Plain object
-                 * @returns {google.api.ResourceReference} ResourceReference
-                 */
-                ResourceReference.fromObject = function fromObject(object) {
-                    if (object instanceof $root.google.api.ResourceReference)
-                        return object;
-                    var message = new $root.google.api.ResourceReference();
-                    if (object.type != null)
-                        message.type = String(object.type);
-                    if (object.childType != null)
-                        message.childType = String(object.childType);
-                    return message;
-                };
-    
-                /**
-                 * Creates a plain object from a ResourceReference message. Also converts values to other types if specified.
-                 * @function toObject
-                 * @memberof google.api.ResourceReference
-                 * @static
-                 * @param {google.api.ResourceReference} message ResourceReference
-                 * @param {$protobuf.IConversionOptions} [options] Conversion options
-                 * @returns {Object.<string,*>} Plain object
-                 */
-                ResourceReference.toObject = function toObject(message, options) {
-                    if (!options)
-                        options = {};
-                    var object = {};
-                    if (options.defaults) {
-                        object.type = "";
-                        object.childType = "";
-                    }
-                    if (message.type != null && message.hasOwnProperty("type"))
-                        object.type = message.type;
-                    if (message.childType != null && message.hasOwnProperty("childType"))
-                        object.childType = message.childType;
-                    return object;
-                };
-    
-                /**
-                 * Converts this ResourceReference to JSON.
-                 * @function toJSON
-                 * @memberof google.api.ResourceReference
-                 * @instance
-                 * @returns {Object.<string,*>} JSON object
-                 */
-                ResourceReference.prototype.toJSON = function toJSON() {
-                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                };
-    
-                return ResourceReference;
             })();
     
             return api;

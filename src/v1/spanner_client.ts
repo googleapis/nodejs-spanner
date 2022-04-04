@@ -25,10 +25,12 @@ import {
   ClientOptions,
   PaginationCallback,
   GaxCall,
+  GoogleError,
 } from 'google-gax';
 
 import {Transform} from 'stream';
 import {RequestType} from 'google-gax/build/src/apitypes';
+import {PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -268,6 +270,16 @@ export class SpannerClient {
         stub =>
           (...args: Array<{}>) => {
             if (this._terminated) {
+              if (methodName in this.descriptors.stream) {
+                const stream = new PassThrough();
+                setImmediate(() => {
+                  stream.emit(
+                    'error',
+                    new GoogleError('The client has already been closed.')
+                  );
+                });
+                return stream;
+              }
               return Promise.reject('The client has already been closed.');
             }
             const func = stub[methodName];
@@ -376,7 +388,7 @@ export class SpannerClient {
    * @param {string} request.database
    *   Required. The database in which the new session is created.
    * @param {google.spanner.v1.Session} request.session
-   *   The session to create.
+   *   Required. The session to create.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -384,8 +396,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.create_session.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_CreateSession_async
    */
   createSession(
     request?: protos.google.spanner.v1.ICreateSessionRequest,
@@ -478,8 +488,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.batch_create_sessions.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_BatchCreateSessions_async
    */
   batchCreateSessions(
     request?: protos.google.spanner.v1.IBatchCreateSessionsRequest,
@@ -565,8 +573,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.get_session.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_GetSession_async
    */
   getSession(
     request?: protos.google.spanner.v1.IGetSessionRequest,
@@ -650,8 +656,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.delete_session.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_DeleteSession_async
    */
   deleteSession(
     request?: protos.google.spanner.v1.IDeleteSessionRequest,
@@ -810,8 +814,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.execute_sql.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_ExecuteSql_async
    */
   executeSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -927,8 +929,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.execute_batch_dml.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_ExecuteBatchDml_async
    */
   executeBatchDml(
     request?: protos.google.spanner.v1.IExecuteBatchDmlRequest,
@@ -1065,8 +1065,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.read.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_Read_async
    */
   read(
     request?: protos.google.spanner.v1.IReadRequest,
@@ -1159,8 +1157,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.begin_transaction.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_BeginTransaction_async
    */
   beginTransaction(
     request?: protos.google.spanner.v1.IBeginTransactionRequest,
@@ -1277,8 +1273,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.commit.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_Commit_async
    */
   commit(
     request?: protos.google.spanner.v1.ICommitRequest,
@@ -1369,8 +1363,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.rollback.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_Rollback_async
    */
   rollback(
     request?: protos.google.spanner.v1.IRollbackRequest,
@@ -1500,8 +1492,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.partition_query.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_PartitionQuery_async
    */
   partitionQuery(
     request?: protos.google.spanner.v1.IPartitionQueryRequest,
@@ -1617,8 +1607,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.partition_read.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_PartitionRead_async
    */
   partitionRead(
     request?: protos.google.spanner.v1.IPartitionReadRequest,
@@ -1772,8 +1760,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.execute_streaming_sql.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_ExecuteStreamingSql_async
    */
   executeStreamingSql(
     request?: protos.google.spanner.v1.IExecuteSqlRequest,
@@ -1852,8 +1838,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.streaming_read.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_StreamingRead_async
    */
   streamingRead(
     request?: protos.google.spanner.v1.IReadRequest,
@@ -2070,8 +2054,6 @@ export class SpannerClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/spanner.list_sessions.js</caption>
-   * region_tag:spanner_v1_generated_Spanner_ListSessions_async
    */
   listSessionsAsync(
     request?: protos.google.spanner.v1.IListSessionsRequest,
@@ -2221,9 +2203,8 @@ export class SpannerClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    this.initialize();
-    if (!this._terminated) {
-      return this.spannerStub!.then(stub => {
+    if (this.spannerStub && !this._terminated) {
+      return this.spannerStub.then(stub => {
         this._terminated = true;
         stub.close();
       });

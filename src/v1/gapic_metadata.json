@@ -2,27 +2,27 @@
   "schema": "1.0",
   "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
   "language": "typescript",
-  "protoPackage": "google.spanner.admin.database.v1",
+  "protoPackage": "google.spanner.admin.instance.v1",
   "libraryPackage": "@google-cloud/spanner",
   "services": {
-    "DatabaseAdmin": {
+    "InstanceAdmin": {
       "clients": {
         "grpc": {
-          "libraryClient": "DatabaseAdminClient",
+          "libraryClient": "InstanceAdminClient",
           "rpcs": {
-            "GetDatabase": {
+            "GetInstanceConfig": {
               "methods": [
-                "getDatabase"
+                "getInstanceConfig"
               ]
             },
-            "DropDatabase": {
+            "GetInstance": {
               "methods": [
-                "dropDatabase"
+                "getInstance"
               ]
             },
-            "GetDatabaseDdl": {
+            "DeleteInstance": {
               "methods": [
-                "getDatabaseDdl"
+                "deleteInstance"
               ]
             },
             "SetIamPolicy": {
@@ -40,94 +40,48 @@
                 "testIamPermissions"
               ]
             },
-            "GetBackup": {
+            "CreateInstance": {
               "methods": [
-                "getBackup"
+                "createInstance"
               ]
             },
-            "UpdateBackup": {
+            "UpdateInstance": {
               "methods": [
-                "updateBackup"
+                "updateInstance"
               ]
             },
-            "DeleteBackup": {
+            "ListInstanceConfigs": {
               "methods": [
-                "deleteBackup"
+                "listInstanceConfigs",
+                "listInstanceConfigsStream",
+                "listInstanceConfigsAsync"
               ]
             },
-            "CreateDatabase": {
+            "ListInstances": {
               "methods": [
-                "createDatabase"
-              ]
-            },
-            "UpdateDatabaseDdl": {
-              "methods": [
-                "updateDatabaseDdl"
-              ]
-            },
-            "CreateBackup": {
-              "methods": [
-                "createBackup"
-              ]
-            },
-            "RestoreDatabase": {
-              "methods": [
-                "restoreDatabase"
-              ]
-            },
-            "ListDatabases": {
-              "methods": [
-                "listDatabases",
-                "listDatabasesStream",
-                "listDatabasesAsync"
-              ]
-            },
-            "ListBackups": {
-              "methods": [
-                "listBackups",
-                "listBackupsStream",
-                "listBackupsAsync"
-              ]
-            },
-            "ListDatabaseOperations": {
-              "methods": [
-                "listDatabaseOperations",
-                "listDatabaseOperationsStream",
-                "listDatabaseOperationsAsync"
-              ]
-            },
-            "ListBackupOperations": {
-              "methods": [
-                "listBackupOperations",
-                "listBackupOperationsStream",
-                "listBackupOperationsAsync"
-              ]
-            },
-            "ListDatabaseRoles": {
-              "methods": [
-                "listDatabaseRoles",
-                "listDatabaseRolesStream",
-                "listDatabaseRolesAsync"
+                "listInstances",
+                "listInstancesStream",
+                "listInstancesAsync"
               ]
             }
           }
         },
         "grpc-fallback": {
-          "libraryClient": "DatabaseAdminClient",
+          "libraryClient": "InstanceAdminClient",
           "rpcs": {
-            "GetDatabase": {
+            "GetInstanceConfig": {
               "methods": [
-                "getDatabase"
+                "getInstanceConfig"
               ]
             },
-            "DropDatabase": {
+            "GetInstance": {
               "methods": [
-                "dropDatabase"
+                "getInstance"
               ]
             },
-            "GetDatabaseDdl": {
+            "DeleteInstance": {
               "methods": [
-                "getDatabaseDdl"
+                "deleteInstance"
               ]
             },
             "SetIamPolicy": {
@@ -145,74 +99,28 @@
                 "testIamPermissions"
               ]
             },
-            "GetBackup": {
+            "CreateInstance": {
               "methods": [
-                "getBackup"
+                "createInstance"
               ]
             },
-            "UpdateBackup": {
+            "UpdateInstance": {
               "methods": [
-                "updateBackup"
+                "updateInstance"
               ]
             },
-            "DeleteBackup": {
+            "ListInstanceConfigs": {
               "methods": [
-                "deleteBackup"
+                "listInstanceConfigs",
+                "listInstanceConfigsStream",
+                "listInstanceConfigsAsync"
               ]
             },
-            "CreateDatabase": {
+            "ListInstances": {
               "methods": [
-                "createDatabase"
-              ]
-            },
-            "UpdateDatabaseDdl": {
-              "methods": [
-                "updateDatabaseDdl"
-              ]
-            },
-            "CreateBackup": {
-              "methods": [
-                "createBackup"
-              ]
-            },
-            "RestoreDatabase": {
-              "methods": [
-                "restoreDatabase"
-              ]
-            },
-            "ListDatabases": {
-              "methods": [
-                "listDatabases",
-                "listDatabasesStream",
-                "listDatabasesAsync"
-              ]
-            },
-            "ListBackups": {
-              "methods": [
-                "listBackups",
-                "listBackupsStream",
-                "listBackupsAsync"
-              ]
-            },
-            "ListDatabaseOperations": {
-              "methods": [
-                "listDatabaseOperations",
-                "listDatabaseOperationsStream",
-                "listDatabaseOperationsAsync"
-              ]
-            },
-            "ListBackupOperations": {
-              "methods": [
-                "listBackupOperations",
-                "listBackupOperationsStream",
-                "listBackupOperationsAsync"
-              ]
-            },
-            "ListDatabaseRoles": {
-              "methods": [
-                "listDatabaseRoles",
-                "listDatabaseRolesStream",
-                "listDatabaseRolesAsync"
+                "listInstances",
+                "listInstancesStream",
+                "listInstancesAsync"
               ]
             }
           }
