@@ -36046,6 +36046,7 @@
                      * @property {Object.<string,string>|null} [labels] Session labels
                      * @property {google.protobuf.ITimestamp|null} [createTime] Session createTime
                      * @property {google.protobuf.ITimestamp|null} [approximateLastUseTime] Session approximateLastUseTime
+                     * @property {string|null} [creatorRole] Session creatorRole
                      */
     
                     /**
@@ -36097,6 +36098,14 @@
                     Session.prototype.approximateLastUseTime = null;
     
                     /**
+                     * Session creatorRole.
+                     * @member {string} creatorRole
+                     * @memberof google.spanner.v1.Session
+                     * @instance
+                     */
+                    Session.prototype.creatorRole = "";
+    
+                    /**
                      * Creates a new Session instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Session
@@ -36129,6 +36138,8 @@
                             $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.approximateLastUseTime != null && Object.hasOwnProperty.call(message, "approximateLastUseTime"))
                             $root.google.protobuf.Timestamp.encode(message.approximateLastUseTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.creatorRole != null && Object.hasOwnProperty.call(message, "creatorRole"))
+                            writer.uint32(/* id 5, wireType 2 =*/42).string(message.creatorRole);
                         return writer;
                     };
     
@@ -36194,6 +36205,9 @@
                             case 4:
                                 message.approximateLastUseTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                 break;
+                            case 5:
+                                message.creatorRole = reader.string();
+                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -36250,6 +36264,9 @@
                             if (error)
                                 return "approximateLastUseTime." + error;
                         }
+                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
+                            if (!$util.isString(message.creatorRole))
+                                return "creatorRole: string expected";
                         return null;
                     };
     
@@ -36284,6 +36301,8 @@
                                 throw TypeError(".google.spanner.v1.Session.approximateLastUseTime: object expected");
                             message.approximateLastUseTime = $root.google.protobuf.Timestamp.fromObject(object.approximateLastUseTime);
                         }
+                        if (object.creatorRole != null)
+                            message.creatorRole = String(object.creatorRole);
                         return message;
                     };
     
@@ -36306,6 +36325,7 @@
                             object.name = "";
                             object.createTime = null;
                             object.approximateLastUseTime = null;
+                            object.creatorRole = "";
                         }
                         if (message.name != null && message.hasOwnProperty("name"))
                             object.name = message.name;
@@ -36319,6 +36339,8 @@
                             object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                         if (message.approximateLastUseTime != null && message.hasOwnProperty("approximateLastUseTime"))
                             object.approximateLastUseTime = $root.google.protobuf.Timestamp.toObject(message.approximateLastUseTime, options);
+                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
+                            object.creatorRole = message.creatorRole;
                         return object;
                     };
     

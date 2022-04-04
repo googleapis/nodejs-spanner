@@ -4084,6 +4084,10 @@
                       "options": {
                         "(google.api.field_behavior)": "OUTPUT_ONLY"
                       }
+                    },
+                    "creatorRole": {
+                      "type": "string",
+                      "id": 5
                     }
                   }
                 },
