@@ -40,6 +40,11 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
+import {
+  InstanceConfig,
+  CreateInstanceConfigCallback,
+  CreateInstanceConfigResponse,
+} from './instance-config';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
 import {
@@ -112,6 +117,15 @@ export interface CreateInstanceRequest {
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
 }
+export interface CreateInstanceConfigRequest {
+  displayName?: string;
+  replicas?: google.spanner.admin.instance.v1.IReplicaInfo[];
+  baseConfig?: string;
+  labels?: {[k: string]: string} | null;
+  etag?: string;
+  validateOnly?: boolean;
+  gaxOptions?: CallOptions;
+}
 
 /**
  * Translates enum values to string keys.
@@ -181,6 +195,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  instance_configs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
@@ -288,6 +303,7 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.instance_configs_ = new Map();
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
@@ -690,6 +706,74 @@ class Spanner extends GrpcService {
     });
   }
 
+  // createInstanceConfig
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest
+  ): Promise<CreateInstanceConfigResponse>;
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest,
+    callback: CreateInstanceConfigCallback
+  ): void;
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest,
+    callback?: CreateInstanceConfigCallback
+  ): void | Promise<CreateInstanceConfigResponse> {
+    if (!name) {
+      throw new GoogleError('A name is required to create an instance config.');
+    }
+    if (!config) {
+      throw new GoogleError(
+        [
+          'A configuration object is required to create an instance config.',
+        ].join('')
+      );
+    }
+    if (!config.baseConfig) {
+      throw new GoogleError(
+        ['Base instance config is required to create an instance config.'].join(
+          ''
+        )
+      );
+    }
+    const formattedName = InstanceConfig.formatName_(this.projectId, name);
+    const displayName = config.displayName || formattedName.split('/').pop();
+    const reqOpts = {
+      parent: this.projectFormattedName_,
+      instanceConfigId: formattedName.split('/').pop(),
+      instanceConfig: extend(
+        {
+          name: formattedName,
+          displayName,
+        },
+        config
+      ),
+    };
+
+    if (config.baseConfig!.indexOf('/') === -1) {
+      reqOpts.instanceConfig.baseConfig = `projects/${this.projectId}/instanceConfigs/${config.baseConfig}`;
+    }
+    this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'createInstanceConfig',
+        reqOpts,
+        gaxOpts: config.gaxOptions,
+        headers: this.resourceHeader_,
+      },
+      (err, operation, resp) => {
+        if (err) {
+          callback!(err, null, null, resp);
+          return;
+        }
+        const instanceConfig = this.instanceConfig(formattedName);
+        callback!(null, instanceConfig, operation, resp);
+      }
+    );
+  }
+
   /**
    * Lists the supported instance configurations for a given project.
    *
@@ -1025,6 +1109,19 @@ class Spanner extends GrpcService {
     return this.instances_.get(key)!;
   }
 
+  instanceConfig(name: string): InstanceConfig {
+    if (!name) {
+      throw new GoogleError(
+        'A name is required to access an Instance config object.'
+      );
+    }
+    const key = name.split('/').pop()!;
+    if (!this.instance_configs_.has(key)) {
+      this.instance_configs_.set(key, new InstanceConfig(this, name));
+    }
+    return this.instance_configs_.get(key)!;
+  }
+
   /**
    * Prepare a gapic request. This will cache the GAX client and replace
    * {{projectId}} placeholders, if necessary.
@@ -1335,6 +1432,7 @@ promisifyAll(Spanner, {
     'date',
     'float',
     'instance',
+    'instanceConfig',
     'int',
     'numeric',
     'pgNumeric',
