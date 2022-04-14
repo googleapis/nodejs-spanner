@@ -231,6 +231,10 @@ export class Session extends common.GrpcServiceObject {
           typeof optionsOrCallback === 'function'
             ? optionsOrCallback
             : callback;
+
+        this.labels = options.labels || null;
+        this.creatorRole = options.creatorRole || database.creatorRole || null;
+
         return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
             callback(err, null, apiResponse);

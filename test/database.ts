@@ -230,6 +230,7 @@ describe('Database', () => {
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
+    database.creatorRole = 'parent_role';
   });
 
   afterEach(() => sandbox.restore());
@@ -386,7 +387,33 @@ describe('Database', () => {
 
       const {reqOpts} = stub.lastCall.args[0];
 
-      assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
+      assert.strictEqual(reqOpts.sessionTemplate.labels, labels);
+    });
+
+    it('should accept session creatorRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions(
+        {count: 10, creatorRole: 'child_role'},
+        assert.ifError
+      );
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(reqOpts.sessionTemplate.creatorRole, 'child_role');
+    });
+
+    it('should use default creatorRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions({count: 10}, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(
+        reqOpts.sessionTemplate.creatorRole,
+        'parent_role'
+      );
     });
 
     it('should accept gaxOptions', () => {
@@ -1704,6 +1731,9 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'createSession');
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.creatorRole
+          },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.headers, database.resourceHeader_);
@@ -1718,6 +1748,9 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.creatorRole
+          },
         });
 
         assert.strictEqual(config.gaxOpts, undefined);
@@ -1733,12 +1766,46 @@ describe('Database', () => {
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
-        assert.deepStrictEqual(config.reqOpts.session, {labels});
+        assert.deepStrictEqual(config.reqOpts.session.labels, labels);
         assert.deepStrictEqual(options, originalOptions);
         done();
       };
 
       database.createSession({labels}, assert.ifError);
+    });
+
+    it('should send creatorRole correctly', done => {
+      const creatorRole = {creatorRole: 'child_role'};
+      const options = {a: 'b', creatorRole: creatorRole};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          creatorRole.creatorRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(creatorRole, assert.ifError);
+    });
+
+    it('should send default creatorRole correctly', done => {
+      const creatorRole = {creatorRole: 'parent_role'};
+      const options = {a: 'b'};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          creatorRole.creatorRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(creatorRole, assert.ifError);
     });
 
     describe('error', () => {
@@ -2277,6 +2344,170 @@ describe('Database', () => {
 
       const returnedValue = database.getSessionsStream();
       assert.strictEqual(returnedValue, returnValue);
+    });
+  });
+
+  describe('getSessions', () => {
+    it('should make the correct request', done => {
+      const gaxOpts = {};
+      const options = {a: 'a', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, options, {
+        database: database.formattedName_,
+      });
+
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = config => {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'listSessions');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.deepStrictEqual(config.gaxOpts, gaxOpts);
+        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+      const options = {a: 'a', gaxOptions: gaxOptions};
+      const expectedReqOpts = extend(
+          {},
+          options,
+          {
+            database: database.formattedName_,
+          },
+          {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+
+      const optionsPageSize = 5;
+      const optionsPageToken = 'optionsToken';
+      const options = Object.assign(
+          {},
+          {
+            pageSize: optionsPageSize,
+            pageToken: optionsPageToken,
+            gaxOptions,
+          }
+      );
+      const expectedReqOpts = extend(
+          {},
+          options,
+          {
+            database: database.formattedName_,
+          },
+          {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+      delete expectedReqOpts.gaxOptions;
+
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      database.getSessions(options, assert.ifError);
+    });
+
+    it('should not require options', done => {
+      database.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          database: database.formattedName_,
+        });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        done();
+      };
+      database.getSessions(assert.ifError);
+    });
+
+    it('should return all arguments on error', done => {
+      const ARGS = [new Error('err'), null, {}];
+      database.request = (config, callback) => {
+        callback(...ARGS);
+      };
+      database.getSessions((...args) => {
+        assert.deepStrictEqual(args, ARGS);
+        done();
+      });
+    });
+
+    it('should create and return Session objects', done => {
+      const ERR = null;
+      const SESSIONS = [{name: 'abc'}];
+      const NEXTPAGEREQUEST = null;
+      const FULLAPIRESPONSE = {};
+      const SESSION_INSTANCE = {};
+      const RESPONSE = [ERR, SESSIONS, NEXTPAGEREQUEST, FULLAPIRESPONSE];
+
+      database.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+
+      database.session = name => {
+        assert.strictEqual(name, SESSIONS[0].name);
+        return SESSION_INSTANCE;
+      };
+
+      database.getSessions((err, sessions, nextQuery, resp) => {
+        assert.ifError(err);
+        assert.strictEqual(sessions[0], SESSION_INSTANCE);
+        assert.strictEqual(resp, FULLAPIRESPONSE);
+        done();
+      });
+    });
+
+    it('should return a complete nexQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXTPAGEREQUEST = {
+        database: database.formattedName_,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXTPAGEREQUEST, {}];
+
+      const GETSESSIONOPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTEDNEXTQUERY = extend({}, GETSESSIONOPTIONS, NEXTPAGEREQUEST);
+      database.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, sessions, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTEDNEXTQUERY);
+        done();
+      }
+      database.getSessions(GETSESSIONOPTIONS, callback);
     });
   });
 

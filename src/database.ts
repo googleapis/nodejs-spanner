@@ -90,6 +90,15 @@ import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import arrify = require('arrify');
+export type GetDatabaseRolesCallback = RequestCallback<
+  IDatabaseRole,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
+>;
+export type GetDatabaseRolesResponse = PagedResponse<
+  IDatabaseRole,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
+>;
+type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -187,6 +196,7 @@ export type CreateSessionResponse = [
 
 export interface CreateSessionOptions {
   labels?: {[k: string]: string} | null;
+  creatorRole?: string | null;
   gaxOptions?: CallOptions;
 }
 
@@ -230,6 +240,11 @@ export type GetStateCallback = NormalCallback<
   EnumKey<typeof databaseAdmin.spanner.admin.database.v1.Database.State>
 >;
 
+export interface GetDatabaseRolesOptions {
+  pageSize?: number;
+  pageToken?: string;
+  gaxOptions?: CallOptions;
+}
 interface DatabaseRequest {
   (
     config: RequestConfig,
@@ -270,6 +285,7 @@ class Database extends common.GrpcServiceObject {
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
+  ale?: string | null;
   constructor(
     instance: Instance,
     name: string,
@@ -375,6 +391,9 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+    if (typeof poolOptions === 'object') {
+      this.creatorRole = poolOptions.creatorRole || null;
+    }
     this.formattedName_ = formattedName_;
     this.instance = instance;
     this.resourceHeader_ = {
@@ -483,10 +502,11 @@ class Database extends common.GrpcServiceObject {
 
     const count = options.count;
     const labels = options.labels || {};
+    const creatorRole = options.creatorRole || this.creatorRole || null;
 
     const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
       database: this.formattedName_,
-      sessionTemplate: {labels},
+      sessionTemplate: {labels: labels, creatorRole: creatorRole},
       sessionCount: count,
     };
 
@@ -749,9 +769,14 @@ class Database extends common.GrpcServiceObject {
       database: this.formattedName_,
     };
 
+    reqOpts.session = {};
+
     if (options.labels) {
-      reqOpts.session = {labels: options.labels};
+      reqOpts.session.labels = options.labels;
     }
+
+    reqOpts.session.creatorRole =
+      options.creatorRole || this.creatorRole || null;
 
     this.request<google.spanner.v1.ISession>(
       {
@@ -1851,6 +1876,67 @@ class Database extends common.GrpcServiceObject {
     };
 
     return this.instance.getDatabaseOperations(dbSpecificQuery);
+  }
+
+  getDatabaseRoles(
+    options?: GetDatabaseRolesOptions
+  ): Promise<GetDatabaseRolesResponse>;
+  getDatabaseRoles(callback: GetDatabaseRolesCallback): void;
+  getDatabaseRoles(
+    options: GetDatabaseRolesOptions,
+    callback: GetDatabaseRolesCallback
+  ): void;
+  getDatabaseRoles(
+    optionsOrCallback?: GetDatabaseRolesOptions | GetDatabaseRolesCallback,
+    cb?: GetDatabaseRolesCallback
+  ): void | Promise<GetDatabaseRolesResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseRolesCallback)
+        : cb;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as GetDatabaseRolesOptions)
+        : ({} as GetDatabaseRolesOptions);
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
+      parent: this.formattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+    this.request<
+      IDatabaseRole,
+      databaseAdmin.spanner.admin.database.v1.ListDatabaseRolesResponse
+    >(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listDatabaseRoles',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      (err, roles, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback!(err, roles, nextQuery, ...args);
+      }
+    );
   }
 
   /**

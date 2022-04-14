@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance} from '../src';
+import {Backup, Database, Spanner, Instance, Session} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -43,7 +43,7 @@ const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
-  apiEndpoint: process.env.API_ENDPOINT,
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -1588,6 +1588,244 @@ describe('Spanner', () => {
       }
       await listDatabaseOperation(PG_DATABASE);
     });
+
+    describe('FineGrainedAccessControl', () => {
+      const createUserDefinedDatabaseRole = (done, database, query) => {
+        database.updateSchema(
+          [query],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(query));
+              done();
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should create a user defined role', done => {
+        createUserDefinedDatabaseRole(done, DATABASE, 'CREATE ROLE parent');
+      });
+
+      const grantAccessToRole = (
+        done,
+        database,
+        createRoleQuery,
+        grantAccessQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              database.updateSchema(
+                [grantAccessQuery],
+                execAfterOperationComplete(err => {
+                  assert.ifError(err);
+                  database.getSchema((err, statements) => {
+                    assert.ifError(err);
+                    assert.ok(statements.includes(grantAccessQuery));
+                    done();
+                  });
+                })
+              );
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', done => {
+        grantAccessToRole(
+          done,
+          DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE Singers TO ROLE child'
+        );
+      });
+
+      const userDefinedDatabaseRoleRevoked = (
+        done,
+        database,
+        createRoleQuery,
+        grantPermissionQuery,
+        revokePermissionQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              database.updateSchema(
+                [grantPermissionQuery],
+                execAfterOperationComplete(err => {
+                  assert.ifError(err);
+                  database.getSchema((err, statements) => {
+                    assert.ifError(err);
+                    assert.ok(statements.includes(grantPermissionQuery));
+                    database.updateSchema(
+                      [revokePermissionQuery],
+                      execAfterOperationComplete(err => {
+                        assert.ifError(err);
+                        database.getSchema((err, statements) => {
+                          assert.ifError(err);
+                          assert.ok(!statements.includes(grantPermissionQuery));
+                          done();
+                        });
+                      })
+                    );
+                  });
+                })
+              );
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', done => {
+        userDefinedDatabaseRoleRevoked(
+          done,
+          DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE Singers TO ROLE orphan',
+          'REVOKE SELECT ON TABLE Singers FROM ROLE orphan'
+        );
+      });
+
+      const userDefinedDatabaseRoleDropped = (
+        done,
+        database,
+        createRoleQuery,
+        dropRoleQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              database.updateSchema(
+                [dropRoleQuery],
+                execAfterOperationComplete(err => {
+                  assert.ifError(err);
+                  database.getSchema((err, statements) => {
+                    assert.ifError(err);
+                    assert.ok(!statements.includes(createRoleQuery));
+                    done();
+                  });
+                })
+              );
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', done => {
+        userDefinedDatabaseRoleDropped(
+          done,
+          DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+      });
+
+      const grantAccessSuccess = (done, database) => {
+        database.updateSchema(
+          [
+            'CREATE ROLE read_access',
+            'GRANT SELECT ON TABLE Singers TO ROLE read_access',
+          ],
+          execAfterOperationComplete(async err => {
+            assert.ifError(err);
+            const table = database.table('Singers');
+            table.insert(
+              {
+                SingerId: 7,
+              },
+              err => {
+                assert.ifError(err);
+                const dbReadRole = instance.database(database.formattedName_, {
+                  creatorRole: 'read_access',
+                });
+                const query = {
+                  sql: 'SELECT SingerId, Name FROM Singers',
+                };
+                dbReadRole.run(query, (err, rows) => {
+                  assert.ifError(err);
+                  assert.ok(rows.length > 0);
+                  done();
+                });
+              }
+            );
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should run query with access granted', done => {
+        grantAccessSuccess(done, DATABASE);
+      });
+
+      const grantAccessFailure = (done, database) => {
+        database.updateSchema(
+          [
+            'CREATE ROLE write_access',
+            'GRANT INSERT ON TABLE Singers TO ROLE write_access',
+          ],
+          execAfterOperationComplete(async err => {
+            assert.ifError(err);
+            const table = database.table('Singers');
+            table.insert(
+              {
+                SingerId: 8,
+              },
+              err => {
+                assert.ifError(err);
+                const dbReadRole = instance.database(database.formattedName_, {
+                  creatorRole: 'write_access',
+                });
+                const query = {
+                  sql: 'SELECT SingerId, Name FROM Singers',
+                };
+                dbReadRole.run(query, err => {
+                  assert(err);
+                  done();
+                });
+              }
+            );
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', done => {
+        grantAccessFailure(done, DATABASE);
+      });
+
+      const listDatabaseRoles = async database => {
+        const [updateRole] = await database.updateSchema([
+          'CREATE ROLE new_parent',
+        ]);
+        await updateRole.promise();
+
+        const [databaseRoles] = await database.getDatabaseRoles();
+        assert.ok(databaseRoles.length > 0);
+        assert.ok(
+          databaseRoles.find(
+            role =>
+              role.name ===
+              database.formattedName_ + '/databaseRoles/new_parent'
+          )
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should list database roles', async () => {
+        await listDatabaseRoles(DATABASE);
+      });
+    });
   });
 
   describe('Backups', () => {
@@ -2122,12 +2360,33 @@ describe('Spanner', () => {
   describe('Sessions', () => {
     const session = DATABASE.session();
 
-    before(async () => {
-      await session.create();
+    const dbNewRole = instance.database(DATABASE.formattedName_, {
+      creatorRole: 'parent',
     });
 
-    after(done => {
-      session.delete(done);
+    const sessionWithDatabaseRole = dbNewRole.session();
+    let sessionWithRole: Session;
+    let sessionWithOverridingRole: Session;
+
+    before(async () => {
+      await session.create();
+      const [operation] = await DATABASE.updateSchema([
+        'CREATE ROLE parent',
+        'CREATE ROLE child',
+        'CREATE ROLE orphan',
+      ]);
+      await operation.promise();
+      await sessionWithDatabaseRole.create();
+      [sessionWithRole] = await DATABASE.createSession({creatorRole: 'child'});
+      [sessionWithOverridingRole] = await dbNewRole.createSession({
+        creatorRole: 'orphan',
+      });
+    });
+
+    after(async () => {
+      await session.delete();
+      await sessionWithDatabaseRole.delete();
+      await sessionWithRole.delete();
     });
 
     it('should have created the session', done => {
@@ -2162,6 +2421,78 @@ describe('Spanner', () => {
 
       assert.strictEqual(sessions.length, count);
 
+      await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should have created the session with database creator role', done => {
+      sessionWithDatabaseRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('parent', metadata!.creatorRole);
+        done();
+      });
+    });
+
+    it('should have created the session with creator role', done => {
+      sessionWithRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('child', metadata!.creatorRole);
+        done();
+      });
+    });
+
+    it('should have created the session by overriding database creator role', done => {
+      sessionWithOverridingRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('orphan', metadata!.creatorRole);
+        done();
+      });
+    });
+
+    it('should batch create sessions with database creator role', async () => {
+      const count = 5;
+      const [sessions] = await dbNewRole.batchCreateSessions({count});
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('parent', metadata?.creatorRole);
+        })
+      );
+      await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should batch create sessions with creator role', async () => {
+      const count = 5;
+      const [sessions] = await DATABASE.batchCreateSessions({
+        count,
+        creatorRole: 'child',
+      });
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('child', metadata?.creatorRole);
+        })
+      );
+      await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should batch create sessions with creator role by overriding database creator role', async () => {
+      const count = 5;
+      const [sessions] = await dbNewRole.batchCreateSessions({
+        count,
+        creatorRole: 'orphan',
+      });
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('orphan', metadata?.creatorRole);
+        })
+      );
       await Promise.all(sessions.map(session => session.delete()));
     });
   });
@@ -5204,6 +5535,8 @@ describe('Spanner', () => {
         }
       );
     });
+
+    it('')
   });
 
   describe('Transactions', () => {
