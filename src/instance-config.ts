@@ -36,7 +36,7 @@ import {
   Spanner,
 } from './index';
 import {promisifyAll} from '@google-cloud/promisify';
-import {CallOptions, GoogleError, grpc} from 'google-gax';
+import {CallOptions, grpc} from 'google-gax';
 import extend = require('extend');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
@@ -69,6 +69,18 @@ interface InstanceConfigRequest {
   ): void;
   <T>(config: RequestConfig, callback: RequestCallback<T>): void;
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
+}
+
+interface SetInstanceConfigMetadataRequest {
+  instanceConfig: IInstanceConfig;
+  validateOnly?: boolean;
+  gaxOpts?: CallOptions;
+}
+
+interface DeleteInstanceConfigRequest {
+  etag?: string;
+  validateOnly?: boolean;
+  gaxOpts?: CallOptions;
 }
 
 class InstanceConfig extends common.GrpcServiceObject {
@@ -121,72 +133,72 @@ class InstanceConfig extends common.GrpcServiceObject {
   }
 
   setMetadata(
-    metadata: IInstanceConfig,
-    gaxOptions?: CallOptions
+    config: SetInstanceConfigMetadataRequest,
   ): Promise<SetInstanceConfigMetadataResponse>;
   setMetadata(
-    metadata: IInstanceConfig,
+    config: SetInstanceConfigMetadataRequest,
     callback: SetInstanceConfigMetadataCallback
   ): void;
   setMetadata(
-    metadata: IInstanceConfig,
-    gaxOptions: CallOptions,
-    callback: SetInstanceConfigMetadataCallback
-  ): void;
-  setMetadata(
-    metadata: IInstanceConfig,
-    optionsOrCallback?: CallOptions | SetInstanceConfigMetadataCallback,
-    cb?: SetInstanceConfigMetadataCallback
+    config: SetInstanceConfigMetadataRequest,
+    callback?: SetInstanceConfigMetadataCallback
   ): void | Promise<SetInstanceConfigMetadataResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-
     const reqOpts = {
       instanceConfig: extend(
         {
           name: this.formattedName_,
         },
-        metadata
+        config.instanceConfig
       ),
       updateMask: {
-        paths: Object.keys(metadata).map(snakeCase),
+        paths: Object.keys(config.instanceConfig).map(snakeCase),
       },
+      validateOnly: config.validateOnly,
     };
+
+    // validateOnly need not be passed in if it is null.
+    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+
     return this.request(
       {
         client: 'InstanceAdminClient',
         method: 'updateInstanceConfig',
         reqOpts,
-        gaxOpts,
+        gaxOpts: config.gaxOpts,
         headers: this.resourceHeader_,
       },
       callback!
     );
   }
 
-  delete(gaxOptions?: CallOptions): Promise<DeleteInstanceConfigResponse>;
+  delete(config?: DeleteInstanceConfigRequest): Promise<DeleteInstanceConfigResponse>;
   delete(callback: DeleteInstanceConfigCallback): void;
-  delete(gaxOptions: CallOptions, callback: DeleteInstanceConfigCallback): void;
+  delete(config: DeleteInstanceConfigRequest, callback: DeleteInstanceConfigCallback): void;
   delete(
-    optionsOrCallback?: CallOptions | DeleteInstanceConfigCallback,
+    optionsOrCallback?: DeleteInstanceConfigRequest | DeleteInstanceConfigCallback,
     cb?: DeleteInstanceConfigCallback
   ): void | Promise<DeleteInstanceConfigResponse> {
-    const gaxOpts =
+    const config =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
     const reqOpts = {
       name: this.formattedName_,
+      etag: config.etag,
+      validateOnly: config.validateOnly,
     };
+
+    // etag/validateOnly need not be passed in if null.
+    if(reqOpts.etag == null) delete reqOpts.etag;
+    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+
     this.request<instanceAdmin.protobuf.IEmpty>(
       {
         client: 'InstanceAdminClient',
         method: 'deleteInstanceConfig',
         reqOpts,
-        gaxOpts,
+        gaxOpts: config.gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, resp) => {

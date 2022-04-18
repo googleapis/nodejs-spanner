@@ -750,11 +750,20 @@ class Spanner extends GrpcService {
         },
         config
       ),
+      validateOnly: config.validateOnly
     };
 
     if (config.baseConfig!.indexOf('/') === -1) {
       reqOpts.instanceConfig.baseConfig = `projects/${this.projectId}/instanceConfigs/${config.baseConfig}`;
     }
+
+    // validateOnly need not be passed in if it is null.
+    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+
+    // validateOnly and gaxOptions are not fields in InstanceConfig.
+    delete reqOpts.instanceConfig.validateOnly;
+    delete reqOpts.instanceConfig.gaxOptions;
+
     this.request(
       {
         client: 'InstanceAdminClient',
