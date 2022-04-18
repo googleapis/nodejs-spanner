@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [5.18.0](https://github.com/googleapis/nodejs-spanner/compare/v5.17.0...v5.18.0) (2022-04-03)
+
+
+### Features
+
+* add support for Cross region backup proto changes ([#1587](https://github.com/googleapis/nodejs-spanner/issues/1587)) ([9439ca4](https://github.com/googleapis/nodejs-spanner/commit/9439ca4cf260923a7cb90e0568864cb719ab8fc6))
+* integration testing for postgres dialect ([#1593](https://github.com/googleapis/nodejs-spanner/issues/1593)) ([ebe06a6](https://github.com/googleapis/nodejs-spanner/commit/ebe06a6cefbeacc37c40f2474b9d265b78c846e2))
+* Postgres Numeric and database support ([#1592](https://github.com/googleapis/nodejs-spanner/issues/1592)) ([7ca3975](https://github.com/googleapis/nodejs-spanner/commit/7ca3975c5e25e78983f77df9e921642c90874f90))
+* Spanner copy backup ([#1530](https://github.com/googleapis/nodejs-spanner/issues/1530)) ([cefb1b4](https://github.com/googleapis/nodejs-spanner/commit/cefb1b4c831997e5c52122c5e6c3fd9cd9cb2c76))
+
+
+### Bug Fixes
+
+* removing table_catalog from schema information ([#1595](https://github.com/googleapis/nodejs-spanner/issues/1595)) ([8bcbd95](https://github.com/googleapis/nodejs-spanner/commit/8bcbd95e7423f03aa16ffd500fca998f75c8d0cf))
+
 ## [5.17.0](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.17.0) (2022-03-09)
 
 
