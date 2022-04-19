@@ -295,7 +295,7 @@ class Instance extends common.GrpcServiceObject {
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
    * const instance = spanner.instance('my-instance');
-   * const backup = instance.backup('my-source-backup','my-backup',{
+   * const backup = instance.copyBackup('my-source-backup','my-backup',{
    *   expireTime: expireTime,
    *   encryptionConfig: {
    *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
