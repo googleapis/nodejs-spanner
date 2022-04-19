@@ -717,7 +717,104 @@ class Spanner extends GrpcService {
     });
   }
 
-  // createInstanceConfig
+  /**
+   * Config for the new instance config.
+   *
+   * @typedef {object} CreateInstanceConfigRequest
+   * @property {string} displayName The name of this instance configuration as
+   *     it appears in UIs.
+   * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} [replicas] The
+   *     geographic placement of nodes in this instance configuration and their
+   *     replication properties.
+   * @property {string} [baseConfig] Base configuration name,
+   *     e.g. projects/<project_name>/instanceConfigs/nam3 based on which this
+   *     configuration is created.
+   * @property {Object.<string, string>} [labels] Cloud Labels are a flexible
+   *     and lightweight mechanism for organizing cloud resources into groups
+   *     that reflect a customer's organizational needs and deployment
+   *     strategies. Cloud Labels can be used to filter collections of
+   *     resources. They can be used to control how resource metrics are
+   *     aggregated. And they can be used as arguments to policy management
+   *     rules (e.g. route, firewall, load balancing, etc.).
+   * @property {string} [etag] etag is used for optimistic concurrency control
+   *     as a way to help prevent simultaneous updates of a instance config from
+   *     overwriting each other.
+   * @property {boolean} [validateOnly] An option to validate, but not actually
+   *     execute, a request, and provide the same response.
+   */
+  /**
+   * @typedef {array} CreateInstanceConfigResponse
+   * @property {InstanceConfig} 0 The new {@link InstanceConfig}.
+   * @property {google.longrunning.Operation} 1 An operation object that can be
+   *     used to check the status of the request.
+   * @property {google.longrunning.IOperation} 2 The full API response.
+   */
+  /**
+   * @callback CreateInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {InstanceConfig} instanceConfig The new {@link InstanceConfig}.
+   * @param {google.longrunning.Operation} operation An operation object that
+   *     can be used to check the status of the request.
+   * @param {google.longrunning.IOperation} apiResponse The full API response.
+   */
+  /**
+   * Create an instance config.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#createInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#createInstanceConfig}
+   * @see [CreateInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig)
+   *
+   * @throws {GoogleError} If a name is not provided.
+   * @throws {GoogleError} If a configuration object is not provided.
+   * @throws {GoogleError} If a base config is not provided in the configuration
+   *                       object.
+   *
+   * @param {string} name The name of the instance config to be created.
+   * @param {CreateInstanceConfigRequest} config Configuration object.
+   * @param {CreateInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<CreateInstanceConfigResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const [baseInstanceConfig] =
+   *     await spanner.getInstanceConfig(baseInstanceConfigId);
+   * const config = {
+   *   baseConfig: baseInstanceConfig.name,
+   *   replicas: baseInstanceConfig.replicas.concat(baseInstanceConfig.optionalReplicas[0])
+   * };
+   *
+   * function callback(err, instance, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Instance created successfully.
+   *     });
+   * }
+   *
+   * spanner.createInstanceConfig('custom-new-instance-config', config, callback);
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * spanner.createInstanceConfig('custom-new-instance-config', config)
+   *   .then(function(data) {
+   *     const instanceConfig = data[0];
+   *     const operation = data[1];
+   *     return operation.promise();
+   *   })
+   *   .then(function() {
+   *     // Instance config created successfully.
+   *   });
+   * ```
+   */
   createInstanceConfig(
     name: string,
     config: CreateInstanceConfigRequest
@@ -1103,6 +1200,69 @@ class Spanner extends GrpcService {
     );
   }
 
+  /**
+   * Query object for listing backup operations.
+   *
+   * @typedef {object} GetInstanceConfigOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listInstanceConfigOperations}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
+   * @typedef {array} GetInstanceConfigOperationsResponse
+   * @property {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 A query object to receive more results.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback GetInstanceConfigOperationsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to receive more results.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * List pending and completed Instance Config operations.
+   *
+   * @see {@link #listOperations}
+   *
+   * @param {GetInstanceConfigOperationsOptions} [options] The query object for
+   *     listing InstanceConfig operations.
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @returns {Promise<GetInstanceConfigOperationsResponse>} When resolved,
+   *     contains a paged list of InstanceConfig operations.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const [operations] = await spanner.getInstanceConfigOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await spanner.getInstanceConfigOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   * ```
+   */
   getInstanceConfigOperations(
     optionsOrCallback?:
       | GetInstanceConfigOperationsOptions
@@ -1180,6 +1340,21 @@ class Spanner extends GrpcService {
     return this.instances_.get(key)!;
   }
 
+  /**
+   * Get a reference to an InstanceConfig object.
+   *
+   * @throws {GoogleError} If a name is not provided.
+   *
+   * @param {string} name The name of the instance config.
+   * @returns {InstanceConfig} An InstanceConfig object.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instanceConfig = spanner.instanceConfig('my-instance-config');
+   * ```
+   */
   instanceConfig(name: string): InstanceConfig {
     if (!name) {
       throw new GoogleError(

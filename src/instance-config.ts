@@ -92,6 +92,54 @@ class InstanceConfig extends common.GrpcServiceObject {
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = InstanceConfig.formatName_(spanner.projectId, name);
     const methods = {
+      /**
+       * Create an instance config.
+       *
+       * Wrapper around {@link v1.InstanceAdminClient#createInstanceConfig}.
+       *
+       * @see {@link v1.InstanceAdminClient#createInstanceConfig}
+       * @see [CreateInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig)
+       *
+       * @method InstanceConfig#create
+       * @param {CreateInstanceConfigRequest} config Configuration object.
+       * @param {CreateInstanceConfigCallback} [callback] Callback function.
+       * @returns {Promise<CreateInstanceConfigResponse>}
+       *
+       * @example
+       * ```
+       * const {Spanner} = require('@google-cloud/spanner');
+       * const spanner = new Spanner();
+       *
+       * const instanceConfig =
+       *     spanner.instanceConfig('custom-my-instance-config');
+       *
+       * instanceConfig.create(function(err, instance, operation, apiResponse) {
+       *   if (err) {
+       *     // Error handling omitted.
+       *   }
+       *
+       *   operation
+       *     .on('error', function(err) {})
+       *     .on('complete', function() {
+       *       // Instance config created successfully.
+       *     });
+       * });
+       *
+       * //-
+       * // If the callback is omitted, we'll return a Promise.
+       * //-
+       * instanceConfig.create()
+       *   .then(function(data) {
+       *     const operation = data[0];
+       *     const apiResponse = data[1];
+       *
+       *     return operation.promise();
+       *   })
+       *   .then(function() {
+       *     // Instance config created successfully.
+       *   });
+       * ```
+       */
       create: true,
     };
     super({
@@ -113,6 +161,61 @@ class InstanceConfig extends common.GrpcServiceObject {
     };
   }
 
+  /**
+   * Gets the instance configuration for this InstanceConfig.
+   */
+  /**
+   * @typedef {array} GetInstanceConfigResponse
+   * @property {object[]} 0 The metadata of the instance config.
+   * @property {string} 0.name The unique identifier for the instance config.
+   * @property {string} 0.displayName The name of the instance config as it
+   *     appears in UIs.
+   * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} 0.replicas The replicas used by
+   *     this instance config.
+   * @property {string[]} 0.leaderOptions The possible leader options for this instance config.
+   */
+  /**
+   * @callback GetInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} instanceConfig The metadata of the instance config.
+   * @param {string} instanceConfig.name The unique identifier for the instance
+   *     config.
+   * @param {string} instanceConfig.displayName The name of the instance config
+   *     as it appears in UIs.
+   * @param {google.spanner.admin.instance.v1.IReplicaInfo[]} instanceConfig.replicas The replicas used by
+   *     this instance config.
+   * @param {string[]} 0.leaderOptions The possible leader options for this instance config.
+   */
+  /**
+   * Get a specific instance config.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#getInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#getInstanceConfig}
+   * @see [GetInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.GetInstanceConfig)
+   *
+   * @param {GetInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<GetInstanceConfigResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instanceConfig = spanner.instanceConfig('custom-my-instance-config');
+   *
+   * instanceConfig.get(function(err, instanceConfig) {
+   *   // `instanceConfig` is an instance configuration descriptor.
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * instanceConfig.get().then(function(data) {
+   *   const instanceConfig = data[0];
+   * });
+   * ```
+   */
   get(options?: GetInstanceConfigOptions): Promise<GetInstanceConfigResponse>;
   get(callback: GetInstanceConfigCallback): void;
   get(
@@ -132,6 +235,54 @@ class InstanceConfig extends common.GrpcServiceObject {
     this.parent.getInstanceConfig(this.id, options, callback);
   }
 
+  /**
+   * Update the metadata for this instance config. Note that this method follows
+   * PATCH semantics, so previously-configured settings will persist.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#updateInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#updateInstanceConfig}
+   * @see [UpdateInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfig)
+   *
+   * @param {object} metadata The metadata you wish to set.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {SetInstanceConfigMetadataCallback} [callback] Callback function.
+   * @returns {Promise<LongRunningOperationResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instanceConfig = spanner.instanceConfig('custom-my-instance-config');
+   *
+   * const metadata = {
+   *   displayName: 'My Instance Config'
+   * };
+   *
+   * instanceConfig.setMetadata(metadata, function(err, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Metadata updated successfully.
+   *     });
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * instanceConfig.setMetadata(metadata).then(function(data) {
+   *   const operation = data[0];
+   *   const apiResponse = data[1];
+   * });
+   * ```
+   */
   setMetadata(
     config: SetInstanceConfigMetadataRequest,
   ): Promise<SetInstanceConfigMetadataResponse>;
@@ -171,6 +322,52 @@ class InstanceConfig extends common.GrpcServiceObject {
     );
   }
 
+  /**
+   * @typedef {array} DeleteInstanceConfigResponse
+   * @property {object} 0 The full API response.
+   */
+  /**
+   * @callback DeleteInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Delete the instance config.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#deleteInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#deleteInstanceConfig}
+   * @see [DeleteInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig)
+   *
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {DeleteInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<DeleteInstanceConfigResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instanceConfig = spanner.instanceConfig('custom-my-instance-config');
+   *
+   * instanceConfig.delete(function(err, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   // Instance config was deleted successfully.
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * instanceConfig.delete().then(function(data) {
+   *   const apiResponse = data[0];
+   * });
+   * ```
+   */
   delete(config?: DeleteInstanceConfigRequest): Promise<DeleteInstanceConfigResponse>;
   delete(callback: DeleteInstanceConfigCallback): void;
   delete(config: DeleteInstanceConfigRequest, callback: DeleteInstanceConfigCallback): void;
@@ -210,6 +407,37 @@ class InstanceConfig extends common.GrpcServiceObject {
     );
   }
 
+  /**
+   * @typedef {array} ExistsInstanceConfigResponse
+   * @property {boolean} 0 Whether the {@link InstanceConfig} exists.
+   */
+  /**
+   * @callback ExistsInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {boolean} exists Whether the {@link InstanceConfig} exists.
+   */
+  /**
+   * Check if an instance config exists.
+   *
+   * @method InstanceConfig#exists
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {ExistsInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<ExistsInstanceConfigResponse>} When resolved, contains
+   *     true if the instance config exists and false if it does not exist.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instanceConfig = spanner.instanceConfig('custom-my-instance-config');
+   *
+   * const exists = await instanceConfig.exists();
+   * console.log(`Does instance config exist? ${exists}`);
+   * ```
+   */
   exists(): Promise<ExistsInstanceConfigResponse>;
   exists(callback: ExistsInstanceConfigCallback): void;
   async exists(): Promise<ExistsInstanceConfigResponse> {
@@ -227,6 +455,21 @@ class InstanceConfig extends common.GrpcServiceObject {
     }
   }
 
+  /**
+   * Format the instance config name to include the project ID.
+   *
+   * @private
+   *
+   * @param {string} projectId The project ID.
+   * @param {string} name The instance config name.
+   * @returns {string}
+   *
+   * @example
+   * ```
+   * InstanceConfig.formatName_('grape-spaceship-123', 'my-instance-config');
+   * // 'projects/grape-spaceship-123/instanceConfigs/my-instance-config'
+   * ```
+   */
   static formatName_(projectId: string, name: string) {
     if (name.indexOf('/') > -1) {
       return name;
