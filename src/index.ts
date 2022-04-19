@@ -54,6 +54,7 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
   NormalCallback,
+  RequestCallback,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';
@@ -94,6 +95,16 @@ export interface GetInstanceConfigOptions {
 }
 export type GetInstanceConfigResponse = [IInstanceConfig];
 export type GetInstanceConfigCallback = NormalCallback<IInstanceConfig>;
+
+export type GetInstanceConfigOperationsOptions = PagedOptionsWithFilter;
+export type GetInstanceConfigOperationsResponse = PagedResponse<
+  IOperation,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+>;
+export type GetInstanceConfigOperationsCallback = RequestCallback<
+  IOperation,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+>;
 
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -750,7 +761,7 @@ class Spanner extends GrpcService {
         },
         config
       ),
-      validateOnly: config.validateOnly
+      validateOnly: config.validateOnly,
     };
 
     if (config.baseConfig!.indexOf('/') === -1) {
@@ -758,7 +769,7 @@ class Spanner extends GrpcService {
     }
 
     // validateOnly need not be passed in if it is null.
-    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
 
     // validateOnly and gaxOptions are not fields in InstanceConfig.
     delete reqOpts.instanceConfig.validateOnly;
@@ -1088,6 +1099,57 @@ class Spanner extends GrpcService {
       },
       (err, instanceConfig) => {
         callback!(err, instanceConfig);
+      }
+    );
+  }
+
+  getInstanceConfigOperations(
+    optionsOrCallback?:
+      | GetInstanceConfigOperationsOptions
+      | GetInstanceConfigOperationsCallback,
+    cb?: GetInstanceConfigOperationsCallback
+  ): void | Promise<GetInstanceConfigOperationsResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetInstanceConfigOperationsOptions);
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
+      parent: this.projectFormattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However, values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: gaxOpts.pageSize,
+          pageToken: gaxOpts.pageToken,
+        },
+        reqOpts
+      );
+      delete gaxOpts.pageSize;
+      delete gaxOpts.pageToken;
+    }
+
+    this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'listInstanceConfigOperations',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
       }
     );
   }
