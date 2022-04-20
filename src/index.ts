@@ -206,7 +206,7 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
-  instance_configs_: Map<string, InstanceConfig>;
+  instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
@@ -314,7 +314,7 @@ class Spanner extends GrpcService {
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
-    this.instance_configs_ = new Map();
+    this.instanceConfigs_ = new Map();
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
@@ -1362,10 +1362,10 @@ class Spanner extends GrpcService {
       );
     }
     const key = name.split('/').pop()!;
-    if (!this.instance_configs_.has(key)) {
-      this.instance_configs_.set(key, new InstanceConfig(this, name));
+    if (!this.instanceConfigs_.has(key)) {
+      this.instanceConfigs_.set(key, new InstanceConfig(this, name));
     }
-    return this.instance_configs_.get(key)!;
+    return this.instanceConfigs_.get(key)!;
   }
 
   /**
@@ -1738,6 +1738,15 @@ export {Spanner};
  * @type {Constructor}
  */
 export {Instance};
+
+/**
+ * {@link InstanceConfig} class.
+ *
+ * @name Spanner.InstanceConfig
+ * @see InstanceConfig
+ * @type {Constructor}
+ */
+export {InstanceConfig};
 
 /**
  * {@link Database} class.

@@ -400,7 +400,7 @@ class InstanceConfig extends common.GrpcServiceObject {
       },
       (err, resp) => {
         if (!err) {
-          this.parent.instance_configs_.delete(this.id);
+          this.parent.instanceConfigs_.delete(this.id);
         }
         callback!(err, resp!);
       }
