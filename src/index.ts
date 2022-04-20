@@ -1358,7 +1358,7 @@ class Spanner extends GrpcService {
   instanceConfig(name: string): InstanceConfig {
     if (!name) {
       throw new GoogleError(
-        'A name is required to access an Instance config object.'
+        'A name is required to access an InstanceConfig object.'
       );
     }
     const key = name.split('/').pop()!;
