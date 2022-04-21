@@ -101,7 +101,7 @@ export type GetInstanceConfigOperationsResponse = PagedResponse<
   IOperation,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
-export type GetInstanceConfigOperationsCallback = RequestCallback<
+export type GetInstanceConfigOperationsCallback = PagedCallback<
   IOperation,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
