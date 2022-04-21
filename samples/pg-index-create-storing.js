@@ -45,7 +45,7 @@ function main(
     const database = instance.database(databaseId);
 
     const request = [
-      'CREATE INDEX SingersBySingerName ON Singers(FirstName) INCLUDE(LastName, SingerInfo)',
+      'CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle) INCLUDE(MarketingBudget)',
     ];
 
     // Creates a new index in the database
@@ -55,7 +55,7 @@ function main(
       console.log('Waiting for operation to complete...');
       await operation.promise();
 
-      console.log('Added the SingersBySingerName index.');
+      console.log('Added the AlbumsByAlbumTitle index.');
     } catch (err) {
       console.error('ERROR:', err);
     } finally {

@@ -1434,7 +1434,7 @@ describe('Spanner', () => {
       assert.match(
         output,
         new RegExp(
-          `Added VenueDetails column to Venues table in database ${PG_DATABASE_ID}`
+          `Added MarketingBudget column to Albums table in database ${PG_DATABASE_ID}`
         )
       );
     });
@@ -1444,7 +1444,7 @@ describe('Spanner', () => {
       const output = execSync(
         `node pg-index-create-storing.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
-      assert.match(output, new RegExp('Added the SingersBySingerName index.'));
+      assert.match(output, new RegExp('Added the AlbumsByAlbumTitle index.'));
     });
 
     // pg_schema_information

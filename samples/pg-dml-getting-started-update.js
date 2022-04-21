@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Updates data in a table in a Spanner PostgreSQL database.
-//  usage: node pg-dml_getting_started_update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node pg-dml-getting-started-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

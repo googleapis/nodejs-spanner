@@ -43,7 +43,7 @@ function main(
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    const request = ['ALTER TABLE Singers ADD COLUMN Rating DOUBLE PRECISION'];
+    const request = ['ALTER TABLE Albums ADD COLUMN MarketingBudget BIGINT'];
 
     // Alter existing table to add a column.
     const [operation] = await database.updateSchema(request);
@@ -53,7 +53,7 @@ function main(
     await operation.promise();
 
     console.log(
-      `Added VenueDetails column to Venues table in database ${databaseId}.`
+      `Added MarketingBudget column to Albums table in database ${databaseId}.`
     );
   }
   pgAddColumn();
