@@ -187,7 +187,7 @@ class InstanceConfig extends common.GrpcServiceObject {
    * @param {string[]} 0.leaderOptions The possible leader options for this instance config.
    */
   /**
-   * Get a specific instance config.
+   * Gets the metadata from the backend for this InstanceConfig.
    *
    * Wrapper around {@link v1.InstanceAdminClient#getInstanceConfig}.
    *
