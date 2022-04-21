@@ -1201,7 +1201,7 @@ class Spanner extends GrpcService {
   }
 
   /**
-   * Query object for listing backup operations.
+   * Query object for listing instance config operations.
    *
    * @typedef {object} GetInstanceConfigOperationsOptions
    * @property {string} [filter] An expression for filtering the results of the
