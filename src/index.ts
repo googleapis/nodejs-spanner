@@ -722,7 +722,7 @@ class Spanner extends GrpcService {
    *
    * @typedef {object} CreateInstanceConfigRequest
    * @property {string} [displayName] The name of this instance configuration as
-   *     it appears in UIs.
+   *     it appears in the user interface.
    * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} [replicas] The
    *     geographic placement of nodes in this instance configuration and their
    *     replication properties.
