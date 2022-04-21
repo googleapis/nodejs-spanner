@@ -162,7 +162,7 @@ class InstanceConfig extends common.GrpcServiceObject {
   }
 
   /**
-   * Gets the instance configuration for this InstanceConfig.
+   * Gets the metadata from the backend for this InstanceConfig.
    */
   /**
    * @typedef {array} GetInstanceConfigResponse
