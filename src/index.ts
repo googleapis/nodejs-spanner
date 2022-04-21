@@ -1228,7 +1228,7 @@ class Spanner extends GrpcService {
    * @param {object} apiResponse The full API response.
    */
   /**
-   * List pending and completed Instance Config operations.
+   * List pending and completed instance config operations.
    *
    * @see {@link #listOperations}
    *
