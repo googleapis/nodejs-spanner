@@ -23,7 +23,7 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance} from '../src';
+import {Backup, Database, Spanner, Instance, InstanceConfig} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -83,12 +83,18 @@ describe('Spanner', () => {
     },
     gaxOptions: GAX_OPTIONS,
   };
+
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
+  const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = instance.database(generateName('database'), {incStep: 1});
   const TABLE_NAME = 'Singers';
   const PG_DATABASE = instance.database(generateName('pg-db'), {incStep: 1});
+
+  const BASE_INSTANCE_CONFIG_ID = 'nam3-cmmr';
+  // Custom instance configs start with 'custom-'
+  const instanceConfig = spanner.instanceConfig('custom-' + generateName('instance-config'));
 
   before(async () => {
     await deleteOldTestInstances();
@@ -131,6 +137,17 @@ describe('Spanner', () => {
       );
       await postgreSqlOperationUpdateDDL.promise();
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
+
+      // Create a user-managed instance config from a base instance config.
+      const [baseInstanceConfig] = await spanner.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
+      const customInstanceConfigRequest = {
+        replicas: baseInstanceConfig.replicas!.concat(baseInstanceConfig!.optionalReplicas![0]),
+        baseConfig: baseInstanceConfig.name,
+        gaxOptions: GAX_OPTIONS,
+      }
+      const [, operation] = await instanceConfig.create(customInstanceConfigRequest);
+      await operation.promise();
+      INSTANCE_CONFIGS_TO_CLEAN.push(instanceConfig);
     }
   });
 
@@ -144,7 +161,7 @@ describe('Spanner', () => {
       );
       /**
        * Deleting instances created during this test.
-       * All databasess will automatically be deleted with instance.
+       * All databases will automatically be deleted with instance.
        * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
        */
       await Promise.all(
@@ -165,6 +182,15 @@ describe('Spanner', () => {
         )
       );
     }
+    /**
+     * Deleting instance configs created during this test.
+     * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig}
+     */
+    await Promise.all(
+        INSTANCE_CONFIGS_TO_CLEAN.map(
+            instanceConfig => instanceConfig.delete({gaxOpts: GAX_OPTIONS})
+        )
+    )
   });
 
   describe('types', () => {
@@ -1311,7 +1337,19 @@ describe('Spanner', () => {
   });
 
   describe('instanceConfigs', () => {
-    it('should list the available instanceConfigs', done => {
+    it('should have created the instance config', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      instanceConfig.get((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual(metadata!.name, instanceConfig.formattedName_);
+        done();
+      });
+    });
+
+
+    it('should list the available instanceConfigs', function (done) {
       spanner.getInstanceConfigs((err, instanceConfigs) => {
         assert.ifError(err);
         assert(instanceConfigs!.length > 0);
@@ -1319,7 +1357,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should list the instanceConfigs in promise mode', done => {
+    it('should list the instanceConfigs in promise mode', function (done) {
       spanner
         .getInstanceConfigs()
         .then(data => {
@@ -1330,7 +1368,7 @@ describe('Spanner', () => {
         .catch(done);
     });
 
-    it('should list the instanceConfigs in stream mode', done => {
+    it('should list the instanceConfigs in stream mode', function (done) {
       spanner
         .getInstanceConfigsStream()
         .on('error', done)
@@ -1342,7 +1380,7 @@ describe('Spanner', () => {
         );
     });
 
-    it('should get an instanceConfig', function (done) {
+    it('should get an instanceConfig\'s metadata using getInstanceConfig', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1353,7 +1391,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should get an instanceConfig in promise mode', function (done) {
+    it('should get an instanceConfig\'s metadata in promise mode using getInstanceConfig', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1365,6 +1403,60 @@ describe('Spanner', () => {
           done();
         })
         .catch(done);
+    });
+
+    it('should get an instanceConfig\'s metadata using get', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner.instanceConfig('nam6')
+          .get()
+          .then(data => {
+            const instanceConfig = data[0];
+            assert(instanceConfig.displayName);
+            done();
+          })
+          .catch(done);
+    });
+
+    it('should update the instance config metadata', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const newData = {
+        instanceConfig: {
+          displayName: 'new-display-name-' + shortUUID()
+        }
+      };
+
+      instanceConfig.setMetadata(
+          newData,
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+
+            instanceConfig.getMetadata((err, metadata) => {
+              assert.ifError(err);
+              assert.strictEqual(metadata!.displayName, newData.instanceConfig.displayName);
+              done();
+            });
+          })
+      );
+    });
+
+    it('should return true for instance config that exist', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const doesExist = await instanceConfig.exists();
+      assert.strictEqual(doesExist, true);
+    });
+
+    it('should return false for instance configs that do not exist', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const doesExist = await spanner.instanceConfig('bad-instance-config').exists();
+      assert.strictEqual(doesExist, false);
     });
   });
 
