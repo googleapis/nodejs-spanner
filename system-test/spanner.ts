@@ -212,80 +212,81 @@ describe('Spanner', () => {
       });
     }
 
-    before(done => {
+    before(async () => {
       if (IS_EMULATOR_ENABLED) {
-        DATABASE.updateSchema(
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
-            CREATE TABLE ${TABLE_NAME} (
-              Key STRING(MAX) NOT NULL,
-              BytesValue BYTES(MAX),
-              BoolValue BOOL,
-              DateValue DATE,
-              FloatValue FLOAT64,
-              IntValue INT64,
-              NumericValue NUMERIC,
-              StringValue STRING(MAX),
-              TimestampValue TIMESTAMP,
-              BytesArray ARRAY<BYTES(MAX)>,
-              BoolArray ARRAY<BOOL>,
-              DateArray ARRAY<DATE>,
-              FloatArray ARRAY<FLOAT64>,
-              IntArray ARRAY<INT64>,
-              NumericArray ARRAY<NUMERIC>,
-              StringArray ARRAY<STRING(MAX)>,
-              TimestampArray ARRAY<TIMESTAMP>,
-              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-            ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
-        );
-      } else {
-        const postgresCreateDatabase = () => {
-          PG_DATABASE.updateSchema(
-            `
-              CREATE TABLE ${TABLE_NAME} (
-                "Key" VARCHAR NOT NULL PRIMARY KEY,
-                "BytesValue" BYTEA,
-                "BoolValue" BOOL,
-                "FloatValue" DOUBLE PRECISION,
-                "IntValue" BIGINT,
-                "NumericValue" NUMERIC,
-                "StringValue" VARCHAR,
-                "TimestampValue" TIMESTAMPTZ,
-                "DateValue" DATE,
-                "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP 
-              ); 
-            `,
-            execAfterOperationComplete(done)
-          );
-        };
-        DATABASE.updateSchema(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                BytesValue BYTES(MAX),
-                BoolValue BOOL,
-                DateValue DATE,
-                FloatValue FLOAT64,
-                JsonValue JSON,
-                IntValue INT64,
-                NumericValue NUMERIC,
-                StringValue STRING(MAX),
-                TimestampValue TIMESTAMP,
-                BytesArray ARRAY<BYTES(MAX)>,
-                BoolArray ARRAY<BOOL>,
-                DateArray ARRAY<DATE>,
-                FloatArray ARRAY<FLOAT64>,
-                JsonArray ARRAY<JSON>,
-                IntArray ARRAY<INT64>,
-                NumericArray ARRAY<NUMERIC>,
-                StringArray ARRAY<STRING(MAX)>,
-                TimestampArray ARRAY<TIMESTAMP>,
-                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
-            `,
-          postgresCreateDatabase
+            `
         );
+        await googleSqlOperationUpdateDDL.promise();
+      } else {
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                JsonValue       JSON,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                JsonArray       ARRAY<JSON>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
+              ) PRIMARY KEY (Key)
+            `
+        );
+        await googleSqlOperationUpdateDDL.promise();
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
       }
     });
 
