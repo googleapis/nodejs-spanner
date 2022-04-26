@@ -36,7 +36,6 @@ import {grpc, CallOptions} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
-import {date} from 'is';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const PREFIX = 'gcloud-tests-';
@@ -44,7 +43,7 @@ const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+  apiEndpoint: process.env.API_ENDPOINT,
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -76,7 +75,7 @@ describe('Spanner', () => {
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'cloud-devel-global-config',
+    config: 'regional-us-west2',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
@@ -213,7 +212,6 @@ describe('Spanner', () => {
       });
     }
 
-    
     before(done => {
       if (IS_EMULATOR_ENABLED) {
         DATABASE.updateSchema(
@@ -3893,7 +3891,7 @@ describe('Spanner', () => {
               assert.ifError(err);
 
               let returnedDate = Spanner.date(rows[0][0].value);
-              if(value === null) {
+              if (value === null) {
                 returnedDate = rows[0][0].value;
               }
               assert.deepStrictEqual(returnedDate, value);
