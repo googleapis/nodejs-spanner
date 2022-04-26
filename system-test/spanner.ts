@@ -1149,7 +1149,10 @@ describe('Spanner', () => {
         dateInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write null date values', done => {
+      it('POSTGRESQL should write null date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         dateInsertNull(done, Spanner.POSTGRESQL);
       });
 
@@ -1200,7 +1203,10 @@ describe('Spanner', () => {
         commitTimestamp(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should accept the commit timestamp placeholder', done => {
+      it('POSTGRESQL should accept the commit timestamp placeholder', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         commitTimestamp(done, Spanner.POSTGRESQL);
       });
     });
