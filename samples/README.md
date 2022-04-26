@@ -868,7 +868,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node pg-dml_getting_started_update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+`node pg-dml-getting-started-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
