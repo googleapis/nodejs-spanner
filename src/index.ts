@@ -1264,6 +1264,14 @@ class Spanner extends GrpcService {
    * ```
    */
   getInstanceConfigOperations(
+      options?: GetInstanceConfigOperationsOptions
+  ): Promise<GetInstanceConfigOperationsResponse>;
+  getInstanceConfigOperations(callback: GetInstanceConfigOperationsCallback): void;
+  getInstanceConfigOperations(
+      options: GetInstanceConfigOperationsOptions,
+      callback: GetInstanceConfigOperationsCallback
+  ): void;
+  getInstanceConfigOperations(
     optionsOrCallback?:
       | GetInstanceConfigOperationsOptions
       | GetInstanceConfigOperationsCallback,
