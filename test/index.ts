@@ -37,7 +37,6 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
-import * as inst from '../src/instance';
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');

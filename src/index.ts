@@ -54,7 +54,6 @@ import {
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
   NormalCallback,
-  RequestCallback,
 } from './common';
 import {Session} from './session';
 import {SessionPool} from './session-pool';

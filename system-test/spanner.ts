@@ -46,10 +46,6 @@ const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
-const spanner1 = new Spanner({
-  projectId: 'span-cloud-testing',
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
-});
 const GAX_OPTIONS: CallOptions = {
   retry: {
     retryCodes: [
@@ -99,7 +95,7 @@ describe('Spanner', () => {
 
   const BASE_INSTANCE_CONFIG_ID = 'nam3-cmmr';
   // Custom instance configs start with 'custom-'
-  const instanceConfig = spanner1.instanceConfig('custom-' + generateName('instance-config'));
+  const instanceConfig = spanner.instanceConfig('custom-' + generateName('instance-config'));
 
   before(async () => {
     await deleteOldTestInstances();
@@ -144,7 +140,7 @@ describe('Spanner', () => {
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
       // Create a user-managed instance config from a base instance config.
-      const [baseInstanceConfig] = await spanner1.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
+      const [baseInstanceConfig] = await spanner.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
       const customInstanceConfigRequest = {
         replicas: baseInstanceConfig.replicas!.concat(baseInstanceConfig!.optionalReplicas![0]),
         baseConfig: baseInstanceConfig.name,
@@ -1389,7 +1385,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner1.getInstanceConfig('nam6', (err, instanceConfig) => {
+      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
         assert.ifError(err);
         assert(instanceConfig!.displayName);
         done();
@@ -1414,7 +1410,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner1.instanceConfig('nam6')
+      spanner.instanceConfig('nam6')
           .get()
           .then(data => {
             const instanceConfig = data[0];
@@ -1429,7 +1425,7 @@ describe('Spanner', () => {
         this.skip();
       }
 
-      const [operationsWithoutFilter] = await spanner1.getInstanceConfigOperations();
+      const [operationsWithoutFilter] = await spanner.getInstanceConfigOperations();
       const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
           operation =>
               operation.name && operation.name.includes(instanceConfig.formattedName_)
@@ -1446,7 +1442,7 @@ describe('Spanner', () => {
         this.skip();
       }
 
-      const [operationsWithFilter] = await spanner1.getInstanceConfigOperations({
+      const [operationsWithFilter] = await spanner.getInstanceConfigOperations({
         filter: `(metadata.@type:CreateInstanceConfigMetadata AND
                     metadata.name:${instanceConfig.formattedName_})`,
       });
@@ -1498,7 +1494,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      const doesExist = await spanner1.instanceConfig('bad-instance-config').exists();
+      const doesExist = await spanner.instanceConfig('bad-instance-config').exists();
       assert.strictEqual(doesExist, false);
     });
   });
