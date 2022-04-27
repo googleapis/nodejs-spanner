@@ -36,6 +36,7 @@ import {grpc, CallOptions} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
+import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const PREFIX = 'gcloud-tests-';
@@ -44,6 +45,10 @@ const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
+});
+const spanner1 = new Spanner({
+  projectId: 'span-cloud-testing',
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -94,7 +99,7 @@ describe('Spanner', () => {
 
   const BASE_INSTANCE_CONFIG_ID = 'nam3-cmmr';
   // Custom instance configs start with 'custom-'
-  const instanceConfig = spanner.instanceConfig('custom-' + generateName('instance-config'));
+  const instanceConfig = spanner1.instanceConfig('custom-' + generateName('instance-config'));
 
   before(async () => {
     await deleteOldTestInstances();
@@ -139,7 +144,7 @@ describe('Spanner', () => {
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
       // Create a user-managed instance config from a base instance config.
-      const [baseInstanceConfig] = await spanner.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
+      const [baseInstanceConfig] = await spanner1.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
       const customInstanceConfigRequest = {
         replicas: baseInstanceConfig.replicas!.concat(baseInstanceConfig!.optionalReplicas![0]),
         baseConfig: baseInstanceConfig.name,
@@ -1384,7 +1389,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner.getInstanceConfig('nam6', (err, instanceConfig) => {
+      spanner1.getInstanceConfig('nam6', (err, instanceConfig) => {
         assert.ifError(err);
         assert(instanceConfig!.displayName);
         done();
@@ -1409,7 +1414,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner.instanceConfig('nam6')
+      spanner1.instanceConfig('nam6')
           .get()
           .then(data => {
             const instanceConfig = data[0];
@@ -1419,12 +1424,12 @@ describe('Spanner', () => {
           .catch(done);
     });
 
-    it('should list an instanceConfig\'s operations', async function () {
+    it('should list an instanceConfig\'s operations without filter', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
 
-      const [operationsWithoutFilter] = await spanner.getInstanceConfigOperations();
+      const [operationsWithoutFilter] = await spanner1.getInstanceConfigOperations();
       const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
           operation =>
               operation.name && operation.name.includes(instanceConfig.formattedName_)
@@ -1434,26 +1439,27 @@ describe('Spanner', () => {
           operationForCurrentInstanceConfig!.metadata!.type_url,
           'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
       );
+    });
 
-      // With a filter.
-      // const [operationsWithFilter] = await instance.getBackupOperations({
-      //   filter: `(metadata.@type:CreateBackupMetadata AND
-      //              metadata.name:${backup1.formattedName_})`,
-      // });
-      // const operationForCurrentBackupWithFilter = operationsWithFilter[0];
-      // assert.ok(operationForCurrentBackupWithFilter);
-      // assert.strictEqual(
-      //     operationForCurrentBackupWithFilter!.metadata!.type_url,
-      //     'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
-      // );
-      // spanner
-      //     .getInstanceConfigOperations()
-      //     .then(data => {
-      //       const instanceConfigOperations = data[0];
-      //       assert(instanceConfig.displayName);
-      //       done();
-      //     })
-      //     .catch(done);
+    it('should list an instanceConfig\'s operations with filter', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+
+      const [operationsWithFilter] = await spanner1.getInstanceConfigOperations({
+        filter: `(metadata.@type:CreateInstanceConfigMetadata AND
+                    metadata.name:${instanceConfig.formattedName_})`,
+      });
+      const operationForCurrentInstanceConfigWithFilter = operationsWithFilter[0];
+      assert.ok(operationForCurrentInstanceConfigWithFilter);
+      const operationForCurrentInstanceConfigWithFilterMetadata =
+          CreateInstanceConfigMetadata.decode(
+              operationForCurrentInstanceConfigWithFilter!.metadata!.value! as Uint8Array
+          );
+      assert.strictEqual(
+          operationForCurrentInstanceConfigWithFilterMetadata.instanceConfig!.name,
+          `${instanceConfig.formattedName_}`
+      );
     });
 
     it('should update the instance config metadata', function (done) {
@@ -1492,7 +1498,7 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      const doesExist = await spanner.instanceConfig('bad-instance-config').exists();
+      const doesExist = await spanner1.instanceConfig('bad-instance-config').exists();
       assert.strictEqual(doesExist, false);
     });
   });
