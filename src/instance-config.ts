@@ -71,7 +71,7 @@ interface InstanceConfigRequest {
   <T, R>(config: RequestConfig, callback: RequestCallback<T, R>): void;
 }
 
-interface SetInstanceConfigMetadataRequest {
+export interface SetInstanceConfigMetadataRequest {
   instanceConfig: IInstanceConfig;
   validateOnly?: boolean;
   gaxOpts?: CallOptions;
@@ -288,7 +288,7 @@ class InstanceConfig extends common.GrpcServiceObject {
    * ```
    */
   setMetadata(
-    config: SetInstanceConfigMetadataRequest,
+    config: SetInstanceConfigMetadataRequest
   ): Promise<SetInstanceConfigMetadataResponse>;
   setMetadata(
     config: SetInstanceConfigMetadataRequest,
@@ -312,14 +312,14 @@ class InstanceConfig extends common.GrpcServiceObject {
     };
 
     // validateOnly need not be passed in if it is null.
-    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
 
     return this.request(
       {
         client: 'InstanceAdminClient',
         method: 'updateInstanceConfig',
         reqOpts,
-        gaxOpts: config.gaxOpts,
+        gaxOpts: config.gaxOpts == null ? {} : config.gaxOpts,
         headers: this.resourceHeader_,
       },
       callback!
@@ -373,11 +373,18 @@ class InstanceConfig extends common.GrpcServiceObject {
    * });
    * ```
    */
-  delete(config?: DeleteInstanceConfigRequest): Promise<DeleteInstanceConfigResponse>;
-  delete(callback: DeleteInstanceConfigCallback): void;
-  delete(config: DeleteInstanceConfigRequest, callback: DeleteInstanceConfigCallback): void;
   delete(
-    optionsOrCallback?: DeleteInstanceConfigRequest | DeleteInstanceConfigCallback,
+    config?: DeleteInstanceConfigRequest
+  ): Promise<DeleteInstanceConfigResponse>;
+  delete(callback: DeleteInstanceConfigCallback): void;
+  delete(
+    config: DeleteInstanceConfigRequest,
+    callback: DeleteInstanceConfigCallback
+  ): void;
+  delete(
+    optionsOrCallback?:
+      | DeleteInstanceConfigRequest
+      | DeleteInstanceConfigCallback,
     cb?: DeleteInstanceConfigCallback
   ): void | Promise<DeleteInstanceConfigResponse> {
     const config =
@@ -392,15 +399,15 @@ class InstanceConfig extends common.GrpcServiceObject {
     };
 
     // etag/validateOnly need not be passed in if null.
-    if(reqOpts.etag == null) delete reqOpts.etag;
-    if(reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.etag == null) delete reqOpts.etag;
+    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
 
     this.request<instanceAdmin.protobuf.IEmpty>(
       {
         client: 'InstanceAdminClient',
         method: 'deleteInstanceConfig',
         reqOpts,
-        gaxOpts: config.gaxOpts,
+        gaxOpts: config.gaxOpts == null ? {} : config.gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, resp) => {
