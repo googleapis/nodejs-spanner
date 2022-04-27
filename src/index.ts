@@ -101,7 +101,7 @@ export type GetInstanceConfigOperationsResponse = PagedResponse<
   IOperation,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
-export type GetInstanceConfigOperationsCallback = RequestCallback<
+export type GetInstanceConfigOperationsCallback = PagedCallback<
   IOperation,
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
@@ -722,7 +722,7 @@ class Spanner extends GrpcService {
    *
    * @typedef {object} CreateInstanceConfigRequest
    * @property {string} [displayName] The name of this instance configuration as
-   *     it appears in UIs.
+   *     it appears in the user interface.
    * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} [replicas] The
    *     geographic placement of nodes in this instance configuration and their
    *     replication properties.
@@ -1201,7 +1201,7 @@ class Spanner extends GrpcService {
   }
 
   /**
-   * Query object for listing backup operations.
+   * Query object for listing instance config operations.
    *
    * @typedef {object} GetInstanceConfigOperationsOptions
    * @property {string} [filter] An expression for filtering the results of the
@@ -1228,7 +1228,7 @@ class Spanner extends GrpcService {
    * @param {object} apiResponse The full API response.
    */
   /**
-   * List pending and completed Instance Config operations.
+   * List pending and completed instance config operations.
    *
    * @see {@link #listOperations}
    *

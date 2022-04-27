@@ -162,7 +162,7 @@ class InstanceConfig extends common.GrpcServiceObject {
   }
 
   /**
-   * Gets the instance configuration for this InstanceConfig.
+   * Gets the metadata from the backend for this InstanceConfig.
    */
   /**
    * @typedef {array} GetInstanceConfigResponse
@@ -187,7 +187,7 @@ class InstanceConfig extends common.GrpcServiceObject {
    * @param {string[]} 0.leaderOptions The possible leader options for this instance config.
    */
   /**
-   * Get a specific instance config.
+   * Gets the metadata from the backend for this InstanceConfig.
    *
    * Wrapper around {@link v1.InstanceAdminClient#getInstanceConfig}.
    *
@@ -238,6 +238,8 @@ class InstanceConfig extends common.GrpcServiceObject {
   /**
    * Update the metadata for this instance config. Note that this method follows
    * PATCH semantics, so previously-configured settings will persist.
+   * This function can only be called for deleting user managed instance
+   * configs.
    *
    * Wrapper around {@link v1.InstanceAdminClient#updateInstanceConfig}.
    *
@@ -259,7 +261,9 @@ class InstanceConfig extends common.GrpcServiceObject {
    * const instanceConfig = spanner.instanceConfig('custom-my-instance-config');
    *
    * const metadata = {
-   *   displayName: 'My Instance Config'
+   *   instanceConfig: {
+   *     displayName: 'My Instance Config'
+   *   }
    * };
    *
    * instanceConfig.setMetadata(metadata, function(err, operation, apiResponse) {
@@ -332,7 +336,8 @@ class InstanceConfig extends common.GrpcServiceObject {
    * @param {object} apiResponse The full API response.
    */
   /**
-   * Delete the instance config.
+   * Delete the instance config. This function can only be called for deleting
+   * user managed instance configs.
    *
    * Wrapper around {@link v1.InstanceAdminClient#deleteInstanceConfig}.
    *
