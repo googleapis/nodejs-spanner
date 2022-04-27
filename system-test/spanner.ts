@@ -1419,6 +1419,43 @@ describe('Spanner', () => {
           .catch(done);
     });
 
+    it('should list an instanceConfig\'s operations', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+
+      const [operationsWithoutFilter] = await spanner.getInstanceConfigOperations();
+      const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
+          operation =>
+              operation.name && operation.name.includes(instanceConfig.formattedName_)
+      );
+      assert.ok(operationForCurrentInstanceConfig);
+      assert.strictEqual(
+          operationForCurrentInstanceConfig!.metadata!.type_url,
+          'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      );
+
+      // With a filter.
+      // const [operationsWithFilter] = await instance.getBackupOperations({
+      //   filter: `(metadata.@type:CreateBackupMetadata AND
+      //              metadata.name:${backup1.formattedName_})`,
+      // });
+      // const operationForCurrentBackupWithFilter = operationsWithFilter[0];
+      // assert.ok(operationForCurrentBackupWithFilter);
+      // assert.strictEqual(
+      //     operationForCurrentBackupWithFilter!.metadata!.type_url,
+      //     'type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata'
+      // );
+      // spanner
+      //     .getInstanceConfigOperations()
+      //     .then(data => {
+      //       const instanceConfigOperations = data[0];
+      //       assert(instanceConfig.displayName);
+      //       done();
+      //     })
+      //     .catch(done);
+    });
+
     it('should update the instance config metadata', function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
