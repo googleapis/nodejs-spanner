@@ -273,14 +273,16 @@ describe('Spanner', () => {
           `
                 CREATE TABLE ${TABLE_NAME}
                 (
-                  "Key"            VARCHAR NOT NULL PRIMARY KEY,
-                  "BytesValue"     BYTEA,
-                  "BoolValue"      BOOL,
-                  "FloatValue"     DOUBLE PRECISION,
-                  "IntValue"       BIGINT,
-                  "NumericValue"   NUMERIC,
-                  "StringValue"    VARCHAR,
-                  "TimestampValue" TIMESTAMPTZ
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
                 );
             `
         );
@@ -1113,22 +1115,45 @@ describe('Spanner', () => {
     });
 
     describe('dates', () => {
-      it('GOOGLE_STANDARD_SQL should write date values', done => {
-        const date = Spanner.date();
-
-        insert({DateValue: date}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+      const dateInsert = (done, dialect) => {
+        insert({DateValue: Spanner.date()}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(Spanner.date(row.toJSON().DateValue), date);
+          assert.deepStrictEqual(
+            Spanner.date(row.toJSON().DateValue),
+            Spanner.date()
+          );
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write date values', done => {
+        dateInsert(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('GOOGLE_STANDARD_SQL should write null date values', done => {
-        insert({DateValue: null}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+      it('POSTGRESQL should write date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        dateInsert(done, Spanner.POSTGRESQL);
+      });
+
+      const dateInsertNull = (done, dialect) => {
+        insert({DateValue: null}, dialect, (err, row) => {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().DateValue, null);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write null date values', done => {
+        dateInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
+      });
+
+      it('POSTGRESQL should write null date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        dateInsertNull(done, Spanner.POSTGRESQL);
       });
 
       it('GOOGLE_STANDARD_SQL should write empty date array values', done => {
@@ -1160,22 +1185,29 @@ describe('Spanner', () => {
     });
 
     describe('commit timestamp', () => {
-      it('GOOGLE_STANDARD_SQL should accept the commit timestamp placeholder', done => {
+      const commitTimestamp = (done, dialect) => {
         const data = {CommitTimestamp: Spanner.COMMIT_TIMESTAMP};
 
-        insert(
-          data,
-          Spanner.GOOGLE_STANDARD_SQL,
-          (err, row, {commitTimestamp}) => {
-            assert.ifError(err);
+        insert(data, dialect, (err, row, {commitTimestamp}) => {
+          assert.ifError(err);
 
-            const timestampFromCommit = Spanner.timestamp(commitTimestamp);
-            const timestampFromRead = row.toJSON().CommitTimestamp;
+          const timestampFromCommit = Spanner.timestamp(commitTimestamp);
+          const timestampFromRead = row.toJSON().CommitTimestamp;
 
-            assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
-            done();
-          }
-        );
+          assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept the commit timestamp placeholder', done => {
+        commitTimestamp(done, Spanner.GOOGLE_STANDARD_SQL);
+      });
+
+      it('POSTGRESQL should accept the commit timestamp placeholder', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        commitTimestamp(done, Spanner.POSTGRESQL);
       });
     });
 
@@ -3861,24 +3893,42 @@ describe('Spanner', () => {
         });
 
         describe('date', () => {
+          const dateQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              let returnedDate = Spanner.date(rows[0][0].value);
+              if (value === null) {
+                returnedDate = rows[0][0].value;
+              }
+              assert.deepStrictEqual(returnedDate, value);
+              done();
+            });
+          };
+
           it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const date = Spanner.date();
-
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: date,
               },
             };
+            dateQuery(done, DATABASE, query, date);
+          });
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const returnedDate = Spanner.date(rows[0][0].value);
-              assert.deepStrictEqual(returnedDate, date);
-
-              done();
-            });
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const date = Spanner.date();
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: date,
+              },
+            };
+            dateQuery(done, PG_DATABASE, query, date);
           });
 
           it('GOOGLE_STANDARD_SQL should allow for null values', done => {
@@ -3891,12 +3941,23 @@ describe('Spanner', () => {
                 v: 'date',
               },
             };
+            dateQuery(done, DATABASE, query, null);
+          });
 
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'date',
+              },
+            };
+            dateQuery(done, PG_DATABASE, query, null);
           });
 
           it('GOOGLE_STANDARD_SQL should bind arrays', done => {
