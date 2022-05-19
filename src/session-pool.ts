@@ -22,7 +22,7 @@ import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {GoogleError, grpc} from 'google-gax';
+import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 
 /**
@@ -721,7 +721,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         await this._prepareTransaction(session);
       } catch (e) {
-        if (isSessionNotFoundError(e)) {
+        if (isSessionNotFoundError(e as ServiceError)) {
           this._inventory.borrowed.delete(session);
         } else {
           this._release(session);
