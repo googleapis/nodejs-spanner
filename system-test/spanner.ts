@@ -6440,7 +6440,7 @@ describe('Spanner', () => {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
             // Re-throw if the transaction was aborted to trigger a retry.
-            if ((err as grpc.ServiceError).code === grpc.status.ABORTED) {
+            if ((err as grpc.ServiceError)?.code === grpc.status.ABORTED) {
               throw e;
             }
             err = e;
