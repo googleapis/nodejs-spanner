@@ -14423,6 +14423,9 @@ export namespace google {
 
                 /** Session approximateLastUseTime */
                 approximateLastUseTime?: (google.protobuf.ITimestamp|null);
+
+                /** Session creatorRole */
+                creatorRole?: (string|null);
             }
 
             /** Represents a Session. */
@@ -14445,6 +14448,9 @@ export namespace google {
 
                 /** Session approximateLastUseTime. */
                 public approximateLastUseTime?: (google.protobuf.ITimestamp|null);
+
+                /** Session creatorRole. */
+                public creatorRole: string;
 
                 /**
                  * Creates a new Session instance using the specified properties.
