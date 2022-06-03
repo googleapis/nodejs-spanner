@@ -163,4 +163,5 @@ enum TypeAnnotationCode {
   // [NUMERIC][google.spanner.v1.TypeCode.NUMERIC] when a client interacts with PostgreSQL-enabled
   // Spanner databases.
   PG_NUMERIC = 2;
+  PG_JSONB = 3;
 }
