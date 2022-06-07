@@ -1627,6 +1627,33 @@ describe('Spanner', () => {
       assert.match(output, new RegExp('VenueId: 398, Revenue: 0.000000123'));
     });
 
+    // pg_jsonb_data_type
+    it('should add a jsonb column to a table and, insert and query pg jsonb data', async () => {
+      const output = execSync(
+        `node pg-jsonb-data-type.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Added jsonb column to table venues to database ${PG_DATABASE_ID}.`
+        )
+      );
+      assert.match(output, new RegExp('Updated data.'));
+      assert.match(output, new RegExp('Inserted data using DML.'));
+      assert.match(
+        output,
+        new RegExp('VenueId: 19, Details: {"value":{"open":true,"rating":9}}')
+      );
+      assert.match(
+        output,
+        new RegExp('VenueId: 702, Details: {"value":{"rating":6}}')
+      );
+    });
+
     // pg_case_sensitivity
     it('should create case sensitive table and query the information in a Spanner PostgreSQL database', async () => {
       const output = execSync(
