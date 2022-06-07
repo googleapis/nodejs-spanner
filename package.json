@@ -107,7 +107,7 @@
     "ncp": "^2.0.0",
     "p-limit": "^3.0.1",
     "proxyquire": "^2.0.1",
-    "retry-request": "^4.1.1",
+    "retry-request": "^5.0.0",
     "sinon": "^14.0.0",
     "stats-lite": "^2.1.1",
     "teeny-request": "^7.0.0",
