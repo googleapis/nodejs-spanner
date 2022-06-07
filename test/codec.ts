@@ -543,6 +543,36 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it('should decode JSONB', () => {
+      const value = '{"result":true, "count":42}';
+      const expected = JSON.parse(value);
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_JSONB,
+      });
+
+      assert.deepStrictEqual(decoded.value, expected);
+    });
+
+    it('should decode JSONB object to string', () => {
+      const value =
+        '{"boolKey":true,"numberKey":3.14,"stringKey":"test","objectKey":{"innerKey":"inner-value"}}';
+      const expected = JSON.stringify({
+        boolKey: true,
+        numberKey: 3.14,
+        stringKey: 'test',
+        objectKey: {innerKey: 'inner-value'},
+      });
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_JSONB,
+      });
+
+      assert.deepStrictEqual(decoded.toString(), expected);
+    });
+
     it('should decode TIMESTAMP', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
