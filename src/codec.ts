@@ -277,8 +277,10 @@ function convertFieldsToJson(fields: Field[], options?: JSONOptions): Json {
     try {
       json[fieldName] = convertValueToJson(value, options);
     } catch (e) {
-      e.message = [
-        `Serializing column "${fieldName}" encountered an error: ${e.message}`,
+      (e as Error).message = [
+        `Serializing column "${fieldName}" encountered an error: ${
+          (e as Error).message
+        }`,
         'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
       ].join(' ');
       throw e;
