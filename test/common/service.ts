@@ -28,7 +28,7 @@ import * as sn from 'sinon';
 import {PassThrough} from 'stream';
 
 const sinon = sn.createSandbox();
-const glob = global as {} as {GCLOUD_SANDBOX_ENV: boolean | {}};
+const glob = global as {} as {GCLOUD_SANDBOX_ENV?: boolean | {}};
 
 const gaxProtosDir = path.join(
   path.dirname(require.resolve('google-gax')),
@@ -90,6 +90,24 @@ describe('GrpcService', () => {
   const ROOT_DIR = '/root/dir';
   const PROTO_FILE_PATH = 'filepath.proto';
   const SERVICE_PATH = 'service.path';
+
+  interface Config {
+    proto: {};
+    protosDir: string;
+    protoServices: {
+      Service: {
+        path: string;
+        service: string;
+      };
+    };
+    packageJson: {
+      name: string;
+      version: string;
+    };
+    grpcMetadata?: {
+      property: string;
+    };
+  }
 
   const CONFIG = {
     proto: {},
@@ -344,7 +362,7 @@ describe('GrpcService', () => {
         'x-goog-api-client': EXPECTED_API_CLIENT_HEADER,
       };
 
-      const config = Object.assign({}, CONFIG);
+      const config: Config = Object.assign({}, CONFIG);
       delete config.grpcMetadata;
 
       const grpcService = new GrpcService(config, OPTIONS);

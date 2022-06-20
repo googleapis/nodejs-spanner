@@ -411,13 +411,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -502,13 +502,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     return this.requestStream({
@@ -617,13 +617,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -745,13 +745,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -1334,13 +1334,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -1425,13 +1425,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     return this.requestStream({
