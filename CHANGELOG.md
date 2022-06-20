@@ -4,6 +4,30 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.0.0](https://github.com/googleapis/nodejs-spanner/compare/v5.18.0...v6.0.0) (2022-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* update library to use Node 12 (#1637)
+
+### Features
+
+* Adding IT for date and commit timestamp ([#1621](https://github.com/googleapis/nodejs-spanner/issues/1621)) ([1367aa7](https://github.com/googleapis/nodejs-spanner/commit/1367aa7dc9818be5610dfc5ae67d09652e7009e5))
+* AuditConfig for IAM v1 ([#1599](https://github.com/googleapis/nodejs-spanner/issues/1599)) ([c358d66](https://github.com/googleapis/nodejs-spanner/commit/c358d668ca2a25f99ab73a4b6c1ebbe09c34d4de))
+
+
+### Bug Fixes
+
+* **deps:** update dependency grpc-gcp to ^0.4.0 ([#1603](https://github.com/googleapis/nodejs-spanner/issues/1603)) ([f00b3c6](https://github.com/googleapis/nodejs-spanner/commit/f00b3c65e58c2f36e69a05fef0b3c9bc68a4ee55))
+* fixes for dynamic routing and streaming descriptors ([#1639](https://github.com/googleapis/nodejs-spanner/issues/1639)) ([977a543](https://github.com/googleapis/nodejs-spanner/commit/977a543d693ca2f2e8bb303be6df592aa4def1dd))
+* pin version for nodejs gax-node ([#1617](https://github.com/googleapis/nodejs-spanner/issues/1617)) ([fb0017f](https://github.com/googleapis/nodejs-spanner/commit/fb0017ffab3cfa41cd132df4511a47fb68439bf5))
+
+
+### Build System
+
+* update library to use Node 12 ([#1637](https://github.com/googleapis/nodejs-spanner/issues/1637)) ([994acf3](https://github.com/googleapis/nodejs-spanner/commit/994acf3edd7c261085f58722fa2f86f95b3a56f3))
+
 ## [5.18.0](https://github.com/googleapis/nodejs-spanner/compare/v5.17.0...v5.18.0) (2022-04-03)
 
 
