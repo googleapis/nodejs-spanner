@@ -97,19 +97,11 @@ export class SpannerDate extends Date {
    * @returns {string}
    */
   toJSON(): string {
-    const year = this.getFullYear();
-    let month = (this.getMonth() + 1).toString();
-    let date = this.getDate().toString();
+    const year = this.getFullYear().toString();
+    const month = (this.getMonth() + 1).toString();
+    const date = this.getDate().toString();
 
-    if (month.length === 1) {
-      month = `0${month}`;
-    }
-
-    if (date.length === 1) {
-      date = `0${date}`;
-    }
-
-    return `${year}-${month}-${date}`;
+    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${date.padStart(2, '0')}`;
   }
 }
 

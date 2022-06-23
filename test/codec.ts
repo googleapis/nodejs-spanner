@@ -50,6 +50,13 @@ describe('codec', () => {
         assert.strictEqual(json, '1986-03-22');
       });
 
+      it('should accept dates before 1000AD', () => {
+        const date = new codec.SpannerDate('2-25-985');
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '0985-02-25');
+      });
+
       it('should default to the current local date', () => {
         const date = new codec.SpannerDate();
         const today = new Date();
@@ -117,6 +124,24 @@ describe('codec', () => {
         (date.getDate as sinon.SinonStub).returns(3);
         const json = date.toJSON();
         assert.strictEqual(json, '1999-12-03');
+      });
+
+      it('should pad single digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(5);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0005-12-31');
+      });
+
+      it('should pad double digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(52);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0052-12-31');
+      });
+
+      it('should pad triple digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(954);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0954-12-31');
       });
     });
   });
