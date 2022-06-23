@@ -92,7 +92,7 @@ export class SpannerDate extends Date {
   }
   /**
    * Returns the date in ISO date format.
-   * `YYYY-[M]M-[D]D`
+   * `YYYY-MM-DD`
    *
    * @returns {string}
    */
@@ -101,7 +101,10 @@ export class SpannerDate extends Date {
     const month = (this.getMonth() + 1).toString();
     const date = this.getDate().toString();
 
-    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${date.padStart(2, '0')}`;
+    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${date.padStart(
+      2,
+      '0'
+    )}`;
   }
 }
 
