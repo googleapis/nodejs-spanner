@@ -22,4 +22,3 @@ permissionRules:
     permission: admin
   - team: jsteam
     permission: push
-
