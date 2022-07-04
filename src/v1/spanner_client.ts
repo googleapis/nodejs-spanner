@@ -192,10 +192,12 @@ export class SpannerClient {
     // Provide descriptors for these.
     this.descriptors.stream = {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING
+        gax.StreamType.SERVER_STREAMING,
+        opts.fallback === 'rest'
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING
+        gax.StreamType.SERVER_STREAMING,
+        opts.fallback === 'rest'
       ),
     };
 

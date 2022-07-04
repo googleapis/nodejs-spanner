@@ -54,13 +54,16 @@ and automatic, synchronous replication for high availability.
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
+  * [Adds a column to an existing table in a Spanner PostgreSQL database.](#adds-a-column-to-an-existing-table-in-a-spanner-postgresql-database.)
   * [Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.](#showcase-the-rules-for-case-sensitivity-and-case-folding-for-a-spanner-postgresql-database.)
   * [Creates a PostgreSQL Database.](#creates-a-postgresql-database.)
   * [Use cast operator to cast from one data type to another in a Spanner PostgreSQL database.](#use-cast-operator-to-cast-from-one-data-type-to-another-in-a-spanner-postgresql-database.)
   * [Execute a batch of DML statements on a Spanner PostgreSQL database.](#execute-a-batch-of-dml-statements-on-a-spanner-postgresql-database.)
+  * [Updates data in a table in a Spanner PostgreSQL database.](#updates-data-in-a-table-in-a-spanner-postgresql-database.)
   * [Execute a Partitioned DML on a Spanner PostgreSQL database.](#execute-a-partitioned-dml-on-a-spanner-postgresql-database.)
   * [Execute a DML statement with parameters on a Spanner PostgreSQL database.](#execute-a-dml-statement-with-parameters-on-a-spanner-postgresql-database.)
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
+  * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
   * [Created interleaved table hierarchy using PostgreSQL dialect.](#created-interleaved-table-hierarchy-using-postgresql-dialect.)
   * [Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.](#showcase-how-to-work-with-the-postgresql-numeric/decimal-data-type-on-a-spanner-postgresql-database.)
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
@@ -771,6 +774,23 @@ __Usage:__
 
 
 
+### Adds a column to an existing table in a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Showcase the rules for case-sensitivity and case folding for a Spanner PostgreSQL database.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-case-sensitivity.js).
@@ -839,6 +859,23 @@ __Usage:__
 
 
 
+### Updates data in a table in a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-getting-started-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-getting-started-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-getting-started-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Execute a Partitioned DML on a Spanner PostgreSQL database.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-partitioned.js).
@@ -883,6 +920,23 @@ __Usage:__
 
 
 `node pg-functions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a new storing index in a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-index-create-storing.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-index-create-storing.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-index-create-storing.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

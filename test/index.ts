@@ -319,7 +319,7 @@ describe('Spanner', () => {
           assert.fail('Missing expected error');
         } catch (e) {
           assert.strictEqual(
-            e.message,
+            (e as Error).message,
             'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
           );
         }
@@ -332,7 +332,10 @@ describe('Spanner', () => {
           Spanner.getSpannerEmulatorHost();
           assert.fail('Missing expected error');
         } catch (e) {
-          assert.strictEqual(e.message, 'Invalid port number: not_a_port');
+          assert.strictEqual(
+            (e as Error).message,
+            'Invalid port number: not_a_port'
+          );
         }
       });
 
@@ -1189,7 +1192,7 @@ describe('Spanner', () => {
     const returnValue = {};
 
     it('should make and return the correct gax API call', () => {
-      const expectedOptions = extend({}, OPTIONS, {
+      const expectedOptions: {gaxOptions?: {}} = extend({}, OPTIONS, {
         parent: 'projects/' + spanner.projectId,
       });
       delete expectedOptions.gaxOptions;
@@ -1240,7 +1243,7 @@ describe('Spanner', () => {
       const pageSize = 3;
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
-      const options = {gaxOptions};
+      const options: {gaxOptions?: {}} = {gaxOptions};
       const expectedReqOpts = extend(
         true,
         {},
@@ -1282,7 +1285,7 @@ describe('Spanner', () => {
           gaxOptions,
         }
       );
-      const expectedReqOpts = extend(
+      const expectedReqOpts: {gaxOptions?: {}} = extend(
         {},
         OPTIONS,
         {
