@@ -10079,6 +10079,12 @@ export namespace google {
 
                         /** Instance endpointUris */
                         endpointUris?: (string[]|null);
+
+                        /** Instance createTime */
+                        createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance updateTime */
+                        updateTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents an Instance. */
@@ -10113,6 +10119,12 @@ export namespace google {
 
                         /** Instance endpointUris. */
                         public endpointUris: string[];
+
+                        /** Instance createTime. */
+                        public createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance updateTime. */
+                        public updateTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Instance instance using the specified properties.

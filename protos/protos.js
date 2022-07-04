@@ -24878,6 +24878,8 @@
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
                              * @property {Array.<string>|null} [endpointUris] Instance endpointUris
+                             * @property {google.protobuf.ITimestamp|null} [createTime] Instance createTime
+                             * @property {google.protobuf.ITimestamp|null} [updateTime] Instance updateTime
                              */
     
                             /**
@@ -24962,6 +24964,22 @@
                             Instance.prototype.endpointUris = $util.emptyArray;
     
                             /**
+                             * Instance createTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} createTime
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.createTime = null;
+    
+                            /**
+                             * Instance updateTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} updateTime
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.updateTime = null;
+    
+                            /**
                              * Creates a new Instance instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.instance.v1.Instance
@@ -25003,6 +25021,10 @@
                                         writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUris[i]);
                                 if (message.processingUnits != null && Object.hasOwnProperty.call(message, "processingUnits"))
                                     writer.uint32(/* id 9, wireType 0 =*/72).int32(message.processingUnits);
+                                if (message.createTime != null && Object.hasOwnProperty.call(message, "createTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+                                if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.updateTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                                 return writer;
                             };
     
@@ -25082,6 +25104,12 @@
                                             message.endpointUris = [];
                                         message.endpointUris.push(reader.string());
                                         break;
+                                    case 11:
+                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 12:
+                                        message.updateTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -25156,6 +25184,16 @@
                                         if (!$util.isString(message.endpointUris[i]))
                                             return "endpointUris: string[] expected";
                                 }
+                                if (message.createTime != null && message.hasOwnProperty("createTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.createTime);
+                                    if (error)
+                                        return "createTime." + error;
+                                }
+                                if (message.updateTime != null && message.hasOwnProperty("updateTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.updateTime);
+                                    if (error)
+                                        return "updateTime." + error;
+                                }
                                 return null;
                             };
     
@@ -25209,6 +25247,16 @@
                                     for (var i = 0; i < object.endpointUris.length; ++i)
                                         message.endpointUris[i] = String(object.endpointUris[i]);
                                 }
+                                if (object.createTime != null) {
+                                    if (typeof object.createTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.createTime: object expected");
+                                    message.createTime = $root.google.protobuf.Timestamp.fromObject(object.createTime);
+                                }
+                                if (object.updateTime != null) {
+                                    if (typeof object.updateTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.updateTime: object expected");
+                                    message.updateTime = $root.google.protobuf.Timestamp.fromObject(object.updateTime);
+                                }
                                 return message;
                             };
     
@@ -25236,6 +25284,8 @@
                                     object.nodeCount = 0;
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                     object.processingUnits = 0;
+                                    object.createTime = null;
+                                    object.updateTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -25260,6 +25310,10 @@
                                 }
                                 if (message.processingUnits != null && message.hasOwnProperty("processingUnits"))
                                     object.processingUnits = message.processingUnits;
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
+                                if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+                                    object.updateTime = $root.google.protobuf.Timestamp.toObject(message.updateTime, options);
                                 return object;
                             };
     

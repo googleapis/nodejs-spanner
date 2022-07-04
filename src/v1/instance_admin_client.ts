@@ -1236,7 +1236,7 @@ export class InstanceAdminClient {
    * {@link google.spanner.admin.instance.v1.Instance|Instance}, if successful.
    *
    * Authorization requires `spanner.instances.update` permission on
-   * resource {@link google.spanner.admin.instance.v1.Instance.name|name}.
+   * the resource {@link google.spanner.admin.instance.v1.Instance.name|name}.
    *
    * @param {Object} request
    *   The request object that will be sent.
