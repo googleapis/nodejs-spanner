@@ -348,7 +348,7 @@ class Spanner extends GrpcService {
    * Wrapper around {@link v1.InstanceAdminClient#createInstance}.
    *
    * @see {@link v1.InstanceAdminClient#createInstance}
-   * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
+   * @see [CreateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
    *
    * @throws {GoogleError} If a name is not provided.
    * @throws {GoogleError} If a configuration object is not provided.
@@ -587,13 +587,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageToken;
-      delete gaxOpts.pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
     }
 
     this.request(
@@ -672,13 +672,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     return this.requestStream({
@@ -805,13 +805,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     return this.request(
@@ -881,13 +881,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     delete reqOpts.gaxOptions;

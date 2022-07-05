@@ -4,6 +4,59 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.0](https://github.com/googleapis/nodejs-spanner/compare/v6.0.0...v6.1.0) (2022-07-04)
+
+
+### Features
+
+* add Session creator role ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+* Adding two new fields for Instance create_time and update_time ([#1641](https://github.com/googleapis/nodejs-spanner/issues/1641)) ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/promisify to v3 ([#1629](https://github.com/googleapis/nodejs-spanner/issues/1629)) ([1467956](https://github.com/googleapis/nodejs-spanner/commit/1467956314c77f66034fa3db166ba68d7c2aba2d))
+* Improve spanner.date handling of years before 1000AD ([#1654](https://github.com/googleapis/nodejs-spanner/issues/1654)) ([fd89a29](https://github.com/googleapis/nodejs-spanner/commit/fd89a294dcab017dbbe7000bce613b0d4ed60f96))
+
+## [6.0.0](https://github.com/googleapis/nodejs-spanner/compare/v5.18.0...v6.0.0) (2022-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* update library to use Node 12 (#1637)
+
+### Features
+
+* Adding IT for date and commit timestamp ([#1621](https://github.com/googleapis/nodejs-spanner/issues/1621)) ([1367aa7](https://github.com/googleapis/nodejs-spanner/commit/1367aa7dc9818be5610dfc5ae67d09652e7009e5))
+* AuditConfig for IAM v1 ([#1599](https://github.com/googleapis/nodejs-spanner/issues/1599)) ([c358d66](https://github.com/googleapis/nodejs-spanner/commit/c358d668ca2a25f99ab73a4b6c1ebbe09c34d4de))
+
+
+### Bug Fixes
+
+* **deps:** update dependency grpc-gcp to ^0.4.0 ([#1603](https://github.com/googleapis/nodejs-spanner/issues/1603)) ([f00b3c6](https://github.com/googleapis/nodejs-spanner/commit/f00b3c65e58c2f36e69a05fef0b3c9bc68a4ee55))
+* fixes for dynamic routing and streaming descriptors ([#1639](https://github.com/googleapis/nodejs-spanner/issues/1639)) ([977a543](https://github.com/googleapis/nodejs-spanner/commit/977a543d693ca2f2e8bb303be6df592aa4def1dd))
+* pin version for nodejs gax-node ([#1617](https://github.com/googleapis/nodejs-spanner/issues/1617)) ([fb0017f](https://github.com/googleapis/nodejs-spanner/commit/fb0017ffab3cfa41cd132df4511a47fb68439bf5))
+
+
+### Build System
+
+* update library to use Node 12 ([#1637](https://github.com/googleapis/nodejs-spanner/issues/1637)) ([994acf3](https://github.com/googleapis/nodejs-spanner/commit/994acf3edd7c261085f58722fa2f86f95b3a56f3))
+
+## [5.18.0](https://github.com/googleapis/nodejs-spanner/compare/v5.17.0...v5.18.0) (2022-04-03)
+
+
+### Features
+
+* add support for Cross region backup proto changes ([#1587](https://github.com/googleapis/nodejs-spanner/issues/1587)) ([9439ca4](https://github.com/googleapis/nodejs-spanner/commit/9439ca4cf260923a7cb90e0568864cb719ab8fc6))
+* integration testing for postgres dialect ([#1593](https://github.com/googleapis/nodejs-spanner/issues/1593)) ([ebe06a6](https://github.com/googleapis/nodejs-spanner/commit/ebe06a6cefbeacc37c40f2474b9d265b78c846e2))
+* Postgres Numeric and database support ([#1592](https://github.com/googleapis/nodejs-spanner/issues/1592)) ([7ca3975](https://github.com/googleapis/nodejs-spanner/commit/7ca3975c5e25e78983f77df9e921642c90874f90))
+* Spanner copy backup ([#1530](https://github.com/googleapis/nodejs-spanner/issues/1530)) ([cefb1b4](https://github.com/googleapis/nodejs-spanner/commit/cefb1b4c831997e5c52122c5e6c3fd9cd9cb2c76))
+
+
+### Bug Fixes
+
+* removing table_catalog from schema information ([#1595](https://github.com/googleapis/nodejs-spanner/issues/1595)) ([8bcbd95](https://github.com/googleapis/nodejs-spanner/commit/8bcbd95e7423f03aa16ffd500fca998f75c8d0cf))
+
 ## [5.17.0](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.17.0) (2022-03-09)
 
 

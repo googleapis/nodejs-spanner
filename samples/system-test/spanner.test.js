@@ -1415,24 +1415,47 @@ describe('Spanner', () => {
       );
     });
 
+    // pg_dml_update
+    it('should update a table using parameterized queries on a Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node pg-dml-getting-started-update.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully updated 1 record in the Singers table.')
+      );
+    });
+
+    // pg_add_column
+    it('should add a column to a table in the Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node pg-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Added MarketingBudget column to Albums table in database ${PG_DATABASE_ID}`
+        )
+      );
+    });
+
+    //pg_create_index
+    it('should create an index in the Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node pg-index-create-storing.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Added the AlbumsByAlbumTitle index.'));
+    });
+
     // pg_schema_information
     it('should query the information schema metadata in a Spanner PostgreSQL database', async () => {
       const output = execSync(
         `node pg-schema-information.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.albums`)
-      );
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.author`)
-      );
-      assert.match(output, new RegExp(`Table: ${PG_DATABASE_ID}.public.book`));
-      assert.match(
-        output,
-        new RegExp(`Table: ${PG_DATABASE_ID}.public.singers`)
-      );
+      assert.match(output, new RegExp('Table: public.albums'));
+      assert.match(output, new RegExp('Table: public.author'));
+      assert.match(output, new RegExp('Table: public.book'));
+      assert.match(output, new RegExp('Table: public.singers'));
     });
 
     // pg_ordering_nulls

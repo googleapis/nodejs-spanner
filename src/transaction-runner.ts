@@ -219,8 +219,8 @@ export abstract class Runner<T> {
       try {
         return await this._run(transaction);
       } catch (e) {
-        this.session.lastError = e;
-        lastError = e;
+        this.session.lastError = e as grpc.ServiceError;
+        lastError = e as grpc.ServiceError;
       }
 
       // Note that if the error is a 'Session not found' error, it will be

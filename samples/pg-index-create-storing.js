@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Query the information schema metadata in a Spanner PostgreSQL database.
-//  usage: node pg-schema-information.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Creates a new storing index in a Spanner PostgreSQL database.
+//  usage: node pg-index-create-storing.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_postgresql_information_schema]
+  // [START spanner_postgresql_create_storing_index]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -39,42 +39,32 @@ function main(
     projectId: projectId,
   });
 
-  async function pgSchemaInformation() {
+  async function pgCreateStoringIndex() {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Get all the user tables in the database. PostgreSQL uses the `public` schema for user
-    // tables. The table_catalog is equal to the database name. The `user_defined_...` columns
-    // are only available for PostgreSQL databases.
-    const query = {
-      sql:
-        'SELECT table_schema, table_name, ' +
-        'user_defined_type_catalog, ' +
-        'user_defined_type_schema, ' +
-        'user_defined_type_name ' +
-        'FROM INFORMATION_SCHEMA.tables ' +
-        "WHERE table_schema='public'",
-    };
+    const request = [
+      'CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle) INCLUDE(MarketingBudget)',
+    ];
 
+    // Creates a new index in the database
     try {
-      const [rows] = await database.run(query);
-      rows.forEach(row => {
-        const json = row.toJSON();
-        console.log(
-          `Table: ${json.table_schema}.${json.table_name} ` +
-            `(User defined type: ${json.user_defined_type_catalog}.${json.user_defined_type_schema}.${json.user_defined_type_name})`
-        );
-      });
+      const [operation] = await database.updateSchema(request);
+
+      console.log('Waiting for operation to complete...');
+      await operation.promise();
+
+      console.log('Added the AlbumsByAlbumTitle index.');
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
       // Close the database when finished.
-      await database.close();
+      database.close();
     }
   }
-  pgSchemaInformation();
-  // [END spanner_postgresql_information_schema]
+  pgCreateStoringIndex();
+  // [END spanner_postgresql_create_storing_index]
 }
 
 process.on('unhandledRejection', err => {

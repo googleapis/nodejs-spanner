@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Query the information schema metadata in a Spanner PostgreSQL database.
-//  usage: node pg-schema-information.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Updates data in a table in a Spanner PostgreSQL database.
+//  usage: node pg-dml-getting-started-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_postgresql_information_schema]
+  // [START spanner_postgresql_dml_getting_started_update]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -39,42 +39,39 @@ function main(
     projectId: projectId,
   });
 
-  async function pgSchemaInformation() {
+  function updateUsingDml() {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Get all the user tables in the database. PostgreSQL uses the `public` schema for user
-    // tables. The table_catalog is equal to the database name. The `user_defined_...` columns
-    // are only available for PostgreSQL databases.
-    const query = {
-      sql:
-        'SELECT table_schema, table_name, ' +
-        'user_defined_type_catalog, ' +
-        'user_defined_type_schema, ' +
-        'user_defined_type_name ' +
-        'FROM INFORMATION_SCHEMA.tables ' +
-        "WHERE table_schema='public'",
-    };
+    database.runTransaction(async (err, transaction) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      try {
+        const [rowCount] = await transaction.runUpdate({
+          sql: 'UPDATE singers SET FirstName = $1 WHERE singerid = 1',
+          params: {
+            p1: 'Virginia',
+          },
+        });
 
-    try {
-      const [rows] = await database.run(query);
-      rows.forEach(row => {
-        const json = row.toJSON();
         console.log(
-          `Table: ${json.table_schema}.${json.table_name} ` +
-            `(User defined type: ${json.user_defined_type_catalog}.${json.user_defined_type_schema}.${json.user_defined_type_name})`
+          `Successfully updated ${rowCount} record in the Singers table.`
         );
-      });
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      await database.close();
-    }
+
+        await transaction.commit();
+      } catch (err) {
+        console.error('ERROR:', err);
+      } finally {
+        // Close the database when finished.
+        await database.close();
+      }
+    });
   }
-  pgSchemaInformation();
-  // [END spanner_postgresql_information_schema]
+  updateUsingDml();
+  // [END spanner_postgresql_dml_getting_started_update]
 }
 
 process.on('unhandledRejection', err => {

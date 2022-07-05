@@ -18,10 +18,9 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import arrify = require('arrify');
 import {Big} from 'big.js';
 import * as is from 'is';
-import {common as p, util} from 'protobufjs';
+import {common as p} from 'protobufjs';
 import {google as spannerClient} from '../protos/protos';
 import {GoogleError} from 'google-gax';
-import float = util.float;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Value = any;
@@ -93,24 +92,19 @@ export class SpannerDate extends Date {
   }
   /**
    * Returns the date in ISO date format.
-   * `YYYY-[M]M-[D]D`
+   * `YYYY-MM-DD`
    *
    * @returns {string}
    */
   toJSON(): string {
-    const year = this.getFullYear();
-    let month = (this.getMonth() + 1).toString();
-    let date = this.getDate().toString();
+    const year = this.getFullYear().toString();
+    const month = (this.getMonth() + 1).toString();
+    const date = this.getDate().toString();
 
-    if (month.length === 1) {
-      month = `0${month}`;
-    }
-
-    if (date.length === 1) {
-      date = `0${date}`;
-    }
-
-    return `${year}-${month}-${date}`;
+    return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${date.padStart(
+      2,
+      '0'
+    )}`;
   }
 }
 
@@ -278,8 +272,10 @@ function convertFieldsToJson(fields: Field[], options?: JSONOptions): Json {
     try {
       json[fieldName] = convertValueToJson(value, options);
     } catch (e) {
-      e.message = [
-        `Serializing column "${fieldName}" encountered an error: ${e.message}`,
+      (e as Error).message = [
+        `Serializing column "${fieldName}" encountered an error: ${
+          (e as Error).message
+        }`,
         'Call row.toJSON({ wrapNumbers: true }) to receive a custom type.',
       ].join(' ');
       throw e;
