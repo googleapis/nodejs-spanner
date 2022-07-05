@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.0](https://github.com/googleapis/nodejs-spanner/compare/v6.0.0...v6.1.0) (2022-07-04)
+
+
+### Features
+
+* add Session creator role ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+* Adding two new fields for Instance create_time and update_time ([#1641](https://github.com/googleapis/nodejs-spanner/issues/1641)) ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/promisify to v3 ([#1629](https://github.com/googleapis/nodejs-spanner/issues/1629)) ([1467956](https://github.com/googleapis/nodejs-spanner/commit/1467956314c77f66034fa3db166ba68d7c2aba2d))
+* Improve spanner.date handling of years before 1000AD ([#1654](https://github.com/googleapis/nodejs-spanner/issues/1654)) ([fd89a29](https://github.com/googleapis/nodejs-spanner/commit/fd89a294dcab017dbbe7000bce613b0d4ed60f96))
+
 ## [6.0.0](https://github.com/googleapis/nodejs-spanner/compare/v5.18.0...v6.0.0) (2022-06-07)
 
 
