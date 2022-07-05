@@ -16,7 +16,7 @@
 
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
-import {grpc, Status} from 'google-gax';
+import {grpc, Status, ServiceError} from 'google-gax';
 import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
@@ -54,6 +54,8 @@ import RequestOptions = google.spanner.v1.RequestOptions;
 import PartialResultSet = google.spanner.v1.PartialResultSet;
 import protobuf = google.spanner.v1;
 import Priority = google.spanner.v1.RequestOptions.Priority;
+import TypeCode = google.spanner.v1.TypeCode;
+import NullValue = google.protobuf.NullValue;
 
 function numberToEnglishWord(num: number): string {
   switch (num) {
@@ -252,7 +254,7 @@ describe('Spanner with mock server', () => {
       } catch (e) {
         // Ignore the fact that streaming read is unimplemented on the mock
         // server. We just want to verify that the correct request is sent.
-        assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+        assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
       } finally {
         snapshot.end();
         await database.close();
@@ -364,7 +366,7 @@ describe('Spanner with mock server', () => {
           } catch (e) {
             // Ignore the fact that streaming read is unimplemented on the mock
             // server. We just want to verify that the correct request is sent.
-            assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+            assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
             return undefined;
           } finally {
             tx.end();
@@ -727,7 +729,7 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (err) {
         assert.strictEqual(
-          err.message,
+          (err as ServiceError).message,
           'Stream is still not ready to receive data after 1 attempts to resume.'
         );
       } finally {
@@ -1050,7 +1052,10 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (e) {
-        assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
       } finally {
         await database.close();
       }
@@ -1101,7 +1106,10 @@ describe('Spanner with mock server', () => {
         await database.run(sql);
         assert.fail('missing expected error');
       } catch (e) {
-        assert.strictEqual(e.message, '14 UNAVAILABLE: Transient error');
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '14 UNAVAILABLE: Transient error'
+        );
       } finally {
         await database.close();
       }
@@ -1125,7 +1133,9 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected exception');
       } catch (err) {
         assert.ok(
-          err.message.includes('Value of type undefined not recognized.')
+          (err as ServiceError).message.includes(
+            'Value of type undefined not recognized.'
+          )
         );
       } finally {
         await database.close();
@@ -1176,7 +1186,9 @@ describe('Spanner with mock server', () => {
           assert.fail('missing expected exception');
         } catch (err) {
           assert.ok(
-            err.message.includes('Value of type undefined not recognized.')
+            (err as ServiceError).message.includes(
+              'Value of type undefined not recognized.'
+            )
           );
         }
       });
@@ -1216,7 +1228,10 @@ describe('Spanner with mock server', () => {
             await database.run(selectSql);
             assert.fail('missing expected error');
           } catch (e) {
-            assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+            assert.strictEqual(
+              (e as ServiceError).message,
+              '2 UNKNOWN: Test error'
+            );
           }
           await database.close();
         });
@@ -2106,7 +2121,7 @@ describe('Spanner with mock server', () => {
         });
         await db.close();
       } catch (e) {
-        assert.fail(e);
+        assert.fail(e as ServiceError);
       }
     }
 
@@ -2315,7 +2330,10 @@ describe('Spanner with mock server', () => {
           await database.getSnapshot();
           assert.fail('missing expected exception');
         } catch (e) {
-          assert.strictEqual(e.name, SessionPoolExhaustedError.name);
+          assert.strictEqual(
+            (e as ServiceError).name,
+            SessionPoolExhaustedError.name
+          );
           const exhausted = e as SessionPoolExhaustedError;
           assert.ok(exhausted.messages);
           assert.strictEqual(exhausted.messages.length, 1);
@@ -2343,7 +2361,7 @@ describe('Spanner with mock server', () => {
             assert.fail(`missing expected exception, got ${rows.length} rows`);
           } catch (e) {
             assert.strictEqual(
-              e.message,
+              (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
           }
@@ -2386,7 +2404,7 @@ describe('Spanner with mock server', () => {
             assert.fail(`missing expected exception, got ${rowCount}`);
           } catch (e) {
             assert.strictEqual(
-              e.message,
+              (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
           }
@@ -2466,7 +2484,10 @@ describe('Spanner with mock server', () => {
           await database.getSnapshot();
           assert.fail('missing expected exception');
         } catch (e) {
-          assert.strictEqual(e.message, 'No resources available.');
+          assert.strictEqual(
+            (e as ServiceError).message,
+            'No resources available.'
+          );
         }
       } finally {
         if (tx1) {
@@ -2589,7 +2610,7 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (err) {
-        assert.strictEqual(err.code, Status.NOT_FOUND);
+        assert.strictEqual((err as ServiceError).code, Status.NOT_FOUND);
       } finally {
         await database.close();
       }
@@ -2621,7 +2642,7 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(pool.size, 25);
           await database.close();
         } catch (err) {
-          assert.fail(err);
+          assert.fail(err as ServiceError);
         }
       }
     });
@@ -2647,7 +2668,10 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (err) {
-        assert.strictEqual(err.code, Status.PERMISSION_DENIED);
+        assert.strictEqual(
+          (err as ServiceError).code,
+          Status.PERMISSION_DENIED
+        );
       } finally {
         await database.close();
       }
@@ -2924,9 +2948,9 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected DEADLINE_EXCEEDED error');
       } catch (e) {
         assert.strictEqual(
-          e.code,
+          (e as ServiceError).code,
           grpc.status.DEADLINE_EXCEEDED,
-          `Got unexpected error ${e} with code ${e.code}`
+          `Got unexpected error ${e} with code ${(e as ServiceError).code}`
         );
         // The transaction should be tried at least once before timing out.
         assert.ok(attempts >= 1);
@@ -3004,8 +3028,10 @@ describe('Spanner with mock server', () => {
           await database.runPartitionedUpdate(updateSql);
           assert.fail('missing expected INTERNAL error');
         } catch (err) {
-          assert.strictEqual(err.code, grpc.status.INTERNAL);
-          assert.ok(err.message.includes('Generic internal error'));
+          assert.strictEqual((err as ServiceError).code, grpc.status.INTERNAL);
+          assert.ok(
+            (err as ServiceError).message.includes('Generic internal error')
+          );
         } finally {
           await database.close();
         }
@@ -3170,9 +3196,12 @@ describe('Spanner with mock server', () => {
         });
         assert.fail('Missing expected error');
       } catch (e) {
-        assert.strictEqual(e.code, Status.FAILED_PRECONDITION);
+        assert.strictEqual(
+          (e as ServiceError).code,
+          Status.FAILED_PRECONDITION
+        );
         assert.ok(
-          e.message.includes(
+          (e as ServiceError).message.includes(
             'Convert the value to a JSON string containing an array instead'
           )
         );
@@ -3388,6 +3417,118 @@ describe('Spanner with mock server', () => {
         }
       }
     });
+
+    it('should return all values from PartialResultSet with chunked struct with a null array field', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        metadata: createArrayOfStructMetadata(),
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [
+                      // The array field is NULL.
+                      {nullValue: NullValue.NULL_VALUE},
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        // This PartialResultSet is chunked, and the last value was the NULL value for the ARRAY field.
+        // This means that the next value will be the STRING field.
+        chunkedValue: true,
+      });
+      const prs2 = PartialResultSet.create({
+        values: [
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [{stringValue: 'First row'}],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            listValue: {
+              values: [
+                {
+                  listValue: {
+                    values: [
+                      {listValue: {values: [{stringValue: '1'}]}},
+                      {stringValue: 'Second row'},
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+      setupResultsAndErrors(sql, [prs1, prs2], []);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[];
+        assert.strictEqual(rows.length, 2);
+        assert.strictEqual(rows[0].outerArray.length, 1);
+        assert.strictEqual(rows[0].outerArray[0].innerField, 'First row');
+        assert.ok(
+          rows[0].outerArray[0].innerArray === null,
+          'Inner array should be null'
+        );
+        assert.strictEqual(rows[1].outerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerField, 'Second row');
+        assert.strictEqual(rows[1].outerArray[0].innerArray.length, 1);
+        assert.strictEqual(rows[1].outerArray[0].innerArray[0], '1');
+      } finally {
+        await database.close();
+      }
+    });
+
+    function createArrayOfStructMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'outerArray',
+          type: protobuf.Type.create({
+            code: protobuf.TypeCode.ARRAY,
+            arrayElementType: protobuf.Type.create({
+              code: protobuf.TypeCode.STRUCT,
+              structType: protobuf.StructType.create({
+                fields: [
+                  {
+                    name: 'innerArray',
+                    type: protobuf.Type.create({
+                      code: TypeCode.ARRAY,
+                      arrayElementType: protobuf.Type.create({
+                        code: TypeCode.STRING,
+                      }),
+                    }),
+                  },
+                  {
+                    name: 'innerField',
+                    type: protobuf.Type.create({code: TypeCode.STRING}),
+                  },
+                ],
+              }),
+            }),
+          }),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
 
     it('should reset to the chunked value of the last PartialResultSet with a resume token on retry', async () => {
       // This tests the following scenario:

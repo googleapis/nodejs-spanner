@@ -35,8 +35,18 @@ import {
 } from './common';
 import {Duplex} from 'stream';
 import {SessionPoolOptions, SessionPool} from './session-pool';
-import {grpc, Operation as GaxOperation, CallOptions} from 'google-gax';
-import {Backup} from './backup';
+import {
+  grpc,
+  Operation as GaxOperation,
+  CallOptions,
+  GoogleError,
+} from 'google-gax';
+import {
+  Backup,
+  CopyBackupCallback,
+  CopyBackupResponse,
+  CopyBackupOptions,
+} from './backup';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
@@ -78,7 +88,7 @@ export interface CreateDatabaseOptions
   extends databaseAdmin.spanner.admin.database.v1.ICreateDatabaseRequest {
   poolOptions?: SessionPoolOptions;
   poolCtor?: SessionPool;
-  schema?: string;
+  schema?: string | string[];
   gaxOptions?: CallOptions;
 }
 export type GetDatabasesOptions = PagedOptions;
@@ -234,7 +244,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Backup object.
    *
-   * @throws {Error} If any parameter is not provided.
+   * @throws {GoogleError} If any parameter is not provided.
    *
    * @param {string} backupId The name of the backup.
    * @return {Backup} A Backup object.
@@ -249,10 +259,66 @@ class Instance extends common.GrpcServiceObject {
    */
   backup(backupId: string): Backup {
     if (!backupId) {
-      throw new Error('A backup ID is required to create a Backup.');
+      throw new GoogleError('A backup ID is required to create a Backup.');
     }
 
     return new Backup(this, backupId);
+  }
+
+  /**
+   * Get a reference to a Backup object.
+   *
+   * @throws {GoogleError} If any parameter is not provided.
+   *
+   * @typedef {object} CopyBackupOptions
+   *    * @property {string|null}
+   *    *     sourceBackup The full path of the backup to be copied
+   *    * @property {string|number|google.protobuf.Timestamp|external:PreciseDate}
+   *    *     expireTime The expire time of the backup.
+   *    * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig}
+   *    *     encryptionConfig An encryption configuration describing the
+   *    *     encryption type and key resources in Cloud KMS to be used to encrypt
+   *    *     the copy backup.
+   *    * @property {object} [gaxOptions] The request configuration options,
+   *    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *    *     for more details.
+   *    */
+  /**
+   * @callback CopyBackupCallback
+   * @param {string} sourceBackupId Full path of the source backup to be copied.
+   * @param {string} backupId The name of the backup.
+   * @param {CopyBackupOptions}
+   * @return {Backup} A Backup object.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const backup = instance.copyBackup('my-source-backup','my-backup',{
+   *   expireTime: expireTime,
+   *   encryptionConfig: {
+   *     encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+   *     kmsKeyName: 'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key',
+   *   },);
+   * ```
+   */
+  copyBackup(
+    sourceBackupId: string,
+    backupId: string,
+    options: CopyBackupOptions,
+    callback?: CopyBackupCallback
+  ): Promise<CopyBackupResponse> | void {
+    if (!backupId || !sourceBackupId) {
+      throw new GoogleError(
+        'A backup ID and source backup ID is required to create a copy of the source backup.'
+      );
+    }
+    const copyOfBackup = new Backup(this, backupId, sourceBackupId);
+    if (callback) {
+      return copyOfBackup.create(options, callback);
+    }
+    return copyOfBackup.create(options);
   }
 
   /**
@@ -345,13 +411,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -436,13 +502,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     return this.requestStream({
@@ -551,13 +617,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -679,13 +745,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -739,7 +805,7 @@ class Instance extends common.GrpcServiceObject {
    * @see {@link v1.DatabaseAdminClient#createDatabase}
    * @see [CreateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.CreateDatabase)
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {name} name The name of the database to create.
    * @param {CreateDatabaseRequest} [options] Configuration object.
@@ -811,7 +877,7 @@ class Instance extends common.GrpcServiceObject {
     cb?: CreateDatabaseCallback
   ): void | Promise<CreateDatabaseResponse> {
     if (!name) {
-      throw new Error('A name is required to create a database.');
+      throw new GoogleError('A name is required to create a database.');
     }
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
@@ -822,10 +888,17 @@ class Instance extends common.GrpcServiceObject {
 
     const poolOptions = options.poolOptions;
     const poolCtor = options.poolCtor;
+    let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
+    if (
+      databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL ===
+      options.databaseDialect
+    ) {
+      createStatement = 'CREATE DATABASE "' + name.split('/').pop() + '"';
+    }
     const reqOpts = extend(
       {
         parent: this.formattedName_,
-        createStatement: 'CREATE DATABASE `' + name.split('/').pop() + '`',
+        createStatement: createStatement,
       },
       options
     );
@@ -860,7 +933,7 @@ class Instance extends common.GrpcServiceObject {
   /**
    * Get a reference to a Database object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the instance.
    * @param {SessionPoolOptions|SessionPoolCtor} [poolOptions] Session pool
@@ -886,7 +959,7 @@ class Instance extends common.GrpcServiceObject {
     queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ): Database {
     if (!name) {
-      throw new Error('A name is required to access a Database object.');
+      throw new GoogleError('A name is required to access a Database object.');
     }
     // Only add an additional key for SessionPoolOptions and QueryOptions if an
     // options object with at least one value was passed in.
@@ -1261,13 +1334,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     this.request<
@@ -1352,13 +1425,13 @@ class Instance extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetBackupsOptions).pageSize;
+      delete (gaxOpts as GetBackupsOptions).pageToken;
     }
 
     return this.requestStream({

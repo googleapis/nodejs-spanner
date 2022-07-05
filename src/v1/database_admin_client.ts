@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import {
   CallOptions,
   Descriptors,
   ClientOptions,
+  GrpcClientOptions,
   LROperation,
   PaginationCallback,
   GaxCall,
@@ -44,10 +45,11 @@ const version = require('../../../package.json').version;
 /**
  *  Cloud Spanner Database Admin API
  *
- *  The Cloud Spanner Database Admin API can be used to create, drop, and
- *  list databases. It also enables updating the schema of pre-existing
- *  databases. It can be also used to create, delete and list backups for a
- *  database and to restore from an existing backup.
+ *  The Cloud Spanner Database Admin API can be used to:
+ *    * create, drop, and list databases
+ *    * update the schema of pre-existing databases
+ *    * create, delete and list backups for a database
+ *    * restore a database from an existing backup
  * @class
  * @memberof v1
  */
@@ -77,7 +79,7 @@ export class DatabaseAdminClient {
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
-   * in [this document](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#creating-the-client-instance).
+   * in [this document](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#creating-the-client-instance).
    * The common options are:
    * @param {object} [options.credentials] - Credentials object.
    * @param {string} [options.credentials.client_email]
@@ -100,11 +102,10 @@ export class DatabaseAdminClient {
    *     API remote host.
    * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
    *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
-   *     In fallback mode, a special browser-compatible transport implementation is used
-   *     instead of gRPC transport. In browser context (if the `window` object is defined)
-   *     the fallback mode is enabled automatically; set `options.fallback` to `false`
-   *     if you need to override this behavior.
+   * @param {boolean | "rest"} [options.fallback] - Use HTTP fallback mode.
+   *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
+   *     For more information, please check the
+   *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
    */
   constructor(opts?: ClientOptions) {
     // Ensure that options include all the required fields.
@@ -212,16 +213,48 @@ export class DatabaseAdminClient {
     };
 
     const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
-
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,
     // rather than holding a request open.
-
+    const lroOptions: GrpcClientOptions = {
+      auth: this.auth,
+      grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined,
+    };
+    if (opts.fallback === 'rest') {
+      lroOptions.protoJson = protoFilesRoot;
+      lroOptions.httpRules = [
+        {
+          selector: 'google.longrunning.Operations.GetOperation',
+          get: '/v1/{name=projects/*/instances/*/databases/*/operations/*}',
+          additional_bindings: [
+            {get: '/v1/{name=projects/*/instances/*/operations/*}'},
+          ],
+        },
+        {
+          selector: 'google.longrunning.Operations.ListOperations',
+          get: '/v1/{name=projects/*/instances/*/databases/*/operations}',
+          additional_bindings: [
+            {get: '/v1/{name=projects/*/instances/*/operations}'},
+          ],
+        },
+        {
+          selector: 'google.longrunning.Operations.CancelOperation',
+          post: '/v1/{name=projects/*/instances/*/databases/*/operations/*}:cancel',
+          additional_bindings: [
+            {post: '/v1/{name=projects/*/instances/*/operations/*}:cancel'},
+          ],
+        },
+        {
+          selector: 'google.longrunning.Operations.DeleteOperation',
+          delete: '/v1/{name=projects/*/instances/*/databases/*/operations/*}',
+          additional_bindings: [
+            {delete: '/v1/{name=projects/*/instances/*/operations/*}'},
+          ],
+        },
+      ];
+    }
     this.operationsClient = this._gaxModule
-      .lro({
-        auth: this.auth,
-        grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined,
-      })
+      .lro(lroOptions)
       .operationsClient(opts);
     const createDatabaseResponse = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.Database'
@@ -240,6 +273,12 @@ export class DatabaseAdminClient {
     ) as gax.protobuf.Type;
     const createBackupMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.CreateBackupMetadata'
+    ) as gax.protobuf.Type;
+    const copyBackupResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.Backup'
+    ) as gax.protobuf.Type;
+    const copyBackupMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.CopyBackupMetadata'
     ) as gax.protobuf.Type;
     const restoreDatabaseResponse = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.Database'
@@ -263,6 +302,11 @@ export class DatabaseAdminClient {
         this.operationsClient,
         createBackupResponse.decode.bind(createBackupResponse),
         createBackupMetadata.decode.bind(createBackupMetadata)
+      ),
+      copyBackup: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        copyBackupResponse.decode.bind(copyBackupResponse),
+        copyBackupMetadata.decode.bind(copyBackupMetadata)
       ),
       restoreDatabase: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
@@ -331,6 +375,7 @@ export class DatabaseAdminClient {
       'getIamPolicy',
       'testIamPermissions',
       'createBackup',
+      'copyBackup',
       'getBackup',
       'updateBackup',
       'deleteBackup',
@@ -522,6 +567,8 @@ export class DatabaseAdminClient {
    * Drops (aka deletes) a Cloud Spanner database.
    * Completed backups for the database will be retained according to their
    * `expire_time`.
+   * Note: Cloud Spanner might continue to accept requests for a few seconds
+   * after the database has been deleted.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -731,6 +778,12 @@ export class DatabaseAdminClient {
    *   the policy is limited to a few 10s of KB. An empty policy is a
    *   valid policy but certain Cloud Platform services (such as Projects)
    *   might reject them.
+   * @param {google.protobuf.FieldMask} request.updateMask
+   *   OPTIONAL: A FieldMask specifying which fields of the policy to modify. Only
+   *   the fields in the mask will be modified. If no mask is provided, the
+   *   following default mask is used:
+   *
+   *   `paths: "bindings, etag"`
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -824,7 +877,7 @@ export class DatabaseAdminClient {
    *   See the operation documentation for the appropriate value for this field.
    * @param {google.iam.v1.GetPolicyOptions} request.options
    *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
-   *   `GetIamPolicy`. This field is only used by Cloud IAM.
+   *   `GetIamPolicy`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1316,6 +1369,8 @@ export class DatabaseAdminClient {
    *   Optional. The encryption configuration for the database. If this field is not
    *   specified, Cloud Spanner will encrypt/decrypt all data at rest using
    *   Google default encryption.
+   * @param {google.spanner.admin.database.v1.DatabaseDialect} [request.databaseDialect]
+   *   Optional. The dialect of the Cloud Spanner Database.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1774,6 +1829,178 @@ export class DatabaseAdminClient {
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
       protos.google.spanner.admin.database.v1.CreateBackupMetadata
+    >;
+  }
+  /**
+   * Starts copying a Cloud Spanner Backup.
+   * The returned backup {@link google.longrunning.Operation|long-running operation}
+   * will have a name of the format
+   * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
+   * and can be used to track copying of the backup. The operation is associated
+   * with the destination backup.
+   * The {@link google.longrunning.Operation.metadata|metadata} field type is
+   * {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
+   * copying and delete the backup.
+   * Concurrent CopyBackup requests can run on the same source backup.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the destination instance that will contain the backup copy.
+   *   Values are of the form: `projects/<project>/instances/<instance>`.
+   * @param {string} request.backupId
+   *   Required. The id of the backup copy.
+   *   The `backup_id` appended to `parent` forms the full backup_uri of the form
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {string} request.sourceBackup
+   *   Required. The source backup to be copied.
+   *   The source backup needs to be in READY state for it to be copied.
+   *   Once CopyBackup is in progress, the source backup cannot be deleted or
+   *   cleaned up on expiration until CopyBackup is finished.
+   *   Values are of the form:
+   *   `projects/<project>/instances/<instance>/backups/<backup>`.
+   * @param {google.protobuf.Timestamp} request.expireTime
+   *   Required. The expiration time of the backup in microsecond granularity.
+   *   The expiration time must be at least 6 hours and at most 366 days
+   *   from the `create_time` of the source backup. Once the `expire_time` has
+   *   passed, the backup is eligible to be automatically deleted by Cloud Spanner
+   *   to free the resources used by the backup.
+   * @param {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} [request.encryptionConfig]
+   *   Optional. The encryption configuration used to encrypt the backup. If this field is
+   *   not specified, the backup will use the same
+   *   encryption configuration as the source backup by default, namely
+   *   {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type|encryption_type} =
+   *   `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_CopyBackup_async
+   */
+  copyBackup(
+    request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  copyBackup(
+    request: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  copyBackup(
+    request: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  copyBackup(
+    request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IBackup,
+            protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IBackup,
+        protos.google.spanner.admin.database.v1.ICopyBackupMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    this.initialize();
+    return this.innerApiCalls.copyBackup(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by `copyBackup()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_CopyBackup_async
+   */
+  async checkCopyBackupProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CopyBackupMetadata
+    >
+  > {
+    const request = new operationsProtos.google.longrunning.GetOperationRequest(
+      {name}
+    );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(
+      operation,
+      this.descriptors.longrunning.copyBackup,
+      gax.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Backup,
+      protos.google.spanner.admin.database.v1.CopyBackupMetadata
     >;
   }
   /**
@@ -2496,6 +2723,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -2644,6 +2873,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -2736,6 +2967,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -2836,6 +3069,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -2847,8 +3082,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `metadata.database:prod` - The database the backup was taken from has
-   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *        `metadata.database:prod` - Returns operations where:
+   *        * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The database the backup was taken from has a name containing the
+   *        string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
@@ -2856,6 +3094,29 @@ export class DatabaseAdminClient {
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) AND` \
+   *       `(metadata.source_backup:test) AND` \
+   *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup of the copied backup name contains the string
+   *       "test".
+   *       * The operation started before 2022-01-18T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.database:test_db)) OR` \
+   *       `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata)
+   *       AND` \
+   *       `(metadata.source_backup:test_bkp)) AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata matches either of criteria:
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
+   *         database the backup was taken from has name containing string
+   *         "test_db"
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
+   *         backup the backup was copied from has name containing string
+   *         "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -2978,6 +3239,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -2989,8 +3252,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `metadata.database:prod` - The database the backup was taken from has
-   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *        `metadata.database:prod` - Returns operations where:
+   *        * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The database the backup was taken from has a name containing the
+   *        string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
@@ -2998,6 +3264,29 @@ export class DatabaseAdminClient {
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) AND` \
+   *       `(metadata.source_backup:test) AND` \
+   *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup of the copied backup name contains the string
+   *       "test".
+   *       * The operation started before 2022-01-18T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.database:test_db)) OR` \
+   *       `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata)
+   *       AND` \
+   *       `(metadata.source_backup:test_bkp)) AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata matches either of criteria:
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
+   *         database the backup was taken from has name containing string
+   *         "test_db"
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
+   *         backup the backup was copied from has name containing string
+   *         "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -3068,6 +3357,8 @@ export class DatabaseAdminClient {
    *        for {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first if filtering on metadata
+   *        fields.
    *     * `error` - Error associated with the long-running operation.
    *     * `response.@type` - the type of response.
    *     * `response.<field_name>` - any field in response.value.
@@ -3079,8 +3370,11 @@ export class DatabaseAdminClient {
    *   Here are a few examples:
    *
    *     * `done:true` - The operation is complete.
-   *     * `metadata.database:prod` - The database the backup was taken from has
-   *        a name containing the string "prod".
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *        `metadata.database:prod` - Returns operations where:
+   *        * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The database the backup was taken from has a name containing the
+   *        string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
@@ -3088,6 +3382,29 @@ export class DatabaseAdminClient {
    *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) AND` \
+   *       `(metadata.source_backup:test) AND` \
+   *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup of the copied backup name contains the string
+   *       "test".
+   *       * The operation started before 2022-01-18T14:50:00Z.
+   *       * The operation resulted in an error.
+   *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
+   *       `(metadata.database:test_db)) OR` \
+   *       `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata)
+   *       AND` \
+   *       `(metadata.source_backup:test_bkp)) AND` \
+   *       `(error:*)` - Returns operations where:
+   *       * The operation's metadata matches either of criteria:
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
+   *         database the backup was taken from has name containing string
+   *         "test_db"
+   *         * The operation's metadata type is {@link google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
+   *         backup the backup was copied from has name containing string
+   *         "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -3347,9 +3664,8 @@ export class DatabaseAdminClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    this.initialize();
-    if (!this._terminated) {
-      return this.databaseAdminStub!.then(stub => {
+    if (this.databaseAdminStub && !this._terminated) {
+      return this.databaseAdminStub.then(stub => {
         this._terminated = true;
         stub.close();
         this.operationsClient.close();

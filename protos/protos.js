@@ -13978,6 +13978,9 @@
                              * @property {google.spanner.admin.database.v1.Backup.State|null} [state] Backup state
                              * @property {Array.<string>|null} [referencingDatabases] Backup referencingDatabases
                              * @property {google.spanner.admin.database.v1.IEncryptionInfo|null} [encryptionInfo] Backup encryptionInfo
+                             * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] Backup databaseDialect
+                             * @property {Array.<string>|null} [referencingBackups] Backup referencingBackups
+                             * @property {google.protobuf.ITimestamp|null} [maxExpireTime] Backup maxExpireTime
                              */
     
                             /**
@@ -13990,6 +13993,7 @@
                              */
                             function Backup(properties) {
                                 this.referencingDatabases = [];
+                                this.referencingBackups = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -14069,6 +14073,30 @@
                             Backup.prototype.encryptionInfo = null;
     
                             /**
+                             * Backup databaseDialect.
+                             * @member {google.spanner.admin.database.v1.DatabaseDialect} databaseDialect
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.databaseDialect = 0;
+    
+                            /**
+                             * Backup referencingBackups.
+                             * @member {Array.<string>} referencingBackups
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.referencingBackups = $util.emptyArray;
+    
+                            /**
+                             * Backup maxExpireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} maxExpireTime
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @instance
+                             */
+                            Backup.prototype.maxExpireTime = null;
+    
+                            /**
                              * Creates a new Backup instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Backup
@@ -14111,6 +14139,13 @@
                                     $root.google.spanner.admin.database.v1.EncryptionInfo.encode(message.encryptionInfo, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                                 if (message.versionTime != null && Object.hasOwnProperty.call(message, "versionTime"))
                                     $root.google.protobuf.Timestamp.encode(message.versionTime, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
+                                if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
+                                    writer.uint32(/* id 10, wireType 0 =*/80).int32(message.databaseDialect);
+                                if (message.referencingBackups != null && message.referencingBackups.length)
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        writer.uint32(/* id 11, wireType 2 =*/90).string(message.referencingBackups[i]);
+                                if (message.maxExpireTime != null && Object.hasOwnProperty.call(message, "maxExpireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.maxExpireTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                                 return writer;
                             };
     
@@ -14173,6 +14208,17 @@
                                         break;
                                     case 8:
                                         message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32());
+                                        break;
+                                    case 10:
+                                        message.databaseDialect = reader.int32();
+                                        break;
+                                    case 11:
+                                        if (!(message.referencingBackups && message.referencingBackups.length))
+                                            message.referencingBackups = [];
+                                        message.referencingBackups.push(reader.string());
+                                        break;
+                                    case 12:
+                                        message.maxExpireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -14254,6 +14300,27 @@
                                     if (error)
                                         return "encryptionInfo." + error;
                                 }
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    switch (message.databaseDialect) {
+                                    default:
+                                        return "databaseDialect: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
+                                if (message.referencingBackups != null && message.hasOwnProperty("referencingBackups")) {
+                                    if (!Array.isArray(message.referencingBackups))
+                                        return "referencingBackups: array expected";
+                                    for (var i = 0; i < message.referencingBackups.length; ++i)
+                                        if (!$util.isString(message.referencingBackups[i]))
+                                            return "referencingBackups: string[] expected";
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.maxExpireTime);
+                                    if (error)
+                                        return "maxExpireTime." + error;
+                                }
                                 return null;
                             };
     
@@ -14323,6 +14390,32 @@
                                         throw TypeError(".google.spanner.admin.database.v1.Backup.encryptionInfo: object expected");
                                     message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.fromObject(object.encryptionInfo);
                                 }
+                                switch (object.databaseDialect) {
+                                case "DATABASE_DIALECT_UNSPECIFIED":
+                                case 0:
+                                    message.databaseDialect = 0;
+                                    break;
+                                case "GOOGLE_STANDARD_SQL":
+                                case 1:
+                                    message.databaseDialect = 1;
+                                    break;
+                                case "POSTGRESQL":
+                                case 2:
+                                    message.databaseDialect = 2;
+                                    break;
+                                }
+                                if (object.referencingBackups) {
+                                    if (!Array.isArray(object.referencingBackups))
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.referencingBackups: array expected");
+                                    message.referencingBackups = [];
+                                    for (var i = 0; i < object.referencingBackups.length; ++i)
+                                        message.referencingBackups[i] = String(object.referencingBackups[i]);
+                                }
+                                if (object.maxExpireTime != null) {
+                                    if (typeof object.maxExpireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.Backup.maxExpireTime: object expected");
+                                    message.maxExpireTime = $root.google.protobuf.Timestamp.fromObject(object.maxExpireTime);
+                                }
                                 return message;
                             };
     
@@ -14339,8 +14432,10 @@
                                 if (!options)
                                     options = {};
                                 var object = {};
-                                if (options.arrays || options.defaults)
+                                if (options.arrays || options.defaults) {
                                     object.referencingDatabases = [];
+                                    object.referencingBackups = [];
+                                }
                                 if (options.defaults) {
                                     object.name = "";
                                     object.database = "";
@@ -14354,6 +14449,8 @@
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                     object.encryptionInfo = null;
                                     object.versionTime = null;
+                                    object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
+                                    object.maxExpireTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -14379,6 +14476,15 @@
                                     object.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.toObject(message.encryptionInfo, options);
                                 if (message.versionTime != null && message.hasOwnProperty("versionTime"))
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                if (message.referencingBackups && message.referencingBackups.length) {
+                                    object.referencingBackups = [];
+                                    for (var j = 0; j < message.referencingBackups.length; ++j)
+                                        object.referencingBackups[j] = message.referencingBackups[j];
+                                }
+                                if (message.maxExpireTime != null && message.hasOwnProperty("maxExpireTime"))
+                                    object.maxExpireTime = $root.google.protobuf.Timestamp.toObject(message.maxExpireTime, options);
                                 return object;
                             };
     
@@ -14938,6 +15044,556 @@
                             };
     
                             return CreateBackupMetadata;
+                        })();
+    
+                        v1.CopyBackupRequest = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupRequest
+                             * @property {string|null} [parent] CopyBackupRequest parent
+                             * @property {string|null} [backupId] CopyBackupRequest backupId
+                             * @property {string|null} [sourceBackup] CopyBackupRequest sourceBackup
+                             * @property {google.protobuf.ITimestamp|null} [expireTime] CopyBackupRequest expireTime
+                             * @property {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null} [encryptionConfig] CopyBackupRequest encryptionConfig
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupRequest.
+                             * @implements ICopyBackupRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest=} [properties] Properties to set
+                             */
+                            function CopyBackupRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.parent = "";
+    
+                            /**
+                             * CopyBackupRequest backupId.
+                             * @member {string} backupId
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.backupId = "";
+    
+                            /**
+                             * CopyBackupRequest sourceBackup.
+                             * @member {string} sourceBackup
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.sourceBackup = "";
+    
+                            /**
+                             * CopyBackupRequest expireTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} expireTime
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.expireTime = null;
+    
+                            /**
+                             * CopyBackupRequest encryptionConfig.
+                             * @member {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null|undefined} encryptionConfig
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             */
+                            CopyBackupRequest.prototype.encryptionConfig = null;
+    
+                            /**
+                             * Creates a new CopyBackupRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest instance
+                             */
+                            CopyBackupRequest.create = function create(properties) {
+                                return new CopyBackupRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} message CopyBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.backupId != null && Object.hasOwnProperty.call(message, "backupId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.backupId);
+                                if (message.sourceBackup != null && Object.hasOwnProperty.call(message, "sourceBackup"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.sourceBackup);
+                                if (message.expireTime != null && Object.hasOwnProperty.call(message, "expireTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.expireTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.encryptionConfig != null && Object.hasOwnProperty.call(message, "encryptionConfig"))
+                                    $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} message CopyBackupRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.parent = reader.string();
+                                        break;
+                                    case 2:
+                                        message.backupId = reader.string();
+                                        break;
+                                    case 3:
+                                        message.sourceBackup = reader.string();
+                                        break;
+                                    case 4:
+                                        message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 5:
+                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    if (!$util.isString(message.backupId))
+                                        return "backupId: string expected";
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    if (!$util.isString(message.sourceBackup))
+                                        return "sourceBackup: string expected";
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.expireTime);
+                                    if (error)
+                                        return "expireTime." + error;
+                                }
+                                if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig")) {
+                                    var error = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify(message.encryptionConfig);
+                                    if (error)
+                                        return "encryptionConfig." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupRequest} CopyBackupRequest
+                             */
+                            CopyBackupRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.backupId != null)
+                                    message.backupId = String(object.backupId);
+                                if (object.sourceBackup != null)
+                                    message.sourceBackup = String(object.sourceBackup);
+                                if (object.expireTime != null) {
+                                    if (typeof object.expireTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupRequest.expireTime: object expected");
+                                    message.expireTime = $root.google.protobuf.Timestamp.fromObject(object.expireTime);
+                                }
+                                if (object.encryptionConfig != null) {
+                                    if (typeof object.encryptionConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupRequest.encryptionConfig: object expected");
+                                    message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.fromObject(object.encryptionConfig);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupRequest} message CopyBackupRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.backupId = "";
+                                    object.sourceBackup = "";
+                                    object.expireTime = null;
+                                    object.encryptionConfig = null;
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.backupId != null && message.hasOwnProperty("backupId"))
+                                    object.backupId = message.backupId;
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    object.sourceBackup = message.sourceBackup;
+                                if (message.expireTime != null && message.hasOwnProperty("expireTime"))
+                                    object.expireTime = $root.google.protobuf.Timestamp.toObject(message.expireTime, options);
+                                if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig"))
+                                    object.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.toObject(message.encryptionConfig, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CopyBackupRequest;
+                        })();
+    
+                        v1.CopyBackupMetadata = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupMetadata
+                             * @property {string|null} [name] CopyBackupMetadata name
+                             * @property {string|null} [sourceBackup] CopyBackupMetadata sourceBackup
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] CopyBackupMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] CopyBackupMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupMetadata.
+                             * @implements ICopyBackupMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata=} [properties] Properties to set
+                             */
+                            function CopyBackupMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupMetadata name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.name = "";
+    
+                            /**
+                             * CopyBackupMetadata sourceBackup.
+                             * @member {string} sourceBackup
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.sourceBackup = "";
+    
+                            /**
+                             * CopyBackupMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.progress = null;
+    
+                            /**
+                             * CopyBackupMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             */
+                            CopyBackupMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new CopyBackupMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata instance
+                             */
+                            CopyBackupMetadata.create = function create(properties) {
+                                return new CopyBackupMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata} message CopyBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.sourceBackup != null && Object.hasOwnProperty.call(message, "sourceBackup"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.sourceBackup);
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupMetadata} message CopyBackupMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.name = reader.string();
+                                        break;
+                                    case 2:
+                                        message.sourceBackup = reader.string();
+                                        break;
+                                    case 3:
+                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                        break;
+                                    case 4:
+                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    if (!$util.isString(message.sourceBackup))
+                                        return "sourceBackup: string expected";
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupMetadata} CopyBackupMetadata
+                             */
+                            CopyBackupMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupMetadata();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.sourceBackup != null)
+                                    message.sourceBackup = String(object.sourceBackup);
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.CopyBackupMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupMetadata} message CopyBackupMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.sourceBackup = "";
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.sourceBackup != null && message.hasOwnProperty("sourceBackup"))
+                                    object.sourceBackup = message.sourceBackup;
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            return CopyBackupMetadata;
                         })();
     
                         v1.UpdateBackupRequest = (function() {
@@ -17019,6 +17675,257 @@
                             return CreateBackupEncryptionConfig;
                         })();
     
+                        v1.CopyBackupEncryptionConfig = (function() {
+    
+                            /**
+                             * Properties of a CopyBackupEncryptionConfig.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface ICopyBackupEncryptionConfig
+                             * @property {google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType|null} [encryptionType] CopyBackupEncryptionConfig encryptionType
+                             * @property {string|null} [kmsKeyName] CopyBackupEncryptionConfig kmsKeyName
+                             */
+    
+                            /**
+                             * Constructs a new CopyBackupEncryptionConfig.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a CopyBackupEncryptionConfig.
+                             * @implements ICopyBackupEncryptionConfig
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig=} [properties] Properties to set
+                             */
+                            function CopyBackupEncryptionConfig(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CopyBackupEncryptionConfig encryptionType.
+                             * @member {google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType} encryptionType
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             */
+                            CopyBackupEncryptionConfig.prototype.encryptionType = 0;
+    
+                            /**
+                             * CopyBackupEncryptionConfig kmsKeyName.
+                             * @member {string} kmsKeyName
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             */
+                            CopyBackupEncryptionConfig.prototype.kmsKeyName = "";
+    
+                            /**
+                             * Creates a new CopyBackupEncryptionConfig instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig instance
+                             */
+                            CopyBackupEncryptionConfig.create = function create(properties) {
+                                return new CopyBackupEncryptionConfig(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig} message CopyBackupEncryptionConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupEncryptionConfig.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.encryptionType != null && Object.hasOwnProperty.call(message, "encryptionType"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.encryptionType);
+                                if (message.kmsKeyName != null && Object.hasOwnProperty.call(message, "kmsKeyName"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.kmsKeyName);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CopyBackupEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ICopyBackupEncryptionConfig} message CopyBackupEncryptionConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CopyBackupEncryptionConfig.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupEncryptionConfig.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1:
+                                        message.encryptionType = reader.int32();
+                                        break;
+                                    case 2:
+                                        message.kmsKeyName = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CopyBackupEncryptionConfig.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CopyBackupEncryptionConfig message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CopyBackupEncryptionConfig.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
+                                    switch (message.encryptionType) {
+                                    default:
+                                        return "encryptionType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                    case 3:
+                                        break;
+                                    }
+                                if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
+                                    if (!$util.isString(message.kmsKeyName))
+                                        return "kmsKeyName: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CopyBackupEncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} CopyBackupEncryptionConfig
+                             */
+                            CopyBackupEncryptionConfig.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
+                                switch (object.encryptionType) {
+                                case "ENCRYPTION_TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.encryptionType = 0;
+                                    break;
+                                case "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION":
+                                case 1:
+                                    message.encryptionType = 1;
+                                    break;
+                                case "GOOGLE_DEFAULT_ENCRYPTION":
+                                case 2:
+                                    message.encryptionType = 2;
+                                    break;
+                                case "CUSTOMER_MANAGED_ENCRYPTION":
+                                case 3:
+                                    message.encryptionType = 3;
+                                    break;
+                                }
+                                if (object.kmsKeyName != null)
+                                    message.kmsKeyName = String(object.kmsKeyName);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CopyBackupEncryptionConfig message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} message CopyBackupEncryptionConfig
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CopyBackupEncryptionConfig.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.encryptionType = options.enums === String ? "ENCRYPTION_TYPE_UNSPECIFIED" : 0;
+                                    object.kmsKeyName = "";
+                                }
+                                if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
+                                    object.kmsKeyName = message.kmsKeyName;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CopyBackupEncryptionConfig to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CopyBackupEncryptionConfig.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * EncryptionType enum.
+                             * @name google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType
+                             * @enum {number}
+                             * @property {number} ENCRYPTION_TYPE_UNSPECIFIED=0 ENCRYPTION_TYPE_UNSPECIFIED value
+                             * @property {number} USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION=1 USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION value
+                             * @property {number} GOOGLE_DEFAULT_ENCRYPTION=2 GOOGLE_DEFAULT_ENCRYPTION value
+                             * @property {number} CUSTOMER_MANAGED_ENCRYPTION=3 CUSTOMER_MANAGED_ENCRYPTION value
+                             */
+                            CopyBackupEncryptionConfig.EncryptionType = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "ENCRYPTION_TYPE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION"] = 1;
+                                values[valuesById[2] = "GOOGLE_DEFAULT_ENCRYPTION"] = 2;
+                                values[valuesById[3] = "CUSTOMER_MANAGED_ENCRYPTION"] = 3;
+                                return values;
+                            })();
+    
+                            return CopyBackupEncryptionConfig;
+                        })();
+    
                         v1.OperationProgress = (function() {
     
                             /**
@@ -17719,6 +18626,22 @@
                             return EncryptionInfo;
                         })();
     
+                        /**
+                         * DatabaseDialect enum.
+                         * @name google.spanner.admin.database.v1.DatabaseDialect
+                         * @enum {number}
+                         * @property {number} DATABASE_DIALECT_UNSPECIFIED=0 DATABASE_DIALECT_UNSPECIFIED value
+                         * @property {number} GOOGLE_STANDARD_SQL=1 GOOGLE_STANDARD_SQL value
+                         * @property {number} POSTGRESQL=2 POSTGRESQL value
+                         */
+                        v1.DatabaseDialect = (function() {
+                            var valuesById = {}, values = Object.create(valuesById);
+                            values[valuesById[0] = "DATABASE_DIALECT_UNSPECIFIED"] = 0;
+                            values[valuesById[1] = "GOOGLE_STANDARD_SQL"] = 1;
+                            values[valuesById[2] = "POSTGRESQL"] = 2;
+                            return values;
+                        })();
+    
                         v1.DatabaseAdmin = (function() {
     
                             /**
@@ -18077,6 +19000,39 @@
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @instance
                              * @param {google.spanner.admin.database.v1.ICreateBackupRequest} request CreateBackupRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#copyBackup}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef CopyBackupCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls CopyBackup.
+                             * @function copyBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} request CopyBackupRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.CopyBackupCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.copyBackup = function copyBackup(request, callback) {
+                                return this.rpcCall(copyBackup, $root.google.spanner.admin.database.v1.CopyBackupRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "CopyBackup" });
+    
+                            /**
+                             * Calls CopyBackup.
+                             * @function copyBackup
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.ICopyBackupRequest} request CopyBackupRequest message or plain object
                              * @returns {Promise<google.longrunning.Operation>} Promise
                              * @variation 2
                              */
@@ -18577,6 +19533,7 @@
                              * @property {string|null} [versionRetentionPeriod] Database versionRetentionPeriod
                              * @property {google.protobuf.ITimestamp|null} [earliestVersionTime] Database earliestVersionTime
                              * @property {string|null} [defaultLeader] Database defaultLeader
+                             * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] Database databaseDialect
                              */
     
                             /**
@@ -18668,6 +19625,14 @@
                             Database.prototype.defaultLeader = "";
     
                             /**
+                             * Database databaseDialect.
+                             * @member {google.spanner.admin.database.v1.DatabaseDialect} databaseDialect
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.databaseDialect = 0;
+    
+                            /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Database
@@ -18710,6 +19675,8 @@
                                         $root.google.spanner.admin.database.v1.EncryptionInfo.encode(message.encryptionInfo[i], writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                                 if (message.defaultLeader != null && Object.hasOwnProperty.call(message, "defaultLeader"))
                                     writer.uint32(/* id 9, wireType 2 =*/74).string(message.defaultLeader);
+                                if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
+                                    writer.uint32(/* id 10, wireType 0 =*/80).int32(message.databaseDialect);
                                 return writer;
                             };
     
@@ -18772,6 +19739,9 @@
                                         break;
                                     case 9:
                                         message.defaultLeader = reader.string();
+                                        break;
+                                    case 10:
+                                        message.databaseDialect = reader.int32();
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -18856,6 +19826,15 @@
                                 if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
                                     if (!$util.isString(message.defaultLeader))
                                         return "defaultLeader: string expected";
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    switch (message.databaseDialect) {
+                                    default:
+                                        return "databaseDialect: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 return null;
                             };
     
@@ -18925,6 +19904,20 @@
                                 }
                                 if (object.defaultLeader != null)
                                     message.defaultLeader = String(object.defaultLeader);
+                                switch (object.databaseDialect) {
+                                case "DATABASE_DIALECT_UNSPECIFIED":
+                                case 0:
+                                    message.databaseDialect = 0;
+                                    break;
+                                case "GOOGLE_STANDARD_SQL":
+                                case 1:
+                                    message.databaseDialect = 1;
+                                    break;
+                                case "POSTGRESQL":
+                                case 2:
+                                    message.databaseDialect = 2;
+                                    break;
+                                }
                                 return message;
                             };
     
@@ -18952,6 +19945,7 @@
                                     object.versionRetentionPeriod = "";
                                     object.earliestVersionTime = null;
                                     object.defaultLeader = "";
+                                    object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -18974,6 +19968,8 @@
                                 }
                                 if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
                                     object.defaultLeader = message.defaultLeader;
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -19482,6 +20478,7 @@
                              * @property {string|null} [createStatement] CreateDatabaseRequest createStatement
                              * @property {Array.<string>|null} [extraStatements] CreateDatabaseRequest extraStatements
                              * @property {google.spanner.admin.database.v1.IEncryptionConfig|null} [encryptionConfig] CreateDatabaseRequest encryptionConfig
+                             * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] CreateDatabaseRequest databaseDialect
                              */
     
                             /**
@@ -19533,6 +20530,14 @@
                             CreateDatabaseRequest.prototype.encryptionConfig = null;
     
                             /**
+                             * CreateDatabaseRequest databaseDialect.
+                             * @member {google.spanner.admin.database.v1.DatabaseDialect} databaseDialect
+                             * @memberof google.spanner.admin.database.v1.CreateDatabaseRequest
+                             * @instance
+                             */
+                            CreateDatabaseRequest.prototype.databaseDialect = 0;
+    
+                            /**
                              * Creates a new CreateDatabaseRequest instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.CreateDatabaseRequest
@@ -19565,6 +20570,8 @@
                                         writer.uint32(/* id 3, wireType 2 =*/26).string(message.extraStatements[i]);
                                 if (message.encryptionConfig != null && Object.hasOwnProperty.call(message, "encryptionConfig"))
                                     $root.google.spanner.admin.database.v1.EncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                                if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
+                                    writer.uint32(/* id 5, wireType 0 =*/40).int32(message.databaseDialect);
                                 return writer;
                             };
     
@@ -19612,6 +20619,9 @@
                                         break;
                                     case 4:
                                         message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.decode(reader, reader.uint32());
+                                        break;
+                                    case 5:
+                                        message.databaseDialect = reader.int32();
                                         break;
                                     default:
                                         reader.skipType(tag & 7);
@@ -19666,6 +20676,15 @@
                                     if (error)
                                         return "encryptionConfig." + error;
                                 }
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    switch (message.databaseDialect) {
+                                    default:
+                                        return "databaseDialect: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 return null;
                             };
     
@@ -19697,6 +20716,20 @@
                                         throw TypeError(".google.spanner.admin.database.v1.CreateDatabaseRequest.encryptionConfig: object expected");
                                     message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.fromObject(object.encryptionConfig);
                                 }
+                                switch (object.databaseDialect) {
+                                case "DATABASE_DIALECT_UNSPECIFIED":
+                                case 0:
+                                    message.databaseDialect = 0;
+                                    break;
+                                case "GOOGLE_STANDARD_SQL":
+                                case 1:
+                                    message.databaseDialect = 1;
+                                    break;
+                                case "POSTGRESQL":
+                                case 2:
+                                    message.databaseDialect = 2;
+                                    break;
+                                }
                                 return message;
                             };
     
@@ -19719,6 +20752,7 @@
                                     object.parent = "";
                                     object.createStatement = "";
                                     object.encryptionConfig = null;
+                                    object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
                                 }
                                 if (message.parent != null && message.hasOwnProperty("parent"))
                                     object.parent = message.parent;
@@ -19731,6 +20765,8 @@
                                 }
                                 if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig"))
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.toObject(message.encryptionConfig, options);
+                                if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -23842,6 +24878,8 @@
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
                              * @property {Array.<string>|null} [endpointUris] Instance endpointUris
+                             * @property {google.protobuf.ITimestamp|null} [createTime] Instance createTime
+                             * @property {google.protobuf.ITimestamp|null} [updateTime] Instance updateTime
                              */
     
                             /**
@@ -23926,6 +24964,22 @@
                             Instance.prototype.endpointUris = $util.emptyArray;
     
                             /**
+                             * Instance createTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} createTime
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.createTime = null;
+    
+                            /**
+                             * Instance updateTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} updateTime
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.updateTime = null;
+    
+                            /**
                              * Creates a new Instance instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.instance.v1.Instance
@@ -23967,6 +25021,10 @@
                                         writer.uint32(/* id 8, wireType 2 =*/66).string(message.endpointUris[i]);
                                 if (message.processingUnits != null && Object.hasOwnProperty.call(message, "processingUnits"))
                                     writer.uint32(/* id 9, wireType 0 =*/72).int32(message.processingUnits);
+                                if (message.createTime != null && Object.hasOwnProperty.call(message, "createTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+                                if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.updateTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                                 return writer;
                             };
     
@@ -24046,6 +25104,12 @@
                                             message.endpointUris = [];
                                         message.endpointUris.push(reader.string());
                                         break;
+                                    case 11:
+                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    case 12:
+                                        message.updateTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -24120,6 +25184,16 @@
                                         if (!$util.isString(message.endpointUris[i]))
                                             return "endpointUris: string[] expected";
                                 }
+                                if (message.createTime != null && message.hasOwnProperty("createTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.createTime);
+                                    if (error)
+                                        return "createTime." + error;
+                                }
+                                if (message.updateTime != null && message.hasOwnProperty("updateTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.updateTime);
+                                    if (error)
+                                        return "updateTime." + error;
+                                }
                                 return null;
                             };
     
@@ -24173,6 +25247,16 @@
                                     for (var i = 0; i < object.endpointUris.length; ++i)
                                         message.endpointUris[i] = String(object.endpointUris[i]);
                                 }
+                                if (object.createTime != null) {
+                                    if (typeof object.createTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.createTime: object expected");
+                                    message.createTime = $root.google.protobuf.Timestamp.fromObject(object.createTime);
+                                }
+                                if (object.updateTime != null) {
+                                    if (typeof object.updateTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.updateTime: object expected");
+                                    message.updateTime = $root.google.protobuf.Timestamp.fromObject(object.updateTime);
+                                }
                                 return message;
                             };
     
@@ -24200,6 +25284,8 @@
                                     object.nodeCount = 0;
                                     object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                     object.processingUnits = 0;
+                                    object.createTime = null;
+                                    object.updateTime = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -24224,6 +25310,10 @@
                                 }
                                 if (message.processingUnits != null && message.hasOwnProperty("processingUnits"))
                                     object.processingUnits = message.processingUnits;
+                                if (message.createTime != null && message.hasOwnProperty("createTime"))
+                                    object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
+                                if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+                                    object.updateTime = $root.google.protobuf.Timestamp.toObject(message.updateTime, options);
                                 return object;
                             };
     
@@ -29039,6 +30129,22 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Kind enum.
+                     * @name google.spanner.v1.PlanNode.Kind
+                     * @enum {number}
+                     * @property {number} KIND_UNSPECIFIED=0 KIND_UNSPECIFIED value
+                     * @property {number} RELATIONAL=1 RELATIONAL value
+                     * @property {number} SCALAR=2 SCALAR value
+                     */
+                    PlanNode.Kind = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "KIND_UNSPECIFIED"] = 0;
+                        values[valuesById[1] = "RELATIONAL"] = 1;
+                        values[valuesById[2] = "SCALAR"] = 2;
+                        return values;
+                    })();
+    
                     PlanNode.ChildLink = (function() {
     
                         /**
@@ -29514,22 +30620,6 @@
                         };
     
                         return ShortRepresentation;
-                    })();
-    
-                    /**
-                     * Kind enum.
-                     * @name google.spanner.v1.PlanNode.Kind
-                     * @enum {number}
-                     * @property {number} KIND_UNSPECIFIED=0 KIND_UNSPECIFIED value
-                     * @property {number} RELATIONAL=1 RELATIONAL value
-                     * @property {number} SCALAR=2 SCALAR value
-                     */
-                    PlanNode.Kind = (function() {
-                        var valuesById = {}, values = Object.create(valuesById);
-                        values[valuesById[0] = "KIND_UNSPECIFIED"] = 0;
-                        values[valuesById[1] = "RELATIONAL"] = 1;
-                        values[valuesById[2] = "SCALAR"] = 2;
-                        return values;
                     })();
     
                     return PlanNode;
@@ -32325,6 +33415,7 @@
                      * @property {google.spanner.v1.TypeCode|null} [code] Type code
                      * @property {google.spanner.v1.IType|null} [arrayElementType] Type arrayElementType
                      * @property {google.spanner.v1.IStructType|null} [structType] Type structType
+                     * @property {google.spanner.v1.TypeAnnotationCode|null} [typeAnnotation] Type typeAnnotation
                      */
     
                     /**
@@ -32367,6 +33458,14 @@
                     Type.prototype.structType = null;
     
                     /**
+                     * Type typeAnnotation.
+                     * @member {google.spanner.v1.TypeAnnotationCode} typeAnnotation
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     */
+                    Type.prototype.typeAnnotation = 0;
+    
+                    /**
                      * Creates a new Type instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Type
@@ -32396,6 +33495,8 @@
                             $root.google.spanner.v1.Type.encode(message.arrayElementType, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         if (message.structType != null && Object.hasOwnProperty.call(message, "structType"))
                             $root.google.spanner.v1.StructType.encode(message.structType, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        if (message.typeAnnotation != null && Object.hasOwnProperty.call(message, "typeAnnotation"))
+                            writer.uint32(/* id 4, wireType 0 =*/32).int32(message.typeAnnotation);
                         return writer;
                     };
     
@@ -32438,6 +33539,9 @@
                                 break;
                             case 3:
                                 message.structType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                break;
+                            case 4:
+                                message.typeAnnotation = reader.int32();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -32502,6 +33606,14 @@
                             if (error)
                                 return "structType." + error;
                         }
+                        if (message.typeAnnotation != null && message.hasOwnProperty("typeAnnotation"))
+                            switch (message.typeAnnotation) {
+                            default:
+                                return "typeAnnotation: enum value expected";
+                            case 0:
+                            case 2:
+                                break;
+                            }
                         return null;
                     };
     
@@ -32577,6 +33689,16 @@
                                 throw TypeError(".google.spanner.v1.Type.structType: object expected");
                             message.structType = $root.google.spanner.v1.StructType.fromObject(object.structType);
                         }
+                        switch (object.typeAnnotation) {
+                        case "TYPE_ANNOTATION_CODE_UNSPECIFIED":
+                        case 0:
+                            message.typeAnnotation = 0;
+                            break;
+                        case "PG_NUMERIC":
+                        case 2:
+                            message.typeAnnotation = 2;
+                            break;
+                        }
                         return message;
                     };
     
@@ -32597,6 +33719,7 @@
                             object.code = options.enums === String ? "TYPE_CODE_UNSPECIFIED" : 0;
                             object.arrayElementType = null;
                             object.structType = null;
+                            object.typeAnnotation = options.enums === String ? "TYPE_ANNOTATION_CODE_UNSPECIFIED" : 0;
                         }
                         if (message.code != null && message.hasOwnProperty("code"))
                             object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] : message.code;
@@ -32604,6 +33727,8 @@
                             object.arrayElementType = $root.google.spanner.v1.Type.toObject(message.arrayElementType, options);
                         if (message.structType != null && message.hasOwnProperty("structType"))
                             object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
+                        if (message.typeAnnotation != null && message.hasOwnProperty("typeAnnotation"))
+                            object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
                         return object;
                     };
     
@@ -33075,6 +34200,20 @@
                     values[valuesById[9] = "STRUCT"] = 9;
                     values[valuesById[10] = "NUMERIC"] = 10;
                     values[valuesById[11] = "JSON"] = 11;
+                    return values;
+                })();
+    
+                /**
+                 * TypeAnnotationCode enum.
+                 * @name google.spanner.v1.TypeAnnotationCode
+                 * @enum {number}
+                 * @property {number} TYPE_ANNOTATION_CODE_UNSPECIFIED=0 TYPE_ANNOTATION_CODE_UNSPECIFIED value
+                 * @property {number} PG_NUMERIC=2 PG_NUMERIC value
+                 */
+                v1.TypeAnnotationCode = (function() {
+                    var valuesById = {}, values = Object.create(valuesById);
+                    values[valuesById[0] = "TYPE_ANNOTATION_CODE_UNSPECIFIED"] = 0;
+                    values[valuesById[2] = "PG_NUMERIC"] = 2;
                     return values;
                 })();
     
@@ -34278,6 +35417,7 @@
                      * @property {Object.<string,string>|null} [labels] Session labels
                      * @property {google.protobuf.ITimestamp|null} [createTime] Session createTime
                      * @property {google.protobuf.ITimestamp|null} [approximateLastUseTime] Session approximateLastUseTime
+                     * @property {string|null} [creatorRole] Session creatorRole
                      */
     
                     /**
@@ -34329,6 +35469,14 @@
                     Session.prototype.approximateLastUseTime = null;
     
                     /**
+                     * Session creatorRole.
+                     * @member {string} creatorRole
+                     * @memberof google.spanner.v1.Session
+                     * @instance
+                     */
+                    Session.prototype.creatorRole = "";
+    
+                    /**
                      * Creates a new Session instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Session
@@ -34361,6 +35509,8 @@
                             $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.approximateLastUseTime != null && Object.hasOwnProperty.call(message, "approximateLastUseTime"))
                             $root.google.protobuf.Timestamp.encode(message.approximateLastUseTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.creatorRole != null && Object.hasOwnProperty.call(message, "creatorRole"))
+                            writer.uint32(/* id 5, wireType 2 =*/42).string(message.creatorRole);
                         return writer;
                     };
     
@@ -34426,6 +35576,9 @@
                             case 4:
                                 message.approximateLastUseTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
                                 break;
+                            case 5:
+                                message.creatorRole = reader.string();
+                                break;
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -34482,6 +35635,9 @@
                             if (error)
                                 return "approximateLastUseTime." + error;
                         }
+                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
+                            if (!$util.isString(message.creatorRole))
+                                return "creatorRole: string expected";
                         return null;
                     };
     
@@ -34516,6 +35672,8 @@
                                 throw TypeError(".google.spanner.v1.Session.approximateLastUseTime: object expected");
                             message.approximateLastUseTime = $root.google.protobuf.Timestamp.fromObject(object.approximateLastUseTime);
                         }
+                        if (object.creatorRole != null)
+                            message.creatorRole = String(object.creatorRole);
                         return message;
                     };
     
@@ -34538,6 +35696,7 @@
                             object.name = "";
                             object.createTime = null;
                             object.approximateLastUseTime = null;
+                            object.creatorRole = "";
                         }
                         if (message.name != null && message.hasOwnProperty("name"))
                             object.name = message.name;
@@ -34551,6 +35710,8 @@
                             object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                         if (message.approximateLastUseTime != null && message.hasOwnProperty("approximateLastUseTime"))
                             object.approximateLastUseTime = $root.google.protobuf.Timestamp.toObject(message.approximateLastUseTime, options);
+                        if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
+                            object.creatorRole = message.creatorRole;
                         return object;
                     };
     
@@ -36218,6 +37379,22 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * QueryMode enum.
+                     * @name google.spanner.v1.ExecuteSqlRequest.QueryMode
+                     * @enum {number}
+                     * @property {number} NORMAL=0 NORMAL value
+                     * @property {number} PLAN=1 PLAN value
+                     * @property {number} PROFILE=2 PROFILE value
+                     */
+                    ExecuteSqlRequest.QueryMode = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "NORMAL"] = 0;
+                        values[valuesById[1] = "PLAN"] = 1;
+                        values[valuesById[2] = "PROFILE"] = 2;
+                        return values;
+                    })();
+    
                     ExecuteSqlRequest.QueryOptions = (function() {
     
                         /**
@@ -36426,22 +37603,6 @@
                         };
     
                         return QueryOptions;
-                    })();
-    
-                    /**
-                     * QueryMode enum.
-                     * @name google.spanner.v1.ExecuteSqlRequest.QueryMode
-                     * @enum {number}
-                     * @property {number} NORMAL=0 NORMAL value
-                     * @property {number} PLAN=1 PLAN value
-                     * @property {number} PROFILE=2 PROFILE value
-                     */
-                    ExecuteSqlRequest.QueryMode = (function() {
-                        var valuesById = {}, values = Object.create(valuesById);
-                        values[valuesById[0] = "NORMAL"] = 0;
-                        values[valuesById[1] = "PLAN"] = 1;
-                        values[valuesById[2] = "PROFILE"] = 2;
-                        return values;
                     })();
     
                     return ExecuteSqlRequest;
