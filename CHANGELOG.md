@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.1](https://github.com/googleapis/nodejs-spanner/compare/v6.1.0...v6.1.1) (2022-07-06)
+
+
+### Bug Fixes
+
+* call Promise.race without a long pending promise to prevent memory leak ([#1657](https://github.com/googleapis/nodejs-spanner/issues/1657)) ([768acb6](https://github.com/googleapis/nodejs-spanner/commit/768acb6279914dfe84e372afc1d83dd76ca3dd4d))
+* **deps:** update dependency yargs to v17 ([#1537](https://github.com/googleapis/nodejs-spanner/issues/1537)) ([1039f68](https://github.com/googleapis/nodejs-spanner/commit/1039f68c7b459c2abeef4388fd8541576d374b66))
+
 ## [6.1.0](https://github.com/googleapis/nodejs-spanner/compare/v6.0.0...v6.1.0) (2022-07-04)
 
 
