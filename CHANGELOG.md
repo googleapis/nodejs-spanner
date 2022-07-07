@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.2](https://github.com/googleapis/nodejs-spanner/compare/v6.1.1...v6.1.2) (2022-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/kms to v3 ([#1664](https://github.com/googleapis/nodejs-spanner/issues/1664)) ([42f41e9](https://github.com/googleapis/nodejs-spanner/commit/42f41e99f3cba9c3bdb981f70d6423c48adbc0d6))
+
 ## [6.1.1](https://github.com/googleapis/nodejs-spanner/compare/v6.1.0...v6.1.1) (2022-07-06)
 
 
