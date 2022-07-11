@@ -404,7 +404,7 @@ describe('Database', () => {
       const error = new Error('err');
       const response = {};
 
-      sandbox.stub(database, 'request').callsFake((_, cb) => {
+      sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(error, response);
       });
 
@@ -427,7 +427,7 @@ describe('Database', () => {
         stub.withArgs(session.name).returns(fakeSessions[i]);
       });
 
-      sandbox.stub(database, 'request').callsFake((_, cb) => {
+      sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(null, response);
       });
 
@@ -2014,7 +2014,10 @@ describe('Database', () => {
   describe('getSessions', () => {
     it('should make the correct request', done => {
       const gaxOpts = {};
-      const options = {a: 'a', gaxOptions: gaxOpts};
+      const options: {
+        a: string;
+        gaxOptions?: {};
+      } = {a: 'a', gaxOptions: gaxOpts};
 
       const expectedReqOpts = extend({}, options, {
         database: database.formattedName_,
@@ -2039,7 +2042,10 @@ describe('Database', () => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
-      const options = {a: 'a', gaxOptions: gaxOptions};
+      const options: {
+        a: string;
+        gaxOptions?: {pageSize: number; pageToken: string; timeout: number};
+      } = {a: 'a', gaxOptions: gaxOptions};
       const expectedReqOpts = extend(
         {},
         options,
@@ -2070,7 +2076,9 @@ describe('Database', () => {
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
-      const options = Object.assign(
+      const options: {
+        gaxOptions?: {pageSize: number; pageToken: string; timeout: number};
+      } = Object.assign(
         {},
         {
           pageSize: optionsPageSize,

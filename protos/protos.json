@@ -2942,6 +2942,20 @@
                               "rule": "repeated",
                               "type": "string",
                               "id": 8
+                            },
+                            "createTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 11,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "updateTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -4018,6 +4032,10 @@
                       "options": {
                         "(google.api.field_behavior)": "OUTPUT_ONLY"
                       }
+                    },
+                    "creatorRole": {
+                      "type": "string",
+                      "id": 5
                     }
                   }
                 },

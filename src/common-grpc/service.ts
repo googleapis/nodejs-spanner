@@ -513,7 +513,7 @@ export class GrpcService extends Service {
     try {
       reqOpts = this.decorateRequest_(reqOpts);
     } catch (e) {
-      callback!(e);
+      callback!(e as Error);
       return;
     }
 
@@ -632,7 +632,7 @@ export class GrpcService extends Service {
       reqOpts = this.decorateRequest_(reqOpts);
     } catch (e) {
       setImmediate(() => {
-        stream.destroy(e);
+        stream.destroy(e as Error);
       });
       return stream;
     }

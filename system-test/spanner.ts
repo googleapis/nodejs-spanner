@@ -1863,7 +1863,10 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date
-        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.INVALID_ARGUMENT
+        );
       }
     };
 
@@ -2020,7 +2023,10 @@ describe('Spanner', () => {
         assert.fail('Should not have restored backup over existing database');
       } catch (err) {
         // Expect to get error indicating database already exists.
-        assert.strictEqual(err.code, grpc.status.ALREADY_EXISTS);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.ALREADY_EXISTS
+        );
       }
     };
 
@@ -2073,7 +2079,10 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date.
-        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.INVALID_ARGUMENT
+        );
       }
     };
 
@@ -2095,7 +2104,10 @@ describe('Spanner', () => {
         const [deletedMetadata] = await backup2.getMetadata();
         assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
-        assert.strictEqual(err.code, grpc.status.NOT_FOUND);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.NOT_FOUND
+        );
       }
     };
 
@@ -6428,7 +6440,7 @@ describe('Spanner', () => {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
             // Re-throw if the transaction was aborted to trigger a retry.
-            if (e.code === grpc.status.ABORTED) {
+            if ((err as grpc.ServiceError)?.code === grpc.status.ABORTED) {
               throw e;
             }
             err = e;
@@ -6529,7 +6541,7 @@ describe('Spanner', () => {
           try {
             transaction!.insert(table.name, rows);
           } catch (e) {
-            caughtErrorMessage = e.message;
+            caughtErrorMessage = (e as grpc.ServiceError).message;
           }
           assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
 
