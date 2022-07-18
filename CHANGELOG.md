@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.3](https://github.com/googleapis/nodejs-spanner/compare/v6.1.2...v6.1.3) (2022-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common to v4 ([#1663](https://github.com/googleapis/nodejs-spanner/issues/1663)) ([487c58c](https://github.com/googleapis/nodejs-spanner/commit/487c58ce2a2dbf21cdc1b43ea53d68ea6edbfd81))
+
 ## [6.1.2](https://github.com/googleapis/nodejs-spanner/compare/v6.1.1...v6.1.2) (2022-07-07)
 
 
