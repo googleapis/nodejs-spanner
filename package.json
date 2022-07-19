@@ -75,7 +75,7 @@
     "through2": "^4.0.0"
   },
   "devDependencies": {
-    "@grpc/proto-loader": "^0.6.0",
+    "@grpc/proto-loader": "^0.7.0",
     "@types/concat-stream": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/is": "0.0.21",
