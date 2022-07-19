@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^4.0.0",
-    "@google-cloud/precise-date": "^2.0.0",
+    "@google-cloud/precise-date": "^3.0.0",
     "@google-cloud/projectify": "^3.0.0",
     "@google-cloud/promisify": "^3.0.0",
     "@types/big.js": "^6.0.0",
