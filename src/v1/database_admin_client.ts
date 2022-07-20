@@ -181,6 +181,9 @@ export class DatabaseAdminClient {
       databasePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
+      databaseRolePathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}'
+      ),
       instancePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
@@ -209,6 +212,11 @@ export class DatabaseAdminClient {
         'pageToken',
         'nextPageToken',
         'operations'
+      ),
+      listDatabaseRoles: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'databaseRoles'
       ),
     };
 
@@ -383,6 +391,7 @@ export class DatabaseAdminClient {
       'restoreDatabase',
       'listDatabaseOperations',
       'listBackupOperations',
+      'listDatabaseRoles',
     ];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
@@ -3448,6 +3457,210 @@ export class DatabaseAdminClient {
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listDatabaseRolesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   */
+  listDatabaseRoles(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IDatabaseRole[],
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+    ]
+  >;
+  listDatabaseRoles(
+    request: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): void;
+  listDatabaseRoles(
+    request: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): void;
+  listDatabaseRoles(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IDatabaseRole
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IDatabaseRole[],
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    this.initialize();
+    return this.innerApiCalls.listDatabaseRoles(request, options, callback);
+  }
+
+  /**
+   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole} on 'data' event.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed. Note that it can affect your quota.
+   *   We recommend using `listDatabaseRolesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   */
+  listDatabaseRolesStream(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    const defaultCallSettings = this._defaults['listDatabaseRoles'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listDatabaseRoles.createStream(
+      this.innerApiCalls.listDatabaseRoles as gax.GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to `listDatabaseRoles`, but returns an iterable object.
+   *
+   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+   *   When you iterate the returned iterable, each element will be an object representing
+   *   [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}. The API will be called under the hood as needed, once per the page,
+   *   so you can stop the iteration when you don't need more results.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.list_database_roles.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_ListDatabaseRoles_async
+   */
+  listDatabaseRolesAsync(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    const defaultCallSettings = this._defaults['listDatabaseRoles'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listDatabaseRoles.asyncIterate(
+      this.innerApiCalls['listDatabaseRoles'] as GaxCall,
+      request as unknown as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole>;
+  }
   // --------------------
   // -- Path templates --
   // --------------------
@@ -3619,6 +3832,77 @@ export class DatabaseAdminClient {
    */
   matchDatabaseFromDatabaseName(databaseName: string) {
     return this.pathTemplates.databasePathTemplate.match(databaseName).database;
+  }
+
+  /**
+   * Return a fully-qualified databaseRole resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} database
+   * @param {string} role
+   * @returns {string} Resource name string.
+   */
+  databaseRolePath(
+    project: string,
+    instance: string,
+    database: string,
+    role: string
+  ) {
+    return this.pathTemplates.databaseRolePathTemplate.render({
+      project: project,
+      instance: instance,
+      database: database,
+      role: role,
+    });
+  }
+
+  /**
+   * Parse the project from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .project;
+  }
+
+  /**
+   * Parse the instance from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .instance;
+  }
+
+  /**
+   * Parse the database from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the database.
+   */
+  matchDatabaseFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .database;
+  }
+
+  /**
+   * Parse the role from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the role.
+   */
+  matchRoleFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .role;
   }
 
   /**

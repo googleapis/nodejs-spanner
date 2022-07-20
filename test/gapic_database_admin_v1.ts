@@ -3522,6 +3522,317 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('listDatabaseRoles', () => {
+    it('invokes listDatabaseRoles without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+      ];
+      client.innerApiCalls.listDatabaseRoles = stubSimpleCall(expectedResponse);
+      const [response] = await client.listDatabaseRoles(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listDatabaseRoles as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listDatabaseRoles without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+      ];
+      client.innerApiCalls.listDatabaseRoles =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.listDatabaseRoles(
+          request,
+          (
+            err?: Error | null,
+            result?:
+              | protos.google.spanner.admin.database.v1.IDatabaseRole[]
+              | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.listDatabaseRoles as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
+
+    it('invokes listDatabaseRoles with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listDatabaseRoles = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.listDatabaseRoles(request), expectedError);
+      assert(
+        (client.innerApiCalls.listDatabaseRoles as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes listDatabaseRolesStream without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+      ];
+      client.descriptors.page.listDatabaseRoles.createStream =
+        stubPageStreamingCall(expectedResponse);
+      const stream = client.listDatabaseRolesStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.DatabaseRole[] =
+          [];
+        stream.on(
+          'data',
+          (response: protos.google.spanner.admin.database.v1.DatabaseRole) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listDatabaseRoles, request)
+      );
+      assert.strictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.createStream as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('invokes listDatabaseRolesStream with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listDatabaseRoles.createStream =
+        stubPageStreamingCall(undefined, expectedError);
+      const stream = client.listDatabaseRolesStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.DatabaseRole[] =
+          [];
+        stream.on(
+          'data',
+          (response: protos.google.spanner.admin.database.v1.DatabaseRole) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      assert(
+        (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listDatabaseRoles, request)
+      );
+      assert.strictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.createStream as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listDatabaseRoles without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.DatabaseRole()
+        ),
+      ];
+      client.descriptors.page.listDatabaseRoles.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
+      const responses: protos.google.spanner.admin.database.v1.IDatabaseRole[] =
+        [];
+      const iterable = client.listDatabaseRolesAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert.strictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+
+    it('uses async iteration with listDatabaseRoles with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
+      );
+      request.parent = '';
+      const expectedHeaderRequestParams = 'parent=';
+      const expectedError = new Error('expected');
+      client.descriptors.page.listDatabaseRoles.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
+      const iterable = client.listDatabaseRolesAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.spanner.admin.database.v1.IDatabaseRole[] =
+          [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert.strictEqual(
+        (
+          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
+        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+        expectedHeaderRequestParams
+      );
+    });
+  });
+
   describe('Path templates', () => {
     describe('backup', () => {
       const fakePath = '/rendered/path/backup';
@@ -3721,6 +4032,82 @@ describe('v1.DatabaseAdminClient', () => {
         assert.strictEqual(result, 'databaseValue');
         assert(
           (client.pathTemplates.databasePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+    });
+
+    describe('databaseRole', () => {
+      const fakePath = '/rendered/path/databaseRole';
+      const expectedParameters = {
+        project: 'projectValue',
+        instance: 'instanceValue',
+        database: 'databaseValue',
+        role: 'roleValue',
+      };
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      client.pathTemplates.databaseRolePathTemplate.render = sinon
+        .stub()
+        .returns(fakePath);
+      client.pathTemplates.databaseRolePathTemplate.match = sinon
+        .stub()
+        .returns(expectedParameters);
+
+      it('databaseRolePath', () => {
+        const result = client.databaseRolePath(
+          'projectValue',
+          'instanceValue',
+          'databaseValue',
+          'roleValue'
+        );
+        assert.strictEqual(result, fakePath);
+        assert(
+          (client.pathTemplates.databaseRolePathTemplate.render as SinonStub)
+            .getCall(-1)
+            .calledWith(expectedParameters)
+        );
+      });
+
+      it('matchProjectFromDatabaseRoleName', () => {
+        const result = client.matchProjectFromDatabaseRoleName(fakePath);
+        assert.strictEqual(result, 'projectValue');
+        assert(
+          (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchInstanceFromDatabaseRoleName', () => {
+        const result = client.matchInstanceFromDatabaseRoleName(fakePath);
+        assert.strictEqual(result, 'instanceValue');
+        assert(
+          (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchDatabaseFromDatabaseRoleName', () => {
+        const result = client.matchDatabaseFromDatabaseRoleName(fakePath);
+        assert.strictEqual(result, 'databaseValue');
+        assert(
+          (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchRoleFromDatabaseRoleName', () => {
+        const result = client.matchRoleFromDatabaseRoleName(fakePath);
+        assert.strictEqual(result, 'roleValue');
+        assert(
+          (client.pathTemplates.databaseRolePathTemplate.match as SinonStub)
             .getCall(-1)
             .calledWith(fakePath)
         );
