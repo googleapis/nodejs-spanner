@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// sample-metadata:
+//  title: Update using Batch DML with RPC priority
+//  usage: node rpc-priority-batchDML.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+
 'use strict';
 
 async function main(instanceId, databaseId, projectId) {
@@ -31,40 +35,44 @@ async function main(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  async function queryWithRpcPriority(instanceId, databaseId) {
-    // Gets a reference to a Cloud Spanner instance and database.
+  async function updateUsingBatchDmlWithRpcPriority(instanceId, databaseId) {
+    // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    const sql = `SELECT AlbumId, AlbumTitle, MarketingBudget
-          FROM Albums
-          ORDER BY AlbumTitle`;
+    const insert = {
+      sql: `INSERT INTO Albums (SingerId, AlbumId, AlbumTitle, MarketingBudget)
+      VALUES (1, 4, "Test Album Title", 10000)`,
+    };
+
+    const update = {
+      sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
+      WHERE SingerId = 1 and AlbumId = 4`,
+    };
+
+    const dmlStatements = [insert, update];
 
     try {
-      // Execute a query with low priority. Note that the default for all
-      // requests is PRIORITY_HIGH, and that this option can only be used to
-      // reduce the priority of a request.
-      const [rows] = await database.run({
-        sql,
-        requestOptions: {
-          priority: Priority.PRIORITY_LOW,
-        },
-        json: true,
-      });
-
-      rows.forEach(row => {
+      await database.runTransactionAsync(async transaction => {
+        const [rowCounts] = await transaction.batchUpdate(dmlStatements, {
+          requestOptions: {
+            priority: Priority.PRIORITY_LOW,
+          },
+        });
+        await transaction.commit();
         console.log(
-          `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`
+          `Successfully executed ${rowCounts.length} SQL statements using Batch DML with low.`
         );
       });
     } catch (err) {
       console.error('ERROR:', err);
+      throw err;
     } finally {
       // Close the database when finished.
-      await database.close();
+      database.close();
     }
   }
-  await queryWithRpcPriority(instanceId, databaseId);
+  await updateUsingBatchDmlWithRpcPriority(instanceId, databaseId);
 }
 main(...process.argv.slice(2)).then(() =>
   console.log('Finished executing sample')
