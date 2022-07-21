@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Create and Execute Query partitions with RPC priority
-//  usage: node rpc-priority-querypartitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node rpc-priority-query-partitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

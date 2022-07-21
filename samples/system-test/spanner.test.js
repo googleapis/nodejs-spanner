@@ -33,7 +33,7 @@ const rpcPriorityBatchDMLCommand = 'node rpc-priority-batch-dml.js';
 const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-partitioned-dml.js';
 const rpcPriorityTransactionCommand = 'node rpc-priority-transaction.js';
 const rpcPriorityQueryPartitionsCommand =
-  'node rpc-priority-querypartitions.js';
+  'node rpc-priority-query-partitions.js';
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
