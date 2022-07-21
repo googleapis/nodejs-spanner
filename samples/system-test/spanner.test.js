@@ -29,11 +29,11 @@ const schemaCmd = 'node schema.js';
 const queryOptionsCmd = 'node queryoptions.js';
 const rpcPriorityRunCommand = 'node rpc-priority-run.js';
 const rpcPriorityReadCommand = 'node rpc-priority-read.js';
-const rpcPriorityBatchDMLCommand = 'node rpc-priority-batchDML.js';
-const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-PartitionedDML.js';
+const rpcPriorityBatchDMLCommand = 'node rpc-priority-batch-dml.js';
+const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-partitioned-dml.js';
 const rpcPriorityTransactionCommand = 'node rpc-priority-transaction.js';
 const rpcPriorityQueryPartitionsCommand =
-  'node rpc-priority-queryPartitions.js';
+  'node rpc-priority-querypartitions.js';
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
@@ -573,7 +573,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully updated 3 records/);
+    assert.match(output, new RegExp('Successfully updated (\\d+) records'));
   });
 
   // query with RPC priority for Query partitions command

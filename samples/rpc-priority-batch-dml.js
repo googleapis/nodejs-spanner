@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,13 +13,13 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Update using partitioned DML with RPC priority
-//  usage: node rpc-priority-PartitionedDML.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Update using Batch DML with RPC priority
+//  usage: node rpc-priority-batch-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
 async function main(instanceId, databaseId, projectId) {
-  // [START spanner_rpc_priority_partitioned_dml]
+  // [START spanner_rpc_priority_batch_dml]
   // Imports the Google Cloud client library.
   const {Spanner, protos} = require('@google-cloud/spanner');
   const Priority = protos.google.spanner.v1.RequestOptions.Priority;
@@ -36,31 +36,45 @@ async function main(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  async function updateUsingPartitionedDmlWithRpcPriority(
-    instanceId,
-    databaseId
-  ) {
+  async function updateUsingBatchDmlWithRpcPriority(instanceId, databaseId) {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
+    const insert = {
+      sql: `INSERT INTO Albums (SingerId, AlbumId, AlbumTitle, MarketingBudget)
+      VALUES (1, 4, "Test Album Title", 10000)`,
+    };
+
+    const update = {
+      sql: `UPDATE Albums SET MarketingBudget = MarketingBudget * 2
+      WHERE SingerId = 1 and AlbumId = 4`,
+    };
+
+    const dmlStatements = [insert, update];
+
     try {
-      const [rowCount] = await database.runPartitionedUpdate({
-        sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId = 1',
-        requestOptions: {
-          priority: Priority.PRIORITY_LOW,
-        },
+      await database.runTransactionAsync(async transaction => {
+        const [rowCounts] = await transaction.batchUpdate(dmlStatements, {
+          requestOptions: {
+            priority: Priority.PRIORITY_LOW,
+          },
+        });
+        await transaction.commit();
+        console.log(
+          `Successfully executed ${rowCounts.length} SQL statements using Batch DML with low.`
+        );
       });
-      console.log(`Successfully updated ${rowCount} records.`);
     } catch (err) {
       console.error('ERROR:', err);
+      throw err;
     } finally {
       // Close the database when finished.
       database.close();
     }
   }
-  await updateUsingPartitionedDmlWithRpcPriority(instanceId, databaseId);
-  // [END spanner_rpc_priority_partitioned_dml]
+  await updateUsingBatchDmlWithRpcPriority(instanceId, databaseId);
+  // [END spanner_rpc_priority_batch_dml]
 }
 main(...process.argv.slice(2)).then(() =>
   console.log('Finished executing sample')
