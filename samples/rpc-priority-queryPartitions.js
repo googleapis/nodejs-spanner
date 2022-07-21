@@ -35,13 +35,15 @@ async function main(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  async function createAndExecuteQueryPartitionsWithRpcPriority(instanceId,databaseId) {
-
+  async function createAndExecuteQueryPartitionsWithRpcPriority(
+    instanceId,
+    databaseId
+  ) {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
     const [transaction] = await database.createBatchTransaction();
-  
+
     const [partitions] = await transaction.createQueryPartitions({
       sql: 'SELECT * FROM Singers',
       requestOptions: {
@@ -49,7 +51,7 @@ async function main(instanceId, databaseId, projectId) {
       },
     });
     console.log(`Successfully created ${partitions.length} query partitions.`);
-  
+
     let row_count = 0;
     const promises = [];
     partitions.forEach(partition => {
@@ -71,7 +73,7 @@ async function main(instanceId, databaseId, projectId) {
         database.close();
       });
   }
-  
+
   createAndExecuteQueryPartitionsWithRpcPriority(instanceId, databaseId);
 }
 process.on('unhandledRejection', err => {

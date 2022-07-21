@@ -32,7 +32,8 @@ const rpcPriorityReadCommand = 'node rpc-priority-read.js';
 const rpcPriorityBatchDMLCommand = 'node rpc-priority-batchDML.js';
 const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-PartitionedDML.js';
 const rpcPriorityTransactionCommand = 'node rpc-priority-transaction.js';
-const rpcPriorityQueryPartitionsCommand = 'node rpc-priority-queryPartitions.js';
+const rpcPriorityQueryPartitionsCommand =
+  'node rpc-priority-queryPartitions.js';
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
@@ -543,7 +544,7 @@ describe('Spanner', () => {
       `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
-  }); 
+  });
 
   // query with RPC priority for transaction command
   it('should use RPC priority from request options for transaction command', async () => {
@@ -554,7 +555,7 @@ describe('Spanner', () => {
       output,
       /Successfully inserted 1 record into the Singers table/
     );
-  }); 
+  });
 
   // query with RPC priority for batch DML command
   it('should use RPC priority from request options for batch DML command', async () => {
@@ -565,7 +566,7 @@ describe('Spanner', () => {
       output,
       /Successfully executed 2 SQL statements using Batch DML/
     );
-  }); 
+  });
 
   // query with RPC priority for partitioned DML command
   it('should use RPC priority from request options for partitioned DML command', async () => {
@@ -573,7 +574,7 @@ describe('Spanner', () => {
       `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Successfully updated 3 records/);
-  }); 
+  });
 
   // query with RPC priority for Query partitions command
   it('should use RPC priority from request options for Query partition command', async () => {
@@ -582,7 +583,7 @@ describe('Spanner', () => {
     );
     assert.match(output, /Successfully created \d query partitions\./);
     assert.match(output, /Successfully received \d from executed partitions\./);
-  }); 
+  });
 
   // read_only_transactioni
   it('should read an example table using transactions', async () => {
