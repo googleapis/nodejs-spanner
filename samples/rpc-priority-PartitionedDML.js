@@ -19,6 +19,7 @@
 'use strict';
 
 async function main(instanceId, databaseId, projectId) {
+  // [START spanner_rpc_priority_partitioned_dml]
   // Imports the Google Cloud client library.
   const {Spanner, protos} = require('@google-cloud/spanner');
   const Priority = protos.google.spanner.v1.RequestOptions.Priority;
@@ -59,6 +60,7 @@ async function main(instanceId, databaseId, projectId) {
     }
   }
   await updateUsingPartitionedDmlWithRpcPriority(instanceId, databaseId);
+  // [END spanner_rpc_priority_partitioned_dml]
 }
 main(...process.argv.slice(2)).then(() =>
   console.log('Finished executing sample')

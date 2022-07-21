@@ -19,6 +19,7 @@
 'use strict';
 
 async function main(instanceId, databaseId, projectId) {
+  // [START spanner_rpc_priority_transaction]
   // Imports the Google Cloud client library.
   const {Spanner, protos} = require('@google-cloud/spanner');
   const Priority = protos.google.spanner.v1.RequestOptions.Priority;
@@ -73,6 +74,7 @@ async function main(instanceId, databaseId, projectId) {
     );
   }
   transactionWithRpcPriority(instanceId, databaseId);
+  // [END spanner_rpc_priority_transaction]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);
