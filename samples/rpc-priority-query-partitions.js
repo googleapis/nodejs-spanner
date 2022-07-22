@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Create and Execute Query partitions with RPC priority
+//  title: Create partitions with RPC priority
 //  usage: node rpc-priority-query-partitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';

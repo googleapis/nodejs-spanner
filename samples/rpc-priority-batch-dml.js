@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Update using Batch DML with RPC priority
+//  title: Run Batch update with RPC priority
 //  usage: node rpc-priority-batch-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';

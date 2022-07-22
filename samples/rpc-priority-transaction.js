@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Read and write transaction with RPC priority
+//  title: Run transaction with RPC priority
 //  usage: node rpc-priority-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
