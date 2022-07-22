@@ -72,12 +72,12 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
-  * [Update using Batch DML with RPC priority](#update-using-batch-dml-with-rpc-priority)
-  * [Update using partitioned DML with RPC priority](#update-using-partitioned-dml-with-rpc-priority)
-  * [Create and Execute Query partitions with RPC priority](#create-and-execute-query-partitions-with-rpc-priority)
+  * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
+  * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
+  * [Create partitions with RPC priority](#create-partitions-with-rpc-priority)
   * [Read data with RPC Priority](#read-data-with-rpc-priority)
   * [Query data with RPC Priority](#query-data-with-rpc-priority)
-  * [Read and write transaction with RPC priority](#read-and-write-transaction-with-rpc-priority)
+  * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
@@ -1085,7 +1085,7 @@ __Usage:__
 
 
 
-### Update using Batch DML with RPC priority
+### Run Batch update with RPC priority
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js).
 
@@ -1102,7 +1102,7 @@ __Usage:__
 
 
 
-### Update using partitioned DML with RPC priority
+### Run partitioned update with RPC priority
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js).
 
@@ -1119,7 +1119,7 @@ __Usage:__
 
 
 
-### Create and Execute Query partitions with RPC priority
+### Create partitions with RPC priority
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-query-partitions.js).
 
@@ -1170,7 +1170,7 @@ __Usage:__
 
 
 
-### Read and write transaction with RPC priority
+### Run transaction with RPC priority
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-transaction.js).
 
