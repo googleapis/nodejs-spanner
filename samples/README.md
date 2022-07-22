@@ -72,7 +72,12 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
-  * [Rpc-priority](#rpc-priority)
+  * [Update using Batch DML with RPC priority](#update-using-batch-dml-with-rpc-priority)
+  * [Update using partitioned DML with RPC priority](#update-using-partitioned-dml-with-rpc-priority)
+  * [Create and Execute Query partitions with RPC priority](#create-and-execute-query-partitions-with-rpc-priority)
+  * [Read data with RPC Priority](#read-data-with-rpc-priority)
+  * [Query data with RPC Priority](#query-data-with-rpc-priority)
+  * [Read and write transaction with RPC priority](#read-and-write-transaction-with-rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
@@ -1080,16 +1085,101 @@ __Usage:__
 
 
 
-### Rpc-priority
+### Update using Batch DML with RPC priority
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-batch-dml.js,samples/README.md)
 
 __Usage:__
 
 
-`node samples/rpc-priority.js`
+`node rpc-priority-batch-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Update using partitioned DML with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-partitioned-dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-partitioned-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Create and Execute Query partitions with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-query-partitions.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-query-partitions.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-query-partitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Read data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-read.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-read.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Query data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-run.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-run.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-run.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Read and write transaction with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-transaction.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-transaction.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
