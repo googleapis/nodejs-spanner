@@ -51,7 +51,9 @@ async function main(instanceId, databaseId, projectId) {
         priority: Priority.PRIORITY_LOW,
       },
     });
-    console.log(`Successfully created ${partitions.length} query partitions using low RPC priority.`);
+    console.log(
+      `Successfully created ${partitions.length} query partitions using low RPC priority.`
+    );
 
     let row_count = 0;
     const promises = [];

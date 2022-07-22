@@ -51,7 +51,9 @@ async function main(instanceId, databaseId, projectId) {
           priority: Priority.PRIORITY_LOW,
         },
       });
-      console.log(`Successfully updated ${rowCount} records using low RPC priority.`);
+      console.log(
+        `Successfully updated ${rowCount} records using low RPC priority.`
+      );
     } catch (err) {
       console.error('ERROR:', err);
     } finally {

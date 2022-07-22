@@ -57,7 +57,9 @@ async function main(instanceId, databaseId, projectId) {
         json: true,
       });
 
-      console.log(`Successfully fetched ${rows.length} rows using low RPC priority.`);
+      console.log(
+        `Successfully fetched ${rows.length} rows using low RPC priority.`
+      );
 
       rows.forEach(row => {
         console.log(
