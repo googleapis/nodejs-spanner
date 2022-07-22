@@ -51,7 +51,7 @@ async function main(instanceId, databaseId, projectId) {
         priority: Priority.PRIORITY_LOW,
       },
     });
-    console.log(`Successfully created ${partitions.length} query partitions.`);
+    console.log(`Successfully created ${partitions.length} query partitions using low RPC priority.`);
 
     let row_count = 0;
     const promises = [];
@@ -82,5 +82,4 @@ process.on('unhandledRejection', err => {
   console.error(err.message);
   process.exitCode = 1;
 });
-
 main(...process.argv.slice(2));

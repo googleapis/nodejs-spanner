@@ -51,7 +51,7 @@ async function main(instanceId, databaseId, projectId) {
           priority: Priority.PRIORITY_LOW,
         },
       });
-      console.log(`Successfully updated ${rowCount} records.`);
+      console.log(`Successfully updated ${rowCount} records using low RPC priority.`);
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
@@ -62,6 +62,8 @@ async function main(instanceId, databaseId, projectId) {
   await updateUsingPartitionedDmlWithRpcPriority(instanceId, databaseId);
   // [END spanner_rpc_priority_partitioned_dml]
 }
-main(...process.argv.slice(2)).then(() =>
-  console.log('Finished executing sample')
-);
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

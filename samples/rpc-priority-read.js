@@ -57,6 +57,8 @@ async function main(instanceId, databaseId, projectId) {
     try {
       const [rows] = await albumsTable.read(query);
 
+      console.log(`Successfully fetched ${rows.length} rows using low RPC priority.`);
+
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
@@ -73,6 +75,7 @@ async function main(instanceId, databaseId, projectId) {
   readDataWithRpcPriority(instanceId, databaseId);
   // [END spanner_rpc_priority_read]
 }
+
 process.on('unhandledRejection', err => {
   console.error(err.message);
   process.exitCode = 1;

@@ -60,7 +60,7 @@ async function main(instanceId, databaseId, projectId) {
           });
 
           console.log(
-            `Successfully inserted ${rowCount} record into the Singers table.`
+            `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`
           );
 
           await transaction.commit();
@@ -76,9 +76,9 @@ async function main(instanceId, databaseId, projectId) {
   transactionWithRpcPriority(instanceId, databaseId);
   // [END spanner_rpc_priority_transaction]
 }
+
 process.on('unhandledRejection', err => {
   console.error(err.message);
   process.exitCode = 1;
 });
-
 main(...process.argv.slice(2));

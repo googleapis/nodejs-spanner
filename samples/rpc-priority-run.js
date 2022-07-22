@@ -57,6 +57,8 @@ async function main(instanceId, databaseId, projectId) {
         json: true,
       });
 
+      console.log(`Successfully fetched ${rows.length} rows using low RPC priority.`);
+
       rows.forEach(row => {
         console.log(
           `AlbumId: ${row.AlbumId}, AlbumTitle: ${row.AlbumTitle}, MarketingBudget: ${row.MarketingBudget}`
@@ -72,6 +74,8 @@ async function main(instanceId, databaseId, projectId) {
   await queryWithRpcPriority(instanceId, databaseId);
   // [END spanner_rpc_priority_run]
 }
-main(...process.argv.slice(2)).then(() =>
-  console.log('Finished executing sample')
-);
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
