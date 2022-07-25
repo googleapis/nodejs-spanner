@@ -534,6 +534,10 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
+      /Successfully fetched \d rows using low RPC priority\./
+    );
+    assert.match(
+      output,
       /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
   });
@@ -542,6 +546,10 @@ describe('Spanner', () => {
   it('should use RPC priority from request options for read command', async () => {
     const output = execSync(
       `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully fetched \d rows using low RPC priority\./
     );
     assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
   });
@@ -553,7 +561,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /Successfully inserted 1 record into the Singers table/
+      /Successfully inserted 1 record into the Singers table using low RPC priority\./
     );
   });
 
@@ -564,7 +572,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      /Successfully executed 2 SQL statements using Batch DML/
+      /Successfully executed 2 SQL statements using Batch DML using low RPC priority\./
     );
   });
 
@@ -573,7 +581,10 @@ describe('Spanner', () => {
     const output = execSync(
       `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp('Successfully updated (\\d+) records'));
+    assert.match(
+      output,
+      new RegExp('Successfully updated (\\d+) records using low RPC priority.')
+    );
   });
 
   // query with RPC priority for Query partitions command
@@ -581,7 +592,10 @@ describe('Spanner', () => {
     const output = execSync(
       `${rpcPriorityQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully created \d query partitions\./);
+    assert.match(
+      output,
+      /Successfully created \d query partitions using low RPC priority\./
+    );
     assert.match(output, /Successfully received \d from executed partitions\./);
   });
 

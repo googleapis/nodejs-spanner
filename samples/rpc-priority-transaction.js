@@ -41,37 +41,34 @@ async function main(instanceId, databaseId, projectId) {
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    database.runTransaction(
-      {
-        priority: Priority.PRIORITY_LOW,
-      },
-      async (err, transaction) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        try {
-          const [rowCount] = await transaction.runUpdate({
-            sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (17, @firstName, @lastName)',
-            params: {
-              firstName: 'Virginia',
-              lastName: 'Watson',
-            },
-          });
-
-          console.log(
-            `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`
-          );
-
-          await transaction.commit();
-        } catch (err) {
-          console.error('ERROR:', err);
-        } finally {
-          // Close the database when finished.
-          database.close();
-        }
+    database.runTransaction(async (err, transaction) => {
+      if (err) {
+        console.error(err);
+        return;
       }
-    );
+      try {
+        const [rowCount] = await transaction.runUpdate({
+          sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (17, @firstName, @lastName)',
+          params: {
+            firstName: 'Virginia',
+            lastName: 'Watson',
+          },
+        });
+
+        console.log(
+          `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`
+        );
+
+        await transaction.commit({
+          priority: Priority.PRIORITY_LOW,
+        });
+      } catch (err) {
+        console.error('ERROR:', err);
+      } finally {
+        // Close the database when finished.
+        database.close();
+      }
+    });
   }
   transactionWithRpcPriority(instanceId, databaseId);
   // [END spanner_rpc_priority_transaction]
