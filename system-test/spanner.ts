@@ -70,12 +70,14 @@ describe('Spanner', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
+  console.log('generateInstanceForTest' + generateInstanceForTest);
+  console.log('envInstanceName' + envInstanceName);
   const instance = envInstanceName
     ? spanner.instance(envInstanceName)
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-west2',
+    config: 'regional-us-central1',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
@@ -6141,6 +6143,136 @@ describe('Spanner', () => {
           params: {p1: str},
         };
         handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
+      });
+    });
+
+    describe('dml returning', () => {
+      const key = 'k1003';
+      const str = 'abcd';
+      const num = 11;
+
+      const googleSqlInsertReturning = {
+        sql:
+        'INSERT INTO ' +
+        TABLE_NAME +
+        ' (Key, StringValue) VALUES (@key, @str) ' +
+        'THEN RETURN *',
+        params: {key, str},
+      };
+
+      const googleSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.NumberValue = @num WHERE t.KEY = @key ' +
+            'THEN RETURN *',
+          params: {num, key},
+        };
+
+      const googleSqlDeleteReturning = {
+        sql:
+          'DELETE FROM ' +
+          TABLE_NAME +
+          ' t WHERE t.KEY = @key ' +
+          'THEN RETURN *',
+        params: {key},
+      }
+
+      const googleSqlDelete = {
+        sql:
+          'DELETE FROM ' +
+          TABLE_NAME +
+          ' t WHERE t.KEY = @key',
+        params: {key, num},
+      }
+
+      const rowCountRunUpdate = async (database, query) => {
+        await database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.runUpdate(query, (err, rowCount) => {
+            assert.ifError(err);
+            transaction!.commit(err => {
+              assert.ifError(err);
+              assert.strictEqual(rowCount, 1);
+            });
+          });
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', async () => {
+        
+        await rowCountRunUpdate(DATABASE, googleSqlInsertReturning);
+        await rowCountRunUpdate(DATABASE, googleSqlUpdateReturning);
+        await rowCountRunUpdate(DATABASE, googleSqlDeleteReturning);
+      });
+      
+      const rowCountRun = async (database, query) => {
+        await database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+            transaction!.run(query, (err, rows, stats) => {
+            assert.ifError(err);
+            
+            transaction!.commit(err => {
+            assert.ifError(err);
+            const rowCount = Math.floor(stats[stats.rowCount!] as number);
+            assert.strictEqual(rowCount, 1);
+            rows.forEach(row => {
+              const json = row.toJSON();
+              assert.strictEqual(json.Key, key);
+              assert.strictEqual(json.StringValue, str);
+            });
+            });
+          });
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', async () => {
+        await rowCountRun(DATABASE, googleSqlInsertReturning);
+        await rowCountRun(DATABASE, googleSqlUpdateReturning);
+        await rowCountRun(DATABASE, googleSqlDeleteReturning);
+      });
+
+      const partitionedUpdate = (done, database, query) => {
+        database.runPartitionedUpdate(query, (err, rowCount) => {
+          console.log(err.details);
+          //assert.match(err.details, /THEN RETURN is not supported in Partitioned DML\./);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', done => {
+        partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
+      });
+
+      const batchUpdate = async (
+        database,
+        insertquery,
+        updateQuery,
+        deleteQuery
+      ) => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
+          const [rowCounts] = await txn.batchUpdate([
+            insertquery,
+            updateQuery,
+            deleteQuery,
+          ]);
+          await txn.rollback();
+          return rowCounts;
+        });
+        console.log(rowCounts);
+        assert.deepStrictEqual(rowCounts, [1, 1, 1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async () => {
+        
+        await batchUpdate(
+          DATABASE,
+          googleSqlInsertReturning,
+          googleSqlUpdateReturning,
+          googleSqlDelete
+        );
       });
     });
 
