@@ -70,14 +70,12 @@ describe('Spanner', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
-  console.log('generateInstanceForTest' + generateInstanceForTest);
-  console.log('envInstanceName' + envInstanceName);
   const instance = envInstanceName
     ? spanner.instance(envInstanceName)
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
+    config: 'regional-us-west2',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
