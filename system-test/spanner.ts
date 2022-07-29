@@ -6146,26 +6146,28 @@ describe('Spanner', () => {
 
     describe('dml returning', () => {
       const key = 'k1003';
+      const key1 = 'k1004';
+      const key2 = 'k1005';
       const str = 'abcd';
       const num = 11;
 
       const googleSqlInsertReturning = {
         sql:
-        'INSERT INTO ' +
-        TABLE_NAME +
-        ' (Key, StringValue) VALUES (@key, @str) ' +
-        'THEN RETURN *',
+          'INSERT INTO ' +
+          TABLE_NAME +
+          ' (Key, StringValue) VALUES (@key, @str) ' +
+          'THEN RETURN *',
         params: {key, str},
       };
 
       const googleSqlUpdateReturning = {
-          sql:
-            'UPDATE ' +
-            TABLE_NAME +
-            ' t SET t.NumberValue = @num WHERE t.KEY = @key ' +
-            'THEN RETURN *',
-          params: {num, key},
-        };
+        sql:
+          'UPDATE ' +
+          TABLE_NAME +
+          ' t SET t.NumberValue = @num WHERE t.KEY = @key ' +
+          'THEN RETURN *',
+        params: {num, key},
+      };
 
       const googleSqlDeleteReturning = {
         sql:
@@ -6174,68 +6176,115 @@ describe('Spanner', () => {
           ' t WHERE t.KEY = @key ' +
           'THEN RETURN *',
         params: {key},
-      }
+      };
 
       const googleSqlDelete = {
-        sql:
-          'DELETE FROM ' +
-          TABLE_NAME +
-          ' t WHERE t.KEY = @key',
+        sql: 'DELETE FROM ' + TABLE_NAME + ' t WHERE t.KEY = @key',
         params: {key, num},
-      }
+      };
 
-      const rowCountRunUpdate = async (database, query) => {
-        await database.runTransaction((err, transaction) => {
+      const rowCountRunUpdate = (
+        done,
+        database,
+        insertQuery,
+        updateQuery,
+        deletequery
+      ) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction!.runUpdate(query, (err, rowCount) => {
-            assert.ifError(err);
-            transaction!.commit(err => {
-              assert.ifError(err);
+          transaction!
+            .runUpdate(insertQuery)
+            .then(data => {
+              const rowCount = data[0];
               assert.strictEqual(rowCount, 1);
-            });
-          });
+              return transaction!.runUpdate(updateQuery);
+            })
+            .then(data => {
+              const rowCount = data[0];
+              assert.strictEqual(rowCount, 1);
+              return transaction!.runUpdate(deletequery);
+            })
+            .then(data => {
+              const rowCount = data[0];
+              assert.strictEqual(rowCount, 1);
+              return transaction!.commit();
+            })
+            .then(() => done(), done)
+            .catch(done);
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', async () => {
-        
-        await rowCountRunUpdate(DATABASE, googleSqlInsertReturning);
-        await rowCountRunUpdate(DATABASE, googleSqlUpdateReturning);
-        await rowCountRunUpdate(DATABASE, googleSqlDeleteReturning);
+      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', done => {
+        rowCountRunUpdate(
+          done,
+          DATABASE,
+          googleSqlInsertReturning,
+          googleSqlUpdateReturning,
+          googleSqlDeleteReturning
+        );
       });
-      
-      const rowCountRun = async (database, query) => {
-        await database.runTransaction((err, transaction) => {
+
+      const assertRowsAndRowCount = data => {
+        const rows = data[0];
+        const stats = data[1];
+        const rowCount = Math.floor(stats[stats.rowCount!] as number);
+        assert.strictEqual(rowCount, 1);
+        rows.forEach(row => {
+          const json = row.toJSON();
+          assert.strictEqual(json.Key, key1);
+          assert.strictEqual(json.StringValue, str);
+        });
+      };
+
+      const rowCountRun = (
+        done,
+        database,
+        insertQuery,
+        updateQuery,
+        deletequery
+      ) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-            transaction!.run(query, (err, rows, stats) => {
-            assert.ifError(err);
-            
-            transaction!.commit(err => {
-            assert.ifError(err);
-            const rowCount = Math.floor(stats[stats.rowCount!] as number);
-            assert.strictEqual(rowCount, 1);
-            rows.forEach(row => {
-              const json = row.toJSON();
-              assert.strictEqual(json.Key, key);
-              assert.strictEqual(json.StringValue, str);
-            });
-            });
-          });
+          transaction!
+            .run(insertQuery)
+            .then(data => {
+              assertRowsAndRowCount(data);
+              return transaction!.run(updateQuery);
+            })
+            .then(data => {
+              assertRowsAndRowCount(data);
+              return transaction!.run(deletequery);
+            })
+            .then(data => {
+              assertRowsAndRowCount(data);
+              return transaction!.commit();
+            })
+            .then(() => done(), done)
+            .catch(done);
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', async () => {
-        await rowCountRun(DATABASE, googleSqlInsertReturning);
-        await rowCountRun(DATABASE, googleSqlUpdateReturning);
-        await rowCountRun(DATABASE, googleSqlDeleteReturning);
+      it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', done => {
+        googleSqlInsertReturning.params.key = key1;
+        googleSqlUpdateReturning.params.key = key1;
+        googleSqlDeleteReturning.params.key = key1;
+        rowCountRun(
+          done,
+          DATABASE,
+          googleSqlInsertReturning,
+          googleSqlUpdateReturning,
+          googleSqlDeleteReturning
+        );
       });
 
       const partitionedUpdate = (done, database, query) => {
-        database.runPartitionedUpdate(query, (err, rowCount) => {
-          console.log(err.details);
-          //assert.match(err.details, /THEN RETURN is not supported in Partitioned DML\./);
+        database.runPartitionedUpdate(query, (err) => {
+          assert.match(
+            err.details,
+            /THEN RETURN is not supported in Partitioned DML\./
+          );
           done();
         });
       };
@@ -6256,15 +6305,16 @@ describe('Spanner', () => {
             updateQuery,
             deleteQuery,
           ]);
-          await txn.rollback();
+          await txn.commit();
           return rowCounts;
         });
-        console.log(rowCounts);
         assert.deepStrictEqual(rowCounts, [1, 1, 1]);
       };
 
       it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async () => {
-        
+        googleSqlInsertReturning.params.key = key2;
+        googleSqlUpdateReturning.params.key = key2;
+        googleSqlDelete.params.key = key2;
         await batchUpdate(
           DATABASE,
           googleSqlInsertReturning,
