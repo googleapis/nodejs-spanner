@@ -6280,7 +6280,7 @@ describe('Spanner', () => {
       });
 
       const partitionedUpdate = (done, database, query) => {
-        database.runPartitionedUpdate(query, (err) => {
+        database.runPartitionedUpdate(query, err => {
           assert.match(
             err.details,
             /THEN RETURN is not supported in Partitioned DML\./
