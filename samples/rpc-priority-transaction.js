@@ -55,13 +55,14 @@ async function main(instanceId, databaseId, projectId) {
           },
         });
 
+        await transaction.commit({
+          priority: Priority.PRIORITY_LOW,
+        });
+
         console.log(
           `Successfully inserted ${rowCount} record into the Singers table using low RPC priority.`
         );
 
-        await transaction.commit({
-          priority: Priority.PRIORITY_LOW,
-        });
       } catch (err) {
         console.error('ERROR:', err);
       } finally {

@@ -58,6 +58,8 @@ async function main(instanceId, databaseId, projectId) {
     let row_count = 0;
     const promises = [];
     partitions.forEach(partition => {
+      // Partitions inherits priority from createQueryPartitions call. 
+      // Priority for a partition can be accessed or changed by calling "partition.requestOptions.priority".
       promises.push(
         transaction.execute(partition).then(results => {
           const rows = results[0].map(row => row.toJSON());
