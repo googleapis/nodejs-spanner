@@ -353,7 +353,10 @@ describe('Spanner with mock server', () => {
     it('should execute read with requestOptions in a read/write transaction', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
-        {requestOptions: {transactionTag: 'transaction-tag'}},
+        {
+          optimisticLock: true,
+          requestOptions: {transactionTag: 'transaction-tag'},
+        },
         async tx => {
           try {
             return await tx.read('foo', {
@@ -387,6 +390,13 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
+      );
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.readWrite!.readLockMode,
+        'OPTIMISTIC'
       );
     });
 
@@ -3067,7 +3077,8 @@ describe('Spanner with mock server', () => {
       const [session] = await database.createSession({});
       const transaction = session.transaction(
         {},
-        {transactionTag: 'transaction-tag'}
+        {transactionTag: 'transaction-tag'},
+        true
       );
       await transaction.begin();
       await database.close();
@@ -3083,6 +3094,10 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
+      );
+      assert.strictEqual(
+        request.options?.readWrite!.readLockMode,
+        'OPTIMISTIC'
       );
     });
 
