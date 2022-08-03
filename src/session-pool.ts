@@ -102,7 +102,8 @@ export interface SessionPoolInterface extends EventEmitter {
   open(): void;
   getReadSession(callback: GetReadSessionCallback): void;
   getWriteSession(callback: GetWriteSessionCallback): void;
-  release(session: Session): void;
+  getOptimisticWriteSession(callback: GetWriteSessionCallback): void;
+  release(session: Session, optimisticLock?: boolean): void;
 }
 
 /**
@@ -587,6 +588,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Retrieve a read/write session for an optimistic lock transaction.
+   *
+   * @param {GetWriteSessionCallback} callback The callback function.
+   */
+  getOptimisticWriteSession(callback: GetWriteSessionCallback): void {
+    this._acquire(types.ReadWrite, true).then(
+      session => callback(null, session, session.txn!),
+      callback
+    );
+  }
+
+  /**
    * Opens the pool, filling it to the configured number of read and write
    * sessions.
    *
@@ -627,7 +640,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @emits SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
-  release(session: Session): void {
+  release(session: Session, optimisticLock?: boolean): void {
     if (!this._inventory.borrowed.has(session)) {
       throw new ReleaseError(session);
     }
@@ -669,7 +682,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._traces.delete(session.id);
     this._pendingPrepare++;
     session.type = types.ReadWrite;
-    this._prepareTransaction(session)
+    this._prepareTransaction(session, optimisticLock)
       .catch(() => (session.type = types.ReadOnly))
       .then(() => {
         this._pendingPrepare--;
@@ -685,7 +698,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {string} type The desired type to borrow.
    * @returns {Promise<Session>}
    */
-  async _acquire(type: types): Promise<Session> {
+  async _acquire(type: types, optimisticLock?: boolean): Promise<Session> {
     if (!this.isOpen) {
       throw new GoogleError(errors.Closed);
     }
@@ -719,7 +732,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (type === types.ReadWrite && session.type === types.ReadOnly) {
       this._numInProcessPrepare++;
       try {
-        await this._prepareTransaction(session);
+        await this._prepareTransaction(session, optimisticLock);
       } catch (e) {
         if (isSessionNotFoundError(e as ServiceError)) {
           this._inventory.borrowed.delete(session);
@@ -1155,9 +1168,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {object} options The transaction options.
    * @returns {Promise}
    */
-  async _prepareTransaction(session: Session): Promise<void> {
+  async _prepareTransaction(
+    session: Session,
+    optimisticLock?: boolean
+  ): Promise<void> {
     const transaction = session.transaction(
-      (session.parent as Database).queryOptions_
+      (session.parent as Database).queryOptions_,
+      undefined,
+      optimisticLock
     );
     await transaction.begin();
     session.txn = transaction;

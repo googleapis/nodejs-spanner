@@ -2614,7 +2614,11 @@ class Database extends common.GrpcServiceObject {
         return;
       }
 
-      const release = this.pool_.release.bind(this.pool_, session!);
+      const release = this.pool_.release.bind(
+        this.pool_,
+        session!,
+        options.optimisticLock
+      );
       const runner = new TransactionRunner(
         session!,
         transaction!,
@@ -2713,7 +2717,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+    const getWriteSession = options.optimisticLock
+      ? this.pool_.getOptimisticWriteSession.bind(this.pool_)
+      : this.pool_.getWriteSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
     // (and yes, we like while (true) more than for (;;) here)
     // eslint-disable-next-line no-constant-condition
