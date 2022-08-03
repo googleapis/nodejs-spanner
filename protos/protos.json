@@ -1931,7 +1931,7 @@
                               "options": {
                                 "(google.api.http).post": "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions",
                                 "(google.api.http).body": "*",
-                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
+                                "(google.api.http).additional_bindings.post": "/v1/{resource=projects/*/instances/*/databases/*/databaseRoles/*}:testIamPermissions",
                                 "(google.api.http).additional_bindings.body": "*",
                                 "(google.api.method_signature)": "resource,permissions"
                               },
@@ -1940,10 +1940,16 @@
                                   "(google.api.http)": {
                                     "post": "/v1/{resource=projects/*/instances/*/databases/*}:testIamPermissions",
                                     "body": "*",
-                                    "additional_bindings": {
-                                      "post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
-                                      "body": "*"
-                                    }
+                                    "additional_bindings": [
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/backups/*}:testIamPermissions",
+                                        "body": "*"
+                                      },
+                                      {
+                                        "post": "/v1/{resource=projects/*/instances/*/databases/*/databaseRoles/*}:testIamPermissions",
+                                        "body": "*"
+                                      }
+                                    ]
                                   }
                                 },
                                 {
@@ -2138,6 +2144,24 @@
                                 {
                                   "(google.api.http)": {
                                     "get": "/v1/{parent=projects/*/instances/*}/backupOperations"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent"
+                                }
+                              ]
+                            },
+                            "ListDatabaseRoles": {
+                              "requestType": "ListDatabaseRolesRequest",
+                              "responseType": "ListDatabaseRolesResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*/databases/*}/databaseRoles",
+                                "(google.api.method_signature)": "parent"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{parent=projects/*/instances/*/databases/*}/databaseRoles"
                                   }
                                 },
                                 {
@@ -2605,6 +2629,54 @@
                           "values": {
                             "TYPE_UNSPECIFIED": 0,
                             "BACKUP": 1
+                          }
+                        },
+                        "DatabaseRole": {
+                          "options": {
+                            "(google.api.resource).type": "spanner.googleapis.com/DatabaseRole",
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}"
+                          },
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
+                        "ListDatabaseRolesRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
+                              }
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 2
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "ListDatabaseRolesResponse": {
+                          "fields": {
+                            "databaseRoles": {
+                              "rule": "repeated",
+                              "type": "DatabaseRole",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            }
                           }
                         }
                       }
