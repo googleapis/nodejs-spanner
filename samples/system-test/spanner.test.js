@@ -27,7 +27,13 @@ const batchCmd = 'node batch.js';
 const crudCmd = 'node crud.js';
 const schemaCmd = 'node schema.js';
 const queryOptionsCmd = 'node queryoptions.js';
-const rpcPriorityCommand = 'node rpc-priority.js';
+const rpcPriorityRunCommand = 'node rpc-priority-run.js';
+const rpcPriorityReadCommand = 'node rpc-priority-read.js';
+const rpcPriorityBatchDMLCommand = 'node rpc-priority-batch-dml.js';
+const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-partitioned-dml.js';
+const rpcPriorityTransactionCommand = 'node rpc-priority-transaction.js';
+const rpcPriorityQueryPartitionsCommand =
+  'node rpc-priority-query-partitions.js';
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
@@ -521,15 +527,76 @@ describe('Spanner', () => {
     );
   });
 
-  // query with RPC priority
-  it('should use RPC priority from request options', async () => {
+  // query with RPC priority for run command
+  it('should use RPC priority from request options for run command', async () => {
     const output = execSync(
-      `${rpcPriorityCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityRunCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully fetched \d rows using low RPC priority\./
     );
     assert.match(
       output,
       /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
+  });
+
+  // query with RPC priority for Read command
+  it('should use RPC priority from request options for read command', async () => {
+    const output = execSync(
+      `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully fetched \d rows using low RPC priority\./
+    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // query with RPC priority for transaction command
+  it('should use RPC priority from request options for transaction command', async () => {
+    const output = execSync(
+      `${rpcPriorityTransactionCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully inserted 1 record into the Singers table using low RPC priority\./
+    );
+  });
+
+  // query with RPC priority for batch DML command
+  it('should use RPC priority from request options for batch DML command', async () => {
+    const output = execSync(
+      `${rpcPriorityBatchDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully executed 2 SQL statements using Batch DML using low RPC priority\./
+    );
+  });
+
+  // query with RPC priority for partitioned DML command
+  it('should use RPC priority from request options for partitioned DML command', async () => {
+    const output = execSync(
+      `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('Successfully updated (\\d+) records using low RPC priority.')
+    );
+  });
+
+  // query with RPC priority for Query partitions command
+  it('should use RPC priority from request options for Query partition command', async () => {
+    const output = execSync(
+      `${rpcPriorityQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully created \d query partitions using low RPC priority\./
+    );
+    assert.match(output, /Successfully received \d from executed partitions\./);
   });
 
   // read_only_transactioni
@@ -729,7 +796,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully updated 2 records/);
+    assert.match(output, /Successfully updated 3 records/);
   });
 
   // dml_write_then_read
@@ -788,7 +855,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully deleted 5 records/);
+    assert.match(output, /Successfully deleted 6 records/);
   });
 
   //  dml_batch_update
