@@ -624,6 +624,13 @@
                     "default": false
                   }
                 },
+                "unverifiedLazy": {
+                  "type": "bool",
+                  "id": 15,
+                  "options": {
+                    "default": false
+                  }
+                },
                 "deprecated": {
                   "type": "bool",
                   "id": 3,
@@ -5095,6 +5102,10 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    },
+                    "updateMask": {
+                      "type": "google.protobuf.FieldMask",
+                      "id": 3
                     }
                   }
                 },
@@ -5162,6 +5173,11 @@
                       "type": "Binding",
                       "id": 4
                     },
+                    "auditConfigs": {
+                      "rule": "repeated",
+                      "type": "AuditConfig",
+                      "id": 6
+                    },
                     "etag": {
                       "type": "bytes",
                       "id": 3
@@ -5182,6 +5198,42 @@
                     "condition": {
                       "type": "google.type.Expr",
                       "id": 3
+                    }
+                  }
+                },
+                "AuditConfig": {
+                  "fields": {
+                    "service": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "auditLogConfigs": {
+                      "rule": "repeated",
+                      "type": "AuditLogConfig",
+                      "id": 3
+                    }
+                  }
+                },
+                "AuditLogConfig": {
+                  "fields": {
+                    "logType": {
+                      "type": "LogType",
+                      "id": 1
+                    },
+                    "exemptedMembers": {
+                      "rule": "repeated",
+                      "type": "string",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "LogType": {
+                      "values": {
+                        "LOG_TYPE_UNSPECIFIED": 0,
+                        "ADMIN_READ": 1,
+                        "DATA_WRITE": 2,
+                        "DATA_READ": 3
+                      }
                     }
                   }
                 },

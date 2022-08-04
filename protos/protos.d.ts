@@ -1967,6 +1967,9 @@ export namespace google {
             /** FieldOptions lazy */
             lazy?: (boolean|null);
 
+            /** FieldOptions unverifiedLazy */
+            unverifiedLazy?: (boolean|null);
+
             /** FieldOptions deprecated */
             deprecated?: (boolean|null);
 
@@ -2003,6 +2006,9 @@ export namespace google {
 
             /** FieldOptions lazy. */
             public lazy: boolean;
+
+            /** FieldOptions unverifiedLazy. */
+            public unverifiedLazy: boolean;
 
             /** FieldOptions deprecated. */
             public deprecated: boolean;
@@ -7599,133 +7605,133 @@ export namespace google {
                     namespace DatabaseAdmin {
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabases}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabases}.
                          * @param error Error, if any
                          * @param [response] ListDatabasesResponse
                          */
                         type ListDatabasesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabasesResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createDatabase}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createDatabase}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type CreateDatabaseCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabase}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getDatabase}.
                          * @param error Error, if any
                          * @param [response] Database
                          */
                         type GetDatabaseCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.Database) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateDatabaseDdl}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabaseDdl}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type UpdateDatabaseDdlCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#dropDatabase}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|dropDatabase}.
                          * @param error Error, if any
                          * @param [response] Empty
                          */
                         type DropDatabaseCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabaseDdl}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getDatabaseDdl}.
                          * @param error Error, if any
                          * @param [response] GetDatabaseDdlResponse
                          */
                         type GetDatabaseDdlCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.GetDatabaseDdlResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#setIamPolicy}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|setIamPolicy}.
                          * @param error Error, if any
                          * @param [response] Policy
                          */
                         type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getIamPolicy}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getIamPolicy}.
                          * @param error Error, if any
                          * @param [response] Policy
                          */
                         type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#testIamPermissions}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|testIamPermissions}.
                          * @param error Error, if any
                          * @param [response] TestIamPermissionsResponse
                          */
                         type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createBackup}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackup}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type CreateBackupCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#copyBackup}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|copyBackup}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type CopyBackupCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getBackup}.
                          * @param error Error, if any
                          * @param [response] Backup
                          */
                         type GetBackupCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.Backup) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateBackup}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateBackup}.
                          * @param error Error, if any
                          * @param [response] Backup
                          */
                         type UpdateBackupCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.Backup) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#deleteBackup}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|deleteBackup}.
                          * @param error Error, if any
                          * @param [response] Empty
                          */
                         type DeleteBackupCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackups}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listBackups}.
                          * @param error Error, if any
                          * @param [response] ListBackupsResponse
                          */
                         type ListBackupsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupsResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#restoreDatabase}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|restoreDatabase}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type RestoreDatabaseCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseOperations}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabaseOperations}.
                          * @param error Error, if any
                          * @param [response] ListDatabaseOperationsResponse
                          */
                         type ListDatabaseOperationsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseOperationsResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackupOperations}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listBackupOperations}.
                          * @param error Error, if any
                          * @param [response] ListBackupOperationsResponse
                          */
                         type ListBackupOperationsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupOperationsResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseRoles}.
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabaseRoles}.
                          * @param error Error, if any
                          * @param [response] ListDatabaseRolesResponse
                          */
@@ -10071,70 +10077,70 @@ export namespace google {
                     namespace InstanceAdmin {
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstanceConfigs}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstanceConfigs}.
                          * @param error Error, if any
                          * @param [response] ListInstanceConfigsResponse
                          */
                         type ListInstanceConfigsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstanceConfigsResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstanceConfig}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstanceConfig}.
                          * @param error Error, if any
                          * @param [response] InstanceConfig
                          */
                         type GetInstanceConfigCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.InstanceConfig) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstances}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstances}.
                          * @param error Error, if any
                          * @param [response] ListInstancesResponse
                          */
                         type ListInstancesCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancesResponse) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstance}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstance}.
                          * @param error Error, if any
                          * @param [response] Instance
                          */
                         type GetInstanceCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.Instance) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#createInstance}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstance}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type CreateInstanceCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#updateInstance}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstance}.
                          * @param error Error, if any
                          * @param [response] Operation
                          */
                         type UpdateInstanceCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#deleteInstance}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstance}.
                          * @param error Error, if any
                          * @param [response] Empty
                          */
                         type DeleteInstanceCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#setIamPolicy}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|setIamPolicy}.
                          * @param error Error, if any
                          * @param [response] Policy
                          */
                         type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getIamPolicy}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getIamPolicy}.
                          * @param error Error, if any
                          * @param [response] Policy
                          */
                         type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                         /**
-                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#testIamPermissions}.
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|testIamPermissions}.
                          * @param error Error, if any
                          * @param [response] TestIamPermissionsResponse
                          */
@@ -14325,105 +14331,105 @@ export namespace google {
             namespace Spanner {
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#createSession}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|createSession}.
                  * @param error Error, if any
                  * @param [response] Session
                  */
                 type CreateSessionCallback = (error: (Error|null), response?: google.spanner.v1.Session) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#batchCreateSessions}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|batchCreateSessions}.
                  * @param error Error, if any
                  * @param [response] BatchCreateSessionsResponse
                  */
                 type BatchCreateSessionsCallback = (error: (Error|null), response?: google.spanner.v1.BatchCreateSessionsResponse) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#getSession}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|getSession}.
                  * @param error Error, if any
                  * @param [response] Session
                  */
                 type GetSessionCallback = (error: (Error|null), response?: google.spanner.v1.Session) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#listSessions}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|listSessions}.
                  * @param error Error, if any
                  * @param [response] ListSessionsResponse
                  */
                 type ListSessionsCallback = (error: (Error|null), response?: google.spanner.v1.ListSessionsResponse) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#deleteSession}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|deleteSession}.
                  * @param error Error, if any
                  * @param [response] Empty
                  */
                 type DeleteSessionCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#executeSql}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|executeSql}.
                  * @param error Error, if any
                  * @param [response] ResultSet
                  */
                 type ExecuteSqlCallback = (error: (Error|null), response?: google.spanner.v1.ResultSet) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#executeStreamingSql}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|executeStreamingSql}.
                  * @param error Error, if any
                  * @param [response] PartialResultSet
                  */
                 type ExecuteStreamingSqlCallback = (error: (Error|null), response?: google.spanner.v1.PartialResultSet) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#executeBatchDml}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|executeBatchDml}.
                  * @param error Error, if any
                  * @param [response] ExecuteBatchDmlResponse
                  */
                 type ExecuteBatchDmlCallback = (error: (Error|null), response?: google.spanner.v1.ExecuteBatchDmlResponse) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#read}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|read}.
                  * @param error Error, if any
                  * @param [response] ResultSet
                  */
                 type ReadCallback = (error: (Error|null), response?: google.spanner.v1.ResultSet) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#streamingRead}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|streamingRead}.
                  * @param error Error, if any
                  * @param [response] PartialResultSet
                  */
                 type StreamingReadCallback = (error: (Error|null), response?: google.spanner.v1.PartialResultSet) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#beginTransaction}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|beginTransaction}.
                  * @param error Error, if any
                  * @param [response] Transaction
                  */
                 type BeginTransactionCallback = (error: (Error|null), response?: google.spanner.v1.Transaction) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#commit}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|commit}.
                  * @param error Error, if any
                  * @param [response] CommitResponse
                  */
                 type CommitCallback = (error: (Error|null), response?: google.spanner.v1.CommitResponse) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#rollback}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|rollback}.
                  * @param error Error, if any
                  * @param [response] Empty
                  */
                 type RollbackCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#partitionQuery}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|partitionQuery}.
                  * @param error Error, if any
                  * @param [response] PartitionResponse
                  */
                 type PartitionQueryCallback = (error: (Error|null), response?: google.spanner.v1.PartitionResponse) => void;
 
                 /**
-                 * Callback as used by {@link google.spanner.v1.Spanner#partitionRead}.
+                 * Callback as used by {@link google.spanner.v1.Spanner|partitionRead}.
                  * @param error Error, if any
                  * @param [response] PartitionResponse
                  */
@@ -17585,35 +17591,35 @@ export namespace google {
         namespace Operations {
 
             /**
-             * Callback as used by {@link google.longrunning.Operations#listOperations}.
+             * Callback as used by {@link google.longrunning.Operations|listOperations}.
              * @param error Error, if any
              * @param [response] ListOperationsResponse
              */
             type ListOperationsCallback = (error: (Error|null), response?: google.longrunning.ListOperationsResponse) => void;
 
             /**
-             * Callback as used by {@link google.longrunning.Operations#getOperation}.
+             * Callback as used by {@link google.longrunning.Operations|getOperation}.
              * @param error Error, if any
              * @param [response] Operation
              */
             type GetOperationCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
             /**
-             * Callback as used by {@link google.longrunning.Operations#deleteOperation}.
+             * Callback as used by {@link google.longrunning.Operations|deleteOperation}.
              * @param error Error, if any
              * @param [response] Empty
              */
             type DeleteOperationCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
             /**
-             * Callback as used by {@link google.longrunning.Operations#cancelOperation}.
+             * Callback as used by {@link google.longrunning.Operations|cancelOperation}.
              * @param error Error, if any
              * @param [response] Empty
              */
             type CancelOperationCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
 
             /**
-             * Callback as used by {@link google.longrunning.Operations#waitOperation}.
+             * Callback as used by {@link google.longrunning.Operations|waitOperation}.
              * @param error Error, if any
              * @param [response] Operation
              */
@@ -18476,21 +18482,21 @@ export namespace google {
             namespace IAMPolicy {
 
                 /**
-                 * Callback as used by {@link google.iam.v1.IAMPolicy#setIamPolicy}.
+                 * Callback as used by {@link google.iam.v1.IAMPolicy|setIamPolicy}.
                  * @param error Error, if any
                  * @param [response] Policy
                  */
                 type SetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                 /**
-                 * Callback as used by {@link google.iam.v1.IAMPolicy#getIamPolicy}.
+                 * Callback as used by {@link google.iam.v1.IAMPolicy|getIamPolicy}.
                  * @param error Error, if any
                  * @param [response] Policy
                  */
                 type GetIamPolicyCallback = (error: (Error|null), response?: google.iam.v1.Policy) => void;
 
                 /**
-                 * Callback as used by {@link google.iam.v1.IAMPolicy#testIamPermissions}.
+                 * Callback as used by {@link google.iam.v1.IAMPolicy|testIamPermissions}.
                  * @param error Error, if any
                  * @param [response] TestIamPermissionsResponse
                  */
@@ -18505,6 +18511,9 @@ export namespace google {
 
                 /** SetIamPolicyRequest policy */
                 policy?: (google.iam.v1.IPolicy|null);
+
+                /** SetIamPolicyRequest updateMask */
+                updateMask?: (google.protobuf.IFieldMask|null);
             }
 
             /** Represents a SetIamPolicyRequest. */
@@ -18521,6 +18530,9 @@ export namespace google {
 
                 /** SetIamPolicyRequest policy. */
                 public policy?: (google.iam.v1.IPolicy|null);
+
+                /** SetIamPolicyRequest updateMask. */
+                public updateMask?: (google.protobuf.IFieldMask|null);
 
                 /**
                  * Creates a new SetIamPolicyRequest instance using the specified properties.
@@ -18974,6 +18986,9 @@ export namespace google {
                 /** Policy bindings */
                 bindings?: (google.iam.v1.IBinding[]|null);
 
+                /** Policy auditConfigs */
+                auditConfigs?: (google.iam.v1.IAuditConfig[]|null);
+
                 /** Policy etag */
                 etag?: (Uint8Array|string|null);
             }
@@ -18992,6 +19007,9 @@ export namespace google {
 
                 /** Policy bindings. */
                 public bindings: google.iam.v1.IBinding[];
+
+                /** Policy auditConfigs. */
+                public auditConfigs: google.iam.v1.IAuditConfig[];
 
                 /** Policy etag. */
                 public etag: (Uint8Array|string);
@@ -19167,6 +19185,209 @@ export namespace google {
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an AuditConfig. */
+            interface IAuditConfig {
+
+                /** AuditConfig service */
+                service?: (string|null);
+
+                /** AuditConfig auditLogConfigs */
+                auditLogConfigs?: (google.iam.v1.IAuditLogConfig[]|null);
+            }
+
+            /** Represents an AuditConfig. */
+            class AuditConfig implements IAuditConfig {
+
+                /**
+                 * Constructs a new AuditConfig.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IAuditConfig);
+
+                /** AuditConfig service. */
+                public service: string;
+
+                /** AuditConfig auditLogConfigs. */
+                public auditLogConfigs: google.iam.v1.IAuditLogConfig[];
+
+                /**
+                 * Creates a new AuditConfig instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns AuditConfig instance
+                 */
+                public static create(properties?: google.iam.v1.IAuditConfig): google.iam.v1.AuditConfig;
+
+                /**
+                 * Encodes the specified AuditConfig message. Does not implicitly {@link google.iam.v1.AuditConfig.verify|verify} messages.
+                 * @param message AuditConfig message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IAuditConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified AuditConfig message, length delimited. Does not implicitly {@link google.iam.v1.AuditConfig.verify|verify} messages.
+                 * @param message AuditConfig message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IAuditConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an AuditConfig message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns AuditConfig
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.AuditConfig;
+
+                /**
+                 * Decodes an AuditConfig message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns AuditConfig
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.AuditConfig;
+
+                /**
+                 * Verifies an AuditConfig message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an AuditConfig message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns AuditConfig
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.AuditConfig;
+
+                /**
+                 * Creates a plain object from an AuditConfig message. Also converts values to other types if specified.
+                 * @param message AuditConfig
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.AuditConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this AuditConfig to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an AuditLogConfig. */
+            interface IAuditLogConfig {
+
+                /** AuditLogConfig logType */
+                logType?: (google.iam.v1.AuditLogConfig.LogType|keyof typeof google.iam.v1.AuditLogConfig.LogType|null);
+
+                /** AuditLogConfig exemptedMembers */
+                exemptedMembers?: (string[]|null);
+            }
+
+            /** Represents an AuditLogConfig. */
+            class AuditLogConfig implements IAuditLogConfig {
+
+                /**
+                 * Constructs a new AuditLogConfig.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.iam.v1.IAuditLogConfig);
+
+                /** AuditLogConfig logType. */
+                public logType: (google.iam.v1.AuditLogConfig.LogType|keyof typeof google.iam.v1.AuditLogConfig.LogType);
+
+                /** AuditLogConfig exemptedMembers. */
+                public exemptedMembers: string[];
+
+                /**
+                 * Creates a new AuditLogConfig instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns AuditLogConfig instance
+                 */
+                public static create(properties?: google.iam.v1.IAuditLogConfig): google.iam.v1.AuditLogConfig;
+
+                /**
+                 * Encodes the specified AuditLogConfig message. Does not implicitly {@link google.iam.v1.AuditLogConfig.verify|verify} messages.
+                 * @param message AuditLogConfig message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.iam.v1.IAuditLogConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified AuditLogConfig message, length delimited. Does not implicitly {@link google.iam.v1.AuditLogConfig.verify|verify} messages.
+                 * @param message AuditLogConfig message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.iam.v1.IAuditLogConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an AuditLogConfig message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns AuditLogConfig
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.iam.v1.AuditLogConfig;
+
+                /**
+                 * Decodes an AuditLogConfig message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns AuditLogConfig
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.iam.v1.AuditLogConfig;
+
+                /**
+                 * Verifies an AuditLogConfig message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an AuditLogConfig message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns AuditLogConfig
+                 */
+                public static fromObject(object: { [k: string]: any }): google.iam.v1.AuditLogConfig;
+
+                /**
+                 * Creates a plain object from an AuditLogConfig message. Also converts values to other types if specified.
+                 * @param message AuditLogConfig
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.iam.v1.AuditLogConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this AuditLogConfig to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            namespace AuditLogConfig {
+
+                /** LogType enum. */
+                enum LogType {
+                    LOG_TYPE_UNSPECIFIED = 0,
+                    ADMIN_READ = 1,
+                    DATA_WRITE = 2,
+                    DATA_READ = 3
+                }
             }
 
             /** Properties of a PolicyDelta. */
