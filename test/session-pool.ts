@@ -58,7 +58,7 @@ describe('SessionPool', () => {
 
   const DATABASE = {
     batchCreateSessions: noop,
-    creatorRole: 'parent_role',
+    databaseRole: 'parent_role',
   } as unknown as Database;
 
   const sandbox = sinon.createSandbox();
@@ -255,14 +255,14 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
       });
 
-      it('should override user options for creatorRole', () => {
-        sessionPool = new SessionPool(DATABASE, {creatorRole: 'child_role'});
-        assert.strictEqual(sessionPool.options.creatorRole, 'child_role');
+      it('should override user options for databaseRole', () => {
+        sessionPool = new SessionPool(DATABASE, {databaseRole: 'child_role'});
+        assert.strictEqual(sessionPool.options.databaseRole, 'child_role');
       });
 
-      it('should use default value of Database for creatorRole', () => {
+      it('should use default value of Database for databaseRole', () => {
         sessionPool = new SessionPool(DATABASE);
-        assert.strictEqual(sessionPool.options.creatorRole, 'parent_role');
+        assert.strictEqual(sessionPool.options.databaseRole, 'parent_role');
       });
 
       describe('min and max', () => {
@@ -944,12 +944,12 @@ describe('SessionPool', () => {
       assert.strictEqual(options.labels, labels);
     });
 
-    it('should pass the session creator role', async () => {
-      const creatorRole = 'child_role';
-      sessionPool.options.creatorRole = creatorRole;
+    it('should pass the session database role', async () => {
+      const databaseRole = 'child_role';
+      sessionPool.options.databaseRole = databaseRole;
       await sessionPool._createSessions(OPTIONS);
       const [options] = stub.lastCall.args;
-      assert.strictEqual(options.creatorRole, creatorRole);
+      assert.strictEqual(options.databaseRole, databaseRole);
     });
 
     it('should make multiple requests if needed', async () => {

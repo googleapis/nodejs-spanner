@@ -145,7 +145,7 @@ export interface SessionPoolOptions {
   min?: number;
   writes?: number;
   incStep?: number;
-  creatorRole?: string | null;
+  databaseRole?: string | null;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -160,7 +160,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
-  creatorRole: null,
+  databaseRole: null,
 };
 
 /**
@@ -499,10 +499,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
     this.options.min = Math.min(this.options.min!, this.options.max!);
-    this.options.creatorRole =
-      this.options.creatorRole !== null && database.creatorRole
-        ? this.options.creatorRole
-        : database.creatorRole;
+    this.options.databaseRole = this.options.databaseRole
+      ? this.options.databaseRole
+      : database.databaseRole;
 
     const {writes} = this.options;
 
@@ -828,7 +827,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     writes = 0,
   }: CreateSessionsOptions): Promise<void> {
     const labels = this.options.labels!;
-    const creatorRole = this.options.creatorRole!;
+    const databaseRole = this.options.databaseRole!;
 
     let needed = reads + writes;
     if (needed <= 0) {
@@ -845,7 +844,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         [sessions] = await this.database.batchCreateSessions({
           count: needed,
           labels: labels,
-          creatorRole: creatorRole,
+          databaseRole: databaseRole,
         });
 
         needed -= sessions.length;

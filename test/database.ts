@@ -230,7 +230,7 @@ describe('Database', () => {
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
-    database.creatorRole = 'parent_role';
+    database.databaseRole = 'parent_role';
   });
 
   afterEach(() => sandbox.restore());
@@ -390,11 +390,11 @@ describe('Database', () => {
       assert.strictEqual(reqOpts.sessionTemplate.labels, labels);
     });
 
-    it('should accept session creatorRole', () => {
+    it('should accept session databaseRole', () => {
       const stub = sandbox.stub(database, 'request');
 
       database.batchCreateSessions(
-        {count: 10, creatorRole: 'child_role'},
+        {count: 10, databaseRole: 'child_role'},
         assert.ifError
       );
 
@@ -403,7 +403,7 @@ describe('Database', () => {
       assert.deepStrictEqual(reqOpts.sessionTemplate.creatorRole, 'child_role');
     });
 
-    it('should use default creatorRole', () => {
+    it('should use default databaseRole', () => {
       const stub = sandbox.stub(database, 'request');
 
       database.batchCreateSessions({count: 10}, assert.ifError);
@@ -1732,7 +1732,7 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
           session: {
-            creatorRole: database.creatorRole
+            creatorRole: database.databaseRole,
           },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
@@ -1749,7 +1749,7 @@ describe('Database', () => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
           session: {
-            creatorRole: database.creatorRole
+            creatorRole: database.databaseRole,
           },
         });
 
@@ -1774,38 +1774,38 @@ describe('Database', () => {
       database.createSession({labels}, assert.ifError);
     });
 
-    it('should send creatorRole correctly', done => {
-      const creatorRole = {creatorRole: 'child_role'};
-      const options = {a: 'b', creatorRole: creatorRole};
+    it('should send databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'child_role'};
+      const options = {a: 'b', databaseRole: databaseRole};
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.session.creatorRole,
-          creatorRole.creatorRole
+          databaseRole.databaseRole
         );
         assert.deepStrictEqual(options, originalOptions);
         done();
       };
 
-      database.createSession(creatorRole, assert.ifError);
+      database.createSession(databaseRole, assert.ifError);
     });
 
-    it('should send default creatorRole correctly', done => {
-      const creatorRole = {creatorRole: 'parent_role'};
+    it('should send default databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'parent_role'};
       const options = {a: 'b'};
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
         assert.deepStrictEqual(
           config.reqOpts.session.creatorRole,
-          creatorRole.creatorRole
+          databaseRole.databaseRole
         );
         assert.deepStrictEqual(options, originalOptions);
         done();
       };
 
-      database.createSession(creatorRole, assert.ifError);
+      database.createSession(databaseRole, assert.ifError);
     });
 
     describe('error', () => {
@@ -2377,12 +2377,12 @@ describe('Database', () => {
       const expectedGaxOpts = {timeout: 1000};
       const options = {a: 'a', gaxOptions: gaxOptions};
       const expectedReqOpts = extend(
-          {},
-          options,
-          {
-            database: database.formattedName_,
-          },
-          {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {},
+        options,
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
       );
       delete expectedReqOpts.gaxOptions;
 
@@ -2407,20 +2407,20 @@ describe('Database', () => {
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
       const options = Object.assign(
-          {},
-          {
-            pageSize: optionsPageSize,
-            pageToken: optionsPageToken,
-            gaxOptions,
-          }
+        {},
+        {
+          pageSize: optionsPageSize,
+          pageToken: optionsPageToken,
+          gaxOptions,
+        }
       );
       const expectedReqOpts = extend(
-          {},
-          options,
-          {
-            database: database.formattedName_,
-          },
-          {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {},
+        options,
+        {
+          database: database.formattedName_,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
       );
       delete expectedReqOpts.gaxOptions;
 

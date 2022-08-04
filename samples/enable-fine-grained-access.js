@@ -13,23 +13,29 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: List database roles
-//  usage: node get-database-roles.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Enable fine grained access control
+//  usage: node enable-fine-grained-access.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id'
+  projectId = 'my-project-id',
+  iamMember = 'user:alice@example.com',
+  databaseRole = 'parent',
+  title = 'condition title'
 ) {
-  // [START spanner_list_database_roles]
+  // [START spanner_enable_fine_grained_access]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
+  // iamMember = 'user:alice@example.com';
+  // databaseRole = 'parent';
+  // title = 'condition title';
   // Imports the Google Cloud Spanner client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -38,20 +44,33 @@ function main(
     projectId: projectId,
   });
 
-  async function getDatabaseRoles() {
+  async function enableFineGrainedAccess() {
     // Gets a reference to a Cloud Spanner instance and database.
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Fetching database roles
-    const [databaseRoles] = await database.getDatabaseRoles();
-    console.log(`Roles for Database: ${database.formattedName_}`);
-    databaseRoles.forEach(role => {
-      console.log(`Role: ${role.name}`);
-    });
+    const [policy] = await database.getIamPolicy({requestedPolicyVersion: 3});
+    if (policy.version < 3) {
+      policy.version = 3;
+    }
+
+    const newBinding = {
+      role: 'roles/spanner.fineGrainedAccessUser',
+      members: [`user:${iamMember}`],
+      condition: {
+        title: title,
+        expression: `resource.name.endsWith("/databaseRoles/${databaseRole}")`,
+      },
+    };
+    policy.bindings.push(newBinding);
+    await database.setIamPolicy({policy: policy});
+    // Requested Policy Version is Optional. The maximum policy version that will be used to format the policy.
+    // Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected.
+    const newPolicy = await database.getIamPolicy({requestedPolicyVersion: 3});
+    console.log(newPolicy);
   }
-  getDatabaseRoles();
-  // [END spanner_list_database_roles]
+  enableFineGrainedAccess();
+  // [END spanner_enable_fine_grained_access]
 }
 
 process.on('unhandledRejection', err => {

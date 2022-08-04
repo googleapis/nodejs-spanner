@@ -38,12 +38,12 @@ import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseM
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
+const IAM_MEMBER = process.env.IAM_MEMBER;
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
-  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -1750,7 +1750,7 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
                 const dbReadRole = instance.database(database.formattedName_, {
-                  creatorRole: 'read_access',
+                  databaseRole: 'read_access',
                 });
                 const query = {
                   sql: 'SELECT SingerId, Name FROM Singers',
@@ -1786,7 +1786,7 @@ describe('Spanner', () => {
               err => {
                 assert.ifError(err);
                 const dbReadRole = instance.database(database.formattedName_, {
-                  creatorRole: 'write_access',
+                  databaseRole: 'write_access',
                 });
                 const query = {
                   sql: 'SELECT SingerId, Name FROM Singers',
@@ -1824,6 +1824,57 @@ describe('Spanner', () => {
 
       it('GOOGLE_STANDARD_SQL should list database roles', async () => {
         await listDatabaseRoles(DATABASE);
+      });
+
+      const getIamPolicy = (done, database) => {
+        database.getIamPolicy((err, policy) => {
+          assert.ifError(err);
+          assert.strictEqual(policy!.version, 0);
+          assert.deepStrictEqual(policy!.bindings, []);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', done => {
+        getIamPolicy(done, DATABASE);
+      });
+
+      it('POSTGRESQL should should get IAM Policy', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        getIamPolicy(done, PG_DATABASE);
+      });
+
+      const setIamPolicy = async database => {
+        const newBinding = {
+          role: 'roles/spanner.fineGrainedAccessUser',
+          members: [`user:${IAM_MEMBER}`],
+          condition: {
+            title: 'new condition',
+            expression: 'resource.name.endsWith("/databaseRoles/parent")',
+          },
+        };
+        const policy = {
+          bindings: [newBinding],
+          version: 3,
+        };
+        await database.setIamPolicy({policy: policy}, (err, policy) => {
+          assert.ifError(err);
+          assert.strictEqual(policy.version, 3);
+          assert.deepStrictEqual(policy.bindings, newBinding);
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', async () => {
+        await setIamPolicy(DATABASE);
+      });
+
+      it('POSTGRESQL should should get IAM Policy', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await setIamPolicy(PG_DATABASE);
       });
     });
   });
@@ -2361,7 +2412,7 @@ describe('Spanner', () => {
     const session = DATABASE.session();
 
     const dbNewRole = instance.database(DATABASE.formattedName_, {
-      creatorRole: 'parent',
+      databaseRole: 'parent',
     });
 
     const sessionWithDatabaseRole = dbNewRole.session();
@@ -2377,9 +2428,9 @@ describe('Spanner', () => {
       ]);
       await operation.promise();
       await sessionWithDatabaseRole.create();
-      [sessionWithRole] = await DATABASE.createSession({creatorRole: 'child'});
+      [sessionWithRole] = await DATABASE.createSession({databaseRole: 'child'});
       [sessionWithOverridingRole] = await dbNewRole.createSession({
-        creatorRole: 'orphan',
+        databaseRole: 'orphan',
       });
     });
 
@@ -2424,31 +2475,31 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should have created the session with database creator role', done => {
+    it('should have created the session with database database role', done => {
       sessionWithDatabaseRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('parent', metadata!.creatorRole);
+        assert.strictEqual('parent', metadata!.databaseRole);
         done();
       });
     });
 
-    it('should have created the session with creator role', done => {
+    it('should have created the session with database role', done => {
       sessionWithRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('child', metadata!.creatorRole);
+        assert.strictEqual('child', metadata!.databaseRole);
         done();
       });
     });
 
-    it('should have created the session by overriding database creator role', done => {
+    it('should have created the session by overriding database database role', done => {
       sessionWithOverridingRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('orphan', metadata!.creatorRole);
+        assert.strictEqual('orphan', metadata!.databaseRole);
         done();
       });
     });
 
-    it('should batch create sessions with database creator role', async () => {
+    it('should batch create sessions with database database role', async () => {
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({count});
 
@@ -2456,41 +2507,41 @@ describe('Spanner', () => {
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('parent', metadata?.creatorRole);
+          assert.strictEqual('parent', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with creator role', async () => {
+    it('should batch create sessions with database role', async () => {
       const count = 5;
       const [sessions] = await DATABASE.batchCreateSessions({
         count,
-        creatorRole: 'child',
+        databaseRole: 'child',
       });
 
       assert.strictEqual(sessions.length, count);
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('child', metadata?.creatorRole);
+          assert.strictEqual('child', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with creator role by overriding database creator role', async () => {
+    it('should batch create sessions with database role by overriding database database role', async () => {
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({
         count,
-        creatorRole: 'orphan',
+        databaseRole: 'orphan',
       });
 
       assert.strictEqual(sessions.length, count);
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('orphan', metadata?.creatorRole);
+          assert.strictEqual('orphan', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
@@ -5535,8 +5586,6 @@ describe('Spanner', () => {
         }
       );
     });
-
-    it('')
   });
 
   describe('Transactions', () => {

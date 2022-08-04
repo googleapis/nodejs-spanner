@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: List database roles
-//  usage: node get-database-roles.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Read data with database role
+//  usage: node read-data-with-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_list_database_roles]
+  // [START spanner_read_data_with_database_role]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -38,20 +38,37 @@ function main(
     projectId: projectId,
   });
 
-  async function getDatabaseRoles() {
+  async function readDataWithDatabaseRole() {
     // Gets a reference to a Cloud Spanner instance and database.
     const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+    // Connect to a database using the 'parent' database role. This means that the connection will only have the permissions that have explicitly been granted to the 'parent' role.
+    const options = {
+      databaseRole: 'parent',
+    };
+    const database = instance.database(databaseId, options);
 
-    // Fetching database roles
-    const [databaseRoles] = await database.getDatabaseRoles();
-    console.log(`Roles for Database: ${database.formattedName_}`);
-    databaseRoles.forEach(role => {
-      console.log(`Role: ${role.name}`);
-    });
+    try {
+      const query = {
+        sql: 'SELECT SingerId, FirstName, LastName FROM Singers',
+      };
+      const [rows] = await database.run(query);
+
+      for (const row of rows) {
+        const json = row.toJSON();
+
+        console.log(
+          `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}`
+        );
+      }
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      await database.close();
+    }
   }
-  getDatabaseRoles();
-  // [END spanner_list_database_roles]
+  readDataWithDatabaseRole();
+  // [END spanner_read_data_with_database_role]
 }
 
 process.on('unhandledRejection', err => {

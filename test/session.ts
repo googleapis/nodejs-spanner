@@ -73,11 +73,6 @@ describe('Session', () => {
     formattedName_: 'formatted-database-name',
   };
 
-  const FGAC_DATABASE: any = {
-    request: () => {},
-    formattedName_: 'formatted-database-name',
-    creatorRole: 'parent_role',
-  };
   const NAME = 'session-name';
 
   before(() => {

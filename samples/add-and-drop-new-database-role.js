@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: List database roles
-//  usage: node get-database-roles.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Add and drop new database role
+//  usage: node add-and-drop-new-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_list_database_roles]
+  // [START spanner_add_and_drop_new_database]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -38,20 +38,48 @@ function main(
     projectId: projectId,
   });
 
-  async function getDatabaseRoles() {
+  async function addAndDropNewDatabaseRole() {
     // Gets a reference to a Cloud Spanner instance and database.
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Fetching database roles
-    const [databaseRoles] = await database.getDatabaseRoles();
-    console.log(`Roles for Database: ${database.formattedName_}`);
-    databaseRoles.forEach(role => {
-      console.log(`Role: ${role.name}`);
-    });
+    // Creates a new user defined role and grant permissions
+    try {
+      const request = [
+        'CREATE ROLE parent',
+        'GRANT SELECT ON TABLE Singers TO ROLE parent',
+        'CREATE ROLE child',
+        'GRANT ROLE parent TO ROLE child',
+      ];
+      const [operation] = await database.updateSchema(request);
+
+      console.log('Waiting for operation to complete...');
+      await operation.promise();
+
+      console.log('Created roles child and parent and granted privileges');
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
+
+    // Revoke permissions and drop child role.
+    // A role can't be dropped until all its permissions are revoked.
+    try {
+      const request = ['REVOKE ROLE parent FROM ROLE child', 'DROP ROLE child'];
+      const [operation] = await database.updateSchema(request);
+
+      console.log('Waiting for operation to complete...');
+      await operation.promise();
+
+      console.log('Revoked privileges and dropped role child');
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      await database.close();
+    }
   }
-  getDatabaseRoles();
-  // [END spanner_list_database_roles]
+  addAndDropNewDatabaseRole();
+  // [END spanner_add_and_drop_new_database]
 }
 
 process.on('unhandledRejection', err => {
