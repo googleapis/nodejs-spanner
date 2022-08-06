@@ -378,17 +378,7 @@ export class Snapshot extends EventEmitter {
           callback!(err, resp);
           return;
         }
-
-        const {id, readTimestamp} = resp;
-
-        this.id = id!;
-        this.metadata = resp;
-
-        if (readTimestamp) {
-          this.readTimestampProto = readTimestamp;
-          this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
-        }
-
+        this._update(resp);
         callback!(null, resp);
       }
     );
@@ -573,6 +563,8 @@ export class Snapshot extends EventEmitter {
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
+    } else if (typeof this._options.readWrite !== 'undefined') {
+      transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
     }
@@ -909,6 +901,9 @@ export class Snapshot extends EventEmitter {
       .on('response', response => {
         if (response.metadata) {
           metadata = response.metadata;
+          if (metadata.transaction && !this.id) {
+            this._update(metadata.transaction);
+          }
         }
       })
       .on('data', row => rows.push(row))
@@ -1034,6 +1029,8 @@ export class Snapshot extends EventEmitter {
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
+      } else if (typeof this._options.readWrite !== 'undefined') {
+        transaction.begin = this._options;
       } else {
         transaction.singleUse = this._options;
       }
@@ -1225,6 +1222,25 @@ export class Snapshot extends EventEmitter {
     }
 
     return {params, paramTypes};
+  }
+
+  /**
+   * Update transaction properties from the response.
+   *
+   * @private
+   *
+   * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
+   */
+  private _update(resp: spannerClient.spanner.v1.ITransaction): void {
+    const {id, readTimestamp} = resp;
+
+    this.id = id!;
+    this.metadata = resp;
+
+    if (readTimestamp) {
+      this.readTimestampProto = readTimestamp;
+      this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
+    }
   }
 }
 

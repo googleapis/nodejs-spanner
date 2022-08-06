@@ -1898,23 +1898,6 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors on BeginTransaction during Database.runTransaction()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
-      const pool = db.pool_ as SessionPool;
-      // Wait until one read-only session has been created.
-      pool.once('available', () => {
-        spannerMock.setExecutionTime(
-          spannerMock.beginTransaction,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.NOT_FOUND,
-            message: 'Session not found',
-          } as MockError)
-        );
-        runTransactionWithExpectedSessionRetry(db, done);
-      });
-    });
-
     it('should retry "Session not found" errors for a query on a write-session on Database.runTransaction()', done => {
       const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
       const pool = db.pool_ as SessionPool;
@@ -2068,23 +2051,6 @@ describe('Spanner with mock server', () => {
             }
           );
         });
-      });
-    });
-
-    it('should retry "Session not found" errors on BeginTransaction during Database.runTransactionAsync()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
-      const pool = db.pool_ as SessionPool;
-      // Wait until one read-only session has been created.
-      pool.once('available', async () => {
-        spannerMock.setExecutionTime(
-          spannerMock.beginTransaction,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.NOT_FOUND,
-            message: 'Session not found',
-          } as MockError)
-        );
-        runAsyncTransactionWithExpectedSessionRetry(db).then(done).catch(done);
       });
     });
 
@@ -3084,6 +3050,58 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+    });
+
+    it('should use inline begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, insertSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction on retry', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        if (!attempts) {
+          spannerMock.abortTransaction(tx);
+        }
+        attempts++;
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
     it('should use transactionTag on blind commit', async () => {

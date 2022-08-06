@@ -1949,7 +1949,7 @@ describe('Transaction', () => {
         });
       });
 
-      it('should not set transaction tag if `singleUse`', () => {
+      it('should set transaction tag if `begin`', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
         transaction.requestOptions = {transactionTag};
@@ -1958,7 +1958,9 @@ describe('Transaction', () => {
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(reqOpts.requestOptions, {});
+        assert.deepStrictEqual(reqOpts.requestOptions, {
+          transactionTag,
+        });
       });
     });
   });
