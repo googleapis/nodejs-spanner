@@ -22,7 +22,7 @@ import {Database} from './database';
 import {Session, types} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {GoogleError, grpc} from 'google-gax';
+import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 
 /**
@@ -721,7 +721,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         await this._prepareTransaction(session);
       } catch (e) {
-        if (isSessionNotFoundError(e)) {
+        if (isSessionNotFoundError(e as ServiceError)) {
           this._inventory.borrowed.delete(session);
         } else {
           this._release(session);
@@ -997,13 +997,20 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new SessionPoolExhaustedError(this._getLeaks());
     }
 
+    let removeOnceCloseListener: Function;
     let removeListener: Function;
 
     // Wait for the requested type of session to become available.
     const availableEvent = type + '-available';
     const promises = [
-      this._onClose.then(() => {
-        throw new GoogleError(errors.Closed);
+      new Promise((_, reject) => {
+        const onceCloseListener = () => reject(new GoogleError(errors.Closed));
+        this.once('close', onceCloseListener);
+        removeOnceCloseListener = this.removeListener.bind(
+          this,
+          'close',
+          onceCloseListener
+        );
       }),
       new Promise(resolve => {
         this.once(availableEvent, resolve);
@@ -1077,6 +1084,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       await Promise.race(promises);
     } finally {
       this._waiters[type]--;
+      removeOnceCloseListener!();
       removeListener!();
       removeErrorListener!();
       removeTimeoutListener();

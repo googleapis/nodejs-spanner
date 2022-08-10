@@ -24,7 +24,15 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {codec, Float, Int, Numeric, SpannerDate, Struct} from './codec';
+import {
+  codec,
+  Float,
+  Int,
+  Numeric,
+  PGNumeric,
+  SpannerDate,
+  Struct,
+} from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -33,7 +41,7 @@ import {
   CreateInstanceResponse,
 } from './instance';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
-import {google as instanceAdmin} from '../protos/protos';
+import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
   PagedResponse,
@@ -185,6 +193,10 @@ class Spanner extends GrpcService {
    * @type {string}
    */
   static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+  static POSTGRESQL =
+    google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
+  static GOOGLE_STANDARD_SQL =
+    google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -336,7 +348,7 @@ class Spanner extends GrpcService {
    * Wrapper around {@link v1.InstanceAdminClient#createInstance}.
    *
    * @see {@link v1.InstanceAdminClient#createInstance}
-   * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
+   * @see [CreateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
    *
    * @throws {GoogleError} If a name is not provided.
    * @throws {GoogleError} If a configuration object is not provided.
@@ -575,13 +587,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageToken;
-      delete gaxOpts.pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
     }
 
     this.request(
@@ -660,13 +672,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     return this.requestStream({
@@ -793,13 +805,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     return this.request(
@@ -869,13 +881,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     delete reqOpts.gaxOptions;
@@ -1275,6 +1287,22 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner pgNumeric object.
+   *
+   * @param {string} value The pgNumeric value as a string.
+   * @returns {PGNumeric}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const pgNumeric = Spanner.pgNumeric("3.141592653");
+   * ```
+   */
+  static pgNumeric(value): PGNumeric {
+    return new codec.PGNumeric(value);
+  }
+
+  /**
    * Helper function to get a Cloud Spanner Struct object.
    *
    * @param {object} value The struct as a JSON object.
@@ -1309,6 +1337,7 @@ promisifyAll(Spanner, {
     'instance',
     'int',
     'numeric',
+    'pgNumeric',
     'operation',
     'timestamp',
   ],

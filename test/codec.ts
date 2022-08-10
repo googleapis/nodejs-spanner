@@ -50,6 +50,13 @@ describe('codec', () => {
         assert.strictEqual(json, '1986-03-22');
       });
 
+      it('should accept dates before 1000AD', () => {
+        const date = new codec.SpannerDate('2-25-985');
+        const json = date.toJSON();
+
+        assert.strictEqual(json, '0985-02-25');
+      });
+
       it('should default to the current local date', () => {
         const date = new codec.SpannerDate();
         const today = new Date();
@@ -118,6 +125,24 @@ describe('codec', () => {
         const json = date.toJSON();
         assert.strictEqual(json, '1999-12-03');
       });
+
+      it('should pad single digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(5);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0005-12-31');
+      });
+
+      it('should pad double digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(52);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0052-12-31');
+      });
+
+      it('should pad triple digit years', () => {
+        (date.getFullYear as sinon.SinonStub).returns(954);
+        const json = date.toJSON();
+        assert.strictEqual(json, '0954-12-31');
+      });
     });
   });
 
@@ -185,6 +210,46 @@ describe('codec', () => {
       const numeric = new codec.Numeric(value);
 
       assert.strictEqual(numeric.toJSON(), value);
+    });
+  });
+
+  describe('PGNumeric', () => {
+    it('should store value as a string', () => {
+      const value = '8.01911';
+      const pgNumeric = new codec.PGNumeric(value);
+
+      assert.strictEqual(pgNumeric.value, '8.01911');
+    });
+
+    it('should store NaN value as a string', () => {
+      const value = 'NaN';
+      const pgNumeric = new codec.PGNumeric(value);
+
+      assert.strictEqual(pgNumeric.value, 'NaN');
+    });
+
+    it('should return as a Big', () => {
+      const value = '8.01911';
+      const pgNumeric = new codec.PGNumeric(value);
+
+      const expected = new Big(value);
+      assert.ok(pgNumeric.valueOf().eq(expected));
+    });
+
+    it('should throw an error when trying to return NaN as a Big', () => {
+      const value = 'NaN';
+      const pgNumeric = new codec.PGNumeric(value);
+
+      assert.throws(() => {
+        pgNumeric.valueOf();
+      }, new RegExp('NaN cannot be converted to a numeric value'));
+    });
+
+    it('toJSON', () => {
+      const value = '8.01911';
+      const pgNumeric = new codec.PGNumeric(value);
+
+      assert.strictEqual(pgNumeric.toJSON(), value);
     });
   });
 
@@ -463,6 +528,18 @@ describe('codec', () => {
       assert.strictEqual(decoded.value, value);
     });
 
+    it('should decode PG NUMERIC', () => {
+      const value = '8.01911';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.NUMERIC,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_NUMERIC,
+      });
+
+      assert(decoded instanceof codec.PGNumeric);
+      assert.strictEqual(decoded.value, value);
+    });
+
     it('should decode JSON', () => {
       const value = '{"result":true, "count":42}';
       const expected = JSON.parse(value);
@@ -612,6 +689,14 @@ describe('codec', () => {
 
     it('should stringify NUMERIC', () => {
       const value = new codec.Numeric('8.01911');
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, value.value);
+    });
+
+    it('should stringify PG NUMERIC', () => {
+      const value = new codec.PGNumeric('8.01911');
 
       const encoded = codec.encode(value);
 
@@ -809,6 +894,12 @@ describe('codec', () => {
         child: {
           type: 'unspecified',
         },
+      });
+    });
+
+    it('should determine if the value is a PGNumeric', () => {
+      assert.deepStrictEqual(codec.getType(new codec.PGNumeric('7248')), {
+        type: 'pgNumeric',
       });
     });
   });
@@ -1017,6 +1108,23 @@ describe('codec', () => {
             },
           ],
         },
+      });
+    });
+    it('should set code and typeAnnotation for pgNumeric string', () => {
+      const type = codec.createTypeObject('pgNumeric');
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.NUMERIC],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_NUMERIC,
+      });
+    });
+
+    it('should set code and typeAnnotation for pgNumeric friendlyType object', () => {
+      const type = codec.createTypeObject({type: 'pgNumeric'});
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.NUMERIC],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_NUMERIC,
       });
     });
   });

@@ -593,7 +593,7 @@ export class Snapshot extends EventEmitter {
         session: this.session.formattedName_!,
         requestOptions: this.configureTagOptions(
           typeof transaction.singleUse !== 'undefined',
-          this.requestOptions?.transactionTag!,
+          this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
         transaction,
@@ -1049,7 +1049,7 @@ export class Snapshot extends EventEmitter {
         seqno: this._seqno++,
         requestOptions: this.configureTagOptions(
           typeof transaction.singleUse !== 'undefined',
-          this.requestOptions?.transactionTag!,
+          this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
         transaction,
@@ -1064,7 +1064,7 @@ export class Snapshot extends EventEmitter {
           sanitizeRequest();
         } catch (e) {
           const errorStream = new PassThrough();
-          setImmediate(() => errorStream.destroy(e));
+          setImmediate(() => errorStream.destroy(e as Error));
           return errorStream;
         }
       }
@@ -1532,7 +1532,7 @@ export class Transaction extends Dml {
       session: this.session.formattedName_!,
       requestOptions: this.configureTagOptions(
         false,
-        this.requestOptions?.transactionTag!,
+        this.requestOptions?.transactionTag ?? undefined,
         (options as BatchUpdateOptions).requestOptions
       ),
       transaction: {id: this.id!},

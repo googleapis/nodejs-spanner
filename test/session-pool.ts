@@ -593,7 +593,10 @@ describe('SessionPool', () => {
         sessionPool.release(badResource);
         shouldNotBeCalled();
       } catch (e) {
-        assert.strictEqual(e.message, 'Unable to release unknown resource.');
+        assert.strictEqual(
+          (e as sp.ReleaseError).message,
+          'Unable to release unknown resource.'
+        );
         assert.strictEqual((e as sp.ReleaseError).resource, badResource);
       }
     });
@@ -687,7 +690,10 @@ describe('SessionPool', () => {
         await sessionPool._acquire(types.ReadOnly);
         shouldNotBeCalled();
       } catch (e) {
-        assert.strictEqual(e.message, 'Database is closed.');
+        assert.strictEqual(
+          (e as sp.ReleaseError).message,
+          'Database is closed.'
+        );
       }
     });
 
@@ -703,7 +709,7 @@ describe('SessionPool', () => {
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
-          e.message,
+          (e as sp.ReleaseError).message,
           'Timeout occurred while acquiring session.'
         );
       }
@@ -1271,7 +1277,10 @@ describe('SessionPool', () => {
         await sessionPool._getSession(types.ReadOnly, startTime);
         shouldNotBeCalled();
       } catch (e) {
-        assert.strictEqual(e.message, 'No resources available.');
+        assert.strictEqual(
+          (e as sp.ReleaseError).message,
+          'No resources available.'
+        );
       }
     });
 
@@ -1282,7 +1291,10 @@ describe('SessionPool', () => {
         await sessionPool._getSession(types.ReadOnly, startTime);
         shouldNotBeCalled();
       } catch (e) {
-        assert.strictEqual(e.message, 'Database is closed.');
+        assert.strictEqual(
+          (e as sp.ReleaseError).message,
+          'Database is closed.'
+        );
       }
     });
 
@@ -1322,7 +1334,7 @@ describe('SessionPool', () => {
       } catch (e) {
         assert(isAround(timeout, end()));
         assert.strictEqual(
-          e.message,
+          (e as sp.ReleaseError).message,
           'Timeout occurred while acquiring session.'
         );
       }
