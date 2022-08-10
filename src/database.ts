@@ -28,7 +28,12 @@ import * as extend from 'extend';
 import * as r from 'teeny-request';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {CallOptions, grpc, Operation as GaxOperation} from 'google-gax';
+import {
+  CallOptions,
+  GoogleError,
+  grpc,
+  Operation as GaxOperation,
+} from 'google-gax';
 import {Backup} from './backup';
 import {BatchTransaction, TransactionIdentifier} from './batch-transaction';
 import {
@@ -85,6 +90,7 @@ import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import arrify = require('arrify');
+import {ServiceError} from 'google-gax';
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -1495,13 +1501,13 @@ class Database extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetSessionsOptions).pageSize,
+          pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetSessionsOptions).pageSize;
+      delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
     this.request<
@@ -1586,13 +1592,13 @@ class Database extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetSessionsOptions).pageSize,
+          pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetSessionsOptions).pageSize;
+      delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
     return this.requestStream({
@@ -2731,7 +2737,7 @@ class Database extends common.GrpcServiceObject {
           this.pool_.release(session);
         }
       } catch (e) {
-        if (!isSessionNotFoundError(e)) {
+        if (!isSessionNotFoundError(e as ServiceError)) {
           throw e;
         }
       }
@@ -2758,7 +2764,7 @@ class Database extends common.GrpcServiceObject {
   /**
    * Get a reference to a Table object.
    *
-   * @throws {Error} If a name is not provided.
+   * @throws {GoogleError} If a name is not provided.
    *
    * @param {string} name The name of the table.
    * @return {Table} A Table object.
@@ -2776,7 +2782,7 @@ class Database extends common.GrpcServiceObject {
    */
   table(name: string) {
     if (!name) {
-      throw new Error('A name is required to access a Table object.');
+      throw new GoogleError('A name is required to access a Table object.');
     }
     return new Table(this, name);
   }

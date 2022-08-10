@@ -356,6 +356,22 @@ describe('Instance', () => {
 
         instance.createDatabase(NAME, options, assert.ifError);
       });
+
+      it('should arrify and rename to extraStatements from array style schema filed', done => {
+        const SCHEMA = ['schema', 'schema2'];
+
+        const options = extend({}, OPTIONS, {
+          schema: SCHEMA,
+        });
+
+        instance.request = config => {
+          assert.deepStrictEqual(config.reqOpts.extraStatements, SCHEMA);
+          assert.strictEqual(config.reqOpts.schema, undefined);
+          done();
+        };
+
+        instance.createDatabase(NAME, options, assert.ifError);
+      });
     });
 
     describe('error', () => {
@@ -768,7 +784,7 @@ describe('Instance', () => {
       });
 
       it('should call create', done => {
-        const createOptions = Object.assign({}, OPTIONS);
+        const createOptions: {autoCreate?: {}} = Object.assign({}, OPTIONS);
         delete createOptions.autoCreate;
         instance.create = options => {
           assert.deepStrictEqual(options, createOptions);
@@ -927,7 +943,7 @@ describe('Instance', () => {
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
       const options = {gaxOptions};
-      const expectedReqOpts = extend(
+      const expectedReqOpts: {gaxOptions?: {}} = extend(
         {},
         options,
         {

@@ -5417,6 +5417,15 @@ export namespace google {
 
                         /** Backup encryptionInfo */
                         encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
+
+                        /** Backup databaseDialect */
+                        databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
+
+                        /** Backup referencingBackups */
+                        referencingBackups?: (string[]|null);
+
+                        /** Backup maxExpireTime */
+                        maxExpireTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a Backup. */
@@ -5454,6 +5463,15 @@ export namespace google {
 
                         /** Backup encryptionInfo. */
                         public encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
+
+                        /** Backup databaseDialect. */
+                        public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
+
+                        /** Backup referencingBackups. */
+                        public referencingBackups: string[];
+
+                        /** Backup maxExpireTime. */
+                        public maxExpireTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Backup instance using the specified properties.
@@ -5747,6 +5765,228 @@ export namespace google {
 
                         /**
                          * Converts this CreateBackupMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CopyBackupRequest. */
+                    interface ICopyBackupRequest {
+
+                        /** CopyBackupRequest parent */
+                        parent?: (string|null);
+
+                        /** CopyBackupRequest backupId */
+                        backupId?: (string|null);
+
+                        /** CopyBackupRequest sourceBackup */
+                        sourceBackup?: (string|null);
+
+                        /** CopyBackupRequest expireTime */
+                        expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CopyBackupRequest encryptionConfig */
+                        encryptionConfig?: (google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null);
+                    }
+
+                    /** Represents a CopyBackupRequest. */
+                    class CopyBackupRequest implements ICopyBackupRequest {
+
+                        /**
+                         * Constructs a new CopyBackupRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICopyBackupRequest);
+
+                        /** CopyBackupRequest parent. */
+                        public parent: string;
+
+                        /** CopyBackupRequest backupId. */
+                        public backupId: string;
+
+                        /** CopyBackupRequest sourceBackup. */
+                        public sourceBackup: string;
+
+                        /** CopyBackupRequest expireTime. */
+                        public expireTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CopyBackupRequest encryptionConfig. */
+                        public encryptionConfig?: (google.spanner.admin.database.v1.ICopyBackupEncryptionConfig|null);
+
+                        /**
+                         * Creates a new CopyBackupRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CopyBackupRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICopyBackupRequest): google.spanner.admin.database.v1.CopyBackupRequest;
+
+                        /**
+                         * Encodes the specified CopyBackupRequest message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                         * @param message CopyBackupRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICopyBackupRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CopyBackupRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupRequest.verify|verify} messages.
+                         * @param message CopyBackupRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICopyBackupRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CopyBackupRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CopyBackupRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CopyBackupRequest;
+
+                        /**
+                         * Decodes a CopyBackupRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CopyBackupRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CopyBackupRequest;
+
+                        /**
+                         * Verifies a CopyBackupRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CopyBackupRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CopyBackupRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CopyBackupRequest;
+
+                        /**
+                         * Creates a plain object from a CopyBackupRequest message. Also converts values to other types if specified.
+                         * @param message CopyBackupRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CopyBackupRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CopyBackupRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a CopyBackupMetadata. */
+                    interface ICopyBackupMetadata {
+
+                        /** CopyBackupMetadata name */
+                        name?: (string|null);
+
+                        /** CopyBackupMetadata sourceBackup */
+                        sourceBackup?: (string|null);
+
+                        /** CopyBackupMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** CopyBackupMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a CopyBackupMetadata. */
+                    class CopyBackupMetadata implements ICopyBackupMetadata {
+
+                        /**
+                         * Constructs a new CopyBackupMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICopyBackupMetadata);
+
+                        /** CopyBackupMetadata name. */
+                        public name: string;
+
+                        /** CopyBackupMetadata sourceBackup. */
+                        public sourceBackup: string;
+
+                        /** CopyBackupMetadata progress. */
+                        public progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** CopyBackupMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new CopyBackupMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CopyBackupMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICopyBackupMetadata): google.spanner.admin.database.v1.CopyBackupMetadata;
+
+                        /**
+                         * Encodes the specified CopyBackupMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                         * @param message CopyBackupMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICopyBackupMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CopyBackupMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupMetadata.verify|verify} messages.
+                         * @param message CopyBackupMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICopyBackupMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CopyBackupMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CopyBackupMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CopyBackupMetadata;
+
+                        /**
+                         * Decodes a CopyBackupMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CopyBackupMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CopyBackupMetadata;
+
+                        /**
+                         * Verifies a CopyBackupMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CopyBackupMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CopyBackupMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CopyBackupMetadata;
+
+                        /**
+                         * Creates a plain object from a CopyBackupMetadata message. Also converts values to other types if specified.
+                         * @param message CopyBackupMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CopyBackupMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CopyBackupMetadata to JSON.
                          * @returns JSON object
                          */
                         public toJSON(): { [k: string]: any };
@@ -6651,6 +6891,113 @@ export namespace google {
                         }
                     }
 
+                    /** Properties of a CopyBackupEncryptionConfig. */
+                    interface ICopyBackupEncryptionConfig {
+
+                        /** CopyBackupEncryptionConfig encryptionType */
+                        encryptionType?: (google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType|null);
+
+                        /** CopyBackupEncryptionConfig kmsKeyName */
+                        kmsKeyName?: (string|null);
+                    }
+
+                    /** Represents a CopyBackupEncryptionConfig. */
+                    class CopyBackupEncryptionConfig implements ICopyBackupEncryptionConfig {
+
+                        /**
+                         * Constructs a new CopyBackupEncryptionConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.ICopyBackupEncryptionConfig);
+
+                        /** CopyBackupEncryptionConfig encryptionType. */
+                        public encryptionType: (google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType|keyof typeof google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType);
+
+                        /** CopyBackupEncryptionConfig kmsKeyName. */
+                        public kmsKeyName: string;
+
+                        /**
+                         * Creates a new CopyBackupEncryptionConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CopyBackupEncryptionConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.ICopyBackupEncryptionConfig): google.spanner.admin.database.v1.CopyBackupEncryptionConfig;
+
+                        /**
+                         * Encodes the specified CopyBackupEncryptionConfig message. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                         * @param message CopyBackupEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.ICopyBackupEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CopyBackupEncryptionConfig message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.CopyBackupEncryptionConfig.verify|verify} messages.
+                         * @param message CopyBackupEncryptionConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.ICopyBackupEncryptionConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CopyBackupEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.CopyBackupEncryptionConfig;
+
+                        /**
+                         * Decodes a CopyBackupEncryptionConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CopyBackupEncryptionConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.CopyBackupEncryptionConfig;
+
+                        /**
+                         * Verifies a CopyBackupEncryptionConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CopyBackupEncryptionConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CopyBackupEncryptionConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.CopyBackupEncryptionConfig;
+
+                        /**
+                         * Creates a plain object from a CopyBackupEncryptionConfig message. Also converts values to other types if specified.
+                         * @param message CopyBackupEncryptionConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.CopyBackupEncryptionConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CopyBackupEncryptionConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    namespace CopyBackupEncryptionConfig {
+
+                        /** EncryptionType enum. */
+                        enum EncryptionType {
+                            ENCRYPTION_TYPE_UNSPECIFIED = 0,
+                            USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION = 1,
+                            GOOGLE_DEFAULT_ENCRYPTION = 2,
+                            CUSTOMER_MANAGED_ENCRYPTION = 3
+                        }
+                    }
+
                     /** Properties of an OperationProgress. */
                     interface IOperationProgress {
 
@@ -6955,6 +7302,13 @@ export namespace google {
                         }
                     }
 
+                    /** DatabaseDialect enum. */
+                    enum DatabaseDialect {
+                        DATABASE_DIALECT_UNSPECIFIED = 0,
+                        GOOGLE_STANDARD_SQL = 1,
+                        POSTGRESQL = 2
+                    }
+
                     /** Represents a DatabaseAdmin */
                     class DatabaseAdmin extends $protobuf.rpc.Service {
 
@@ -7116,6 +7470,20 @@ export namespace google {
                         public createBackup(request: google.spanner.admin.database.v1.ICreateBackupRequest): Promise<google.longrunning.Operation>;
 
                         /**
+                         * Calls CopyBackup.
+                         * @param request CopyBackupRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public copyBackup(request: google.spanner.admin.database.v1.ICopyBackupRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.CopyBackupCallback): void;
+
+                        /**
+                         * Calls CopyBackup.
+                         * @param request CopyBackupRequest message or plain object
+                         * @returns Promise
+                         */
+                        public copyBackup(request: google.spanner.admin.database.v1.ICopyBackupRequest): Promise<google.longrunning.Operation>;
+
+                        /**
                          * Calls GetBackup.
                          * @param request GetBackupRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and Backup
@@ -7212,6 +7580,20 @@ export namespace google {
                          * @returns Promise
                          */
                         public listBackupOperations(request: google.spanner.admin.database.v1.IListBackupOperationsRequest): Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>;
+
+                        /**
+                         * Calls ListDatabaseRoles.
+                         * @param request ListDatabaseRolesRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListDatabaseRolesResponse
+                         */
+                        public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRolesCallback): void;
+
+                        /**
+                         * Calls ListDatabaseRoles.
+                         * @param request ListDatabaseRolesRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listDatabaseRoles(request: google.spanner.admin.database.v1.IListDatabaseRolesRequest): Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>;
                     }
 
                     namespace DatabaseAdmin {
@@ -7287,6 +7669,13 @@ export namespace google {
                         type CreateBackupCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#copyBackup}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type CopyBackupCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
                          * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
                          * @param error Error, if any
                          * @param [response] Backup
@@ -7334,6 +7723,13 @@ export namespace google {
                          * @param [response] ListBackupOperationsResponse
                          */
                         type ListBackupOperationsCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListBackupOperationsResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseRoles}.
+                         * @param error Error, if any
+                         * @param [response] ListDatabaseRolesResponse
+                         */
+                        type ListDatabaseRolesCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.ListDatabaseRolesResponse) => void;
                     }
 
                     /** Properties of a RestoreInfo. */
@@ -7464,6 +7860,9 @@ export namespace google {
 
                         /** Database defaultLeader */
                         defaultLeader?: (string|null);
+
+                        /** Database databaseDialect */
+                        databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
                     }
 
                     /** Represents a Database. */
@@ -7501,6 +7900,9 @@ export namespace google {
 
                         /** Database defaultLeader. */
                         public defaultLeader: string;
+
+                        /** Database databaseDialect. */
+                        public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
 
                         /**
                          * Creates a new Database instance using the specified properties.
@@ -7796,6 +8198,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest encryptionConfig */
                         encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
+
+                        /** CreateDatabaseRequest databaseDialect */
+                        databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
                     }
 
                     /** Represents a CreateDatabaseRequest. */
@@ -7818,6 +8223,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest encryptionConfig. */
                         public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
+
+                        /** CreateDatabaseRequest databaseDialect. */
+                        public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
 
                         /**
                          * Creates a new CreateDatabaseRequest instance using the specified properties.
@@ -9202,6 +9610,294 @@ export namespace google {
                         TYPE_UNSPECIFIED = 0,
                         BACKUP = 1
                     }
+
+                    /** Properties of a DatabaseRole. */
+                    interface IDatabaseRole {
+
+                        /** DatabaseRole name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a DatabaseRole. */
+                    class DatabaseRole implements IDatabaseRole {
+
+                        /**
+                         * Constructs a new DatabaseRole.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDatabaseRole);
+
+                        /** DatabaseRole name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new DatabaseRole instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DatabaseRole instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDatabaseRole): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Encodes the specified DatabaseRole message. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                         * @param message DatabaseRole message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDatabaseRole, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DatabaseRole message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                         * @param message DatabaseRole message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDatabaseRole, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DatabaseRole message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DatabaseRole
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Decodes a DatabaseRole message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DatabaseRole
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Verifies a DatabaseRole message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DatabaseRole message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DatabaseRole
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.DatabaseRole;
+
+                        /**
+                         * Creates a plain object from a DatabaseRole message. Also converts values to other types if specified.
+                         * @param message DatabaseRole
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.DatabaseRole, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DatabaseRole to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListDatabaseRolesRequest. */
+                    interface IListDatabaseRolesRequest {
+
+                        /** ListDatabaseRolesRequest parent */
+                        parent?: (string|null);
+
+                        /** ListDatabaseRolesRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListDatabaseRolesRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabaseRolesRequest. */
+                    class ListDatabaseRolesRequest implements IListDatabaseRolesRequest {
+
+                        /**
+                         * Constructs a new ListDatabaseRolesRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabaseRolesRequest);
+
+                        /** ListDatabaseRolesRequest parent. */
+                        public parent: string;
+
+                        /** ListDatabaseRolesRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListDatabaseRolesRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListDatabaseRolesRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabaseRolesRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabaseRolesRequest): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                         * @param message ListDatabaseRolesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabaseRolesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                         * @param message ListDatabaseRolesRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabaseRolesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabaseRolesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabaseRolesRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Verifies a ListDatabaseRolesRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabaseRolesRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabaseRolesRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabaseRolesRequest;
+
+                        /**
+                         * Creates a plain object from a ListDatabaseRolesRequest message. Also converts values to other types if specified.
+                         * @param message ListDatabaseRolesRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabaseRolesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabaseRolesRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ListDatabaseRolesResponse. */
+                    interface IListDatabaseRolesResponse {
+
+                        /** ListDatabaseRolesResponse databaseRoles */
+                        databaseRoles?: (google.spanner.admin.database.v1.IDatabaseRole[]|null);
+
+                        /** ListDatabaseRolesResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListDatabaseRolesResponse. */
+                    class ListDatabaseRolesResponse implements IListDatabaseRolesResponse {
+
+                        /**
+                         * Constructs a new ListDatabaseRolesResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IListDatabaseRolesResponse);
+
+                        /** ListDatabaseRolesResponse databaseRoles. */
+                        public databaseRoles: google.spanner.admin.database.v1.IDatabaseRole[];
+
+                        /** ListDatabaseRolesResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListDatabaseRolesResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListDatabaseRolesResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IListDatabaseRolesResponse): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                         * @param message ListDatabaseRolesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IListDatabaseRolesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListDatabaseRolesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                         * @param message ListDatabaseRolesResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IListDatabaseRolesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListDatabaseRolesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListDatabaseRolesResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Verifies a ListDatabaseRolesResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListDatabaseRolesResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListDatabaseRolesResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.ListDatabaseRolesResponse;
+
+                        /**
+                         * Creates a plain object from a ListDatabaseRolesResponse message. Also converts values to other types if specified.
+                         * @param message ListDatabaseRolesResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.ListDatabaseRolesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListDatabaseRolesResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
                 }
             }
 
@@ -9692,6 +10388,12 @@ export namespace google {
 
                         /** Instance endpointUris */
                         endpointUris?: (string[]|null);
+
+                        /** Instance createTime */
+                        createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance updateTime */
+                        updateTime?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents an Instance. */
@@ -9726,6 +10428,12 @@ export namespace google {
 
                         /** Instance endpointUris. */
                         public endpointUris: string[];
+
+                        /** Instance createTime. */
+                        public createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** Instance updateTime. */
+                        public updateTime?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new Instance instance using the specified properties.
@@ -11757,6 +12465,13 @@ export namespace google {
 
             namespace PlanNode {
 
+                /** Kind enum. */
+                enum Kind {
+                    KIND_UNSPECIFIED = 0,
+                    RELATIONAL = 1,
+                    SCALAR = 2
+                }
+
                 /** Properties of a ChildLink. */
                 interface IChildLink {
 
@@ -11953,13 +12668,6 @@ export namespace google {
                      * @returns JSON object
                      */
                     public toJSON(): { [k: string]: any };
-                }
-
-                /** Kind enum. */
-                enum Kind {
-                    KIND_UNSPECIFIED = 0,
-                    RELATIONAL = 1,
-                    SCALAR = 2
                 }
             }
 
@@ -13087,6 +13795,9 @@ export namespace google {
 
                 /** Type structType */
                 structType?: (google.spanner.v1.IStructType|null);
+
+                /** Type typeAnnotation */
+                typeAnnotation?: (google.spanner.v1.TypeAnnotationCode|keyof typeof google.spanner.v1.TypeAnnotationCode|null);
             }
 
             /** Represents a Type. */
@@ -13106,6 +13817,9 @@ export namespace google {
 
                 /** Type structType. */
                 public structType?: (google.spanner.v1.IStructType|null);
+
+                /** Type typeAnnotation. */
+                public typeAnnotation: (google.spanner.v1.TypeAnnotationCode|keyof typeof google.spanner.v1.TypeAnnotationCode);
 
                 /**
                  * Creates a new Type instance using the specified properties.
@@ -13381,6 +14095,12 @@ export namespace google {
                 STRUCT = 9,
                 NUMERIC = 10,
                 JSON = 11
+            }
+
+            /** TypeAnnotationCode enum. */
+            enum TypeAnnotationCode {
+                TYPE_ANNOTATION_CODE_UNSPECIFIED = 0,
+                PG_NUMERIC = 2
             }
 
             /** Represents a Spanner */
@@ -14024,6 +14744,9 @@ export namespace google {
 
                 /** Session approximateLastUseTime */
                 approximateLastUseTime?: (google.protobuf.ITimestamp|null);
+
+                /** Session creatorRole */
+                creatorRole?: (string|null);
             }
 
             /** Represents a Session. */
@@ -14046,6 +14769,9 @@ export namespace google {
 
                 /** Session approximateLastUseTime. */
                 public approximateLastUseTime?: (google.protobuf.ITimestamp|null);
+
+                /** Session creatorRole. */
+                public creatorRole: string;
 
                 /**
                  * Creates a new Session instance using the specified properties.
@@ -14767,6 +15493,13 @@ export namespace google {
 
             namespace ExecuteSqlRequest {
 
+                /** QueryMode enum. */
+                enum QueryMode {
+                    NORMAL = 0,
+                    PLAN = 1,
+                    PROFILE = 2
+                }
+
                 /** Properties of a QueryOptions. */
                 interface IQueryOptions {
 
@@ -14861,13 +15594,6 @@ export namespace google {
                      * @returns JSON object
                      */
                     public toJSON(): { [k: string]: any };
-                }
-
-                /** QueryMode enum. */
-                enum QueryMode {
-                    NORMAL = 0,
-                    PLAN = 1,
-                    PROFILE = 2
                 }
             }
 
