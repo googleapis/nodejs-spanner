@@ -6180,6 +6180,41 @@ describe('Spanner', () => {
           params: {key, num},
         };
 
+        const postgreSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' SET "NumberValue" = $1 WHERE "Key" = $2 ' +
+            'RETURNING *',
+          params: {p1: num, p2: key},
+        };
+
+        const postgreSqlDeleteReturning = {
+          sql:
+            'DELETE FROM ' +
+            TABLE_NAME +
+            ' WHERE "Key" = $1 ' +
+            'RETURNING *',
+          params: {p1: key},
+        };
+
+        const postgreSqlInsertReturning = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2) ' +
+            'RETURNING *',
+          params: {p1: key, p2: str},
+        };
+
+        const postgreSqlDelete = {
+          sql:
+            'DELETE FROM ' +
+            TABLE_NAME +
+            ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+
         const rowCountRunUpdate = (
           done,
           database,
@@ -6219,6 +6254,19 @@ describe('Spanner', () => {
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
             googleSqlDeleteReturning
+          );
+        });
+
+        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
           );
         });
 
@@ -6273,8 +6321,23 @@ describe('Spanner', () => {
           );
         });
 
+        it('POSTGRESQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          rowCountRun(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
+
         const partitionedUpdate = (done, database, query) => {
           database.runPartitionedUpdate(query, err => {
+            console.log("batch partition error " + err);
             assert.match(
               err.details,
               /THEN RETURN is not supported in Partitioned DML\./
@@ -6285,6 +6348,14 @@ describe('Spanner', () => {
 
         it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', done => {
           partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
+        });
+
+        it('POSTGRESQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          partitionedUpdate(done, PG_DATABASE, postgreSqlUpdateReturning);
         });
 
         const batchUpdate = async (
@@ -6311,6 +6382,19 @@ describe('Spanner', () => {
             googleSqlInsertReturning,
             googleSqlUpdateReturning,
             googleSqlDelete
+          );
+        });
+
+        it('POSTGRESQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          await batchUpdate(
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDelete
           );
         });
       });
