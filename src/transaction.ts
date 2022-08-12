@@ -216,6 +216,8 @@ export type CommitCallback =
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
+  protected _idWaiter: Readable;
+  protected _inlineBeginStarted;
   id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -289,6 +291,11 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
+    this._idWaiter = new Readable({
+      read() {
+      },
+    });
+    this._inlineBeginStarted = false;
   }
 
   /**
@@ -604,10 +611,14 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    return partialResultStream(this._wrapWithIdWaiter(makeRequest), {
       json,
       jsonOptions,
       maxResumeRetries,
+    }).on('response', response => {
+      if (response.metadata && response.metadata!.transaction && !this.id) {
+        this._update(response.metadata!.transaction);
+      }
     });
   }
 
@@ -1056,7 +1067,7 @@ export class Snapshot extends EventEmitter {
     };
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      if (!reqOpts) {
+      if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
         try {
           sanitizeRequest();
         } catch (e) {
@@ -1075,10 +1086,14 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    return partialResultStream(this._wrapWithIdWaiter(makeRequest), {
       json,
       jsonOptions,
       maxResumeRetries,
+    }).on('response', response => {
+      if (response.metadata && response.metadata!.transaction && !this.id) {
+        this._update(response.metadata!.transaction);
+      }
     });
   }
 
@@ -1241,6 +1256,29 @@ export class Snapshot extends EventEmitter {
       this.readTimestampProto = readTimestamp;
       this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
     }
+    this._idWaiter.emit('notify');
+  }
+
+  /**
+   * Wrap `makeRequest` function with the lock to make sure the inline begin
+   * transaction can happen only once.
+   *
+   * @param makeRequest
+   * @private
+   */
+  private _wrapWithIdWaiter(
+      makeRequest: (resumeToken?: ResumeToken) => Readable):
+      (resumeToken?: ResumeToken) => Readable {
+    if (this.id || typeof this._options.readWrite === 'undefined') {
+      return makeRequest;
+    }
+    if (!this._inlineBeginStarted) {
+      this._inlineBeginStarted = true;
+      return makeRequest;
+    }
+    return (resumeToken?: ResumeToken): Readable =>
+        this._idWaiter.once('notify', () =>
+            this._idWaiter.wrap(makeRequest(resumeToken)));
   }
 }
 

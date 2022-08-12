@@ -17,7 +17,7 @@
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status, ServiceError} from 'google-gax';
-import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
+import {Database, Instance, SessionPool, Snapshot, Spanner, Transaction} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -1212,6 +1212,33 @@ describe('Spanner with mock server', () => {
           const [rows] = await database.run(selectSql);
           assert.strictEqual(rows.length, 3);
           await database.close();
+        });
+
+        it('should retry UNAVAILABLE during streaming with txn ID from inline begin response', async () => {
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+              spannerMock.executeStreamingSql,
+              SimulatedExecutionTime.ofError(err)
+          );
+          const database = newTestDatabase();
+
+          await database.runTransactionAsync(async tx => {
+            await tx.run(selectSql);
+            await tx.commit();
+          });
+          await database.close();
+
+          const requests = spannerMock.getRequests().filter(val =>
+              (val as v1.ExecuteSqlRequest).sql
+          ).map(req => req as v1.ExecuteSqlRequest);
+          assert.strictEqual(requests.length, 2);
+          assert.ok(requests[0].transaction?.begin!.readWrite, 'inline txn is not set.');
+          assert.ok(requests[1].transaction!.id, 'Transaction ID is not used for retries.');
+          assert.ok(requests[1].resumeToken, "Resume token is not set for the retried");
         });
 
         it('should not retry non-retryable error during streaming', async () => {
@@ -3084,6 +3111,39 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should only inline one begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        await Promise.all([rowCount1, rowCount2]);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+          .getRequests()
+          .slice()
+          .reverse()
+          .find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, selectSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
     it('should use beginTransaction on retry', async () => {
       const database = newTestDatabase();
       let attempts = 0;
@@ -3914,13 +3974,13 @@ function executeSimpleUpdate(
 }
 
 function getRowCountFromStreamingSql(
-  database: Database,
+  context: Database | Transaction,
   query: ExecuteSqlRequest
 ): Promise<number> {
   return new Promise<number>((resolve, reject) => {
     let rows = 0;
     let errored = false;
-    database
+    context
       .runStream(query)
       .on('error', err => {
         errored = true;
