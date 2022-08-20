@@ -30,7 +30,6 @@ import {
 } from 'google-gax';
 
 import {Transform} from 'stream';
-import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -430,7 +429,8 @@ export class DatabaseAdminClient {
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
-        descriptor
+        descriptor,
+        this._opts.fallback
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -1518,7 +1518,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.createDatabase,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -1683,7 +1683,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.updateDatabaseDdl,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.protobuf.Empty,
@@ -1848,7 +1848,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.createBackup,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -2020,7 +2020,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.copyBackup,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -2192,7 +2192,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.restoreDatabase,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2344,7 +2344,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listDatabases.createStream(
-      this.innerApiCalls.listDatabases as gax.GaxCall,
+      this.innerApiCalls.listDatabases as GaxCall,
       request,
       callSettings
     );
@@ -2396,7 +2396,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
@@ -2621,7 +2621,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listBackups.createStream(
-      this.innerApiCalls.listBackups as gax.GaxCall,
+      this.innerApiCalls.listBackups as GaxCall,
       request,
       callSettings
     );
@@ -2710,7 +2710,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
@@ -2958,7 +2958,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.createStream(
-      this.innerApiCalls.listDatabaseOperations as gax.GaxCall,
+      this.innerApiCalls.listDatabaseOperations as GaxCall,
       request,
       callSettings
     );
@@ -3054,7 +3054,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
@@ -3348,7 +3348,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listBackupOperations.createStream(
-      this.innerApiCalls.listBackupOperations as gax.GaxCall,
+      this.innerApiCalls.listBackupOperations as GaxCall,
       request,
       callSettings
     );
@@ -3468,7 +3468,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
@@ -3619,7 +3619,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listDatabaseRoles.createStream(
-      this.innerApiCalls.listDatabaseRoles as gax.GaxCall,
+      this.innerApiCalls.listDatabaseRoles as GaxCall,
       request,
       callSettings
     );
@@ -3672,7 +3672,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabaseRoles.asyncIterate(
       this.innerApiCalls['listDatabaseRoles'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole>;
   }
