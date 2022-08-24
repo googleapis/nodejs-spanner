@@ -30,7 +30,6 @@ import {
 } from 'google-gax';
 
 import {Transform} from 'stream';
-import {RequestType} from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -181,6 +180,9 @@ export class DatabaseAdminClient {
       databasePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
+      databaseRolePathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/databases/{database}/databaseRoles/{role}'
+      ),
       instancePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}'
       ),
@@ -210,6 +212,11 @@ export class DatabaseAdminClient {
         'nextPageToken',
         'operations'
       ),
+      listDatabaseRoles: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'databaseRoles'
+      ),
     };
 
     const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
@@ -224,24 +231,16 @@ export class DatabaseAdminClient {
       lroOptions.protoJson = protoFilesRoot;
       lroOptions.httpRules = [
         {
-          selector: 'google.longrunning.Operations.GetOperation',
-          get: '/v1/{name=projects/*/instances/*/databases/*/operations/*}',
-          additional_bindings: [
-            {get: '/v1/{name=projects/*/instances/*/operations/*}'},
-          ],
-        },
-        {
-          selector: 'google.longrunning.Operations.ListOperations',
-          get: '/v1/{name=projects/*/instances/*/databases/*/operations}',
-          additional_bindings: [
-            {get: '/v1/{name=projects/*/instances/*/operations}'},
-          ],
-        },
-        {
           selector: 'google.longrunning.Operations.CancelOperation',
           post: '/v1/{name=projects/*/instances/*/databases/*/operations/*}:cancel',
           additional_bindings: [
             {post: '/v1/{name=projects/*/instances/*/operations/*}:cancel'},
+            {
+              post: '/v1/{name=projects/*/instances/*/backups/*/operations/*}:cancel',
+            },
+            {
+              post: '/v1/{name=projects/*/instanceConfigs/*/operations/*}:cancel',
+            },
           ],
         },
         {
@@ -249,6 +248,29 @@ export class DatabaseAdminClient {
           delete: '/v1/{name=projects/*/instances/*/databases/*/operations/*}',
           additional_bindings: [
             {delete: '/v1/{name=projects/*/instances/*/operations/*}'},
+            {
+              delete:
+                '/v1/{name=projects/*/instances/*/backups/*/operations/*}',
+            },
+            {delete: '/v1/{name=projects/*/instanceConfigs/*/operations/*}'},
+          ],
+        },
+        {
+          selector: 'google.longrunning.Operations.GetOperation',
+          get: '/v1/{name=projects/*/instances/*/databases/*/operations/*}',
+          additional_bindings: [
+            {get: '/v1/{name=projects/*/instances/*/operations/*}'},
+            {get: '/v1/{name=projects/*/instances/*/backups/*/operations/*}'},
+            {get: '/v1/{name=projects/*/instanceConfigs/*/operations/*}'},
+          ],
+        },
+        {
+          selector: 'google.longrunning.Operations.ListOperations',
+          get: '/v1/{name=projects/*/instances/*/databases/*/operations}',
+          additional_bindings: [
+            {get: '/v1/{name=projects/*/instances/*/operations}'},
+            {get: '/v1/{name=projects/*/instances/*/backups/*/operations}'},
+            {get: '/v1/{name=projects/*/instanceConfigs/*/operations}'},
           ],
         },
       ];
@@ -383,6 +405,7 @@ export class DatabaseAdminClient {
       'restoreDatabase',
       'listDatabaseOperations',
       'listBackupOperations',
+      'listDatabaseRoles',
     ];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
@@ -406,7 +429,8 @@ export class DatabaseAdminClient {
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
-        descriptor
+        descriptor,
+        this._opts.fallback
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -1494,7 +1518,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.createDatabase,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -1659,7 +1683,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.updateDatabaseDdl,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.protobuf.Empty,
@@ -1824,7 +1848,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.createBackup,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -1996,7 +2020,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.copyBackup,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Backup,
@@ -2168,7 +2192,7 @@ export class DatabaseAdminClient {
     const decodeOperation = new gax.Operation(
       operation,
       this.descriptors.longrunning.restoreDatabase,
-      gax.createDefaultBackoffSettings()
+      this._gaxModule.createDefaultBackoffSettings()
     );
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
@@ -2320,7 +2344,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listDatabases.createStream(
-      this.innerApiCalls.listDatabases as gax.GaxCall,
+      this.innerApiCalls.listDatabases as GaxCall,
       request,
       callSettings
     );
@@ -2372,7 +2396,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabases.asyncIterate(
       this.innerApiCalls['listDatabases'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabase>;
   }
@@ -2597,7 +2621,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listBackups.createStream(
-      this.innerApiCalls.listBackups as gax.GaxCall,
+      this.innerApiCalls.listBackups as GaxCall,
       request,
       callSettings
     );
@@ -2686,7 +2710,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listBackups.asyncIterate(
       this.innerApiCalls['listBackups'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackup>;
   }
@@ -2934,7 +2958,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.createStream(
-      this.innerApiCalls.listDatabaseOperations as gax.GaxCall,
+      this.innerApiCalls.listDatabaseOperations as GaxCall,
       request,
       callSettings
     );
@@ -3030,7 +3054,7 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listDatabaseOperations.asyncIterate(
       this.innerApiCalls['listDatabaseOperations'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
@@ -3324,7 +3348,7 @@ export class DatabaseAdminClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listBackupOperations.createStream(
-      this.innerApiCalls.listBackupOperations as gax.GaxCall,
+      this.innerApiCalls.listBackupOperations as GaxCall,
       request,
       callSettings
     );
@@ -3444,10 +3468,391 @@ export class DatabaseAdminClient {
     this.initialize();
     return this.descriptors.page.listBackupOperations.asyncIterate(
       this.innerApiCalls['listBackupOperations'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
+  /**
+   * Lists Cloud Spanner database roles.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listDatabaseRolesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   */
+  listDatabaseRoles(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IDatabaseRole[],
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+    ]
+  >;
+  listDatabaseRoles(
+    request: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): void;
+  listDatabaseRoles(
+    request: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): void;
+  listDatabaseRoles(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+          | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IDatabaseRole
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+      | protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IDatabaseRole
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IDatabaseRole[],
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    this.initialize();
+    return this.innerApiCalls.listDatabaseRoles(request, options, callback);
+  }
+
+  /**
+   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole} on 'data' event.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed. Note that it can affect your quota.
+   *   We recommend using `listDatabaseRolesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   */
+  listDatabaseRolesStream(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    const defaultCallSettings = this._defaults['listDatabaseRoles'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listDatabaseRoles.createStream(
+      this.innerApiCalls.listDatabaseRoles as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to `listDatabaseRoles`, but returns an iterable object.
+   *
+   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The database whose roles should be listed.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   * @param {number} request.pageSize
+   *   Number of database roles to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+   *   When you iterate the returned iterable, each element will be an object representing
+   *   [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}. The API will be called under the hood as needed, once per the page,
+   *   so you can stop the iteration when you don't need more results.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.list_database_roles.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_ListDatabaseRoles_async
+   */
+  listDatabaseRolesAsync(
+    request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
+    options?: CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      gax.routingHeader.fromParams({
+        parent: request.parent || '',
+      });
+    const defaultCallSettings = this._defaults['listDatabaseRoles'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listDatabaseRoles.asyncIterate(
+      this.innerApiCalls['listDatabaseRoles'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole>;
+  }
+  /**
+   * Gets the latest state of a long-running operation.  Clients can use this
+   * method to poll the operation result at intervals as recommended by the API
+   * service.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @param {function(?Error, ?Object)=} callback
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing
+   * [google.longrunning.Operation]{@link
+   * external:"google.longrunning.Operation"}.
+   * @return {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   * [google.longrunning.Operation]{@link
+   * external:"google.longrunning.Operation"}. The promise has a method named
+   * "cancel" which cancels the ongoing API call.
+   *
+   * @example
+   * ```
+   * const client = longrunning.operationsClient();
+   * const name = '';
+   * const [response] = await client.getOperation({name});
+   * // doThingsWith(response)
+   * ```
+   */
+  getOperation(
+    request: protos.google.longrunning.GetOperationRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.longrunning.Operation,
+          protos.google.longrunning.GetOperationRequest,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.longrunning.Operation,
+      protos.google.longrunning.GetOperationRequest,
+      {} | null | undefined
+    >
+  ): Promise<[protos.google.longrunning.Operation]> {
+    return this.operationsClient.getOperation(request, options, callback);
+  }
+  /**
+   * Lists operations that match the specified filter in the request. If the
+   * server doesn't support this method, it returns `UNIMPLEMENTED`. Returns an iterable object.
+   *
+   * For-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation collection.
+   * @param {string} request.filter - The standard list filter.
+   * @param {number=} request.pageSize -
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   *
+   * @example
+   * ```
+   * const client = longrunning.operationsClient();
+   * for await (const response of client.listOperationsAsync(request));
+   * // doThingsWith(response)
+   * ```
+   */
+  listOperationsAsync(
+    request: protos.google.longrunning.ListOperationsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+    return this.operationsClient.listOperationsAsync(request, options);
+  }
+  /**
+   * Starts asynchronous cancellation on a long-running operation.  The server
+   * makes a best effort to cancel the operation, but success is not
+   * guaranteed.  If the server doesn't support this method, it returns
+   * `google.rpc.Code.UNIMPLEMENTED`.  Clients can use
+   * {@link Operations.GetOperation} or
+   * other methods to check whether the cancellation succeeded or whether the
+   * operation completed despite cancellation. On successful cancellation,
+   * the operation is not deleted; instead, it becomes an operation with
+   * an {@link Operation.error} value with a {@link google.rpc.Status.code} of
+   * 1, corresponding to `Code.CANCELLED`.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource to be cancelled.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * details.
+   * @param {function(?Error)=} callback
+   *   The function which will be called with the result of the API call.
+   * @return {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named "cancel" which cancels the ongoing API
+   * call.
+   *
+   * @example
+   * ```
+   * const client = longrunning.operationsClient();
+   * await client.cancelOperation({name: ''});
+   * ```
+   */
+  cancelOperation(
+    request: protos.google.longrunning.CancelOperationRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.protobuf.Empty,
+          protos.google.longrunning.CancelOperationRequest,
+          {} | undefined | null
+        >,
+    callback?: Callback<
+      protos.google.longrunning.CancelOperationRequest,
+      protos.google.protobuf.Empty,
+      {} | undefined | null
+    >
+  ): Promise<protos.google.protobuf.Empty> {
+    return this.operationsClient.cancelOperation(request, options, callback);
+  }
+
+  /**
+   * Deletes a long-running operation. This method indicates that the client is
+   * no longer interested in the operation result. It does not cancel the
+   * operation. If the server doesn't support this method, it returns
+   * `google.rpc.Code.UNIMPLEMENTED`.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource to be deleted.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * details.
+   * @param {function(?Error)=} callback
+   *   The function which will be called with the result of the API call.
+   * @return {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named "cancel" which cancels the ongoing API
+   * call.
+   *
+   * @example
+   * ```
+   * const client = longrunning.operationsClient();
+   * await client.deleteOperation({name: ''});
+   * ```
+   */
+  deleteOperation(
+    request: protos.google.longrunning.DeleteOperationRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.protobuf.Empty,
+          protos.google.longrunning.DeleteOperationRequest,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.Empty,
+      protos.google.longrunning.DeleteOperationRequest,
+      {} | null | undefined
+    >
+  ): Promise<protos.google.protobuf.Empty> {
+    return this.operationsClient.deleteOperation(request, options, callback);
+  }
+
   // --------------------
   // -- Path templates --
   // --------------------
@@ -3619,6 +4024,77 @@ export class DatabaseAdminClient {
    */
   matchDatabaseFromDatabaseName(databaseName: string) {
     return this.pathTemplates.databasePathTemplate.match(databaseName).database;
+  }
+
+  /**
+   * Return a fully-qualified databaseRole resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} database
+   * @param {string} role
+   * @returns {string} Resource name string.
+   */
+  databaseRolePath(
+    project: string,
+    instance: string,
+    database: string,
+    role: string
+  ) {
+    return this.pathTemplates.databaseRolePathTemplate.render({
+      project: project,
+      instance: instance,
+      database: database,
+      role: role,
+    });
+  }
+
+  /**
+   * Parse the project from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .project;
+  }
+
+  /**
+   * Parse the instance from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .instance;
+  }
+
+  /**
+   * Parse the database from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the database.
+   */
+  matchDatabaseFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .database;
+  }
+
+  /**
+   * Parse the role from DatabaseRole resource.
+   *
+   * @param {string} databaseRoleName
+   *   A fully-qualified path representing DatabaseRole resource.
+   * @returns {string} A string representing the role.
+   */
+  matchRoleFromDatabaseRoleName(databaseRoleName: string) {
+    return this.pathTemplates.databaseRolePathTemplate.match(databaseRoleName)
+      .role;
   }
 
   /**

@@ -72,7 +72,12 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
-  * [Rpc-priority](#rpc-priority)
+  * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
+  * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
+  * [Create partitions with RPC priority](#create-partitions-with-rpc-priority)
+  * [Read data with RPC Priority](#read-data-with-rpc-priority)
+  * [Query data with RPC Priority](#query-data-with-rpc-priority)
+  * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
@@ -1080,16 +1085,101 @@ __Usage:__
 
 
 
-### Rpc-priority
+### Run Batch update with RPC priority
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-batch-dml.js,samples/README.md)
 
 __Usage:__
 
 
-`node samples/rpc-priority.js`
+`node rpc-priority-batch-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Run partitioned update with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-partitioned-dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-partitioned-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Create partitions with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-query-partitions.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-query-partitions.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-query-partitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Read data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-read.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-read.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Query data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-run.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-run.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-run.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Run transaction with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-transaction.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-transaction.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
