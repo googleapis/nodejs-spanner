@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Showcase how to work with the PostgreSQL JSONB data type on a Spanner PostgreSQL database.
-//  usage: node pg-jsonb-data-type.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  title: Showcase how update data to a jsonb column in a PostgreSQL table.
+//  usage: node pg-jsonb-update-data.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_postgresql_jsonb_data_type]
+  // [START spanner_postgresql_jsonb_update_data]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -39,23 +39,13 @@ function main(
     projectId: projectId,
   });
 
-  async function pgJsonbDataType() {
+  async function pgJsonbUpdateData() {
     // Gets a reference to a Cloud Spanner instance and database.
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
-
-    const request = ['ALTER TABLE Venues ADD COLUMN VenueDetails JSONB'];
-
-    // Updates schema by adding a new table.
-    const [operation] = await database.updateSchema(request);
-    console.log(`Waiting for operation on ${databaseId} to complete...`);
-    await operation.promise();
-    console.log(
-      `Added jsonb column to table venues to database ${databaseId}.`
-    );
-
     // Instantiate Spanner table objects.
     const venuesTable = database.table('venues');
+
     const data = [
       {
         VenueId: '19',
@@ -63,14 +53,17 @@ function main(
       },
       {
         VenueId: '4',
+        // PG JSONB sorts first by key length and then lexicographically with equivalent key length
+        // and takes the last value in the case of duplicate keys
         VenueDetails: `[
         {
           "name": null,
-          "open": true
+          "available": true
         },
         {
           "name": "room 2",
-          "open": false
+          "available": false,
+          "name": "room 3"
         },
         {
           "main hall": {
@@ -98,62 +91,13 @@ function main(
       console.log('Updated data.');
     } catch (err) {
       console.error('ERROR:', err);
-    }
-
-    const insert_query = {
-      sql: 'INSERT INTO venues(venueid, name, venuedetails) VALUES ($1, $2, $3);',
-      params: {
-        p1: '702',
-        p2: 'room 9',
-        p3: {rating: 6},
-      },
-      types: {
-        p1: 'int64',
-        p2: 'string',
-        p3: 'jsonb',
-      },
-    };
-
-    try {
-      await database.runTransactionAsync(async transaction => {
-        await transaction.runUpdate(insert_query);
-        console.log('Inserted data using DML.');
-        await transaction.commit();
-      });
-    } catch (err) {
-      console.error('ERROR:', err);
-    }
-
-    const select_query = {
-      sql: `SELECT venueid, venuedetails FROM Venues
-          WHERE CAST(venuedetails ->> 'rating' AS INTEGER) > $1`,
-      params: {
-        p1: 2,
-      },
-      types: {
-        p1: 'int64',
-      },
-      json: true,
-    };
-
-    // Queries row from the Venues table.
-    try {
-      const [rows] = await database.run(select_query);
-
-      rows.forEach(row => {
-        console.log(
-          `VenueId: ${row.venueid}, Details: ${JSON.stringify(
-            row.venuedetails
-          )}`
-        );
-      });
     } finally {
       // Close the database when finished.
       await database.close();
     }
   }
-  pgJsonbDataType();
-  // [END spanner_postgresql_jsonb_data_type]
+  pgJsonbUpdateData();
+  // [END spanner_postgresql_jsonb_update_data]
 }
 
 process.on('unhandledRejection', err => {
