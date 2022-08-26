@@ -570,7 +570,7 @@ export class Snapshot extends EventEmitter {
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
-    } else if (typeof this._options.readWrite !== 'undefined') {
+    } else if (this._options.readWrite) {
       transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
@@ -615,7 +615,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-    }).on('response', response => {
+    })?.on('response', response => {
       if (response.metadata && response.metadata!.transaction && !this.id) {
         this._update(response.metadata!.transaction);
       }
@@ -1040,7 +1040,7 @@ export class Snapshot extends EventEmitter {
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
-      } else if (typeof this._options.readWrite !== 'undefined') {
+      } else if (this._options.readWrite) {
         transaction.begin = this._options;
       } else {
         transaction.singleUse = this._options;
@@ -1269,7 +1269,7 @@ export class Snapshot extends EventEmitter {
   private _wrapWithIdWaiter(
       makeRequest: (resumeToken?: ResumeToken) => Readable):
       (resumeToken?: ResumeToken) => Readable {
-    if (this.id || typeof this._options.readWrite === 'undefined') {
+    if (this.id || !this._options.readWrite) {
       return makeRequest;
     }
     if (!this._inlineBeginStarted) {
@@ -1277,8 +1277,10 @@ export class Snapshot extends EventEmitter {
       return makeRequest;
     }
     return (resumeToken?: ResumeToken): Readable =>
-        this._idWaiter.once('notify', () =>
-            this._idWaiter.wrap(makeRequest(resumeToken)));
+        this._idWaiter.once('notify', () => makeRequest(resumeToken)
+            .on('data', (chunk) => this._idWaiter.emit('data', chunk))
+            .once('end', () => this._idWaiter.emit('end'))
+        );
   }
 }
 
