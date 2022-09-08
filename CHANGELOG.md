@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.1.4](https://github.com/googleapis/nodejs-spanner/compare/v6.1.3...v6.1.4) (2022-09-06)
+
+
+### Bug Fixes
+
+* Add hashes to requirements.txt ([#1544](https://github.com/googleapis/nodejs-spanner/issues/1544)) ([#1697](https://github.com/googleapis/nodejs-spanner/issues/1697)) ([61a1468](https://github.com/googleapis/nodejs-spanner/commit/61a1468fb0282bad642e643fc98a19d63acdcd1c))
+* Better support for fallback mode ([#1694](https://github.com/googleapis/nodejs-spanner/issues/1694)) ([bbc8831](https://github.com/googleapis/nodejs-spanner/commit/bbc88317149a3d86c50ccfd98092d5bfb77a104e))
+* Change import long to require ([#1695](https://github.com/googleapis/nodejs-spanner/issues/1695)) ([9283f4b](https://github.com/googleapis/nodejs-spanner/commit/9283f4bdfaea0ceececacbb80df3c37bd522b657))
+* **deps:** Update dependency @google-cloud/projectify to v3 ([#1678](https://github.com/googleapis/nodejs-spanner/issues/1678)) ([e3c1499](https://github.com/googleapis/nodejs-spanner/commit/e3c1499d0bdcbe3b578c5e7dc1d725630a1a0a30))
+* **deps:** Update dependency protobufjs to v7 ([#1686](https://github.com/googleapis/nodejs-spanner/issues/1686)) ([2839d23](https://github.com/googleapis/nodejs-spanner/commit/2839d2317ca7368d288ee9d7feb806f0ac2069c6))
+* Target new spanner db admin service config ([#1685](https://github.com/googleapis/nodejs-spanner/issues/1685)) ([2495c07](https://github.com/googleapis/nodejs-spanner/commit/2495c0723be70cf679ffa9e86f45199dbcd8c77b))
+* Test case fix to avoid the latest typescript dependency issue ([#1703](https://github.com/googleapis/nodejs-spanner/issues/1703)) ([6282f64](https://github.com/googleapis/nodejs-spanner/commit/6282f64560510ae54be26d992d168091f7e943bc))
+
 ## [6.1.3](https://github.com/googleapis/nodejs-spanner/compare/v6.1.2...v6.1.3) (2022-07-07)
 
 
