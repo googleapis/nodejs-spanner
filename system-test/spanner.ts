@@ -135,35 +135,41 @@ describe('Spanner', () => {
   });
 
   after(async () => {
-    if (generateInstanceForTest) {
-      // Deleting all backups before an instance can be deleted.
-      await Promise.all(
-        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
-          backup => backup.delete(GAX_OPTIONS)
-        )
-      );
-      /**
-       * Deleting instances created during this test.
-       * All databasess will automatically be deleted with instance.
-       * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
-       */
-      await Promise.all(
-        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Instance).map(
-          instance => instance.delete(GAX_OPTIONS)
-        )
-      );
-    } else {
-      /**
-       * Limit the number of concurrent 'Administrative requests per minute'
-       * Not to exceed quota
-       * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
-       */
-      const limit = pLimit(5);
-      await Promise.all(
-        RESOURCES_TO_CLEAN.map(resource =>
-          limit(() => resource.delete(GAX_OPTIONS))
-        )
-      );
+    try {
+      if (generateInstanceForTest) {
+        // Sleep for 30 seconds before cleanup, just in case
+        await new Promise(resolve => setTimeout(resolve, 30000));
+        // Deleting all backups before an instance can be deleted.
+        await Promise.all(
+          RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
+            backup => backup.delete(GAX_OPTIONS)
+          )
+        );
+        /**
+         * Deleting instances created during this test.
+         * All databasess will automatically be deleted with instance.
+         * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+         */
+        await Promise.all(
+          RESOURCES_TO_CLEAN.filter(
+            resource => resource instanceof Instance
+          ).map(instance => instance.delete(GAX_OPTIONS))
+        );
+      } else {
+        /**
+         * Limit the number of concurrent 'Administrative requests per minute'
+         * Not to exceed quota
+         * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
+         */
+        const limit = pLimit(5);
+        await Promise.all(
+          RESOURCES_TO_CLEAN.map(resource =>
+            limit(() => resource.delete(GAX_OPTIONS))
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Cleanup failed:', err);
     }
   });
 
