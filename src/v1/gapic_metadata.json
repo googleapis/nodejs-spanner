@@ -15,11 +15,6 @@
                 "getInstanceConfig"
               ]
             },
-            "DeleteInstanceConfig": {
-              "methods": [
-                "deleteInstanceConfig"
-              ]
-            },
             "GetInstance": {
               "methods": [
                 "getInstance"
@@ -45,16 +40,6 @@
                 "testIamPermissions"
               ]
             },
-            "CreateInstanceConfig": {
-              "methods": [
-                "createInstanceConfig"
-              ]
-            },
-            "UpdateInstanceConfig": {
-              "methods": [
-                "updateInstanceConfig"
-              ]
-            },
             "CreateInstance": {
               "methods": [
                 "createInstance"
@@ -70,13 +55,6 @@
                 "listInstanceConfigs",
                 "listInstanceConfigsStream",
                 "listInstanceConfigsAsync"
-              ]
-            },
-            "ListInstanceConfigOperations": {
-              "methods": [
-                "listInstanceConfigOperations",
-                "listInstanceConfigOperationsStream",
-                "listInstanceConfigOperationsAsync"
               ]
             },
             "ListInstances": {
@@ -96,11 +74,6 @@
                 "getInstanceConfig"
               ]
             },
-            "DeleteInstanceConfig": {
-              "methods": [
-                "deleteInstanceConfig"
-              ]
-            },
             "GetInstance": {
               "methods": [
                 "getInstance"
@@ -126,16 +99,6 @@
                 "testIamPermissions"
               ]
             },
-            "CreateInstanceConfig": {
-              "methods": [
-                "createInstanceConfig"
-              ]
-            },
-            "UpdateInstanceConfig": {
-              "methods": [
-                "updateInstanceConfig"
-              ]
-            },
             "CreateInstance": {
               "methods": [
                 "createInstance"
@@ -151,13 +114,6 @@
                 "listInstanceConfigs",
                 "listInstanceConfigsStream",
                 "listInstanceConfigsAsync"
-              ]
-            },
-            "ListInstanceConfigOperations": {
-              "methods": [
-                "listInstanceConfigOperations",
-                "listInstanceConfigOperationsStream",
-                "listInstanceConfigOperationsAsync"
               ]
             },
             "ListInstances": {

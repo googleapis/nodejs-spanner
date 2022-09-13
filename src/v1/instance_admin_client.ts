@@ -218,11 +218,6 @@ export class InstanceAdminClient {
         'nextPageToken',
         'instanceConfigs'
       ),
-      listInstanceConfigOperations: new this._gaxModule.PageDescriptor(
-        'pageToken',
-        'nextPageToken',
-        'operations'
-      ),
       listInstances: new this._gaxModule.PageDescriptor(
         'pageToken',
         'nextPageToken',
@@ -274,18 +269,6 @@ export class InstanceAdminClient {
     this.operationsClient = this._gaxModule
       .lro(lroOptions)
       .operationsClient(opts);
-    const createInstanceConfigResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstanceConfig'
-    ) as gax.protobuf.Type;
-    const createInstanceConfigMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
-    ) as gax.protobuf.Type;
-    const updateInstanceConfigResponse = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.InstanceConfig'
-    ) as gax.protobuf.Type;
-    const updateInstanceConfigMetadata = protoFilesRoot.lookup(
-      '.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata'
-    ) as gax.protobuf.Type;
     const createInstanceResponse = protoFilesRoot.lookup(
       '.google.spanner.admin.instance.v1.Instance'
     ) as gax.protobuf.Type;
@@ -300,16 +283,6 @@ export class InstanceAdminClient {
     ) as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
-      createInstanceConfig: new this._gaxModule.LongrunningDescriptor(
-        this.operationsClient,
-        createInstanceConfigResponse.decode.bind(createInstanceConfigResponse),
-        createInstanceConfigMetadata.decode.bind(createInstanceConfigMetadata)
-      ),
-      updateInstanceConfig: new this._gaxModule.LongrunningDescriptor(
-        this.operationsClient,
-        updateInstanceConfigResponse.decode.bind(updateInstanceConfigResponse),
-        updateInstanceConfigMetadata.decode.bind(updateInstanceConfigMetadata)
-      ),
       createInstance: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         createInstanceResponse.decode.bind(createInstanceResponse),
@@ -374,10 +347,6 @@ export class InstanceAdminClient {
     const instanceAdminStubMethods = [
       'listInstanceConfigs',
       'getInstanceConfig',
-      'createInstanceConfig',
-      'updateInstanceConfig',
-      'deleteInstanceConfig',
-      'listInstanceConfigOperations',
       'listInstances',
       'getInstance',
       'createInstance',
@@ -574,123 +543,6 @@ export class InstanceAdminClient {
     return this.innerApiCalls.getInstanceConfig(request, options, callback);
   }
   /**
-   * Deletes the instance config. Deletion is only allowed when no
-   * instances are using the configuration. If any instances are using
-   * the config, returns `FAILED_PRECONDITION`.
-   *
-   * Only user managed configurations can be deleted.
-   *
-   * Authorization requires `spanner.instanceConfigs.delete` permission on
-   * the resource {@link google.spanner.admin.instance.v1.InstanceConfig.name|name}.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   *   Required. The name of the instance configuration to be deleted.
-   *   Values are of the form
-   *   `projects/<project>/instanceConfigs/<instance_config>`
-   * @param {string} request.etag
-   *   Used for optimistic concurrency control as a way to help prevent
-   *   simultaneous deletes of an instance config from overwriting each
-   *   other. If not empty, the API
-   *   only deletes the instance config when the etag provided matches the current
-   *   status of the requested instance config. Otherwise, deletes the instance
-   *   config without checking the current status of the requested instance
-   *   config.
-   * @param {boolean} request.validateOnly
-   *   An option to validate, but not actually execute, a request,
-   *   and provide the same response.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.delete_instance_config.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_DeleteInstanceConfig_async
-   */
-  deleteInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.protobuf.IEmpty,
-      (
-        | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-        | undefined
-      ),
-      {} | undefined
-    ]
-  >;
-  deleteInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.protobuf.IEmpty,
-      | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  deleteInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
-    callback: Callback<
-      protos.google.protobuf.IEmpty,
-      | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  deleteInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
-          protos.google.protobuf.IEmpty,
-          | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.protobuf.IEmpty,
-      | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.protobuf.IEmpty,
-      (
-        | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
-        | undefined
-      ),
-      {} | undefined
-    ]
-  > | void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        name: request.name || '',
-      });
-    this.initialize();
-    return this.innerApiCalls.deleteInstanceConfig(request, options, callback);
-  }
-  /**
    * Gets information about a particular instance.
    *
    * @param {Object} request
@@ -699,10 +551,9 @@ export class InstanceAdminClient {
    *   Required. The name of the requested instance. Values are of the form
    *   `projects/<project>/instances/<instance>`.
    * @param {google.protobuf.FieldMask} request.fieldMask
-   *   If field_mask is present, specifies the subset of
-   *   {@link google.spanner.admin.instance.v1.Instance|Instance} fields that should be
-   *   returned. If absent, all
-   *   {@link google.spanner.admin.instance.v1.Instance|Instance} fields are returned.
+   *   If field_mask is present, specifies the subset of {@link google.spanner.admin.instance.v1.Instance|Instance} fields that
+   *   should be returned.
+   *   If absent, all {@link google.spanner.admin.instance.v1.Instance|Instance} fields are returned.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1181,395 +1032,6 @@ export class InstanceAdminClient {
   }
 
   /**
-   * Creates an instance config and begins preparing it to be used. The
-   * returned {@link google.longrunning.Operation|long-running operation}
-   * can be used to track the progress of preparing the new
-   * instance config. The instance config name is assigned by the caller. If the
-   * named instance config already exists, `CreateInstanceConfig` returns
-   * `ALREADY_EXISTS`.
-   *
-   * Immediately after the request returns:
-   *
-   *   * The instance config is readable via the API, with all requested
-   *     attributes. The instance config's
-   *     {@link google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
-   *     field is set to true. Its state is `CREATING`.
-   *
-   * While the operation is pending:
-   *
-   *   * Cancelling the operation renders the instance config immediately
-   *     unreadable via the API.
-   *   * Except for deleting the creating resource, all other attempts to modify
-   *     the instance config are rejected.
-   *
-   * Upon completion of the returned operation:
-   *
-   *   * Instances can be created using the instance configuration.
-   *   * The instance config's
-   *   {@link google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
-   *   field becomes false. Its state becomes `READY`.
-   *
-   * The returned {@link google.longrunning.Operation|long-running operation} will
-   * have a name of the format
-   * `<instance_config_name>/operations/<operation_id>` and can be used to track
-   * creation of the instance config. The
-   * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   * The {@link google.longrunning.Operation.response|response} field type is
-   * {@link google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig}, if
-   * successful.
-   *
-   * Authorization requires `spanner.instanceConfigs.create` permission on
-   * the resource
-   * {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.parent|parent}.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The name of the project in which to create the instance config.
-   *   Values are of the form `projects/<project>`.
-   * @param {string} request.instanceConfigId
-   *   Required. The ID of the instance config to create.  Valid identifiers are
-   *   of the form `custom-[-a-z0-9]*[a-z0-9]` and must be between 2 and 64
-   *   characters in length. The `custom-` prefix is required to avoid name
-   *   conflicts with Google managed configurations.
-   * @param {google.spanner.admin.instance.v1.InstanceConfig} request.instanceConfig
-   *   Required. The InstanceConfig proto of the configuration to create.
-   *   instance_config.name must be
-   *   `<parent>/instanceConfigs/<instance_config_id>`.
-   *   instance_config.base_config must be a Google managed configuration name,
-   *   e.g. <parent>/instanceConfigs/us-east1, <parent>/instanceConfigs/nam3.
-   * @param {boolean} request.validateOnly
-   *   An option to validate, but not actually execute, a request,
-   *   and provide the same response.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing
-   *   a long running operation. Its `promise()` method returns a promise
-   *   you can `await` for.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.create_instance_config.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstanceConfig_async
-   */
-  createInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  >;
-  createInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
-    options: CallOptions,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
-          LROperation<
-            protos.google.spanner.admin.instance.v1.IInstanceConfig,
-            protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-          >,
-          protos.google.longrunning.IOperation | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  > | void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        parent: request.parent || '',
-      });
-    this.initialize();
-    return this.innerApiCalls.createInstanceConfig(request, options, callback);
-  }
-  /**
-   * Check the status of the long running operation returned by `createInstanceConfig()`.
-   * @param {String} name
-   *   The operation name that will be passed.
-   * @returns {Promise} - The promise which resolves to an object.
-   *   The decoded operation object has result and metadata field to get information from.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.create_instance_config.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstanceConfig_async
-   */
-  async checkCreateInstanceConfigProgress(
-    name: string
-  ): Promise<
-    LROperation<
-      protos.google.spanner.admin.instance.v1.InstanceConfig,
-      protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-    >
-  > {
-    const request =
-      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
-      );
-    const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new this._gaxModule.Operation(
-      operation,
-      this.descriptors.longrunning.createInstanceConfig,
-      this._gaxModule.createDefaultBackoffSettings()
-    );
-    return decodeOperation as LROperation<
-      protos.google.spanner.admin.instance.v1.InstanceConfig,
-      protos.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
-    >;
-  }
-  /**
-   * Updates an instance config. The returned
-   * {@link google.longrunning.Operation|long-running operation} can be used to track
-   * the progress of updating the instance. If the named instance config does
-   * not exist, returns `NOT_FOUND`.
-   *
-   * Only user managed configurations can be updated.
-   *
-   * Immediately after the request returns:
-   *
-   *   * The instance config's
-   *     {@link google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
-   *     field is set to true.
-   *
-   * While the operation is pending:
-   *
-   *   * Cancelling the operation sets its metadata's
-   *     {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancel_time|cancel_time}.
-   *     The operation is guaranteed to succeed at undoing all changes, after
-   *     which point it terminates with a `CANCELLED` status.
-   *   * All other attempts to modify the instance config are rejected.
-   *   * Reading the instance config via the API continues to give the
-   *     pre-request values.
-   *
-   * Upon completion of the returned operation:
-   *
-   *   * Creating instances using the instance configuration uses the new
-   *     values.
-   *   * The instance config's new values are readable via the API.
-   *   * The instance config's
-   *   {@link google.spanner.admin.instance.v1.InstanceConfig.reconciling|reconciling}
-   *   field becomes false.
-   *
-   * The returned {@link google.longrunning.Operation|long-running operation} will
-   * have a name of the format
-   * `<instance_config_name>/operations/<operation_id>` and can be used to track
-   * the instance config modification.  The
-   * {@link google.longrunning.Operation.metadata|metadata} field type is
-   * {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata|UpdateInstanceConfigMetadata}.
-   * The {@link google.longrunning.Operation.response|response} field type is
-   * {@link google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig}, if
-   * successful.
-   *
-   * Authorization requires `spanner.instanceConfigs.update` permission on
-   * the resource {@link google.spanner.admin.instance.v1.InstanceConfig.name|name}.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {google.spanner.admin.instance.v1.InstanceConfig} request.instanceConfig
-   *   Required. The user instance config to update, which must always include the
-   *   instance config name. Otherwise, only fields mentioned in
-   *   {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.update_mask|update_mask}
-   *   need be included. To prevent conflicts of concurrent updates,
-   *   {@link google.spanner.admin.instance.v1.InstanceConfig.reconciling|etag} can
-   *   be used.
-   * @param {google.protobuf.FieldMask} request.updateMask
-   *   Required. A mask specifying which fields in
-   *   {@link google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig} should be
-   *   updated. The field mask must always be specified; this prevents any future
-   *   fields in {@link google.spanner.admin.instance.v1.InstanceConfig|InstanceConfig}
-   *   from being erased accidentally by clients that do not know about them. Only
-   *   display_name and labels can be updated.
-   * @param {boolean} request.validateOnly
-   *   An option to validate, but not actually execute, a request,
-   *   and provide the same response.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing
-   *   a long running operation. Its `promise()` method returns a promise
-   *   you can `await` for.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.update_instance_config.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstanceConfig_async
-   */
-  updateInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  >;
-  updateInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
-    options: CallOptions,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  updateInstanceConfig(
-    request: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
-    callback: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  updateInstanceConfig(
-    request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
-          LROperation<
-            protos.google.spanner.admin.instance.v1.IInstanceConfig,
-            protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-          >,
-          protos.google.longrunning.IOperation | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      LROperation<
-        protos.google.spanner.admin.instance.v1.IInstanceConfig,
-        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined
-    ]
-  > | void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        'instance_config.name': request.instanceConfig!.name || '',
-      });
-    this.initialize();
-    return this.innerApiCalls.updateInstanceConfig(request, options, callback);
-  }
-  /**
-   * Check the status of the long running operation returned by `updateInstanceConfig()`.
-   * @param {String} name
-   *   The operation name that will be passed.
-   * @returns {Promise} - The promise which resolves to an object.
-   *   The decoded operation object has result and metadata field to get information from.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.update_instance_config.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstanceConfig_async
-   */
-  async checkUpdateInstanceConfigProgress(
-    name: string
-  ): Promise<
-    LROperation<
-      protos.google.spanner.admin.instance.v1.InstanceConfig,
-      protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
-    >
-  > {
-    const request =
-      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
-      );
-    const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new this._gaxModule.Operation(
-      operation,
-      this.descriptors.longrunning.updateInstanceConfig,
-      this._gaxModule.createDefaultBackoffSettings()
-    );
-    return decodeOperation as LROperation<
-      protos.google.spanner.admin.instance.v1.InstanceConfig,
-      protos.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
-    >;
-  }
-  /**
    * Creates an instance and begins preparing it to begin serving. The
    * returned {@link google.longrunning.Operation|long-running operation}
    * can be used to track the progress of preparing the new
@@ -1763,9 +1225,9 @@ export class InstanceAdminClient {
    * Until completion of the returned operation:
    *
    *   * Cancelling the operation sets its metadata's
-   *     {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time|cancel_time},
-   *     and begins restoring resources to their pre-request values. The
-   *     operation is guaranteed to succeed at undoing all resource changes,
+   *     {@link google.spanner.admin.instance.v1.UpdateInstanceMetadata.cancel_time|cancel_time}, and begins
+   *     restoring resources to their pre-request values. The operation
+   *     is guaranteed to succeed at undoing all resource changes,
    *     after which point it terminates with a `CANCELLED` status.
    *   * All other attempts to modify the instance are rejected.
    *   * Reading the instance via the API continues to give the pre-request
@@ -1794,15 +1256,12 @@ export class InstanceAdminClient {
    *   The request object that will be sent.
    * @param {google.spanner.admin.instance.v1.Instance} request.instance
    *   Required. The instance to update, which must always include the instance
-   *   name.  Otherwise, only fields mentioned in
-   *   {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask|field_mask}
-   *   need be included.
+   *   name.  Otherwise, only fields mentioned in {@link google.spanner.admin.instance.v1.UpdateInstanceRequest.field_mask|field_mask} need be included.
    * @param {google.protobuf.FieldMask} request.fieldMask
-   *   Required. A mask specifying which fields in
-   *   {@link google.spanner.admin.instance.v1.Instance|Instance} should be updated.
+   *   Required. A mask specifying which fields in {@link google.spanner.admin.instance.v1.Instance|Instance} should be updated.
    *   The field mask must always be specified; this prevents any future fields in
-   *   {@link google.spanner.admin.instance.v1.Instance|Instance} from being erased
-   *   accidentally by clients that do not know about them.
+   *   {@link google.spanner.admin.instance.v1.Instance|Instance} from being erased accidentally by clients that do not know
+   *   about them.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1949,8 +1408,7 @@ export class InstanceAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
+   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2053,8 +1511,7 @@ export class InstanceAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
+   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2105,8 +1562,7 @@ export class InstanceAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
+   *   from a previous {@link google.spanner.admin.instance.v1.ListInstanceConfigsResponse|ListInstanceConfigsResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2142,359 +1598,6 @@ export class InstanceAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstanceConfig>;
   }
   /**
-   * Lists the user-managed instance config [long-running
-   * operations][google.longrunning.Operation] in the given project. An instance
-   * config operation has a name of the form
-   * `projects/<project>/instanceConfigs/<instance_config>/operations/<operation>`.
-   * The long-running operation
-   * {@link google.longrunning.Operation.metadata|metadata} field type
-   * `metadata.type_url` describes the type of the metadata. Operations returned
-   * include those that have completed/failed/canceled within the last 7 days,
-   * and pending operations. Operations returned are ordered by
-   * `operation.metadata.value.start_time` in descending order starting
-   * from the most recently started operation.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The project of the instance config operations.
-   *   Values are of the form `projects/<project>`.
-   * @param {string} request.filter
-   *   An expression that filters the list of returned operations.
-   *
-   *   A filter expression consists of a field name, a
-   *   comparison operator, and a value for filtering.
-   *   The value must be a string, a number, or a boolean. The comparison operator
-   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
-   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
-   *   The following fields in the {@link google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
-   *
-   *     * `name` - The name of the long-running operation
-   *     * `done` - False if the operation is in progress, else true.
-   *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for
-   *        {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}
-   *        is
-   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata`.
-   *     * `metadata.<field_name>` - any field in metadata.value.
-   *        `metadata.@type` must be specified first, if filtering on metadata
-   *        fields.
-   *     * `error` - Error associated with the long-running operation.
-   *     * `response.@type` - the type of response.
-   *     * `response.<field_name>` - any field in response.value.
-   *
-   *   You can combine multiple expressions by enclosing each expression in
-   *   parentheses. By default, expressions are combined with AND logic. However,
-   *   you can specify AND, OR, and NOT logic explicitly.
-   *
-   *   Here are a few examples:
-   *
-   *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=` \
-   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-   *       AND` \
-   *       `(metadata.instance_config.name:custom-config) AND` \
-   *       `(metadata.progress.start_time < \"2021-03-28T14:50:00Z\") AND` \
-   *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is
-   *       {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
-   *       * The operation started before 2021-03-28T14:50:00Z.
-   *       * The operation resulted in an error.
-   * @param {number} request.pageSize
-   *   Number of operations to be returned in the response. If 0 or
-   *   less, defaults to the server's maximum allowed page size.
-   * @param {string} request.pageToken
-   *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse|ListInstanceConfigOperationsResponse}
-   *   to the same `parent` and with the same `filter`.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed and will merge results from all the pages into this array.
-   *   Note that it can affect your quota.
-   *   We recommend using `listInstanceConfigOperationsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   */
-  listInstanceConfigOperations(
-    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.longrunning.IOperation[],
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-    ]
-  >;
-  listInstanceConfigOperations(
-    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options: CallOptions,
-    callback: PaginationCallback<
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-      | protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-      | null
-      | undefined,
-      protos.google.longrunning.IOperation
-    >
-  ): void;
-  listInstanceConfigOperations(
-    request: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    callback: PaginationCallback<
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-      | protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-      | null
-      | undefined,
-      protos.google.longrunning.IOperation
-    >
-  ): void;
-  listInstanceConfigOperations(
-    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | PaginationCallback<
-          protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-          | protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-          | null
-          | undefined,
-          protos.google.longrunning.IOperation
-        >,
-    callback?: PaginationCallback<
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-      | protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-      | null
-      | undefined,
-      protos.google.longrunning.IOperation
-    >
-  ): Promise<
-    [
-      protos.google.longrunning.IOperation[],
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
-    ]
-  > | void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    } else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        parent: request.parent || '',
-      });
-    this.initialize();
-    return this.innerApiCalls.listInstanceConfigOperations(
-      request,
-      options,
-      callback
-    );
-  }
-
-  /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The project of the instance config operations.
-   *   Values are of the form `projects/<project>`.
-   * @param {string} request.filter
-   *   An expression that filters the list of returned operations.
-   *
-   *   A filter expression consists of a field name, a
-   *   comparison operator, and a value for filtering.
-   *   The value must be a string, a number, or a boolean. The comparison operator
-   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
-   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
-   *   The following fields in the {@link google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
-   *
-   *     * `name` - The name of the long-running operation
-   *     * `done` - False if the operation is in progress, else true.
-   *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for
-   *        {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}
-   *        is
-   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata`.
-   *     * `metadata.<field_name>` - any field in metadata.value.
-   *        `metadata.@type` must be specified first, if filtering on metadata
-   *        fields.
-   *     * `error` - Error associated with the long-running operation.
-   *     * `response.@type` - the type of response.
-   *     * `response.<field_name>` - any field in response.value.
-   *
-   *   You can combine multiple expressions by enclosing each expression in
-   *   parentheses. By default, expressions are combined with AND logic. However,
-   *   you can specify AND, OR, and NOT logic explicitly.
-   *
-   *   Here are a few examples:
-   *
-   *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=` \
-   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-   *       AND` \
-   *       `(metadata.instance_config.name:custom-config) AND` \
-   *       `(metadata.progress.start_time < \"2021-03-28T14:50:00Z\") AND` \
-   *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is
-   *       {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
-   *       * The operation started before 2021-03-28T14:50:00Z.
-   *       * The operation resulted in an error.
-   * @param {number} request.pageSize
-   *   Number of operations to be returned in the response. If 0 or
-   *   less, defaults to the server's maximum allowed page size.
-   * @param {string} request.pageToken
-   *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse|ListInstanceConfigOperationsResponse}
-   *   to the same `parent` and with the same `filter`.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed. Note that it can affect your quota.
-   *   We recommend using `listInstanceConfigOperationsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   */
-  listInstanceConfigOperationsStream(
-    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
-  ): Transform {
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        parent: request.parent || '',
-      });
-    const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
-    const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
-    return this.descriptors.page.listInstanceConfigOperations.createStream(
-      this.innerApiCalls.listInstanceConfigOperations as GaxCall,
-      request,
-      callSettings
-    );
-  }
-
-  /**
-   * Equivalent to `listInstanceConfigOperations`, but returns an iterable object.
-   *
-   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.parent
-   *   Required. The project of the instance config operations.
-   *   Values are of the form `projects/<project>`.
-   * @param {string} request.filter
-   *   An expression that filters the list of returned operations.
-   *
-   *   A filter expression consists of a field name, a
-   *   comparison operator, and a value for filtering.
-   *   The value must be a string, a number, or a boolean. The comparison operator
-   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
-   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
-   *
-   *   The following fields in the {@link google.longrunning.Operation|Operation}
-   *   are eligible for filtering:
-   *
-   *     * `name` - The name of the long-running operation
-   *     * `done` - False if the operation is in progress, else true.
-   *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for
-   *        {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}
-   *        is
-   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata`.
-   *     * `metadata.<field_name>` - any field in metadata.value.
-   *        `metadata.@type` must be specified first, if filtering on metadata
-   *        fields.
-   *     * `error` - Error associated with the long-running operation.
-   *     * `response.@type` - the type of response.
-   *     * `response.<field_name>` - any field in response.value.
-   *
-   *   You can combine multiple expressions by enclosing each expression in
-   *   parentheses. By default, expressions are combined with AND logic. However,
-   *   you can specify AND, OR, and NOT logic explicitly.
-   *
-   *   Here are a few examples:
-   *
-   *     * `done:true` - The operation is complete.
-   *     * `(metadata.@type=` \
-   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
-   *       AND` \
-   *       `(metadata.instance_config.name:custom-config) AND` \
-   *       `(metadata.progress.start_time < \"2021-03-28T14:50:00Z\") AND` \
-   *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is
-   *       {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata|CreateInstanceConfigMetadata}.
-   *       * The instance config name contains "custom-config".
-   *       * The operation started before 2021-03-28T14:50:00Z.
-   *       * The operation resulted in an error.
-   * @param {number} request.pageSize
-   *   Number of operations to be returned in the response. If 0 or
-   *   less, defaults to the server's maximum allowed page size.
-   * @param {string} request.pageToken
-   *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse|ListInstanceConfigOperationsResponse}
-   *   to the same `parent` and with the same `filter`.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Object}
-   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
-   *   When you iterate the returned iterable, each element will be an object representing
-   *   [Operation]{@link google.longrunning.Operation}. The API will be called under the hood as needed, once per the page,
-   *   so you can stop the iteration when you don't need more results.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_config_operations.js</caption>
-   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstanceConfigOperations_async
-   */
-  listInstanceConfigOperationsAsync(
-    request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
-    options?: CallOptions
-  ): AsyncIterable<protos.google.longrunning.IOperation> {
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        parent: request.parent || '',
-      });
-    const defaultCallSettings = this._defaults['listInstanceConfigOperations'];
-    const callSettings = defaultCallSettings.merge(options);
-    this.initialize();
-    return this.descriptors.page.listInstanceConfigOperations.asyncIterate(
-      this.innerApiCalls['listInstanceConfigOperations'] as GaxCall,
-      request as {},
-      callSettings
-    ) as AsyncIterable<protos.google.longrunning.IOperation>;
-  }
-  /**
    * Lists all instances in the given project.
    *
    * @param {Object} request
@@ -2507,9 +1610,8 @@ export class InstanceAdminClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
+   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -2530,13 +1632,6 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
-   * @param {google.protobuf.Timestamp} request.instanceDeadline
-   *   Deadline used while retrieving metadata for instances.
-   *   Instances whose metadata cannot be retrieved within this deadline will be
-   *   added to
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
-   *   in
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2637,9 +1732,8 @@ export class InstanceAdminClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
+   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -2660,13 +1754,6 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
-   * @param {google.protobuf.Timestamp} request.instanceDeadline
-   *   Deadline used while retrieving metadata for instances.
-   *   Instances whose metadata cannot be retrieved within this deadline will be
-   *   added to
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
-   *   in
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2715,9 +1802,8 @@ export class InstanceAdminClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token}
-   *   from a previous
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
+   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.next_page_token|next_page_token} from a
+   *   previous {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -2738,13 +1824,6 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
-   * @param {google.protobuf.Timestamp} request.instanceDeadline
-   *   Deadline used while retrieving metadata for instances.
-   *   Instances whose metadata cannot be retrieved within this deadline will be
-   *   added to
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
-   *   in
-   *   {@link google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
