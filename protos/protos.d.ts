@@ -10607,6 +10607,62 @@ export namespace google {
                         public getInstanceConfig(request: google.spanner.admin.instance.v1.IGetInstanceConfigRequest): Promise<google.spanner.admin.instance.v1.InstanceConfig>;
 
                         /**
+                         * Calls CreateInstanceConfig.
+                         * @param request CreateInstanceConfigRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public createInstanceConfig(request: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfigCallback): void;
+
+                        /**
+                         * Calls CreateInstanceConfig.
+                         * @param request CreateInstanceConfigRequest message or plain object
+                         * @returns Promise
+                         */
+                        public createInstanceConfig(request: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls UpdateInstanceConfig.
+                         * @param request UpdateInstanceConfigRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public updateInstanceConfig(request: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfigCallback): void;
+
+                        /**
+                         * Calls UpdateInstanceConfig.
+                         * @param request UpdateInstanceConfigRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateInstanceConfig(request: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls DeleteInstanceConfig.
+                         * @param request DeleteInstanceConfigRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Empty
+                         */
+                        public deleteInstanceConfig(request: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfigCallback): void;
+
+                        /**
+                         * Calls DeleteInstanceConfig.
+                         * @param request DeleteInstanceConfigRequest message or plain object
+                         * @returns Promise
+                         */
+                        public deleteInstanceConfig(request: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest): Promise<google.protobuf.Empty>;
+
+                        /**
+                         * Calls ListInstanceConfigOperations.
+                         * @param request ListInstanceConfigOperationsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListInstanceConfigOperationsResponse
+                         */
+                        public listInstanceConfigOperations(request: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigOperationsCallback): void;
+
+                        /**
+                         * Calls ListInstanceConfigOperations.
+                         * @param request ListInstanceConfigOperationsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listInstanceConfigOperations(request: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest): Promise<google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>;
+
+                        /**
                          * Calls ListInstances.
                          * @param request ListInstancesRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and ListInstancesResponse
@@ -10734,6 +10790,34 @@ export namespace google {
                          * @param [response] InstanceConfig
                          */
                         type GetInstanceConfigCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.InstanceConfig) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstanceConfig}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type CreateInstanceConfigCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstanceConfig}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type UpdateInstanceConfigCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstanceConfig}.
+                         * @param error Error, if any
+                         * @param [response] Empty
+                         */
+                        type DeleteInstanceConfigCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstanceConfigOperations}.
+                         * @param error Error, if any
+                         * @param [response] ListInstanceConfigOperationsResponse
+                         */
+                        type ListInstanceConfigOperationsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse) => void;
 
                         /**
                          * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstances}.
@@ -10921,11 +11005,32 @@ export namespace google {
                         /** InstanceConfig displayName */
                         displayName?: (string|null);
 
+                        /** InstanceConfig configType */
+                        configType?: (google.spanner.admin.instance.v1.InstanceConfig.Type|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.Type|null);
+
                         /** InstanceConfig replicas */
                         replicas?: (google.spanner.admin.instance.v1.IReplicaInfo[]|null);
 
+                        /** InstanceConfig optionalReplicas */
+                        optionalReplicas?: (google.spanner.admin.instance.v1.IReplicaInfo[]|null);
+
+                        /** InstanceConfig baseConfig */
+                        baseConfig?: (string|null);
+
+                        /** InstanceConfig labels */
+                        labels?: ({ [k: string]: string }|null);
+
+                        /** InstanceConfig etag */
+                        etag?: (string|null);
+
                         /** InstanceConfig leaderOptions */
                         leaderOptions?: (string[]|null);
+
+                        /** InstanceConfig reconciling */
+                        reconciling?: (boolean|null);
+
+                        /** InstanceConfig state */
+                        state?: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State|null);
                     }
 
                     /** Represents an InstanceConfig. */
@@ -10943,11 +11048,32 @@ export namespace google {
                         /** InstanceConfig displayName. */
                         public displayName: string;
 
+                        /** InstanceConfig configType. */
+                        public configType: (google.spanner.admin.instance.v1.InstanceConfig.Type|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.Type);
+
                         /** InstanceConfig replicas. */
                         public replicas: google.spanner.admin.instance.v1.IReplicaInfo[];
 
+                        /** InstanceConfig optionalReplicas. */
+                        public optionalReplicas: google.spanner.admin.instance.v1.IReplicaInfo[];
+
+                        /** InstanceConfig baseConfig. */
+                        public baseConfig: string;
+
+                        /** InstanceConfig labels. */
+                        public labels: { [k: string]: string };
+
+                        /** InstanceConfig etag. */
+                        public etag: string;
+
                         /** InstanceConfig leaderOptions. */
                         public leaderOptions: string[];
+
+                        /** InstanceConfig reconciling. */
+                        public reconciling: boolean;
+
+                        /** InstanceConfig state. */
+                        public state: (google.spanner.admin.instance.v1.InstanceConfig.State|keyof typeof google.spanner.admin.instance.v1.InstanceConfig.State);
 
                         /**
                          * Creates a new InstanceConfig instance using the specified properties.
@@ -11025,6 +11151,23 @@ export namespace google {
                          * @returns The default type url
                          */
                         public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace InstanceConfig {
+
+                        /** Type enum. */
+                        enum Type {
+                            TYPE_UNSPECIFIED = 0,
+                            GOOGLE_MANAGED = 1,
+                            USER_MANAGED = 2
+                        }
+
+                        /** State enum. */
+                        enum State {
+                            STATE_UNSPECIFIED = 0,
+                            CREATING = 1,
+                            READY = 2
+                        }
                     }
 
                     /** Properties of an Instance. */
@@ -11497,6 +11640,557 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** Properties of a CreateInstanceConfigRequest. */
+                    interface ICreateInstanceConfigRequest {
+
+                        /** CreateInstanceConfigRequest parent */
+                        parent?: (string|null);
+
+                        /** CreateInstanceConfigRequest instanceConfigId */
+                        instanceConfigId?: (string|null);
+
+                        /** CreateInstanceConfigRequest instanceConfig */
+                        instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** CreateInstanceConfigRequest validateOnly */
+                        validateOnly?: (boolean|null);
+                    }
+
+                    /** Represents a CreateInstanceConfigRequest. */
+                    class CreateInstanceConfigRequest implements ICreateInstanceConfigRequest {
+
+                        /**
+                         * Constructs a new CreateInstanceConfigRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest);
+
+                        /** CreateInstanceConfigRequest parent. */
+                        public parent: string;
+
+                        /** CreateInstanceConfigRequest instanceConfigId. */
+                        public instanceConfigId: string;
+
+                        /** CreateInstanceConfigRequest instanceConfig. */
+                        public instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** CreateInstanceConfigRequest validateOnly. */
+                        public validateOnly: boolean;
+
+                        /**
+                         * Creates a new CreateInstanceConfigRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstanceConfigRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest): google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+
+                        /**
+                         * Encodes the specified CreateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                         * @param message CreateInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                         * @param message CreateInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+
+                        /**
+                         * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+
+                        /**
+                         * Verifies a CreateInstanceConfigRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstanceConfigRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstanceConfigRequest;
+
+                        /**
+                         * Creates a plain object from a CreateInstanceConfigRequest message. Also converts values to other types if specified.
+                         * @param message CreateInstanceConfigRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstanceConfigRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstanceConfigRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CreateInstanceConfigRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateInstanceConfigRequest. */
+                    interface IUpdateInstanceConfigRequest {
+
+                        /** UpdateInstanceConfigRequest instanceConfig */
+                        instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** UpdateInstanceConfigRequest updateMask */
+                        updateMask?: (google.protobuf.IFieldMask|null);
+
+                        /** UpdateInstanceConfigRequest validateOnly */
+                        validateOnly?: (boolean|null);
+                    }
+
+                    /** Represents an UpdateInstanceConfigRequest. */
+                    class UpdateInstanceConfigRequest implements IUpdateInstanceConfigRequest {
+
+                        /**
+                         * Constructs a new UpdateInstanceConfigRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest);
+
+                        /** UpdateInstanceConfigRequest instanceConfig. */
+                        public instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** UpdateInstanceConfigRequest updateMask. */
+                        public updateMask?: (google.protobuf.IFieldMask|null);
+
+                        /** UpdateInstanceConfigRequest validateOnly. */
+                        public validateOnly: boolean;
+
+                        /**
+                         * Creates a new UpdateInstanceConfigRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstanceConfigRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest): google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+
+                        /**
+                         * Encodes the specified UpdateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                         * @param message UpdateInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                         * @param message UpdateInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+
+                        /**
+                         * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+
+                        /**
+                         * Verifies an UpdateInstanceConfigRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstanceConfigRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstanceConfigRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateInstanceConfigRequest message. Also converts values to other types if specified.
+                         * @param message UpdateInstanceConfigRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstanceConfigRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstanceConfigRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateInstanceConfigRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a DeleteInstanceConfigRequest. */
+                    interface IDeleteInstanceConfigRequest {
+
+                        /** DeleteInstanceConfigRequest name */
+                        name?: (string|null);
+
+                        /** DeleteInstanceConfigRequest etag */
+                        etag?: (string|null);
+
+                        /** DeleteInstanceConfigRequest validateOnly */
+                        validateOnly?: (boolean|null);
+                    }
+
+                    /** Represents a DeleteInstanceConfigRequest. */
+                    class DeleteInstanceConfigRequest implements IDeleteInstanceConfigRequest {
+
+                        /**
+                         * Constructs a new DeleteInstanceConfigRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest);
+
+                        /** DeleteInstanceConfigRequest name. */
+                        public name: string;
+
+                        /** DeleteInstanceConfigRequest etag. */
+                        public etag: string;
+
+                        /** DeleteInstanceConfigRequest validateOnly. */
+                        public validateOnly: boolean;
+
+                        /**
+                         * Creates a new DeleteInstanceConfigRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DeleteInstanceConfigRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest): google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+
+                        /**
+                         * Encodes the specified DeleteInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                         * @param message DeleteInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DeleteInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                         * @param message DeleteInstanceConfigRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DeleteInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+
+                        /**
+                         * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DeleteInstanceConfigRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+
+                        /**
+                         * Verifies a DeleteInstanceConfigRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DeleteInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DeleteInstanceConfigRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.DeleteInstanceConfigRequest;
+
+                        /**
+                         * Creates a plain object from a DeleteInstanceConfigRequest message. Also converts values to other types if specified.
+                         * @param message DeleteInstanceConfigRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.DeleteInstanceConfigRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DeleteInstanceConfigRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for DeleteInstanceConfigRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstanceConfigOperationsRequest. */
+                    interface IListInstanceConfigOperationsRequest {
+
+                        /** ListInstanceConfigOperationsRequest parent */
+                        parent?: (string|null);
+
+                        /** ListInstanceConfigOperationsRequest filter */
+                        filter?: (string|null);
+
+                        /** ListInstanceConfigOperationsRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListInstanceConfigOperationsRequest pageToken */
+                        pageToken?: (string|null);
+                    }
+
+                    /** Represents a ListInstanceConfigOperationsRequest. */
+                    class ListInstanceConfigOperationsRequest implements IListInstanceConfigOperationsRequest {
+
+                        /**
+                         * Constructs a new ListInstanceConfigOperationsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest);
+
+                        /** ListInstanceConfigOperationsRequest parent. */
+                        public parent: string;
+
+                        /** ListInstanceConfigOperationsRequest filter. */
+                        public filter: string;
+
+                        /** ListInstanceConfigOperationsRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListInstanceConfigOperationsRequest pageToken. */
+                        public pageToken: string;
+
+                        /**
+                         * Creates a new ListInstanceConfigOperationsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstanceConfigOperationsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest): google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigOperationsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                         * @param message ListInstanceConfigOperationsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                         * @param message ListInstanceConfigOperationsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstanceConfigOperationsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+
+                        /**
+                         * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstanceConfigOperationsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+
+                        /**
+                         * Verifies a ListInstanceConfigOperationsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstanceConfigOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstanceConfigOperationsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest;
+
+                        /**
+                         * Creates a plain object from a ListInstanceConfigOperationsRequest message. Also converts values to other types if specified.
+                         * @param message ListInstanceConfigOperationsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstanceConfigOperationsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstanceConfigOperationsRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstanceConfigOperationsResponse. */
+                    interface IListInstanceConfigOperationsResponse {
+
+                        /** ListInstanceConfigOperationsResponse operations */
+                        operations?: (google.longrunning.IOperation[]|null);
+
+                        /** ListInstanceConfigOperationsResponse nextPageToken */
+                        nextPageToken?: (string|null);
+                    }
+
+                    /** Represents a ListInstanceConfigOperationsResponse. */
+                    class ListInstanceConfigOperationsResponse implements IListInstanceConfigOperationsResponse {
+
+                        /**
+                         * Constructs a new ListInstanceConfigOperationsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse);
+
+                        /** ListInstanceConfigOperationsResponse operations. */
+                        public operations: google.longrunning.IOperation[];
+
+                        /** ListInstanceConfigOperationsResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /**
+                         * Creates a new ListInstanceConfigOperationsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstanceConfigOperationsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse): google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigOperationsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                         * @param message ListInstanceConfigOperationsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstanceConfigOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                         * @param message ListInstanceConfigOperationsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstanceConfigOperationsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
+
+                        /**
+                         * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstanceConfigOperationsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
+
+                        /**
+                         * Verifies a ListInstanceConfigOperationsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstanceConfigOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstanceConfigOperationsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse;
+
+                        /**
+                         * Creates a plain object from a ListInstanceConfigOperationsResponse message. Also converts values to other types if specified.
+                         * @param message ListInstanceConfigOperationsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstanceConfigOperationsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstanceConfigOperationsResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of a GetInstanceRequest. */
                     interface IGetInstanceRequest {
 
@@ -11723,6 +12417,9 @@ export namespace google {
 
                         /** ListInstancesRequest filter */
                         filter?: (string|null);
+
+                        /** ListInstancesRequest instanceDeadline */
+                        instanceDeadline?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a ListInstancesRequest. */
@@ -11745,6 +12442,9 @@ export namespace google {
 
                         /** ListInstancesRequest filter. */
                         public filter: string;
+
+                        /** ListInstancesRequest instanceDeadline. */
+                        public instanceDeadline?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new ListInstancesRequest instance using the specified properties.
@@ -12351,6 +13051,224 @@ export namespace google {
 
                         /**
                          * Gets the default type url for UpdateInstanceMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a CreateInstanceConfigMetadata. */
+                    interface ICreateInstanceConfigMetadata {
+
+                        /** CreateInstanceConfigMetadata instanceConfig */
+                        instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** CreateInstanceConfigMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** CreateInstanceConfigMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a CreateInstanceConfigMetadata. */
+                    class CreateInstanceConfigMetadata implements ICreateInstanceConfigMetadata {
+
+                        /**
+                         * Constructs a new CreateInstanceConfigMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata);
+
+                        /** CreateInstanceConfigMetadata instanceConfig. */
+                        public instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** CreateInstanceConfigMetadata progress. */
+                        public progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** CreateInstanceConfigMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new CreateInstanceConfigMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstanceConfigMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata): google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+
+                        /**
+                         * Encodes the specified CreateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                         * @param message CreateInstanceConfigMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                         * @param message CreateInstanceConfigMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstanceConfigMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+
+                        /**
+                         * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstanceConfigMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+
+                        /**
+                         * Verifies a CreateInstanceConfigMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstanceConfigMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+
+                        /**
+                         * Creates a plain object from a CreateInstanceConfigMetadata message. Also converts values to other types if specified.
+                         * @param message CreateInstanceConfigMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstanceConfigMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstanceConfigMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CreateInstanceConfigMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateInstanceConfigMetadata. */
+                    interface IUpdateInstanceConfigMetadata {
+
+                        /** UpdateInstanceConfigMetadata instanceConfig */
+                        instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** UpdateInstanceConfigMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** UpdateInstanceConfigMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents an UpdateInstanceConfigMetadata. */
+                    class UpdateInstanceConfigMetadata implements IUpdateInstanceConfigMetadata {
+
+                        /**
+                         * Constructs a new UpdateInstanceConfigMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata);
+
+                        /** UpdateInstanceConfigMetadata instanceConfig. */
+                        public instanceConfig?: (google.spanner.admin.instance.v1.IInstanceConfig|null);
+
+                        /** UpdateInstanceConfigMetadata progress. */
+                        public progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** UpdateInstanceConfigMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new UpdateInstanceConfigMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstanceConfigMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata): google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+
+                        /**
+                         * Encodes the specified UpdateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                         * @param message UpdateInstanceConfigMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                         * @param message UpdateInstanceConfigMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstanceConfigMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+
+                        /**
+                         * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstanceConfigMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+
+                        /**
+                         * Verifies an UpdateInstanceConfigMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstanceConfigMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata;
+
+                        /**
+                         * Creates a plain object from an UpdateInstanceConfigMetadata message. Also converts values to other types if specified.
+                         * @param message UpdateInstanceConfigMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstanceConfigMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateInstanceConfigMetadata
                          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                          * @returns The default type url
                          */
