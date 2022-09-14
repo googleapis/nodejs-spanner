@@ -472,7 +472,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        database: request.database || '',
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.createSession(request, options, callback);
@@ -566,7 +566,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        database: request.database || '',
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.batchCreateSessions(request, options, callback);
@@ -649,7 +649,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        name: request.name || '',
+        name: request.name ?? '',
       });
     this.initialize();
     return this.innerApiCalls.getSession(request, options, callback);
@@ -732,7 +732,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        name: request.name || '',
+        name: request.name ?? '',
       });
     this.initialize();
     return this.innerApiCalls.deleteSession(request, options, callback);
@@ -890,7 +890,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeSql(request, options, callback);
@@ -1005,7 +1005,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeBatchDml(request, options, callback);
@@ -1141,7 +1141,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.read(request, options, callback);
@@ -1233,7 +1233,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.beginTransaction(request, options, callback);
@@ -1349,7 +1349,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.commit(request, options, callback);
@@ -1439,7 +1439,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.rollback(request, options, callback);
@@ -1568,7 +1568,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.partitionQuery(request, options, callback);
@@ -1683,7 +1683,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.partitionRead(request, options, callback);
@@ -1785,7 +1785,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeStreamingSql(request, options);
@@ -1863,7 +1863,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        session: request.session || '',
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.streamingRead(request, options);
@@ -1968,7 +1968,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        database: request.database || '',
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.listSessions(request, options, callback);
@@ -2020,7 +2020,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        database: request.database || '',
+        database: request.database ?? '',
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
@@ -2079,7 +2079,7 @@ export class SpannerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
       this._gaxModule.routingHeader.fromParams({
-        database: request.database || '',
+        database: request.database ?? '',
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
