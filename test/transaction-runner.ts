@@ -213,6 +213,9 @@ describe('TransactionRunner', () => {
         const transaction = await runner.getTransaction();
 
         assert.strictEqual(transaction, expectedTransaction);
+        assert.strictEqual(beginStub.callCount, 0);
+        runner.attempts++;
+        await runner.getTransaction();
         assert.strictEqual(beginStub.callCount, 1);
       });
     });
