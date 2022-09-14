@@ -292,8 +292,7 @@ export class Snapshot extends EventEmitter {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
     this._idWaiter = new Readable({
-      read() {
-      },
+      read() {},
     });
     this._inlineBeginStarted = false;
   }
@@ -1267,8 +1266,8 @@ export class Snapshot extends EventEmitter {
    * @private
    */
   private _wrapWithIdWaiter(
-      makeRequest: (resumeToken?: ResumeToken) => Readable):
-      (resumeToken?: ResumeToken) => Readable {
+    makeRequest: (resumeToken?: ResumeToken) => Readable
+  ): (resumeToken?: ResumeToken) => Readable {
     if (this.id || !this._options.readWrite) {
       return makeRequest;
     }
@@ -1277,10 +1276,11 @@ export class Snapshot extends EventEmitter {
       return makeRequest;
     }
     return (resumeToken?: ResumeToken): Readable =>
-        this._idWaiter.once('notify', () => makeRequest(resumeToken)
-            .on('data', (chunk) => this._idWaiter.emit('data', chunk))
-            .once('end', () => this._idWaiter.emit('end'))
-        );
+      this._idWaiter.once('notify', () =>
+        makeRequest(resumeToken)
+          .on('data', chunk => this._idWaiter.emit('data', chunk))
+          .once('end', () => this._idWaiter.emit('end'))
+      );
   }
 }
 

@@ -17,7 +17,14 @@
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
 import {grpc, Status, ServiceError} from 'google-gax';
-import {Database, Instance, SessionPool, Snapshot, Spanner, Transaction} from '../src';
+import {
+  Database,
+  Instance,
+  SessionPool,
+  Snapshot,
+  Spanner,
+  Transaction,
+} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -1221,8 +1228,8 @@ describe('Spanner with mock server', () => {
             streamIndex: index,
           } as MockError;
           spannerMock.setExecutionTime(
-              spannerMock.executeStreamingSql,
-              SimulatedExecutionTime.ofError(err)
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
           );
           const database = newTestDatabase();
 
@@ -1232,13 +1239,23 @@ describe('Spanner with mock server', () => {
           });
           await database.close();
 
-          const requests = spannerMock.getRequests().filter(val =>
-              (val as v1.ExecuteSqlRequest).sql
-          ).map(req => req as v1.ExecuteSqlRequest);
+          const requests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.ExecuteSqlRequest).sql)
+            .map(req => req as v1.ExecuteSqlRequest);
           assert.strictEqual(requests.length, 2);
-          assert.ok(requests[0].transaction?.begin!.readWrite, 'inline txn is not set.');
-          assert.ok(requests[1].transaction!.id, 'Transaction ID is not used for retries.');
-          assert.ok(requests[1].resumeToken, "Resume token is not set for the retried");
+          assert.ok(
+            requests[0].transaction?.begin!.readWrite,
+            'inline txn is not set.'
+          );
+          assert.ok(
+            requests[1].transaction!.id,
+            'Transaction ID is not used for retries.'
+          );
+          assert.ok(
+            requests[1].resumeToken,
+            'Resume token is not set for the retried'
+          );
         });
 
         it('should not retry non-retryable error during streaming', async () => {
@@ -3129,12 +3146,12 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(request.sql, selectSql);
 
       request = spannerMock
-          .getRequests()
-          .slice()
-          .reverse()
-          .find(val => {
-            return (val as v1.ExecuteSqlRequest).sql;
-          }) as v1.ExecuteSqlRequest;
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
       assert.ok(request, 'no ExecuteSqlRequest found');
       assert.strictEqual(request.sql, selectSql);
       assert.ok(request.transaction!.id, 'TransactionID is not set.');
