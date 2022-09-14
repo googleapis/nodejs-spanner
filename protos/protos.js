@@ -36668,6 +36668,7 @@
                                 return "typeAnnotation: enum value expected";
                             case 0:
                             case 2:
+                            case 3:
                                 break;
                             }
                         return null;
@@ -36753,6 +36754,10 @@
                         case "PG_NUMERIC":
                         case 2:
                             message.typeAnnotation = 2;
+                            break;
+                        case "PG_JSONB":
+                        case 3:
+                            message.typeAnnotation = 3;
                             break;
                         }
                         return message;
@@ -37313,11 +37318,13 @@
                  * @enum {number}
                  * @property {number} TYPE_ANNOTATION_CODE_UNSPECIFIED=0 TYPE_ANNOTATION_CODE_UNSPECIFIED value
                  * @property {number} PG_NUMERIC=2 PG_NUMERIC value
+                 * @property {number} PG_JSONB=3 PG_JSONB value
                  */
                 v1.TypeAnnotationCode = (function() {
                     var valuesById = {}, values = Object.create(valuesById);
                     values[valuesById[0] = "TYPE_ANNOTATION_CODE_UNSPECIFIED"] = 0;
                     values[valuesById[2] = "PG_NUMERIC"] = 2;
+                    values[valuesById[3] = "PG_JSONB"] = 3;
                     return values;
                 })();
     
