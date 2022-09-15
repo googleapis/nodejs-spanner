@@ -385,6 +385,133 @@ describe('v1.InstanceAdminClient', () => {
     });
   });
 
+  describe('deleteInstanceConfig', () => {
+    it('invokes deleteInstanceConfig without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteInstanceConfig =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.deleteInstanceConfig(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstanceConfig without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteInstanceConfig =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.deleteInstanceConfig(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.protobuf.IEmpty | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstanceConfig with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.deleteInstanceConfig = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.deleteInstanceConfig(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstanceConfig with closed client', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.deleteInstanceConfig(request), expectedError);
+    });
+  });
+
   describe('getInstance', () => {
     it('invokes getInstance without error', async () => {
       const client = new instanceadminModule.v1.InstanceAdminClient({
@@ -1005,6 +1132,394 @@ describe('v1.InstanceAdminClient', () => {
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.testIamPermissions(request), expectedError);
+    });
+  });
+
+  describe('createInstanceConfig', () => {
+    it('invokes createInstanceConfig without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
+        'parent',
+      ]);
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.createInstanceConfig =
+        stubLongRunningCall(expectedResponse);
+      const [operation] = await client.createInstanceConfig(request);
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstanceConfig without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
+        'parent',
+      ]);
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.createInstanceConfig =
+        stubLongRunningCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.createInstanceConfig(
+          request,
+          (
+            err?: Error | null,
+            result?: LROperation<
+              protos.google.spanner.admin.instance.v1.IInstanceConfig,
+              protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
+            > | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const operation = (await promise) as LROperation<
+        protos.google.spanner.admin.instance.v1.IInstanceConfig,
+        protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
+      >;
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstanceConfig with call error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
+        'parent',
+      ]);
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.createInstanceConfig = stubLongRunningCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.createInstanceConfig(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstanceConfig with LRO error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
+        'parent',
+      ]);
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.createInstanceConfig = stubLongRunningCall(
+        undefined,
+        undefined,
+        expectedError
+      );
+      const [operation] = await client.createInstanceConfig(request);
+      await assert.rejects(operation.promise(), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes checkCreateInstanceConfigProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkCreateInstanceConfigProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkCreateInstanceConfigProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkCreateInstanceConfigProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+  });
+
+  describe('updateInstanceConfig', () => {
+    it('invokes updateInstanceConfig without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+      );
+      request.instanceConfig ??= {};
+      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
+        'instanceConfig',
+        'name',
+      ]);
+      request.instanceConfig.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateInstanceConfig =
+        stubLongRunningCall(expectedResponse);
+      const [operation] = await client.updateInstanceConfig(request);
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstanceConfig without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+      );
+      request.instanceConfig ??= {};
+      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
+        'instanceConfig',
+        'name',
+      ]);
+      request.instanceConfig.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateInstanceConfig =
+        stubLongRunningCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.updateInstanceConfig(
+          request,
+          (
+            err?: Error | null,
+            result?: LROperation<
+              protos.google.spanner.admin.instance.v1.IInstanceConfig,
+              protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
+            > | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const operation = (await promise) as LROperation<
+        protos.google.spanner.admin.instance.v1.IInstanceConfig,
+        protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
+      >;
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstanceConfig with call error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+      );
+      request.instanceConfig ??= {};
+      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
+        'instanceConfig',
+        'name',
+      ]);
+      request.instanceConfig.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateInstanceConfig = stubLongRunningCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.updateInstanceConfig(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstanceConfig with LRO error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
+      );
+      request.instanceConfig ??= {};
+      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
+        'instanceConfig',
+        'name',
+      ]);
+      request.instanceConfig.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateInstanceConfig = stubLongRunningCall(
+        undefined,
+        undefined,
+        expectedError
+      );
+      const [operation] = await client.updateInstanceConfig(request);
+      await assert.rejects(operation.promise(), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstanceConfig as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes checkUpdateInstanceConfigProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkUpdateInstanceConfigProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkUpdateInstanceConfigProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkUpdateInstanceConfigProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
     });
   });
 
@@ -1717,6 +2232,331 @@ describe('v1.InstanceAdminClient', () => {
       );
       assert(
         (client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+  });
+
+  describe('listInstanceConfigOperations', () => {
+    it('invokes listInstanceConfigOperations without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listInstanceConfigOperations =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.listInstanceConfigOperations(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstanceConfigOperations without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listInstanceConfigOperations =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.listInstanceConfigOperations(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.longrunning.IOperation[] | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstanceConfigOperations with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listInstanceConfigOperations = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.listInstanceConfigOperations(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstanceConfigOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstanceConfigOperationsStream without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listInstanceConfigOperations.createStream =
+        stubPageStreamingCall(expectedResponse);
+      const stream = client.listInstanceConfigOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(
+            client.innerApiCalls.listInstanceConfigOperations,
+            request
+          )
+      );
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('invokes listInstanceConfigOperationsStream with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstanceConfigOperations.createStream =
+        stubPageStreamingCall(undefined, expectedError);
+      const stream = client.listInstanceConfigOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(
+            client.innerApiCalls.listInstanceConfigOperations,
+            request
+          )
+      );
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstanceConfigOperations without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listInstanceConfigOperations.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
+      const responses: protos.google.longrunning.IOperation[] = [];
+      const iterable = client.listInstanceConfigOperationsAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .asyncIterate as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstanceConfigOperations with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        'ListInstanceConfigOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstanceConfigOperations.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
+      const iterable = client.listInstanceConfigOperationsAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.longrunning.IOperation[] = [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstanceConfigOperations
+            .asyncIterate as SinonStub
+        )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
             expectedHeaderRequestParams
