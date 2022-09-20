@@ -2720,6 +2720,22 @@
                         "ruby_package": "Google::Cloud::Spanner::Admin::Instance::V1"
                       },
                       "nested": {
+                        "OperationProgress": {
+                          "fields": {
+                            "progressPercent": {
+                              "type": "int32",
+                              "id": 1
+                            },
+                            "startTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2
+                            },
+                            "endTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            }
+                          }
+                        },
                         "InstanceAdmin": {
                           "options": {
                             "(google.api.default_host)": "spanner.googleapis.com",
@@ -2759,6 +2775,98 @@
                                 },
                                 {
                                   "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "CreateInstanceConfig": {
+                              "requestType": "CreateInstanceConfigRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*}/instanceConfigs",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "parent,instance_config,instance_config_id",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.InstanceConfig",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.CreateInstanceConfigMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{parent=projects/*}/instanceConfigs",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent,instance_config,instance_config_id"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.instance.v1.InstanceConfig",
+                                    "metadata_type": "google.spanner.admin.instance.v1.CreateInstanceConfigMetadata"
+                                  }
+                                }
+                              ]
+                            },
+                            "UpdateInstanceConfig": {
+                              "requestType": "UpdateInstanceConfigRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{instance_config.name=projects/*/instanceConfigs/*}",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "instance_config,update_mask",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.InstanceConfig",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "patch": "/v1/{instance_config.name=projects/*/instanceConfigs/*}",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "instance_config,update_mask"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.instance.v1.InstanceConfig",
+                                    "metadata_type": "google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata"
+                                  }
+                                }
+                              ]
+                            },
+                            "DeleteInstanceConfig": {
+                              "requestType": "DeleteInstanceConfigRequest",
+                              "responseType": "google.protobuf.Empty",
+                              "options": {
+                                "(google.api.http).delete": "/v1/{name=projects/*/instanceConfigs/*}",
+                                "(google.api.method_signature)": "name"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "delete": "/v1/{name=projects/*/instanceConfigs/*}"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "ListInstanceConfigOperations": {
+                              "requestType": "ListInstanceConfigOperationsRequest",
+                              "responseType": "ListInstanceConfigOperationsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*}/instanceConfigOperations",
+                                "(google.api.method_signature)": "parent"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{parent=projects/*}/instanceConfigOperations"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent"
                                 }
                               ]
                             },
@@ -2974,15 +3082,76 @@
                               "type": "string",
                               "id": 2
                             },
+                            "configType": {
+                              "type": "Type",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "replicas": {
                               "rule": "repeated",
                               "type": "ReplicaInfo",
                               "id": 3
                             },
+                            "optionalReplicas": {
+                              "rule": "repeated",
+                              "type": "ReplicaInfo",
+                              "id": 6,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "baseConfig": {
+                              "type": "string",
+                              "id": 7,
+                              "options": {
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
+                              }
+                            },
+                            "labels": {
+                              "keyType": "string",
+                              "type": "string",
+                              "id": 8
+                            },
+                            "etag": {
+                              "type": "string",
+                              "id": 9
+                            },
                             "leaderOptions": {
                               "rule": "repeated",
                               "type": "string",
                               "id": 4
+                            },
+                            "reconciling": {
+                              "type": "bool",
+                              "id": 10,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "state": {
+                              "type": "State",
+                              "id": 11,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "Type": {
+                              "values": {
+                                "TYPE_UNSPECIFIED": 0,
+                                "GOOGLE_MANAGED": 1,
+                                "USER_MANAGED": 2
+                              }
+                            },
+                            "State": {
+                              "values": {
+                                "STATE_UNSPECIFIED": 0,
+                                "CREATING": 1,
+                                "READY": 2
+                              }
                             }
                           }
                         },
@@ -3106,6 +3275,115 @@
                                 "(google.api.field_behavior)": "REQUIRED",
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
                               }
+                            }
+                          }
+                        },
+                        "CreateInstanceConfigRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "cloudresourcemanager.googleapis.com/Project"
+                              }
+                            },
+                            "instanceConfigId": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "instanceConfig": {
+                              "type": "InstanceConfig",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "validateOnly": {
+                              "type": "bool",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "UpdateInstanceConfigRequest": {
+                          "fields": {
+                            "instanceConfig": {
+                              "type": "InstanceConfig",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "updateMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "validateOnly": {
+                              "type": "bool",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "DeleteInstanceConfigRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
+                              }
+                            },
+                            "etag": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "validateOnly": {
+                              "type": "bool",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "ListInstanceConfigOperationsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "cloudresourcemanager.googleapis.com/Project"
+                              }
+                            },
+                            "filter": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListInstanceConfigOperationsResponse": {
+                          "fields": {
+                            "operations": {
+                              "rule": "repeated",
+                              "type": "google.longrunning.Operation",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
                             }
                           }
                         },
@@ -3255,6 +3533,38 @@
                             "endTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 4
+                            }
+                          }
+                        },
+                        "CreateInstanceConfigMetadata": {
+                          "fields": {
+                            "instanceConfig": {
+                              "type": "InstanceConfig",
+                              "id": 1
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "UpdateInstanceConfigMetadata": {
+                          "fields": {
+                            "instanceConfig": {
+                              "type": "InstanceConfig",
+                              "id": 1
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
                             }
                           }
                         }
