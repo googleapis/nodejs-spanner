@@ -309,9 +309,12 @@ describe('Spanner with mock server', () => {
         'transaction-tag'
       );
       assert.ok(request.transaction?.begin, 'transaction is not empty');
-      const nextBatchRequest = spannerMock.getRequests().reverse().find(val => {
-        return (val as v1.ExecuteBatchDmlRequest).statements;
-      }) as v1.ExecuteBatchDmlRequest;
+      const nextBatchRequest = spannerMock
+        .getRequests()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteBatchDmlRequest).statements;
+        }) as v1.ExecuteBatchDmlRequest;
       assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
       assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
 

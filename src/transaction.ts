@@ -1625,7 +1625,7 @@ export class Transaction extends Dml {
 
         const {resultSets, status} = resp;
         for (const resultSet of resultSets) {
-          if (!this.id && resultSet.metadata && resultSet.metadata.transaction) {
+          if (!this.id && resultSet.metadata?.transaction) {
             this._update(resultSet.metadata.transaction);
           }
         }
