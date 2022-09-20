@@ -1245,7 +1245,7 @@ export class Snapshot extends EventEmitter {
    *
    * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
    */
-  private _update(resp: spannerClient.spanner.v1.ITransaction): void {
+  protected _update(resp: spannerClient.spanner.v1.ITransaction): void {
     const {id, readTimestamp} = resp;
 
     this.id = id!;
@@ -1584,6 +1584,12 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       });
 
+    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    if (this.id) {
+      transaction.id = this.id as Uint8Array;
+    } else {
+      transaction.begin = this._options;
+    }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
       requestOptions: this.configureTagOptions(
@@ -1591,7 +1597,7 @@ export class Transaction extends Dml {
         this.requestOptions?.transactionTag ?? undefined,
         (options as BatchUpdateOptions).requestOptions
       ),
-      transaction: {id: this.id!},
+      transaction,
       seqno: this._seqno++,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
@@ -1618,6 +1624,11 @@ export class Transaction extends Dml {
         }
 
         const {resultSets, status} = resp;
+        for (const resultSet of resultSets) {
+          if (!this.id && resultSet.metadata && resultSet.metadata.transaction) {
+            this._update(resultSet.metadata.transaction);
+          }
+        }
         const rowCounts: number[] = resultSets.map(({stats}) => {
           return (
             (stats &&

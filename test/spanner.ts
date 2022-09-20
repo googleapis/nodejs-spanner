@@ -289,6 +289,7 @@ describe('Spanner with mock server', () => {
               requestTag: 'request-tag',
             },
           });
+          await tx!.batchUpdate([insertSql, insertSql]);
           return await tx.commit();
         }
       );
@@ -307,6 +308,13 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+      assert.ok(request.transaction?.begin, 'transaction is not empty');
+      const nextBatchRequest = spannerMock.getRequests().reverse().find(val => {
+        return (val as v1.ExecuteBatchDmlRequest).statements;
+      }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
+
       const commitRequest = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).mutations;
       }) as v1.CommitRequest;

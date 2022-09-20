@@ -720,7 +720,7 @@ export class MockSpanner {
     this.pushRequest(call.request!, call.metadata);
     this.simulateExecutionTime(this.executeBatchDml.name)
       .then(() => {
-        if (call.request!.transaction && call.request!.transaction.id) {
+        if (call.request!.transaction) {
           const fullTransactionId = `${call.request!.session}/transactions/${
             call.request!.transaction.id
           }`;
@@ -764,7 +764,21 @@ export class MockSpanner {
                 callback(new Error('Wrong result type for batch DML'));
                 break;
               case StatementResultType.UPDATE_COUNT:
-                results.push(MockSpanner.toResultSet(res.updateCount));
+                let resultSet = MockSpanner.toResultSet(res.updateCount);
+                if (call.request!.transaction!.begin && i === 0) {
+                  const transaction = this._updateTransaction(
+                      call.request!.session,
+                      call.request?.transaction!.begin
+                  );
+                  if (transaction instanceof Error) {
+                    callback(transaction);
+                    break;
+                  }
+                  resultSet.metadata = protobuf.ResultSetMetadata.create({
+                    transaction
+                  });
+                }
+                results.push(resultSet);
                 break;
               case StatementResultType.ERROR:
                 if ((res.error as grpc.ServiceError).code) {
