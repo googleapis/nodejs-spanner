@@ -459,7 +459,7 @@ class InstanceConfig extends common.GrpcServiceObject {
       // Found, therefore it exists
       return true;
     } catch (err) {
-      if (err.code === grpc.status.NOT_FOUND) {
+      if ((err as grpc.ServerErrorResponse).code === grpc.status.NOT_FOUND) {
         return false;
       }
       // Some other error occurred, rethrow
