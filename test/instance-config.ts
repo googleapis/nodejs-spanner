@@ -17,30 +17,18 @@
 
 import * as assert from 'assert';
 import {before, beforeEach, afterEach, describe, it} from 'mocha';
-import {ApiError} from '@google-cloud/common';
-import {createApiCall, grpc} from 'google-gax';
+import {grpc} from 'google-gax';
 import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
-import snakeCase = require('lodash.snakecase');
-import {Duplex} from 'stream';
 
 import * as instConfig from '../src/instance-config';
 import {
   Spanner,
-  Database,
-  RequestConfig,
-  GetInstanceConfigOptions,
-  GetInstanceConfigCallback,
   GetInstanceConfigResponse,
 } from '../src';
-import arrify = require('arrify');
-import {SessionPoolOptions} from '../src/session-pool';
-import {Backup} from '../src/backup';
-import {PreciseDate} from '@google-cloud/precise-date';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
-import * as inst from '../src/instance';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
