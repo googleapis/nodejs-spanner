@@ -27,7 +27,14 @@ import snakeCase = require('lodash.snakecase');
 import {Duplex} from 'stream';
 
 import * as instConfig from '../src/instance-config';
-import {Spanner, Database, RequestConfig, GetInstanceConfigOptions, GetInstanceConfigCallback, GetInstanceConfigResponse} from '../src';
+import {
+  Spanner,
+  Database,
+  RequestConfig,
+  GetInstanceConfigOptions,
+  GetInstanceConfigCallback,
+  GetInstanceConfigResponse,
+} from '../src';
 import arrify = require('arrify');
 import {SessionPoolOptions} from '../src/session-pool';
 import {Backup} from '../src/backup';
@@ -153,7 +160,10 @@ describe('InstanceConfig', () => {
     const PATH = 'projects/' + SPANNER.projectId + '/instanceConfigs/' + NAME;
 
     it('should return the name if already formatted', () => {
-      assert.strictEqual(InstanceConfig.formatName_(SPANNER.projectId, PATH), PATH);
+      assert.strictEqual(
+        InstanceConfig.formatName_(SPANNER.projectId, PATH),
+        PATH
+      );
     });
 
     it('should format the name', () => {
@@ -212,7 +222,7 @@ describe('InstanceConfig', () => {
   });
 
   describe('exists', () => {
-    beforeEach(() => instanceConfig.parent = SPANNER);
+    beforeEach(() => (instanceConfig.parent = SPANNER));
     afterEach(() => sandbox.restore());
 
     it('should return any non-404 like errors', async () => {
@@ -258,7 +268,7 @@ describe('InstanceConfig', () => {
     it('should call getInstanceConfig', done => {
       const options = {};
 
-      sandbox.stub(SPANNER, 'getInstanceConfig').callsFake((_) => done());
+      sandbox.stub(SPANNER, 'getInstanceConfig').callsFake(_ => done());
 
       instanceConfig.get(options, assert.ifError);
     });
@@ -275,7 +285,7 @@ describe('InstanceConfig', () => {
     });
 
     it('should not require an options object', done => {
-      sandbox.stub(SPANNER, 'getInstanceConfig').callsFake((_) => done());
+      sandbox.stub(SPANNER, 'getInstanceConfig').callsFake(_ => done());
       instanceConfig.get(assert.ifError);
     });
 
@@ -283,8 +293,8 @@ describe('InstanceConfig', () => {
       const error = new Error('Error.') as grpc.ServiceError;
 
       sandbox
-          .stub(SPANNER, 'getInstanceConfig')
-          .callsFake((_, opts_: {}, callback) => callback!(error));
+        .stub(SPANNER, 'getInstanceConfig')
+        .callsFake((_, opts_: {}, callback) => callback!(error));
 
       instanceConfig.get(err => {
         assert.strictEqual(err, error);
@@ -295,8 +305,8 @@ describe('InstanceConfig', () => {
     it('should return self and API response', done => {
       const apiResponse = {} as instConfig.IInstanceConfig;
       sandbox
-          .stub(SPANNER, 'getInstanceConfig')
-          .callsFake((_, opts_: {}, callback) => callback!(null, apiResponse));
+        .stub(SPANNER, 'getInstanceConfig')
+        .callsFake((_, opts_: {}, callback) => callback!(null, apiResponse));
 
       instanceConfig.get((err, instanceConfigMetadata_) => {
         assert.ifError(err);
@@ -321,9 +331,12 @@ describe('InstanceConfig', () => {
         assert.strictEqual(config.client, 'InstanceAdminClient');
         assert.strictEqual(config.method, 'updateInstanceConfig');
 
-        const expectedReqOpts = extend({},extend({}, METADATA, {
-          name: instanceConfig.formattedName_,
-        }))  as instConfig.IInstanceConfig as instConfig.SetInstanceConfigMetadataRequest;
+        const expectedReqOpts = extend(
+          {},
+          extend({}, METADATA, {
+            name: instanceConfig.formattedName_,
+          })
+        ) as instConfig.IInstanceConfig as instConfig.SetInstanceConfigMetadataRequest;
 
         assert.deepStrictEqual(config.reqOpts.instanceConfig, expectedReqOpts);
         assert.deepStrictEqual(config.reqOpts.updateMask, {
@@ -339,7 +352,10 @@ describe('InstanceConfig', () => {
         return requestReturnValue;
       };
 
-      const returnValue = instanceConfig.setMetadata(Object.assign({}, {instanceConfig: METADATA}), callback);
+      const returnValue = instanceConfig.setMetadata(
+        Object.assign({}, {instanceConfig: METADATA}),
+        callback
+      );
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
@@ -349,14 +365,18 @@ describe('InstanceConfig', () => {
         assert.strictEqual(config.gaxOpts, gaxOptions);
         done();
       };
-      instanceConfig.setMetadata(Object.assign({}, {instanceConfig: METADATA}, {gaxOpts: gaxOptions}), assert.ifError);
+      instanceConfig.setMetadata(
+        Object.assign({}, {instanceConfig: METADATA}, {gaxOpts: gaxOptions}),
+        assert.ifError
+      );
     });
 
     it('should not require a callback', () => {
       assert.doesNotThrow(() => {
-        instanceConfig.setMetadata(Object.assign({}, {instanceConfig: METADATA}));
+        instanceConfig.setMetadata(
+          Object.assign({}, {instanceConfig: METADATA})
+        );
       });
     });
   });
-
 });

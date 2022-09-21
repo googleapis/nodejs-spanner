@@ -95,7 +95,9 @@ describe('Spanner', () => {
 
   const BASE_INSTANCE_CONFIG_ID = 'nam3-cmmr';
   // Custom instance configs start with 'custom-'
-  const instanceConfig = spanner.instanceConfig('custom-' + generateName('instance-config'));
+  const instanceConfig = spanner.instanceConfig(
+    'custom-' + generateName('instance-config')
+  );
 
   before(async () => {
     await deleteOldTestInstances();
@@ -140,13 +142,19 @@ describe('Spanner', () => {
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
       // Create a user-managed instance config from a base instance config.
-      const [baseInstanceConfig] = await spanner.getInstanceConfig(BASE_INSTANCE_CONFIG_ID);
+      const [baseInstanceConfig] = await spanner.getInstanceConfig(
+        BASE_INSTANCE_CONFIG_ID
+      );
       const customInstanceConfigRequest = {
-        replicas: baseInstanceConfig.replicas!.concat(baseInstanceConfig!.optionalReplicas![0]),
+        replicas: baseInstanceConfig.replicas!.concat(
+          baseInstanceConfig!.optionalReplicas![0]
+        ),
         baseConfig: baseInstanceConfig.name,
         gaxOptions: GAX_OPTIONS,
-      }
-      const [, operation] = await instanceConfig.create(customInstanceConfigRequest);
+      };
+      const [, operation] = await instanceConfig.create(
+        customInstanceConfigRequest
+      );
       await operation.promise();
       INSTANCE_CONFIGS_TO_CLEAN.push(instanceConfig);
     }
@@ -194,10 +202,10 @@ describe('Spanner', () => {
      * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig}
      */
     await Promise.all(
-        INSTANCE_CONFIGS_TO_CLEAN.map(
-            instanceConfig => instanceConfig.delete({gaxOpts: GAX_OPTIONS})
-        )
-    )
+      INSTANCE_CONFIGS_TO_CLEAN.map(instanceConfig =>
+        instanceConfig.delete({gaxOpts: GAX_OPTIONS})
+      )
+    );
   });
 
   describe('types', () => {
@@ -1387,8 +1395,7 @@ describe('Spanner', () => {
       });
     });
 
-
-    it('should list the available instanceConfigs', function (done) {
+    it('should list the available instanceConfigs', done => {
       spanner.getInstanceConfigs((err, instanceConfigs) => {
         assert.ifError(err);
         assert(instanceConfigs!.length > 0);
@@ -1396,7 +1403,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should list the instanceConfigs in promise mode', function (done) {
+    it('should list the instanceConfigs in promise mode', done => {
       spanner
         .getInstanceConfigs()
         .then(data => {
@@ -1407,7 +1414,7 @@ describe('Spanner', () => {
         .catch(done);
     });
 
-    it('should list the instanceConfigs in stream mode', function (done) {
+    it('should list the instanceConfigs in stream mode', done => {
       spanner
         .getInstanceConfigsStream()
         .on('error', done)
@@ -1419,7 +1426,7 @@ describe('Spanner', () => {
         );
     });
 
-    it('should get an instanceConfig\'s metadata using getInstanceConfig', function (done) {
+    it("should get an instanceConfig's metadata using getInstanceConfig", function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1430,7 +1437,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should get an instanceConfig\'s metadata in promise mode using getInstanceConfig', function (done) {
+    it("should get an instanceConfig's metadata in promise mode using getInstanceConfig", function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1444,38 +1451,41 @@ describe('Spanner', () => {
         .catch(done);
     });
 
-    it('should get an instanceConfig\'s metadata using get', function (done) {
+    it("should get an instanceConfig's metadata using get", function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      spanner.instanceConfig('nam6')
-          .get()
-          .then(data => {
-            const instanceConfig = data[0];
-            assert(instanceConfig.displayName);
-            done();
-          })
-          .catch(done);
+      spanner
+        .instanceConfig('nam6')
+        .get()
+        .then(data => {
+          const instanceConfig = data[0];
+          assert(instanceConfig.displayName);
+          done();
+        })
+        .catch(done);
     });
 
-    it('should list an instanceConfig\'s operations without filter', async function () {
+    it("should list an instanceConfig's operations without filter", async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
 
-      const [operationsWithoutFilter] = await spanner.getInstanceConfigOperations();
+      const [operationsWithoutFilter] =
+        await spanner.getInstanceConfigOperations();
       const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
-          operation =>
-              operation.name && operation.name.includes(instanceConfig.formattedName_)
+        operation =>
+          operation.name &&
+          operation.name.includes(instanceConfig.formattedName_)
       );
       assert.ok(operationForCurrentInstanceConfig);
       assert.strictEqual(
-          operationForCurrentInstanceConfig!.metadata!.type_url,
-          'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+        operationForCurrentInstanceConfig!.metadata!.type_url,
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
       );
     });
 
-    it('should list an instanceConfig\'s operations with filter', async function () {
+    it("should list an instanceConfig's operations with filter", async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1484,15 +1494,18 @@ describe('Spanner', () => {
         filter: `(metadata.@type:CreateInstanceConfigMetadata AND
                     metadata.name:${instanceConfig.formattedName_})`,
       });
-      const operationForCurrentInstanceConfigWithFilter = operationsWithFilter[0];
+      const operationForCurrentInstanceConfigWithFilter =
+        operationsWithFilter[0];
       assert.ok(operationForCurrentInstanceConfigWithFilter);
       const operationForCurrentInstanceConfigWithFilterMetadata =
-          CreateInstanceConfigMetadata.decode(
-              operationForCurrentInstanceConfigWithFilter!.metadata!.value! as Uint8Array
-          );
+        CreateInstanceConfigMetadata.decode(
+          operationForCurrentInstanceConfigWithFilter!.metadata!
+            .value! as Uint8Array
+        );
       assert.strictEqual(
-          operationForCurrentInstanceConfigWithFilterMetadata.instanceConfig!.name,
-          `${instanceConfig.formattedName_}`
+        operationForCurrentInstanceConfigWithFilterMetadata.instanceConfig!
+          .name,
+        `${instanceConfig.formattedName_}`
       );
     });
 
@@ -1502,21 +1515,24 @@ describe('Spanner', () => {
       }
       const newData = {
         instanceConfig: {
-          displayName: 'new-display-name-' + shortUUID()
-        }
+          displayName: 'new-display-name-' + shortUUID(),
+        },
       };
 
       instanceConfig.setMetadata(
-          newData,
-          execAfterOperationComplete(err => {
-            assert.ifError(err);
+        newData,
+        execAfterOperationComplete(err => {
+          assert.ifError(err);
 
-            instanceConfig.getMetadata((err, metadata) => {
-              assert.ifError(err);
-              assert.strictEqual(metadata!.displayName, newData.instanceConfig.displayName);
-              done();
-            });
-          })
+          instanceConfig.getMetadata((err, metadata) => {
+            assert.ifError(err);
+            assert.strictEqual(
+              metadata!.displayName,
+              newData.instanceConfig.displayName
+            );
+            done();
+          });
+        })
       );
     });
 
@@ -1532,7 +1548,9 @@ describe('Spanner', () => {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
-      const doesExist = await spanner.instanceConfig('bad-instance-config').exists();
+      const doesExist = await spanner
+        .instanceConfig('bad-instance-config')
+        .exists();
       assert.strictEqual(doesExist, false);
     });
   });

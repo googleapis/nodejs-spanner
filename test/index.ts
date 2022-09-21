@@ -1052,7 +1052,7 @@ describe('Spanner', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const CONFIG: any = {
-      baseConfig: 'x'
+      baseConfig: 'x',
     };
     const ORIGINAL_CONFIG = extend({}, CONFIG);
 
@@ -1074,14 +1074,16 @@ describe('Spanner', () => {
     });
 
     it('should throw if the provided config object does not have baseConfig', () => {
-      let {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
+      const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
       assert.throws(() => {
         spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
       }, /Base instance config is required to create an instance config\./);
     });
 
     it('should set the correct defaults on the request', done => {
-      const stub = sandbox.stub(FakeInstanceConfig, 'formatName_').returns(PATH);
+      const stub = sandbox
+        .stub(FakeInstanceConfig, 'formatName_')
+        .returns(PATH);
 
       spanner.request = config => {
         const [projectId, name] = stub.lastCall.args;
@@ -1110,7 +1112,9 @@ describe('Spanner', () => {
     });
 
     it('should accept a path', () => {
-      const stub = sandbox.stub(FakeInstanceConfig, 'formatName_').callThrough();
+      const stub = sandbox
+        .stub(FakeInstanceConfig, 'formatName_')
+        .callThrough();
       spanner.createInstanceConfig(PATH, CONFIG, assert.ifError);
 
       const [, name] = stub.lastCall.args;
@@ -1122,7 +1126,10 @@ describe('Spanner', () => {
       const config = Object.assign({}, CONFIG, {displayName});
 
       spanner.request = config => {
-        assert.strictEqual(config.reqOpts.instanceConfig.displayName, displayName);
+        assert.strictEqual(
+          config.reqOpts.instanceConfig.displayName,
+          displayName
+        );
         done();
       };
 
@@ -1149,13 +1156,17 @@ describe('Spanner', () => {
       });
 
       it('should execute callback with error & API response', done => {
-        spanner.createInstanceConfig(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.strictEqual(err, ERROR);
-          assert.strictEqual(instance, null);
-          assert.strictEqual(op, null);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstanceConfig(
+          NAME,
+          CONFIG,
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
 
@@ -1174,18 +1185,22 @@ describe('Spanner', () => {
         sandbox.stub(FakeInstanceConfig, 'formatName_').returns(formattedName);
         const fakeInstanceConfigInstanceConfig = {} as spnr.InstanceConfig;
         const instanceStub = sandbox
-            .stub(spanner, 'instanceConfig')
-            .returns(fakeInstanceConfigInstanceConfig);
+          .stub(spanner, 'instanceConfig')
+          .returns(fakeInstanceConfigInstanceConfig);
 
-        spanner.createInstanceConfig(NAME, CONFIG, (err, instance, op, resp) => {
-          assert.ifError(err);
-          const [instanceConfigName] = instanceStub.lastCall.args;
-          assert.strictEqual(instanceConfigName, formattedName);
-          assert.strictEqual(instance, fakeInstanceConfigInstanceConfig);
-          assert.strictEqual(op, OPERATION);
-          assert.strictEqual(resp, API_RESPONSE);
-          done();
-        });
+        spanner.createInstanceConfig(
+          NAME,
+          CONFIG,
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceConfigName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceConfigName, formattedName);
+            assert.strictEqual(instance, fakeInstanceConfigInstanceConfig);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
       });
     });
   });
@@ -1375,12 +1390,12 @@ describe('Spanner', () => {
       const expectedGaxOpts = {timeout: 1000};
       const options = Object.assign({}, OPTIONS, {gaxOptions});
       const expectedReqOpts = extend(
-          {},
-          OPTIONS,
-          {
-            parent: spanner.projectFormattedName_,
-          },
-          {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+        {},
+        OPTIONS,
+        {
+          parent: spanner.projectFormattedName_,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
       );
 
       spanner.request = config => {
@@ -1409,12 +1424,12 @@ describe('Spanner', () => {
         gaxOptions,
       });
       const expectedReqOpts = extend(
-          {},
-          OPTIONS,
-          {
-            parent: spanner.projectFormattedName_,
-          },
-          {pageSize: optionsPageSize, pageToken: optionsPageToken}
+        {},
+        OPTIONS,
+        {
+          parent: spanner.projectFormattedName_,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
       );
 
       spanner.request = config => {
@@ -1459,9 +1474,9 @@ describe('Spanner', () => {
         gaxOptions: {timeout: 1000, autoPaginate: false},
       };
       const EXPECTED_NEXT_QUERY = extend(
-          {},
-          GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
-          NEXT_PAGE_REQUEST
+        {},
+        GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
+        NEXT_PAGE_REQUEST
       );
       spanner.request = (config, callback) => {
         callback(...RESPONSE);
@@ -1470,7 +1485,10 @@ describe('Spanner', () => {
         assert.deepStrictEqual(nextQuery, EXPECTED_NEXT_QUERY);
         done();
       }
-      spanner.getInstanceConfigOperations(GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS, callback);
+      spanner.getInstanceConfigOperations(
+        GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
+        callback
+      );
     });
   });
 
