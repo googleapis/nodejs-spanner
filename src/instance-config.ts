@@ -311,14 +311,18 @@ class InstanceConfig extends common.GrpcServiceObject {
     };
 
     // validateOnly need not be passed in if it is null or undefined.
-    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.validateOnly === null || reqOpts.validateOnly === undefined)
+      delete reqOpts.validateOnly;
 
     return this.request(
       {
         client: 'InstanceAdminClient',
         method: 'updateInstanceConfig',
         reqOpts,
-        gaxOpts: config.gaxOpts == null ? {} : config.gaxOpts,
+        gaxOpts:
+          config.gaxOpts === null || config.gaxOpts === undefined
+            ? {}
+            : config.gaxOpts,
         headers: this.resourceHeader_,
       },
       callback!
@@ -398,15 +402,20 @@ class InstanceConfig extends common.GrpcServiceObject {
     };
 
     // etag/validateOnly need not be passed in if null or undefined.
-    if (reqOpts.etag == null) delete reqOpts.etag;
-    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.etag === null || reqOpts.etag === undefined)
+      delete reqOpts.etag;
+    if (reqOpts.validateOnly === null || reqOpts.etag === undefined)
+      delete reqOpts.validateOnly;
 
     this.request<instanceAdmin.protobuf.IEmpty>(
       {
         client: 'InstanceAdminClient',
         method: 'deleteInstanceConfig',
         reqOpts,
-        gaxOpts: config.gaxOpts == null ? {} : config.gaxOpts,
+        gaxOpts:
+          config.gaxOpts === null || config.gaxOpts === undefined
+            ? {}
+            : config.gaxOpts,
         headers: this.resourceHeader_,
       },
       (err, resp) => {

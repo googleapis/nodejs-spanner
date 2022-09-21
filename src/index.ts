@@ -865,7 +865,8 @@ class Spanner extends GrpcService {
     }
 
     // validateOnly need not be passed in if it is null.
-    if (reqOpts.validateOnly == null) delete reqOpts.validateOnly;
+    if (reqOpts.validateOnly === null || reqOpts.validateOnly === undefined)
+      delete reqOpts.validateOnly;
 
     // validateOnly and gaxOptions are not fields in InstanceConfig.
     delete reqOpts.instanceConfig.validateOnly;
