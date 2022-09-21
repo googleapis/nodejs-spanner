@@ -24,10 +24,7 @@ import * as pfy from '@google-cloud/promisify';
 import * as sinon from 'sinon';
 
 import * as instConfig from '../src/instance-config';
-import {
-  Spanner,
-  GetInstanceConfigResponse,
-} from '../src';
+import {Spanner, GetInstanceConfigResponse} from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 let promisified = false;
