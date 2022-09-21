@@ -1005,13 +1005,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
-          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
+          pageSize: (gaxOpts as GetInstanceConfigsOptions).pageSize,
+          pageToken: (gaxOpts as GetInstanceConfigsOptions).pageToken,
         },
         reqOpts
       );
-      delete (gaxOpts as GetInstancesOptions).pageSize;
-      delete (gaxOpts as GetInstancesOptions).pageToken;
+      delete (gaxOpts as GetInstanceConfigsOptions).pageSize;
+      delete (gaxOpts as GetInstanceConfigsOptions).pageToken;
     }
 
     return this.request(
@@ -1294,13 +1294,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstanceConfigOperationsOptions).pageSize,
+          pageToken: (gaxOpts as GetInstanceConfigOperationsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstanceConfigOperationsOptions).pageSize;
+      delete (gaxOpts as GetInstanceConfigOperationsOptions).pageToken;
     }
 
     this.request(
