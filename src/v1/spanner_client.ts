@@ -17,20 +17,16 @@
 // ** All changes to this file may be overwritten. **
 
 /* global window */
-import * as gax from 'google-gax';
-import {
+import type * as gax from 'google-gax';
+import type {
   Callback,
   CallOptions,
   Descriptors,
   ClientOptions,
   PaginationCallback,
   GaxCall,
-  GoogleError,
 } from 'google-gax';
-
-import {Transform} from 'stream';
-import {RequestType} from 'google-gax/build/src/apitypes';
-import {PassThrough} from 'stream';
+import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -39,7 +35,6 @@ import jsonProtos = require('../../protos/protos.json');
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
 import * as gapicConfig from './spanner_client_config.json';
-
 const version = require('../../../package.json').version;
 
 /**
@@ -75,7 +70,7 @@ export class SpannerClient {
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
-   * in [this document](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#creating-the-client-instance).
+   * in [this document](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#creating-the-client-instance).
    * The common options are:
    * @param {object} [options.credentials] - Credentials object.
    * @param {string} [options.credentials.client_email]
@@ -98,13 +93,22 @@ export class SpannerClient {
    *     API remote host.
    * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
    *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
-   *     In fallback mode, a special browser-compatible transport implementation is used
-   *     instead of gRPC transport. In browser context (if the `window` object is defined)
-   *     the fallback mode is enabled automatically; set `options.fallback` to `false`
-   *     if you need to override this behavior.
+   * @param {boolean | "rest"} [options.fallback] - Use HTTP fallback mode.
+   *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
+   *     For more information, please check the
+   *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
+   * @param {gax} [gaxInstance]: loaded instance of `google-gax`. Useful if you
+   *     need to avoid loading the default gRPC version and want to use the fallback
+   *     HTTP implementation. Load only fallback version and pass it to the constructor:
+   *     ```
+   *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
+   *     const client = new SpannerClient({fallback: 'rest'}, gax);
+   *     ```
    */
-  constructor(opts?: ClientOptions) {
+  constructor(
+    opts?: ClientOptions,
+    gaxInstance?: typeof gax | typeof gax.fallback
+  ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SpannerClient;
     const servicePath =
@@ -124,8 +128,13 @@ export class SpannerClient {
       opts['scopes'] = staticMembers.scopes;
     }
 
+    // Load google-gax module synchronously if needed
+    if (!gaxInstance) {
+      gaxInstance = require('google-gax') as typeof gax;
+    }
+
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.
-    this._gaxModule = opts.fallback ? gax.fallback : gax;
+    this._gaxModule = opts.fallback ? gaxInstance.fallback : gaxInstance;
 
     // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.
     this._gaxGrpc = new this._gaxModule.GrpcClient(opts);
@@ -192,10 +201,12 @@ export class SpannerClient {
     // Provide descriptors for these.
     this.descriptors.stream = {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING
+        this._gaxModule.StreamType.SERVER_STREAMING,
+        opts.fallback === 'rest'
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING
+        this._gaxModule.StreamType.SERVER_STREAMING,
+        opts.fallback === 'rest'
       ),
     };
 
@@ -213,7 +224,7 @@ export class SpannerClient {
     this.innerApiCalls = {};
 
     // Add a warn function to the client constructor so it can be easily tested.
-    this.warn = gax.warn;
+    this.warn = this._gaxModule.warn;
   }
 
   /**
@@ -275,7 +286,9 @@ export class SpannerClient {
                 setImmediate(() => {
                   stream.emit(
                     'error',
-                    new GoogleError('The client has already been closed.')
+                    new this._gaxModule.GoogleError(
+                      'The client has already been closed.'
+                    )
                   );
                 });
                 return stream;
@@ -297,7 +310,8 @@ export class SpannerClient {
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
-        descriptor
+        descriptor,
+        this._opts.fallback
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -457,8 +471,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        database: request.database || '',
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.createSession(request, options, callback);
@@ -551,8 +565,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        database: request.database || '',
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.batchCreateSessions(request, options, callback);
@@ -634,8 +648,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        name: request.name || '',
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
       });
     this.initialize();
     return this.innerApiCalls.getSession(request, options, callback);
@@ -717,8 +731,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        name: request.name || '',
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
       });
     this.initialize();
     return this.innerApiCalls.deleteSession(request, options, callback);
@@ -875,8 +889,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeSql(request, options, callback);
@@ -990,8 +1004,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeBatchDml(request, options, callback);
@@ -1126,8 +1140,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.read(request, options, callback);
@@ -1218,8 +1232,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.beginTransaction(request, options, callback);
@@ -1334,8 +1348,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.commit(request, options, callback);
@@ -1424,8 +1438,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.rollback(request, options, callback);
@@ -1553,8 +1567,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.partitionQuery(request, options, callback);
@@ -1668,8 +1682,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.partitionRead(request, options, callback);
@@ -1770,8 +1784,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.executeStreamingSql(request, options);
@@ -1848,8 +1862,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        session: request.session || '',
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
       });
     this.initialize();
     return this.innerApiCalls.streamingRead(request, options);
@@ -1953,8 +1967,8 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        database: request.database || '',
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
       });
     this.initialize();
     return this.innerApiCalls.listSessions(request, options, callback);
@@ -2005,14 +2019,14 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        database: request.database || '',
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listSessions.createStream(
-      this.innerApiCalls.listSessions as gax.GaxCall,
+      this.innerApiCalls.listSessions as GaxCall,
       request,
       callSettings
     );
@@ -2064,15 +2078,15 @@ export class SpannerClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers['x-goog-request-params'] =
-      gax.routingHeader.fromParams({
-        database: request.database || '',
+      this._gaxModule.routingHeader.fromParams({
+        database: request.database ?? '',
       });
     const defaultCallSettings = this._defaults['listSessions'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listSessions.asyncIterate(
       this.innerApiCalls['listSessions'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.v1.ISession>;
   }

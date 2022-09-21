@@ -784,7 +784,7 @@ describe('Instance', () => {
       });
 
       it('should call create', done => {
-        const createOptions = Object.assign({}, OPTIONS);
+        const createOptions: {autoCreate?: {}} = Object.assign({}, OPTIONS);
         delete createOptions.autoCreate;
         instance.create = options => {
           assert.deepStrictEqual(options, createOptions);
@@ -943,7 +943,7 @@ describe('Instance', () => {
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
       const options = {gaxOptions};
-      const expectedReqOpts = extend(
+      const expectedReqOpts: {gaxOptions?: {}} = extend(
         {},
         options,
         {

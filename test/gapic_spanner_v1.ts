@@ -27,6 +27,21 @@ import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
 
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(
+  require('../protos/protos.json')
+).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+  let type = root.lookupType(typeName) as protobuf.Type;
+  for (const field of fields.slice(0, -1)) {
+    type = type.fields[field]?.resolvedType as protobuf.Type;
+  }
+  return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
+
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (
     instance.constructor as typeof protobuf.Message
@@ -134,99 +149,101 @@ function stubAsyncIterationCall<ResponseType>(
 }
 
 describe('v1.SpannerClient', () => {
-  it('has servicePath', () => {
-    const servicePath = spannerModule.v1.SpannerClient.servicePath;
-    assert(servicePath);
-  });
-
-  it('has apiEndpoint', () => {
-    const apiEndpoint = spannerModule.v1.SpannerClient.apiEndpoint;
-    assert(apiEndpoint);
-  });
-
-  it('has port', () => {
-    const port = spannerModule.v1.SpannerClient.port;
-    assert(port);
-    assert(typeof port === 'number');
-  });
-
-  it('should create a client with no option', () => {
-    const client = new spannerModule.v1.SpannerClient();
-    assert(client);
-  });
-
-  it('should create a client with gRPC fallback', () => {
-    const client = new spannerModule.v1.SpannerClient({
-      fallback: true,
+  describe('Common methods', () => {
+    it('has servicePath', () => {
+      const servicePath = spannerModule.v1.SpannerClient.servicePath;
+      assert(servicePath);
     });
-    assert(client);
-  });
 
-  it('has initialize method and supports deferred initialization', async () => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
+    it('has apiEndpoint', () => {
+      const apiEndpoint = spannerModule.v1.SpannerClient.apiEndpoint;
+      assert(apiEndpoint);
     });
-    assert.strictEqual(client.spannerStub, undefined);
-    await client.initialize();
-    assert(client.spannerStub);
-  });
 
-  it('has close method for the initialized client', done => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
+    it('has port', () => {
+      const port = spannerModule.v1.SpannerClient.port;
+      assert(port);
+      assert(typeof port === 'number');
     });
-    client.initialize();
-    assert(client.spannerStub);
-    client.close().then(() => {
-      done();
-    });
-  });
 
-  it('has close method for the non-initialized client', done => {
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
+    it('should create a client with no option', () => {
+      const client = new spannerModule.v1.SpannerClient();
+      assert(client);
     });
-    assert.strictEqual(client.spannerStub, undefined);
-    client.close().then(() => {
-      done();
-    });
-  });
 
-  it('has getProjectId method', async () => {
-    const fakeProjectId = 'fake-project-id';
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
+    it('should create a client with gRPC fallback', () => {
+      const client = new spannerModule.v1.SpannerClient({
+        fallback: true,
+      });
+      assert(client);
     });
-    client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-    const result = await client.getProjectId();
-    assert.strictEqual(result, fakeProjectId);
-    assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-  });
 
-  it('has getProjectId method with callback', async () => {
-    const fakeProjectId = 'fake-project-id';
-    const client = new spannerModule.v1.SpannerClient({
-      credentials: {client_email: 'bogus', private_key: 'bogus'},
-      projectId: 'bogus',
+    it('has initialize method and supports deferred initialization', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      assert.strictEqual(client.spannerStub, undefined);
+      await client.initialize();
+      assert(client.spannerStub);
     });
-    client.auth.getProjectId = sinon
-      .stub()
-      .callsArgWith(0, null, fakeProjectId);
-    const promise = new Promise((resolve, reject) => {
-      client.getProjectId((err?: Error | null, projectId?: string | null) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(projectId);
-        }
+
+    it('has close method for the initialized client', done => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      assert(client.spannerStub);
+      client.close().then(() => {
+        done();
       });
     });
-    const result = await promise;
-    assert.strictEqual(result, fakeProjectId);
+
+    it('has close method for the non-initialized client', done => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      assert.strictEqual(client.spannerStub, undefined);
+      client.close().then(() => {
+        done();
+      });
+    });
+
+    it('has getProjectId method', async () => {
+      const fakeProjectId = 'fake-project-id';
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+      const result = await client.getProjectId();
+      assert.strictEqual(result, fakeProjectId);
+      assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+    });
+
+    it('has getProjectId method with callback', async () => {
+      const fakeProjectId = 'fake-project-id';
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.auth.getProjectId = sinon
+        .stub()
+        .callsArgWith(0, null, fakeProjectId);
+      const promise = new Promise((resolve, reject) => {
+        client.getProjectId((err?: Error | null, projectId?: string | null) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(projectId);
+          }
+        });
+      });
+      const result = await promise;
+      assert.strictEqual(result, fakeProjectId);
+    });
   });
 
   describe('createSession', () => {
@@ -239,26 +256,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
       client.innerApiCalls.createSession = stubSimpleCall(expectedResponse);
       const [response] = await client.createSession(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createSession without error using callback', async () => {
@@ -270,15 +286,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -301,11 +313,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createSession with error', async () => {
@@ -317,26 +332,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createSession = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.createSession(request), expectedError);
-      assert(
-        (client.innerApiCalls.createSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createSession with closed client', async () => {
@@ -348,7 +362,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      request.database = '';
+      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.createSession(request), expectedError);
@@ -365,15 +382,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
@@ -381,11 +394,14 @@ describe('v1.SpannerClient', () => {
         stubSimpleCall(expectedResponse);
       const [response] = await client.batchCreateSessions(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes batchCreateSessions without error using callback', async () => {
@@ -397,15 +413,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsResponse()
       );
@@ -428,11 +440,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes batchCreateSessions with error', async () => {
@@ -444,26 +459,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.batchCreateSessions = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.batchCreateSessions(request), expectedError);
-      assert(
-        (client.innerApiCalls.batchCreateSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchCreateSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes batchCreateSessions with closed client', async () => {
@@ -475,7 +489,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      request.database = '';
+      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.batchCreateSessions(request), expectedError);
@@ -492,26 +509,23 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
       client.innerApiCalls.getSession = stubSimpleCall(expectedResponse);
       const [response] = await client.getSession(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getSession without error using callback', async () => {
@@ -523,15 +537,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Session()
       );
@@ -554,11 +562,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getSession with error', async () => {
@@ -570,26 +581,23 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getSession = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.getSession(request), expectedError);
-      assert(
-        (client.innerApiCalls.getSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getSession with closed client', async () => {
@@ -601,7 +609,8 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      request.name = '';
+      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getSession(request), expectedError);
@@ -618,26 +627,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
       client.innerApiCalls.deleteSession = stubSimpleCall(expectedResponse);
       const [response] = await client.deleteSession(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteSession without error using callback', async () => {
@@ -649,15 +657,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -680,11 +684,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteSession with error', async () => {
@@ -696,26 +703,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteSession = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.deleteSession(request), expectedError);
-      assert(
-        (client.innerApiCalls.deleteSession as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteSession as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteSession with closed client', async () => {
@@ -727,7 +733,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      request.name = '';
+      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
+        'name',
+      ]);
+      request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.deleteSession(request), expectedError);
@@ -744,26 +753,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
       client.innerApiCalls.executeSql = stubSimpleCall(expectedResponse);
       const [response] = await client.executeSql(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeSql without error using callback', async () => {
@@ -775,15 +783,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -806,11 +810,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeSql with error', async () => {
@@ -822,26 +829,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeSql = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.executeSql(request), expectedError);
-      assert(
-        (client.innerApiCalls.executeSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeSql with closed client', async () => {
@@ -853,7 +859,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.executeSql(request), expectedError);
@@ -870,26 +879,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlResponse()
       );
       client.innerApiCalls.executeBatchDml = stubSimpleCall(expectedResponse);
       const [response] = await client.executeBatchDml(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeBatchDml without error using callback', async () => {
@@ -901,15 +909,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlResponse()
       );
@@ -932,11 +936,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeBatchDml with error', async () => {
@@ -948,26 +955,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeBatchDml = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.executeBatchDml(request), expectedError);
-      assert(
-        (client.innerApiCalls.executeBatchDml as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeBatchDml as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeBatchDml with closed client', async () => {
@@ -979,7 +985,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.executeBatchDml(request), expectedError);
@@ -996,26 +1005,22 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
       client.innerApiCalls.read = stubSimpleCall(expectedResponse);
       const [response] = await client.read(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (client.innerApiCalls.read as SinonStub).getCall(0)
+        .args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.read as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes read without error using callback', async () => {
@@ -1027,15 +1032,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.ResultSet()
       );
@@ -1057,11 +1056,13 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (client.innerApiCalls.read as SinonStub).getCall(0)
+        .args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.read as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes read with error', async () => {
@@ -1073,23 +1074,19 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.read = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.read(request), expectedError);
-      assert(
-        (client.innerApiCalls.read as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (client.innerApiCalls.read as SinonStub).getCall(0)
+        .args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.read as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes read with closed client', async () => {
@@ -1101,7 +1098,8 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.read(request), expectedError);
@@ -1118,26 +1116,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Transaction()
       );
       client.innerApiCalls.beginTransaction = stubSimpleCall(expectedResponse);
       const [response] = await client.beginTransaction(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes beginTransaction without error using callback', async () => {
@@ -1149,15 +1146,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.Transaction()
       );
@@ -1180,11 +1173,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes beginTransaction with error', async () => {
@@ -1196,26 +1192,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.beginTransaction = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.beginTransaction(request), expectedError);
-      assert(
-        (client.innerApiCalls.beginTransaction as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.beginTransaction as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes beginTransaction with closed client', async () => {
@@ -1227,7 +1222,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.beginTransaction(request), expectedError);
@@ -1244,26 +1242,23 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.CommitResponse()
       );
       client.innerApiCalls.commit = stubSimpleCall(expectedResponse);
       const [response] = await client.commit(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (client.innerApiCalls.commit as SinonStub).getCall(
+        0
+      ).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.commit as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes commit without error using callback', async () => {
@@ -1275,15 +1270,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.CommitResponse()
       );
@@ -1306,11 +1295,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (client.innerApiCalls.commit as SinonStub).getCall(
+        0
+      ).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.commit as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes commit with error', async () => {
@@ -1322,23 +1314,20 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.commit = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.commit(request), expectedError);
-      assert(
-        (client.innerApiCalls.commit as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (client.innerApiCalls.commit as SinonStub).getCall(
+        0
+      ).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.commit as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes commit with closed client', async () => {
@@ -1350,7 +1339,8 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.commit(request), expectedError);
@@ -1367,26 +1357,23 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
       client.innerApiCalls.rollback = stubSimpleCall(expectedResponse);
       const [response] = await client.rollback(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes rollback without error using callback', async () => {
@@ -1398,15 +1385,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1429,11 +1410,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes rollback with error', async () => {
@@ -1445,23 +1429,20 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.rollback = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.rollback(request), expectedError);
-      assert(
-        (client.innerApiCalls.rollback as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.rollback as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes rollback with closed client', async () => {
@@ -1473,7 +1454,8 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.rollback(request), expectedError);
@@ -1490,26 +1472,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
       client.innerApiCalls.partitionQuery = stubSimpleCall(expectedResponse);
       const [response] = await client.partitionQuery(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionQuery without error using callback', async () => {
@@ -1521,15 +1502,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1552,11 +1529,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionQuery with error', async () => {
@@ -1568,26 +1548,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.partitionQuery = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.partitionQuery(request), expectedError);
-      assert(
-        (client.innerApiCalls.partitionQuery as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionQuery as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionQuery with closed client', async () => {
@@ -1599,7 +1578,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.partitionQuery(request), expectedError);
@@ -1616,26 +1598,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
       client.innerApiCalls.partitionRead = stubSimpleCall(expectedResponse);
       const [response] = await client.partitionRead(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionRead without error using callback', async () => {
@@ -1647,15 +1628,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartitionResponse()
       );
@@ -1678,11 +1655,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionRead with error', async () => {
@@ -1694,26 +1674,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.partitionRead = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.partitionRead(request), expectedError);
-      assert(
-        (client.innerApiCalls.partitionRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.partitionRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes partitionRead with closed client', async () => {
@@ -1725,7 +1704,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.partitionRead(request), expectedError);
@@ -1742,15 +1724,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -1770,11 +1748,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.executeStreamingSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeStreamingSql with error', async () => {
@@ -1786,15 +1767,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.executeStreamingSql = stubServerStreamingCall(
         undefined,
@@ -1813,11 +1790,14 @@ describe('v1.SpannerClient', () => {
         });
       });
       await assert.rejects(promise, expectedError);
-      assert(
-        (client.innerApiCalls.executeStreamingSql as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+      const actualRequest = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes executeStreamingSql with closed client', async () => {
@@ -1829,7 +1809,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
+        'session',
+      ]);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       const stream = client.executeStreamingSql(request);
@@ -1858,15 +1841,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.v1.PartialResultSet()
       );
@@ -1886,11 +1863,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.streamingRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+      const actualRequest = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes streamingRead with error', async () => {
@@ -1902,15 +1882,9 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
-      const expectedHeaderRequestParams = 'session=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.streamingRead = stubServerStreamingCall(
         undefined,
@@ -1929,11 +1903,14 @@ describe('v1.SpannerClient', () => {
         });
       });
       await assert.rejects(promise, expectedError);
-      assert(
-        (client.innerApiCalls.streamingRead as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions)
-      );
+      const actualRequest = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes streamingRead with closed client', async () => {
@@ -1945,7 +1922,8 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      request.session = '';
+      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       const stream = client.streamingRead(request);
@@ -1974,15 +1952,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -1991,11 +1965,14 @@ describe('v1.SpannerClient', () => {
       client.innerApiCalls.listSessions = stubSimpleCall(expectedResponse);
       const [response] = await client.listSessions(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listSessions without error using callback', async () => {
@@ -2007,15 +1984,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2040,11 +2013,14 @@ describe('v1.SpannerClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listSessions with error', async () => {
@@ -2056,26 +2032,25 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listSessions = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.listSessions(request), expectedError);
-      assert(
-        (client.innerApiCalls.listSessions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listSessions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listSessionsStream without error', async () => {
@@ -2087,8 +2062,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2116,11 +2094,12 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listSessions, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listSessions.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listSessions.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2133,8 +2112,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listSessions.createStream = stubPageStreamingCall(
         undefined,
@@ -2159,11 +2141,12 @@ describe('v1.SpannerClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listSessions, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listSessions.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listSessions.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2176,8 +2159,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.spanner.v1.Session()),
         generateSampleMessage(new protos.google.spanner.v1.Session()),
@@ -2197,11 +2183,12 @@ describe('v1.SpannerClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listSessions.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2214,8 +2201,11 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
+      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
+        'database',
+      ]);
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listSessions.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -2232,11 +2222,12 @@ describe('v1.SpannerClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listSessions.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listSessions.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });
