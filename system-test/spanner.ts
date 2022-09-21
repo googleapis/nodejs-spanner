@@ -93,7 +93,6 @@ describe('Spanner', () => {
   const TABLE_NAME = 'Singers';
   const PG_DATABASE = instance.database(generateName('pg-db'), {incStep: 1});
 
-  const BASE_INSTANCE_CONFIG_ID = 'nam3-cmmr';
   // Custom instance configs start with 'custom-'
   const instanceConfig = spanner.instanceConfig(
     'custom-' + generateName('instance-config')
@@ -143,7 +142,7 @@ describe('Spanner', () => {
 
       // Create a user-managed instance config from a base instance config.
       const [baseInstanceConfig] = await spanner.getInstanceConfig(
-        BASE_INSTANCE_CONFIG_ID
+        INSTANCE_CONFIG.config
       );
       const customInstanceConfigRequest = {
         replicas: baseInstanceConfig.replicas!.concat(
