@@ -429,12 +429,12 @@ class InstanceConfig extends common.GrpcServiceObject {
 
   /**
    * @typedef {array} ExistsInstanceConfigResponse
-   * @property {boolean} 0 Whether the {@link InstanceConfig} exists.
+   * @property {boolean} 0 Whether the InstanceConfig exists.
    */
   /**
    * @callback ExistsInstanceConfigCallback
    * @param {?Error} err Request error, if any.
-   * @param {boolean} exists Whether the {@link InstanceConfig} exists.
+   * @param {boolean} exists Whether the InstanceConfig exists.
    */
   /**
    * Check if an instance config exists.
@@ -509,7 +509,7 @@ promisifyAll(InstanceConfig, {
 });
 
 /**
- * Reference to the {@link InstanceConfig} class.
+ * Reference to the InstanceConfig class.
  * @name module:@google-cloud/spanner.InstanceConfig
  * @see InstanceConfig
  */
