@@ -743,7 +743,7 @@ class Spanner extends GrpcService {
    */
   /**
    * @typedef {array} CreateInstanceConfigResponse
-   * @property {InstanceConfig} 0 The new {@link InstanceConfig}.
+   * @property {InstanceConfig} 0 The new {@link google.spanner.admin.instance.v1.InstanceConfig}.
    * @property {google.longrunning.Operation} 1 An operation object that can be
    *     used to check the status of the request.
    * @property {google.longrunning.IOperation} 2 The full API response.
@@ -751,7 +751,7 @@ class Spanner extends GrpcService {
   /**
    * @callback CreateInstanceConfigCallback
    * @param {?Error} err Request error, if any.
-   * @param {InstanceConfig} instanceConfig The new {@link InstanceConfig}.
+   * @param {InstanceConfig} instanceConfig The new {@link google.spanner.admin.instance.v1.InstanceConfig}.
    * @param {google.longrunning.Operation} operation An operation object that
    *     can be used to check the status of the request.
    * @param {google.longrunning.IOperation} apiResponse The full API response.

@@ -81,7 +81,25 @@ interface DeleteInstanceConfigRequest {
   validateOnly?: boolean;
   gaxOpts?: CallOptions;
 }
-
+/**
+ * The {@link InstanceConfig} class represents a possible configuration for a
+ * Cloud Spanner instance.
+ *
+ * Create an `InstanceConfig` object to interact with a Cloud Spanner instance
+ * config.
+ *
+ * @class
+ *
+ * @param {Spanner} spanner {@link Spanner} instance.
+ * @param {string} name Name of the instance config.
+ *
+ * @example
+ * ```
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ * const instance = spanner.instanceConfig('my-instance-config');
+ * ```
+ */
 class InstanceConfig extends common.GrpcServiceObject {
   formattedName_: string;
   request: InstanceConfigRequest;
