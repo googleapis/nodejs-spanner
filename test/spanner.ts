@@ -2730,6 +2730,7 @@ describe('Spanner with mock server', () => {
       // Execute an update.
       const [count] = await database.runTransactionAsync(
         (transaction): Promise<[number]> => {
+          transaction.begin();
           return transaction.runUpdate(insertSql).then(updateCount => {
             transaction.commit();
             return updateCount;
@@ -2937,6 +2938,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
+          transaction.begin();
           return transaction.runUpdate(insertSql).then(updateCount => {
             if (!attempts) {
               spannerMock.abortTransaction(transaction);
@@ -2958,6 +2960,7 @@ describe('Spanner with mock server', () => {
         await database.runTransactionAsync(
           {timeout: 1},
           (transaction): Promise<number[]> => {
+            transaction.begin();
             attempts++;
             return transaction.runUpdate(insertSql).then(updateCount => {
               // Always abort the transaction.
@@ -3215,6 +3218,20 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+    });
+
+    it('should run begin transaction on blind commit', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        tx.insert('foo', {id: 1, name: 'One'});
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
   });
 

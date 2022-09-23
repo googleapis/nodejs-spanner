@@ -1413,6 +1413,7 @@ export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
   commitTimestampProto?: spannerClient.protobuf.ITimestamp;
   private _queuedMutations: spannerClient.spanner.v1.Mutation[];
+  private _allowSingleUse = true;
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1753,8 +1754,11 @@ export class Transaction extends Dml {
 
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;
-    } else {
+    } else if (this._allowSingleUse) {
       reqOpts.singleUseTransaction = this._options;
+    } else {
+      this.begin().then(() => this.commit(options, callback));
+      return;
     }
 
     if (
@@ -2250,6 +2254,13 @@ export class Transaction extends Dml {
     rows.forEach(row => allKeys.push(...Object.keys(row)));
     const unique = new Set(allKeys);
     return Array.from(unique).sort();
+  }
+
+  /**
+   * Make sure that single use is not used for a blind commit.
+   */
+  disableSingleUse() : void {
+    this._allowSingleUse = false;
   }
 }
 
