@@ -269,9 +269,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -299,9 +300,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -345,9 +347,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -375,9 +378,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -395,9 +399,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -426,9 +431,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -472,9 +478,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -502,9 +509,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceConfigRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -522,7 +530,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -550,7 +561,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -594,7 +608,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -622,7 +639,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.GetInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetInstanceRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -640,9 +660,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -670,9 +691,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -716,9 +738,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -746,9 +769,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.DeleteInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteInstanceRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstanceRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -766,9 +790,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -796,9 +821,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -842,9 +868,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -872,9 +899,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -892,9 +920,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -922,9 +951,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -968,9 +998,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -998,9 +1029,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1018,9 +1050,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1049,9 +1082,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1095,9 +1129,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1125,9 +1160,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1145,9 +1181,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1177,9 +1214,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1230,9 +1268,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1260,9 +1299,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceConfigRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceConfigRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceConfigRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1336,10 +1376,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
       );
       request.instanceConfig ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
-        'instanceConfig',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
+        ['instanceConfig', 'name']
+      );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1370,10 +1410,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
       );
       request.instanceConfig ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
-        'instanceConfig',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
+        ['instanceConfig', 'name']
+      );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1425,10 +1465,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
       );
       request.instanceConfig ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
-        'instanceConfig',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
+        ['instanceConfig', 'name']
+      );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1457,10 +1497,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest()
       );
       request.instanceConfig ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceConfigRequest', [
-        'instanceConfig',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest',
+        ['instanceConfig', 'name']
+      );
       request.instanceConfig.name = defaultValue1;
       const expectedHeaderRequestParams = `instance_config.name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1533,9 +1573,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1565,9 +1606,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1618,9 +1660,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1648,9 +1691,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.CreateInstanceRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateInstanceRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstanceRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1724,10 +1768,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
       );
       request.instance ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceRequest', [
-        'instance',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
+        ['instance', 'name']
+      );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1758,10 +1802,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
       );
       request.instance ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceRequest', [
-        'instance',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
+        ['instance', 'name']
+      );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1813,10 +1857,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
       );
       request.instance ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceRequest', [
-        'instance',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
+        ['instance', 'name']
+      );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1845,10 +1889,10 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.UpdateInstanceRequest()
       );
       request.instance ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateInstanceRequest', [
-        'instance',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstanceRequest',
+        ['instance', 'name']
+      );
       request.instance.name = defaultValue1;
       const expectedHeaderRequestParams = `instance.name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1921,9 +1965,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -1960,9 +2005,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2016,9 +2062,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2046,9 +2093,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2108,9 +2156,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2159,9 +2208,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2208,9 +2258,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstanceConfigsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstanceConfigsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2251,7 +2302,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2285,7 +2336,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2334,7 +2385,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2368,7 +2419,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2428,7 +2479,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2483,7 +2534,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2530,7 +2581,7 @@ describe('v1.InstanceAdminClient', () => {
         new protos.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListInstanceConfigOperationsRequest',
+        '.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -2575,9 +2626,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2613,9 +2665,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2667,9 +2720,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2697,9 +2751,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2757,9 +2812,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2806,9 +2862,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2854,9 +2911,10 @@ describe('v1.InstanceAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.instance.v1.ListInstancesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListInstancesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');

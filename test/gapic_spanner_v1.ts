@@ -256,9 +256,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CreateSessionRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -286,9 +287,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CreateSessionRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -332,9 +334,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CreateSessionRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -362,9 +365,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CreateSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateSessionRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CreateSessionRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -382,9 +386,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchCreateSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -413,9 +418,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchCreateSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -459,9 +465,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchCreateSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -489,9 +496,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BatchCreateSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BatchCreateSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchCreateSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -509,7 +517,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.GetSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -537,7 +548,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.GetSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -581,7 +595,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.GetSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -609,7 +626,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.GetSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetSessionRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.GetSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -627,9 +647,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.DeleteSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -657,9 +678,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.DeleteSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -703,9 +725,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.DeleteSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -733,9 +756,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.DeleteSessionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteSessionRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.DeleteSessionRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -753,9 +777,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -783,9 +808,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -829,9 +855,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -859,9 +886,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -879,9 +907,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteBatchDmlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -909,9 +938,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteBatchDmlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -955,9 +985,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteBatchDmlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -985,9 +1016,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteBatchDmlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteBatchDmlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteBatchDmlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1005,7 +1037,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1032,7 +1067,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1074,7 +1112,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1098,7 +1139,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1116,9 +1160,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BeginTransactionRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1146,9 +1191,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BeginTransactionRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1192,9 +1238,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BeginTransactionRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1222,9 +1269,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.BeginTransactionRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('BeginTransactionRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BeginTransactionRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1242,7 +1290,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CommitRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1270,7 +1321,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CommitRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1314,7 +1368,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CommitRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1339,7 +1396,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.CommitRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CommitRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.CommitRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1357,7 +1417,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.RollbackRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1385,7 +1448,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.RollbackRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1429,7 +1495,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.RollbackRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1454,7 +1523,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.RollbackRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RollbackRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.RollbackRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1472,9 +1544,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionQueryRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1502,9 +1575,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionQueryRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1548,9 +1622,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionQueryRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1578,9 +1653,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionQueryRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionQueryRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionQueryRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1598,9 +1674,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1628,9 +1705,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1674,9 +1752,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1704,9 +1783,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.PartitionReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('PartitionReadRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.PartitionReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1724,9 +1804,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1767,9 +1848,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1809,9 +1891,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ExecuteSqlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ExecuteSqlRequest', [
-        'session',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1841,7 +1924,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1882,7 +1968,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedHeaderRequestParams = `session=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1922,7 +2011,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ReadRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ReadRequest', ['session']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1952,9 +2044,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
@@ -1984,9 +2077,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
@@ -2032,9 +2126,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2062,9 +2157,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
@@ -2112,9 +2208,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2159,9 +2256,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = [
@@ -2201,9 +2299,10 @@ describe('v1.SpannerClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.v1.ListSessionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListSessionsRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ListSessionsRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');

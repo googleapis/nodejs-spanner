@@ -269,7 +269,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -297,7 +300,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -341,7 +347,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -369,7 +378,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -387,9 +399,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DropDatabaseRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -417,9 +430,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DropDatabaseRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -463,9 +477,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DropDatabaseRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -493,9 +508,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DropDatabaseRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -513,9 +529,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -543,9 +560,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -589,9 +607,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -619,9 +638,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -639,9 +659,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -669,9 +690,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -715,9 +737,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -745,9 +768,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('SetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -765,9 +789,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -795,9 +820,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -841,9 +867,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -871,9 +898,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetIamPolicyRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -891,9 +919,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -922,9 +951,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -968,9 +998,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -998,9 +1029,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('TestIamPermissionsRequest', [
-        'resource',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
       request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1018,7 +1050,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetBackupRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1046,7 +1081,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetBackupRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1090,7 +1128,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetBackupRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1115,7 +1156,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('GetBackupRequest', ['name']);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1134,10 +1178,10 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
       request.backup ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateBackupRequest', [
-        'backup',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
       request.backup.name = defaultValue1;
       const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1166,10 +1210,10 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
       request.backup ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateBackupRequest', [
-        'backup',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
       request.backup.name = defaultValue1;
       const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1214,10 +1258,10 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
       request.backup ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateBackupRequest', [
-        'backup',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
       request.backup.name = defaultValue1;
       const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1246,10 +1290,10 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
       request.backup ??= {};
-      const defaultValue1 = getTypeDefaultValue('UpdateBackupRequest', [
-        'backup',
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
       request.backup.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1267,9 +1311,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteBackupRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1297,9 +1342,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteBackupRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1343,9 +1389,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteBackupRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1373,9 +1420,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('DeleteBackupRequest', [
-        'name',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
       request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
@@ -1393,9 +1441,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1425,9 +1474,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1478,9 +1528,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1508,9 +1559,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1583,9 +1635,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('UpdateDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1615,9 +1668,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('UpdateDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1668,9 +1722,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('UpdateDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1698,9 +1753,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('UpdateDatabaseDdlRequest', [
-        'database',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
       request.database = defaultValue1;
       const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1773,9 +1829,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1804,9 +1861,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1857,9 +1915,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1887,9 +1946,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CreateBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -1959,9 +2019,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CopyBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -1990,9 +2051,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CopyBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -2043,9 +2105,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CopyBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2073,9 +2136,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('CopyBackupRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2145,9 +2209,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RestoreDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -2177,9 +2242,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RestoreDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
@@ -2230,9 +2296,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RestoreDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2260,9 +2327,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('RestoreDatabaseRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2335,9 +2403,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2373,9 +2442,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2427,9 +2497,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2457,9 +2528,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2517,9 +2589,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2566,9 +2639,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2614,9 +2688,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabasesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2656,9 +2731,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2694,9 +2770,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2748,9 +2825,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2778,9 +2856,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2837,9 +2916,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2887,9 +2967,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -2935,9 +3016,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -2979,7 +3061,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3013,7 +3095,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3062,7 +3144,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3096,7 +3178,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3153,7 +3235,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3205,7 +3287,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3252,7 +3334,7 @@ describe('v1.DatabaseAdminClient', () => {
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
       const defaultValue1 = getTypeDefaultValue(
-        'ListDatabaseOperationsRequest',
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
         ['parent']
       );
       request.parent = defaultValue1;
@@ -3297,9 +3379,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3330,9 +3413,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3378,9 +3462,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -3408,9 +3493,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3458,9 +3544,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -3503,9 +3590,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3545,9 +3633,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListBackupOperationsRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -3586,9 +3675,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3624,9 +3714,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3680,9 +3771,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -3710,9 +3802,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3770,9 +3863,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
@@ -3819,9 +3913,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
@@ -3868,9 +3963,10 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      const defaultValue1 = getTypeDefaultValue('ListDatabaseRolesRequest', [
-        'parent',
-      ]);
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
       request.parent = defaultValue1;
       const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
