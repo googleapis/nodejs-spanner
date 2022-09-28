@@ -1523,7 +1523,7 @@ describe('Spanner', () => {
         execAfterOperationComplete(err => {
           assert.ifError(err);
 
-          instanceConfig.getMetadata((err, metadata) => {
+          instanceConfig.get((err, metadata) => {
             assert.ifError(err);
             assert.strictEqual(
               metadata!.displayName,
