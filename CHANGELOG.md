@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.2.0](https://github.com/googleapis/nodejs-spanner/compare/v6.1.4...v6.2.0) (2022-09-16)
+
+
+### Features
+
+* Add custom instance config operations ([#1712](https://github.com/googleapis/nodejs-spanner/issues/1712)) ([4b7716b](https://github.com/googleapis/nodejs-spanner/commit/4b7716be5409698e21bb79edec5cdf1019047de8))
+
+
+### Bug Fixes
+
+* Allow passing gax instance to client constructor ([#1698](https://github.com/googleapis/nodejs-spanner/issues/1698)) ([588c1a2](https://github.com/googleapis/nodejs-spanner/commit/588c1a2e0c449cfcb86cac73da32dd5794ee2baa))
+* **deps:** Use grpc-gcp v1.0.0 ([#1710](https://github.com/googleapis/nodejs-spanner/issues/1710)) ([12eab9d](https://github.com/googleapis/nodejs-spanner/commit/12eab9d628b72b5a7fc88f3d5e932b7a4d70dce2))
+* Move runtime dependencies from dev dependencies to dependencies ([#1704](https://github.com/googleapis/nodejs-spanner/issues/1704)) ([b2c1c0f](https://github.com/googleapis/nodejs-spanner/commit/b2c1c0f93653af6cc7bd9893ca14394f2a631b68))
+* Preserve default values in x-goog-request-params header ([#1711](https://github.com/googleapis/nodejs-spanner/issues/1711)) ([f1ae513](https://github.com/googleapis/nodejs-spanner/commit/f1ae51301d4ea9b0ed1ad4d4762c249fef9f8d08))
+
 ## [6.1.4](https://github.com/googleapis/nodejs-spanner/compare/v6.1.3...v6.1.4) (2022-09-06)
 
 
