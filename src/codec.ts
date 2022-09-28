@@ -484,7 +484,7 @@ function encodeValue(value: Value): Value {
   }
 
   if (value instanceof PGJsonb) {
-    return JSON.stringify(value.value);
+    return value.toString();
   }
 
   if (is.object(value)) {
