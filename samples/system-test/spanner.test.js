@@ -1343,7 +1343,7 @@ describe('Spanner', () => {
       );
     });
 
-    // delete_instance_config
+    // list_instance_config_operations
     it('should list all instance config operations', async () => {
       const output = execSync(
         `node instance-config-get-operations.js ${PROJECT_ID}`
