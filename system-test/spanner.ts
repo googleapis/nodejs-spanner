@@ -1490,8 +1490,8 @@ describe('Spanner', () => {
       }
 
       const [operationsWithFilter] = await spanner.getInstanceConfigOperations({
-        filter: `(metadata.@type:CreateInstanceConfigMetadata AND
-                    metadata.name:${instanceConfig.formattedName_})`,
+        filter: `(metadata.@type:CreateInstanceConfigMetadata) AND
+                    (metadata.name:${instanceConfig.formattedName_})`,
       });
       const operationForCurrentInstanceConfigWithFilter =
         operationsWithFilter[0];
