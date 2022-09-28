@@ -1491,7 +1491,7 @@ describe('Spanner', () => {
 
       const [operationsWithFilter] = await spanner.getInstanceConfigOperations({
         filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata) AND
-                    (metadata.name:${instanceConfig.formattedName_})`,
+                    (name:${instanceConfig.formattedName_})`,
       });
       const operationForCurrentInstanceConfigWithFilter =
         operationsWithFilter[0];
