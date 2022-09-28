@@ -59,9 +59,7 @@ function main(
       );
       await operation.promise();
 
-      console.log(
-        `Created instance config ${instanceConfigId}.`
-      );
+      console.log(`Created instance config ${instanceConfigId}.`);
     } catch (err) {
       console.error(
         'ERROR: Creating instance config ',

@@ -45,7 +45,7 @@ function main(
       const [operation] = await instanceConfig.setMetadata({
         instanceConfig: {
           displayName: displayName,
-        }
+        },
       });
 
       console.log(
@@ -53,9 +53,7 @@ function main(
       );
       await operation.promise();
 
-      console.log(
-        `Updated instance config ${instanceConfigId}.`
-      );
+      console.log(`Updated instance config ${instanceConfigId}.`);
     } catch (err) {
       console.error(
         'ERROR: Updating instance config ',

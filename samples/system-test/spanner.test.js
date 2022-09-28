@@ -1295,62 +1295,64 @@ describe('Spanner', () => {
     // create_instance_config
     it('should create an example custom instance config', async () => {
       const output = execSync(
-          `node instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
       );
       assert.match(
-          output,
-          new RegExp(
-              `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-          )
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
       );
       assert.match(
-          output,
-          new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        output,
+        new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
       );
     });
 
     // update_instance_config
     it('should update an example custom instance config', async () => {
       const output = execSync(
-          `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} "my display name" ${PROJECT_ID}`
+        `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} "my display name" ${PROJECT_ID}`
       );
       assert.match(
-          output,
-          new RegExp(
-              `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-          )
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
       );
       assert.match(
-          output,
-          new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        output,
+        new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
       );
     });
 
     // delete_instance_config
     it('should delete an example custom instance config', async () => {
       const output = execSync(
-          `node instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
       );
       assert.match(
-          output,
-          new RegExp(
-              `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-          )
+        output,
+        new RegExp(
+          `Waiting for operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
       );
       assert.match(
-          output,
-          new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+        output,
+        new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
       );
     });
 
     // delete_instance_config
     it('should list all instance config operations', async () => {
       const output = execSync(
-          `node instance-config-get-operations.js ${PROJECT_ID}`
+        `node instance-config-get-operations.js ${PROJECT_ID}`
       );
       assert.match(
-          output,
-          new RegExp(`Available instance config operations for project ${PROJECT_ID}:`)
+        output,
+        new RegExp(
+          `Available instance config operations for project ${PROJECT_ID}:`
+        )
       );
       assert.include(output, 'Instance config operation for');
     });

@@ -15,9 +15,7 @@
 
 'use strict';
 
-function main(
-  projectId = 'my-project-id'
-) {
+function main(projectId = 'my-project-id') {
   // [START spanner_list_instance_config_operations]
 
   /**
@@ -37,7 +35,9 @@ function main(
     try {
       const [instanceConfigOperations] =
         await spanner.getInstanceConfigOperations();
-      console.log(`Available instance config operations for project ${projectId}:`);
+      console.log(
+        `Available instance config operations for project ${projectId}:`
+      );
       instanceConfigOperations.forEach(instanceConfigOperation => {
         const metadata = instanceConfigOperation.metadata;
         const instanceConfig =
@@ -51,7 +51,7 @@ function main(
             }.`
         );
       });
-    } catch(err) {
+    } catch (err) {
       console.error('ERROR:', err);
     }
   }
