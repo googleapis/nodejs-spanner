@@ -44,6 +44,10 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
+  * [Instance-config-create](#instance-config-create)
+  * [Instance-config-delete](#instance-config-delete)
+  * [Instance-config-get-operations](#instance-config-get-operations)
+  * [Instance-config-update](#instance-config-update)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -602,6 +606,74 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Instance-config-create
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-config-create.js`
+
+
+-----
+
+
+
+
+### Instance-config-delete
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-config-delete.js`
+
+
+-----
+
+
+
+
+### Instance-config-get-operations
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-get-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-get-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-config-get-operations.js`
+
+
+-----
+
+
+
+
+### Instance-config-update
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/instance-config-update.js`
 
 
 -----
