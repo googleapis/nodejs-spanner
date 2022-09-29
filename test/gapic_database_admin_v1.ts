@@ -27,6 +27,21 @@ import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
 
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(
+  require('../protos/protos.json')
+).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+  let type = root.lookupType(typeName) as protobuf.Type;
+  for (const field of fields.slice(0, -1)) {
+    type = type.fields[field]?.resolvedType as protobuf.Type;
+  }
+  return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
+
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (
     instance.constructor as typeof protobuf.Message
@@ -254,26 +269,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Database()
       );
       client.innerApiCalls.getDatabase = stubSimpleCall(expectedResponse);
       const [response] = await client.getDatabase(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabase without error using callback', async () => {
@@ -285,15 +300,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Database()
       );
@@ -316,11 +328,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabase with error', async () => {
@@ -332,26 +347,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getDatabase = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.getDatabase(request), expectedError);
-      assert(
-        (client.innerApiCalls.getDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabase with closed client', async () => {
@@ -363,7 +378,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseRequest()
       );
-      request.name = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getDatabase(request), expectedError);
@@ -380,26 +399,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
       client.innerApiCalls.dropDatabase = stubSimpleCall(expectedResponse);
       const [response] = await client.dropDatabase(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.dropDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes dropDatabase without error using callback', async () => {
@@ -411,15 +430,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -442,11 +458,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.dropDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes dropDatabase with error', async () => {
@@ -458,26 +477,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.dropDatabase = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.dropDatabase(request), expectedError);
-      assert(
-        (client.innerApiCalls.dropDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.dropDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes dropDatabase with closed client', async () => {
@@ -489,7 +508,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DropDatabaseRequest()
       );
-      request.database = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DropDatabaseRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.dropDatabase(request), expectedError);
@@ -506,26 +529,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlResponse()
       );
       client.innerApiCalls.getDatabaseDdl = stubSimpleCall(expectedResponse);
       const [response] = await client.getDatabaseDdl(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabaseDdl without error using callback', async () => {
@@ -537,15 +560,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlResponse()
       );
@@ -568,11 +588,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabaseDdl with error', async () => {
@@ -584,26 +607,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getDatabaseDdl = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.getDatabaseDdl(request), expectedError);
-      assert(
-        (client.innerApiCalls.getDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getDatabaseDdl with closed client', async () => {
@@ -615,7 +638,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetDatabaseDdlRequest()
       );
-      request.database = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getDatabaseDdl(request), expectedError);
@@ -632,26 +659,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
       const [response] = await client.setIamPolicy(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.setIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes setIamPolicy without error using callback', async () => {
@@ -663,15 +690,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -694,11 +718,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.setIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes setIamPolicy with error', async () => {
@@ -710,26 +737,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.setIamPolicy = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.setIamPolicy(request), expectedError);
-      assert(
-        (client.innerApiCalls.setIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.setIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes setIamPolicy with closed client', async () => {
@@ -741,7 +768,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest()
       );
-      request.resource = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.SetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.setIamPolicy(request), expectedError);
@@ -758,26 +789,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
       const [response] = await client.getIamPolicy(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getIamPolicy without error using callback', async () => {
@@ -789,15 +820,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.Policy()
       );
@@ -820,11 +848,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getIamPolicy with error', async () => {
@@ -836,26 +867,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getIamPolicy = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.getIamPolicy(request), expectedError);
-      assert(
-        (client.innerApiCalls.getIamPolicy as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getIamPolicy as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getIamPolicy with closed client', async () => {
@@ -867,7 +898,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );
-      request.resource = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.GetIamPolicyRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getIamPolicy(request), expectedError);
@@ -884,15 +919,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
@@ -900,11 +932,14 @@ describe('v1.DatabaseAdminClient', () => {
         stubSimpleCall(expectedResponse);
       const [response] = await client.testIamPermissions(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.testIamPermissions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes testIamPermissions without error using callback', async () => {
@@ -916,15 +951,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsResponse()
       );
@@ -947,11 +979,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.testIamPermissions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes testIamPermissions with error', async () => {
@@ -963,26 +998,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      request.resource = '';
-      const expectedHeaderRequestParams = 'resource=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
+      const expectedHeaderRequestParams = `resource=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.testIamPermissions = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.testIamPermissions(request), expectedError);
-      assert(
-        (client.innerApiCalls.testIamPermissions as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.testIamPermissions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes testIamPermissions with closed client', async () => {
@@ -994,7 +1029,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest()
       );
-      request.resource = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.iam.v1.TestIamPermissionsRequest',
+        ['resource']
+      );
+      request.resource = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.testIamPermissions(request), expectedError);
@@ -1011,26 +1050,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
       client.innerApiCalls.getBackup = stubSimpleCall(expectedResponse);
       const [response] = await client.getBackup(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getBackup without error using callback', async () => {
@@ -1042,15 +1081,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1073,11 +1109,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.getBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getBackup with error', async () => {
@@ -1089,23 +1128,23 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.getBackup = stubSimpleCall(undefined, expectedError);
       await assert.rejects(client.getBackup(request), expectedError);
-      assert(
-        (client.innerApiCalls.getBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes getBackup with closed client', async () => {
@@ -1117,7 +1156,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.GetBackupRequest()
       );
-      request.name = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.getBackup(request), expectedError);
@@ -1134,27 +1177,27 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
-      request.backup = {};
-      request.backup.name = '';
-      const expectedHeaderRequestParams = 'backup.name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      request.backup ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
+      request.backup.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
       client.innerApiCalls.updateBackup = stubSimpleCall(expectedResponse);
       const [response] = await client.updateBackup(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.updateBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateBackup without error using callback', async () => {
@@ -1166,16 +1209,13 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
-      request.backup = {};
-      request.backup.name = '';
-      const expectedHeaderRequestParams = 'backup.name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      request.backup ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
+      request.backup.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.Backup()
       );
@@ -1198,11 +1238,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.updateBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateBackup with error', async () => {
@@ -1214,27 +1257,27 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
-      request.backup = {};
-      request.backup.name = '';
-      const expectedHeaderRequestParams = 'backup.name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      request.backup ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
+      request.backup.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup.name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateBackup = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.updateBackup(request), expectedError);
-      assert(
-        (client.innerApiCalls.updateBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateBackup with closed client', async () => {
@@ -1246,8 +1289,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateBackupRequest()
       );
-      request.backup = {};
-      request.backup.name = '';
+      request.backup ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupRequest',
+        ['backup', 'name']
+      );
+      request.backup.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.updateBackup(request), expectedError);
@@ -1264,26 +1311,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
       client.innerApiCalls.deleteBackup = stubSimpleCall(expectedResponse);
       const [response] = await client.deleteBackup(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteBackup without error using callback', async () => {
@@ -1295,15 +1342,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
@@ -1326,11 +1370,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.deleteBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteBackup with error', async () => {
@@ -1342,26 +1389,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      request.name = '';
-      const expectedHeaderRequestParams = 'name=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteBackup = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.deleteBackup(request), expectedError);
-      assert(
-        (client.innerApiCalls.deleteBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes deleteBackup with closed client', async () => {
@@ -1373,7 +1420,11 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.DeleteBackupRequest()
       );
-      request.name = '';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
       await assert.rejects(client.deleteBackup(request), expectedError);
@@ -1390,15 +1441,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1407,11 +1455,14 @@ describe('v1.DatabaseAdminClient', () => {
       const [operation] = await client.createDatabase(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createDatabase without error using callback', async () => {
@@ -1423,15 +1474,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1461,11 +1509,14 @@ describe('v1.DatabaseAdminClient', () => {
       >;
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createDatabase with call error', async () => {
@@ -1477,26 +1528,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createDatabase = stubLongRunningCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.createDatabase(request), expectedError);
-      assert(
-        (client.innerApiCalls.createDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createDatabase with LRO error', async () => {
@@ -1508,15 +1559,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createDatabase = stubLongRunningCall(
         undefined,
@@ -1525,11 +1573,14 @@ describe('v1.DatabaseAdminClient', () => {
       );
       const [operation] = await client.createDatabase(request);
       await assert.rejects(operation.promise(), expectedError);
-      assert(
-        (client.innerApiCalls.createDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes checkCreateDatabaseProgress without error', async () => {
@@ -1584,15 +1635,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1601,11 +1649,14 @@ describe('v1.DatabaseAdminClient', () => {
       const [operation] = await client.updateDatabaseDdl(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.updateDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateDatabaseDdl without error using callback', async () => {
@@ -1617,15 +1668,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1655,11 +1703,14 @@ describe('v1.DatabaseAdminClient', () => {
       >;
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.updateDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateDatabaseDdl with call error', async () => {
@@ -1671,26 +1722,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabaseDdl = stubLongRunningCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.updateDatabaseDdl(request), expectedError);
-      assert(
-        (client.innerApiCalls.updateDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes updateDatabaseDdl with LRO error', async () => {
@@ -1702,15 +1753,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest()
       );
-      request.database = '';
-      const expectedHeaderRequestParams = 'database=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest',
+        ['database']
+      );
+      request.database = defaultValue1;
+      const expectedHeaderRequestParams = `database=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.updateDatabaseDdl = stubLongRunningCall(
         undefined,
@@ -1719,11 +1767,14 @@ describe('v1.DatabaseAdminClient', () => {
       );
       const [operation] = await client.updateDatabaseDdl(request);
       await assert.rejects(operation.promise(), expectedError);
-      assert(
-        (client.innerApiCalls.updateDatabaseDdl as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabaseDdl as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes checkUpdateDatabaseDdlProgress without error', async () => {
@@ -1778,15 +1829,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1794,11 +1842,14 @@ describe('v1.DatabaseAdminClient', () => {
       const [operation] = await client.createBackup(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createBackup without error using callback', async () => {
@@ -1810,15 +1861,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1848,11 +1896,14 @@ describe('v1.DatabaseAdminClient', () => {
       >;
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.createBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createBackup with call error', async () => {
@@ -1864,26 +1915,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createBackup = stubLongRunningCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.createBackup(request), expectedError);
-      assert(
-        (client.innerApiCalls.createBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes createBackup with LRO error', async () => {
@@ -1895,15 +1946,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CreateBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.createBackup = stubLongRunningCall(
         undefined,
@@ -1912,11 +1960,14 @@ describe('v1.DatabaseAdminClient', () => {
       );
       const [operation] = await client.createBackup(request);
       await assert.rejects(operation.promise(), expectedError);
-      assert(
-        (client.innerApiCalls.createBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes checkCreateBackupProgress without error', async () => {
@@ -1968,15 +2019,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -1984,11 +2032,14 @@ describe('v1.DatabaseAdminClient', () => {
       const [operation] = await client.copyBackup(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.copyBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes copyBackup without error using callback', async () => {
@@ -2000,15 +2051,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2038,11 +2086,14 @@ describe('v1.DatabaseAdminClient', () => {
       >;
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.copyBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes copyBackup with call error', async () => {
@@ -2054,26 +2105,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.copyBackup = stubLongRunningCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.copyBackup(request), expectedError);
-      assert(
-        (client.innerApiCalls.copyBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes copyBackup with LRO error', async () => {
@@ -2085,15 +2136,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.CopyBackupRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CopyBackupRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.copyBackup = stubLongRunningCall(
         undefined,
@@ -2102,11 +2150,14 @@ describe('v1.DatabaseAdminClient', () => {
       );
       const [operation] = await client.copyBackup(request);
       await assert.rejects(operation.promise(), expectedError);
-      assert(
-        (client.innerApiCalls.copyBackup as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.copyBackup as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes checkCopyBackupProgress without error', async () => {
@@ -2158,15 +2209,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2175,11 +2223,14 @@ describe('v1.DatabaseAdminClient', () => {
       const [operation] = await client.restoreDatabase(request);
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.restoreDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes restoreDatabase without error using callback', async () => {
@@ -2191,15 +2242,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
@@ -2229,11 +2277,14 @@ describe('v1.DatabaseAdminClient', () => {
       >;
       const [response] = await operation.promise();
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.restoreDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes restoreDatabase with call error', async () => {
@@ -2245,26 +2296,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.restoreDatabase = stubLongRunningCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.restoreDatabase(request), expectedError);
-      assert(
-        (client.innerApiCalls.restoreDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes restoreDatabase with LRO error', async () => {
@@ -2276,15 +2327,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.RestoreDatabaseRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.RestoreDatabaseRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.restoreDatabase = stubLongRunningCall(
         undefined,
@@ -2293,11 +2341,14 @@ describe('v1.DatabaseAdminClient', () => {
       );
       const [operation] = await client.restoreDatabase(request);
       await assert.rejects(operation.promise(), expectedError);
-      assert(
-        (client.innerApiCalls.restoreDatabase as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.restoreDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes checkRestoreDatabaseProgress without error', async () => {
@@ -2352,15 +2403,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -2375,11 +2423,14 @@ describe('v1.DatabaseAdminClient', () => {
       client.innerApiCalls.listDatabases = stubSimpleCall(expectedResponse);
       const [response] = await client.listDatabases(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabases as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabases without error using callback', async () => {
@@ -2391,15 +2442,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -2430,11 +2478,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabases as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabases with error', async () => {
@@ -2446,26 +2497,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabases = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.listDatabases(request), expectedError);
-      assert(
-        (client.innerApiCalls.listDatabases as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabases as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabasesStream without error', async () => {
@@ -2477,8 +2528,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -2516,11 +2571,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabases, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabases.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2533,8 +2589,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabases.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -2561,11 +2621,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabases, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabases.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2578,8 +2639,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Database()
@@ -2605,11 +2670,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabases.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2622,8 +2688,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabasesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabasesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabases.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -2641,11 +2711,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabases.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabases.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });
@@ -2660,15 +2731,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -2683,11 +2751,14 @@ describe('v1.DatabaseAdminClient', () => {
       client.innerApiCalls.listBackups = stubSimpleCall(expectedResponse);
       const [response] = await client.listBackups(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackups without error using callback', async () => {
@@ -2699,15 +2770,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -2738,11 +2806,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackups with error', async () => {
@@ -2754,26 +2825,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listBackups = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.listBackups(request), expectedError);
-      assert(
-        (client.innerApiCalls.listBackups as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackups as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackupsStream without error', async () => {
@@ -2785,8 +2856,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -2823,11 +2898,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listBackups, request)
       );
-      assert.strictEqual(
-        (client.descriptors.page.listBackups.createStream as SinonStub).getCall(
-          0
-        ).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackups.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2840,8 +2916,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackups.createStream = stubPageStreamingCall(
         undefined,
@@ -2869,11 +2949,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listBackups, request)
       );
-      assert.strictEqual(
-        (client.descriptors.page.listBackups.createStream as SinonStub).getCall(
-          0
-        ).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackups.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2886,8 +2967,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.Backup()
@@ -2913,11 +2998,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).args[1],
         request
       );
-      assert.strictEqual(
-        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
-          0
-        ).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -2930,8 +3016,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackups.asyncIterate = stubAsyncIterationCall(
         undefined,
@@ -2950,11 +3040,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).args[1],
         request
       );
-      assert.strictEqual(
-        (client.descriptors.page.listBackups.asyncIterate as SinonStub).getCall(
-          0
-        ).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackups.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });
@@ -2969,15 +3060,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -2987,11 +3075,14 @@ describe('v1.DatabaseAdminClient', () => {
         stubSimpleCall(expectedResponse);
       const [response] = await client.listDatabaseOperations(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabaseOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseOperations without error using callback', async () => {
@@ -3003,15 +3094,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3036,11 +3124,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabaseOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseOperations with error', async () => {
@@ -3052,15 +3143,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabaseOperations = stubSimpleCall(
         undefined,
@@ -3070,11 +3158,14 @@ describe('v1.DatabaseAdminClient', () => {
         client.listDatabaseOperations(request),
         expectedError
       );
-      assert(
-        (client.innerApiCalls.listDatabaseOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseOperationsStream without error', async () => {
@@ -3086,8 +3177,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3118,12 +3213,15 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseOperations, request)
       );
-      assert.strictEqual(
+      assert(
         (
           client.descriptors.page.listDatabaseOperations
             .createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3136,8 +3234,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseOperations.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -3163,12 +3265,15 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseOperations, request)
       );
-      assert.strictEqual(
+      assert(
         (
           client.descriptors.page.listDatabaseOperations
             .createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3181,8 +3286,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3203,12 +3312,15 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
+      assert(
         (
           client.descriptors.page.listDatabaseOperations
             .asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3221,8 +3333,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseOperations.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -3240,12 +3356,15 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
+      assert(
         (
           client.descriptors.page.listDatabaseOperations
             .asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });
@@ -3260,15 +3379,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3278,11 +3394,14 @@ describe('v1.DatabaseAdminClient', () => {
         stubSimpleCall(expectedResponse);
       const [response] = await client.listBackupOperations(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackupOperations without error using callback', async () => {
@@ -3294,15 +3413,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3327,11 +3443,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackupOperations with error', async () => {
@@ -3343,26 +3462,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listBackupOperations = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.listBackupOperations(request), expectedError);
-      assert(
-        (client.innerApiCalls.listBackupOperations as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listBackupOperationsStream without error', async () => {
@@ -3374,8 +3493,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3403,11 +3526,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listBackupOperations, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackupOperations.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3420,8 +3544,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupOperations.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -3444,11 +3572,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listBackupOperations, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackupOperations.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3461,8 +3590,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -3482,11 +3615,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackupOperations.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3499,8 +3633,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListBackupOperationsRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listBackupOperations.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -3517,11 +3655,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listBackupOperations.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listBackupOperations.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });
@@ -3536,15 +3675,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -3559,11 +3695,14 @@ describe('v1.DatabaseAdminClient', () => {
       client.innerApiCalls.listDatabaseRoles = stubSimpleCall(expectedResponse);
       const [response] = await client.listDatabaseRoles(request);
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabaseRoles as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseRoles without error using callback', async () => {
@@ -3575,15 +3714,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -3616,11 +3752,14 @@ describe('v1.DatabaseAdminClient', () => {
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
-      assert(
-        (client.innerApiCalls.listDatabaseRoles as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseRoles with error', async () => {
@@ -3632,26 +3771,26 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
-      const expectedOptions = {
-        otherArgs: {
-          headers: {
-            'x-goog-request-params': expectedHeaderRequestParams,
-          },
-        },
-      };
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.innerApiCalls.listDatabaseRoles = stubSimpleCall(
         undefined,
         expectedError
       );
       await assert.rejects(client.listDatabaseRoles(request), expectedError);
-      assert(
-        (client.innerApiCalls.listDatabaseRoles as SinonStub)
-          .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
-      );
+      const actualRequest = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listDatabaseRoles as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
     it('invokes listDatabaseRolesStream without error', async () => {
@@ -3663,8 +3802,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -3702,11 +3845,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseRoles, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseRoles.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3719,8 +3863,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseRoles.createStream =
         stubPageStreamingCall(undefined, expectedError);
@@ -3747,11 +3895,12 @@ describe('v1.DatabaseAdminClient', () => {
           .getCall(0)
           .calledWith(client.innerApiCalls.listDatabaseRoles, request)
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseRoles.createStream as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3764,8 +3913,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedResponse = [
         generateSampleMessage(
           new protos.google.spanner.admin.database.v1.DatabaseRole()
@@ -3792,11 +3945,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
 
@@ -3809,8 +3963,12 @@ describe('v1.DatabaseAdminClient', () => {
       const request = generateSampleMessage(
         new protos.google.spanner.admin.database.v1.ListDatabaseRolesRequest()
       );
-      request.parent = '';
-      const expectedHeaderRequestParams = 'parent=';
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListDatabaseRolesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
       const expectedError = new Error('expected');
       client.descriptors.page.listDatabaseRoles.asyncIterate =
         stubAsyncIterationCall(undefined, expectedError);
@@ -3828,11 +3986,12 @@ describe('v1.DatabaseAdminClient', () => {
         ).getCall(0).args[1],
         request
       );
-      assert.strictEqual(
-        (
-          client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub
-        ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+      assert(
+        (client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
       );
     });
   });

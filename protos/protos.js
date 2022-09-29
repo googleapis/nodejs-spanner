@@ -26354,6 +26354,266 @@
                          */
                         var v1 = {};
     
+                        v1.OperationProgress = (function() {
+    
+                            /**
+                             * Properties of an OperationProgress.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IOperationProgress
+                             * @property {number|null} [progressPercent] OperationProgress progressPercent
+                             * @property {google.protobuf.ITimestamp|null} [startTime] OperationProgress startTime
+                             * @property {google.protobuf.ITimestamp|null} [endTime] OperationProgress endTime
+                             */
+    
+                            /**
+                             * Constructs a new OperationProgress.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an OperationProgress.
+                             * @implements IOperationProgress
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress=} [properties] Properties to set
+                             */
+                            function OperationProgress(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * OperationProgress progressPercent.
+                             * @member {number} progressPercent
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.progressPercent = 0;
+    
+                            /**
+                             * OperationProgress startTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} startTime
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.startTime = null;
+    
+                            /**
+                             * OperationProgress endTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} endTime
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.endTime = null;
+    
+                            /**
+                             * Creates a new OperationProgress instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress instance
+                             */
+                            OperationProgress.create = function create(properties) {
+                                return new OperationProgress(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message. Does not implicitly {@link google.spanner.admin.instance.v1.OperationProgress.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.progressPercent != null && Object.hasOwnProperty.call(message, "progressPercent"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.progressPercent);
+                                if (message.startTime != null && Object.hasOwnProperty.call(message, "startTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.startTime, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.endTime != null && Object.hasOwnProperty.call(message, "endTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.OperationProgress.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.OperationProgress();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.progressPercent = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an OperationProgress message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            OperationProgress.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    if (!$util.isInteger(message.progressPercent))
+                                        return "progressPercent: integer expected";
+                                if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.startTime);
+                                    if (error)
+                                        return "startTime." + error;
+                                }
+                                if (message.endTime != null && message.hasOwnProperty("endTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.endTime);
+                                    if (error)
+                                        return "endTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an OperationProgress message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             */
+                            OperationProgress.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.OperationProgress)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.OperationProgress();
+                                if (object.progressPercent != null)
+                                    message.progressPercent = object.progressPercent | 0;
+                                if (object.startTime != null) {
+                                    if (typeof object.startTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.OperationProgress.startTime: object expected");
+                                    message.startTime = $root.google.protobuf.Timestamp.fromObject(object.startTime);
+                                }
+                                if (object.endTime != null) {
+                                    if (typeof object.endTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.OperationProgress.endTime: object expected");
+                                    message.endTime = $root.google.protobuf.Timestamp.fromObject(object.endTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an OperationProgress message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.OperationProgress} message OperationProgress
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            OperationProgress.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.progressPercent = 0;
+                                    object.startTime = null;
+                                    object.endTime = null;
+                                }
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    object.progressPercent = message.progressPercent;
+                                if (message.startTime != null && message.hasOwnProperty("startTime"))
+                                    object.startTime = $root.google.protobuf.Timestamp.toObject(message.startTime, options);
+                                if (message.endTime != null && message.hasOwnProperty("endTime"))
+                                    object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this OperationProgress to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            OperationProgress.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for OperationProgress
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            OperationProgress.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.OperationProgress";
+                            };
+    
+                            return OperationProgress;
+                        })();
+    
                         v1.InstanceAdmin = (function() {
     
                             /**
@@ -26449,6 +26709,138 @@
                              * @instance
                              * @param {google.spanner.admin.instance.v1.IGetInstanceConfigRequest} request GetInstanceConfigRequest message or plain object
                              * @returns {Promise<google.spanner.admin.instance.v1.InstanceConfig>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef CreateInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls CreateInstanceConfig.
+                             * @function createInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} request CreateInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfigCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.createInstanceConfig = function createInstanceConfig(request, callback) {
+                                return this.rpcCall(createInstanceConfig, $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "CreateInstanceConfig" });
+    
+                            /**
+                             * Calls CreateInstanceConfig.
+                             * @function createInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} request CreateInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef UpdateInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls UpdateInstanceConfig.
+                             * @function updateInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} request UpdateInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfigCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.updateInstanceConfig = function updateInstanceConfig(request, callback) {
+                                return this.rpcCall(updateInstanceConfig, $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "UpdateInstanceConfig" });
+    
+                            /**
+                             * Calls UpdateInstanceConfig.
+                             * @function updateInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} request UpdateInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef DeleteInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.protobuf.Empty} [response] Empty
+                             */
+    
+                            /**
+                             * Calls DeleteInstanceConfig.
+                             * @function deleteInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} request DeleteInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfigCallback} callback Node-style callback called with the error, if any, and Empty
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.deleteInstanceConfig = function deleteInstanceConfig(request, callback) {
+                                return this.rpcCall(deleteInstanceConfig, $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest, $root.google.protobuf.Empty, request, callback);
+                            }, "name", { value: "DeleteInstanceConfig" });
+    
+                            /**
+                             * Calls DeleteInstanceConfig.
+                             * @function deleteInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} request DeleteInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.protobuf.Empty>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstanceConfigOperations}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef ListInstanceConfigOperationsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} [response] ListInstanceConfigOperationsResponse
+                             */
+    
+                            /**
+                             * Calls ListInstanceConfigOperations.
+                             * @function listInstanceConfigOperations
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} request ListInstanceConfigOperationsRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigOperationsCallback} callback Node-style callback called with the error, if any, and ListInstanceConfigOperationsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.listInstanceConfigOperations = function listInstanceConfigOperations(request, callback) {
+                                return this.rpcCall(listInstanceConfigOperations, $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest, $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse, request, callback);
+                            }, "name", { value: "ListInstanceConfigOperations" });
+    
+                            /**
+                             * Calls ListInstanceConfigOperations.
+                             * @function listInstanceConfigOperations
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} request ListInstanceConfigOperationsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>} Promise
                              * @variation 2
                              */
     
@@ -27018,8 +27410,15 @@
                              * @interface IInstanceConfig
                              * @property {string|null} [name] InstanceConfig name
                              * @property {string|null} [displayName] InstanceConfig displayName
+                             * @property {google.spanner.admin.instance.v1.InstanceConfig.Type|null} [configType] InstanceConfig configType
                              * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [replicas] InstanceConfig replicas
+                             * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [optionalReplicas] InstanceConfig optionalReplicas
+                             * @property {string|null} [baseConfig] InstanceConfig baseConfig
+                             * @property {Object.<string,string>|null} [labels] InstanceConfig labels
+                             * @property {string|null} [etag] InstanceConfig etag
                              * @property {Array.<string>|null} [leaderOptions] InstanceConfig leaderOptions
+                             * @property {boolean|null} [reconciling] InstanceConfig reconciling
+                             * @property {google.spanner.admin.instance.v1.InstanceConfig.State|null} [state] InstanceConfig state
                              */
     
                             /**
@@ -27032,6 +27431,8 @@
                              */
                             function InstanceConfig(properties) {
                                 this.replicas = [];
+                                this.optionalReplicas = [];
+                                this.labels = {};
                                 this.leaderOptions = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -27056,6 +27457,14 @@
                             InstanceConfig.prototype.displayName = "";
     
                             /**
+                             * InstanceConfig configType.
+                             * @member {google.spanner.admin.instance.v1.InstanceConfig.Type} configType
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.configType = 0;
+    
+                            /**
                              * InstanceConfig replicas.
                              * @member {Array.<google.spanner.admin.instance.v1.IReplicaInfo>} replicas
                              * @memberof google.spanner.admin.instance.v1.InstanceConfig
@@ -27064,12 +27473,60 @@
                             InstanceConfig.prototype.replicas = $util.emptyArray;
     
                             /**
+                             * InstanceConfig optionalReplicas.
+                             * @member {Array.<google.spanner.admin.instance.v1.IReplicaInfo>} optionalReplicas
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.optionalReplicas = $util.emptyArray;
+    
+                            /**
+                             * InstanceConfig baseConfig.
+                             * @member {string} baseConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.baseConfig = "";
+    
+                            /**
+                             * InstanceConfig labels.
+                             * @member {Object.<string,string>} labels
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.labels = $util.emptyObject;
+    
+                            /**
+                             * InstanceConfig etag.
+                             * @member {string} etag
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.etag = "";
+    
+                            /**
                              * InstanceConfig leaderOptions.
                              * @member {Array.<string>} leaderOptions
                              * @memberof google.spanner.admin.instance.v1.InstanceConfig
                              * @instance
                              */
                             InstanceConfig.prototype.leaderOptions = $util.emptyArray;
+    
+                            /**
+                             * InstanceConfig reconciling.
+                             * @member {boolean} reconciling
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.reconciling = false;
+    
+                            /**
+                             * InstanceConfig state.
+                             * @member {google.spanner.admin.instance.v1.InstanceConfig.State} state
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.state = 0;
     
                             /**
                              * Creates a new InstanceConfig instance using the specified properties.
@@ -27105,6 +27562,22 @@
                                 if (message.leaderOptions != null && message.leaderOptions.length)
                                     for (var i = 0; i < message.leaderOptions.length; ++i)
                                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.leaderOptions[i]);
+                                if (message.configType != null && Object.hasOwnProperty.call(message, "configType"))
+                                    writer.uint32(/* id 5, wireType 0 =*/40).int32(message.configType);
+                                if (message.optionalReplicas != null && message.optionalReplicas.length)
+                                    for (var i = 0; i < message.optionalReplicas.length; ++i)
+                                        $root.google.spanner.admin.instance.v1.ReplicaInfo.encode(message.optionalReplicas[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                                if (message.baseConfig != null && Object.hasOwnProperty.call(message, "baseConfig"))
+                                    writer.uint32(/* id 7, wireType 2 =*/58).string(message.baseConfig);
+                                if (message.labels != null && Object.hasOwnProperty.call(message, "labels"))
+                                    for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
+                                        writer.uint32(/* id 8, wireType 2 =*/66).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
+                                if (message.etag != null && Object.hasOwnProperty.call(message, "etag"))
+                                    writer.uint32(/* id 9, wireType 2 =*/74).string(message.etag);
+                                if (message.reconciling != null && Object.hasOwnProperty.call(message, "reconciling"))
+                                    writer.uint32(/* id 10, wireType 0 =*/80).bool(message.reconciling);
+                                if (message.state != null && Object.hasOwnProperty.call(message, "state"))
+                                    writer.uint32(/* id 11, wireType 0 =*/88).int32(message.state);
                                 return writer;
                             };
     
@@ -27135,7 +27608,7 @@
                             InstanceConfig.decode = function decode(reader, length) {
                                 if (!(reader instanceof $Reader))
                                     reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.InstanceConfig();
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.InstanceConfig(), key, value;
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
@@ -27147,16 +27620,65 @@
                                             message.displayName = reader.string();
                                             break;
                                         }
+                                    case 5: {
+                                            message.configType = reader.int32();
+                                            break;
+                                        }
                                     case 3: {
                                             if (!(message.replicas && message.replicas.length))
                                                 message.replicas = [];
                                             message.replicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
                                             break;
                                         }
+                                    case 6: {
+                                            if (!(message.optionalReplicas && message.optionalReplicas.length))
+                                                message.optionalReplicas = [];
+                                            message.optionalReplicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 7: {
+                                            message.baseConfig = reader.string();
+                                            break;
+                                        }
+                                    case 8: {
+                                            if (message.labels === $util.emptyObject)
+                                                message.labels = {};
+                                            var end2 = reader.uint32() + reader.pos;
+                                            key = "";
+                                            value = "";
+                                            while (reader.pos < end2) {
+                                                var tag2 = reader.uint32();
+                                                switch (tag2 >>> 3) {
+                                                case 1:
+                                                    key = reader.string();
+                                                    break;
+                                                case 2:
+                                                    value = reader.string();
+                                                    break;
+                                                default:
+                                                    reader.skipType(tag2 & 7);
+                                                    break;
+                                                }
+                                            }
+                                            message.labels[key] = value;
+                                            break;
+                                        }
+                                    case 9: {
+                                            message.etag = reader.string();
+                                            break;
+                                        }
                                     case 4: {
                                             if (!(message.leaderOptions && message.leaderOptions.length))
                                                 message.leaderOptions = [];
                                             message.leaderOptions.push(reader.string());
+                                            break;
+                                        }
+                                    case 10: {
+                                            message.reconciling = reader.bool();
+                                            break;
+                                        }
+                                    case 11: {
+                                            message.state = reader.int32();
                                             break;
                                         }
                                     default:
@@ -27200,6 +27722,15 @@
                                 if (message.displayName != null && message.hasOwnProperty("displayName"))
                                     if (!$util.isString(message.displayName))
                                         return "displayName: string expected";
+                                if (message.configType != null && message.hasOwnProperty("configType"))
+                                    switch (message.configType) {
+                                    default:
+                                        return "configType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 if (message.replicas != null && message.hasOwnProperty("replicas")) {
                                     if (!Array.isArray(message.replicas))
                                         return "replicas: array expected";
@@ -27209,6 +27740,29 @@
                                             return "replicas." + error;
                                     }
                                 }
+                                if (message.optionalReplicas != null && message.hasOwnProperty("optionalReplicas")) {
+                                    if (!Array.isArray(message.optionalReplicas))
+                                        return "optionalReplicas: array expected";
+                                    for (var i = 0; i < message.optionalReplicas.length; ++i) {
+                                        var error = $root.google.spanner.admin.instance.v1.ReplicaInfo.verify(message.optionalReplicas[i]);
+                                        if (error)
+                                            return "optionalReplicas." + error;
+                                    }
+                                }
+                                if (message.baseConfig != null && message.hasOwnProperty("baseConfig"))
+                                    if (!$util.isString(message.baseConfig))
+                                        return "baseConfig: string expected";
+                                if (message.labels != null && message.hasOwnProperty("labels")) {
+                                    if (!$util.isObject(message.labels))
+                                        return "labels: object expected";
+                                    var key = Object.keys(message.labels);
+                                    for (var i = 0; i < key.length; ++i)
+                                        if (!$util.isString(message.labels[key[i]]))
+                                            return "labels: string{k:string} expected";
+                                }
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    if (!$util.isString(message.etag))
+                                        return "etag: string expected";
                                 if (message.leaderOptions != null && message.hasOwnProperty("leaderOptions")) {
                                     if (!Array.isArray(message.leaderOptions))
                                         return "leaderOptions: array expected";
@@ -27216,6 +27770,18 @@
                                         if (!$util.isString(message.leaderOptions[i]))
                                             return "leaderOptions: string[] expected";
                                 }
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    if (typeof message.reconciling !== "boolean")
+                                        return "reconciling: boolean expected";
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    switch (message.state) {
+                                    default:
+                                        return "state: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 return null;
                             };
     
@@ -27235,6 +27801,20 @@
                                     message.name = String(object.name);
                                 if (object.displayName != null)
                                     message.displayName = String(object.displayName);
+                                switch (object.configType) {
+                                case "TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.configType = 0;
+                                    break;
+                                case "GOOGLE_MANAGED":
+                                case 1:
+                                    message.configType = 1;
+                                    break;
+                                case "USER_MANAGED":
+                                case 2:
+                                    message.configType = 2;
+                                    break;
+                                }
                                 if (object.replicas) {
                                     if (!Array.isArray(object.replicas))
                                         throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.replicas: array expected");
@@ -27245,12 +27825,49 @@
                                         message.replicas[i] = $root.google.spanner.admin.instance.v1.ReplicaInfo.fromObject(object.replicas[i]);
                                     }
                                 }
+                                if (object.optionalReplicas) {
+                                    if (!Array.isArray(object.optionalReplicas))
+                                        throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.optionalReplicas: array expected");
+                                    message.optionalReplicas = [];
+                                    for (var i = 0; i < object.optionalReplicas.length; ++i) {
+                                        if (typeof object.optionalReplicas[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.optionalReplicas: object expected");
+                                        message.optionalReplicas[i] = $root.google.spanner.admin.instance.v1.ReplicaInfo.fromObject(object.optionalReplicas[i]);
+                                    }
+                                }
+                                if (object.baseConfig != null)
+                                    message.baseConfig = String(object.baseConfig);
+                                if (object.labels) {
+                                    if (typeof object.labels !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.labels: object expected");
+                                    message.labels = {};
+                                    for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i)
+                                        message.labels[keys[i]] = String(object.labels[keys[i]]);
+                                }
+                                if (object.etag != null)
+                                    message.etag = String(object.etag);
                                 if (object.leaderOptions) {
                                     if (!Array.isArray(object.leaderOptions))
                                         throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.leaderOptions: array expected");
                                     message.leaderOptions = [];
                                     for (var i = 0; i < object.leaderOptions.length; ++i)
                                         message.leaderOptions[i] = String(object.leaderOptions[i]);
+                                }
+                                if (object.reconciling != null)
+                                    message.reconciling = Boolean(object.reconciling);
+                                switch (object.state) {
+                                case "STATE_UNSPECIFIED":
+                                case 0:
+                                    message.state = 0;
+                                    break;
+                                case "CREATING":
+                                case 1:
+                                    message.state = 1;
+                                    break;
+                                case "READY":
+                                case 2:
+                                    message.state = 2;
+                                    break;
                                 }
                                 return message;
                             };
@@ -27271,10 +27888,18 @@
                                 if (options.arrays || options.defaults) {
                                     object.replicas = [];
                                     object.leaderOptions = [];
+                                    object.optionalReplicas = [];
                                 }
+                                if (options.objects || options.defaults)
+                                    object.labels = {};
                                 if (options.defaults) {
                                     object.name = "";
                                     object.displayName = "";
+                                    object.configType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
+                                    object.baseConfig = "";
+                                    object.etag = "";
+                                    object.reconciling = false;
+                                    object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -27290,6 +27915,27 @@
                                     for (var j = 0; j < message.leaderOptions.length; ++j)
                                         object.leaderOptions[j] = message.leaderOptions[j];
                                 }
+                                if (message.configType != null && message.hasOwnProperty("configType"))
+                                    object.configType = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] : message.configType;
+                                if (message.optionalReplicas && message.optionalReplicas.length) {
+                                    object.optionalReplicas = [];
+                                    for (var j = 0; j < message.optionalReplicas.length; ++j)
+                                        object.optionalReplicas[j] = $root.google.spanner.admin.instance.v1.ReplicaInfo.toObject(message.optionalReplicas[j], options);
+                                }
+                                if (message.baseConfig != null && message.hasOwnProperty("baseConfig"))
+                                    object.baseConfig = message.baseConfig;
+                                var keys2;
+                                if (message.labels && (keys2 = Object.keys(message.labels)).length) {
+                                    object.labels = {};
+                                    for (var j = 0; j < keys2.length; ++j)
+                                        object.labels[keys2[j]] = message.labels[keys2[j]];
+                                }
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    object.etag = message.etag;
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    object.reconciling = message.reconciling;
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] : message.state;
                                 return object;
                             };
     
@@ -27318,6 +27964,38 @@
                                 }
                                 return typeUrlPrefix + "/google.spanner.admin.instance.v1.InstanceConfig";
                             };
+    
+                            /**
+                             * Type enum.
+                             * @name google.spanner.admin.instance.v1.InstanceConfig.Type
+                             * @enum {number}
+                             * @property {number} TYPE_UNSPECIFIED=0 TYPE_UNSPECIFIED value
+                             * @property {number} GOOGLE_MANAGED=1 GOOGLE_MANAGED value
+                             * @property {number} USER_MANAGED=2 USER_MANAGED value
+                             */
+                            InstanceConfig.Type = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "GOOGLE_MANAGED"] = 1;
+                                values[valuesById[2] = "USER_MANAGED"] = 2;
+                                return values;
+                            })();
+    
+                            /**
+                             * State enum.
+                             * @name google.spanner.admin.instance.v1.InstanceConfig.State
+                             * @enum {number}
+                             * @property {number} STATE_UNSPECIFIED=0 STATE_UNSPECIFIED value
+                             * @property {number} CREATING=1 CREATING value
+                             * @property {number} READY=2 READY value
+                             */
+                            InstanceConfig.State = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "STATE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "CREATING"] = 1;
+                                values[valuesById[2] = "READY"] = 2;
+                                return values;
+                            })();
     
                             return InstanceConfig;
                         })();
@@ -28529,6 +29207,1315 @@
                             };
     
                             return GetInstanceConfigRequest;
+                        })();
+    
+                        v1.CreateInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of a CreateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface ICreateInstanceConfigRequest
+                             * @property {string|null} [parent] CreateInstanceConfigRequest parent
+                             * @property {string|null} [instanceConfigId] CreateInstanceConfigRequest instanceConfigId
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] CreateInstanceConfigRequest instanceConfig
+                             * @property {boolean|null} [validateOnly] CreateInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new CreateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a CreateInstanceConfigRequest.
+                             * @implements ICreateInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function CreateInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateInstanceConfigRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.parent = "";
+    
+                            /**
+                             * CreateInstanceConfigRequest instanceConfigId.
+                             * @member {string} instanceConfigId
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.instanceConfigId = "";
+    
+                            /**
+                             * CreateInstanceConfigRequest instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.instanceConfig = null;
+    
+                            /**
+                             * CreateInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new CreateInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest instance
+                             */
+                            CreateInstanceConfigRequest.create = function create(properties) {
+                                return new CreateInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} message CreateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.instanceConfigId != null && Object.hasOwnProperty.call(message, "instanceConfigId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.instanceConfigId);
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} message CreateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.instanceConfigId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.instanceConfigId != null && message.hasOwnProperty("instanceConfigId"))
+                                    if (!$util.isString(message.instanceConfigId))
+                                        return "instanceConfigId: string expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             */
+                            CreateInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.instanceConfigId != null)
+                                    message.instanceConfigId = String(object.instanceConfigId);
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigRequest.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} message CreateInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.instanceConfigId = "";
+                                    object.instanceConfig = null;
+                                    object.validateOnly = false;
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.instanceConfigId != null && message.hasOwnProperty("instanceConfigId"))
+                                    object.instanceConfigId = message.instanceConfigId;
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceConfigRequest";
+                            };
+    
+                            return CreateInstanceConfigRequest;
+                        })();
+    
+                        v1.UpdateInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of an UpdateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IUpdateInstanceConfigRequest
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] UpdateInstanceConfigRequest instanceConfig
+                             * @property {google.protobuf.IFieldMask|null} [updateMask] UpdateInstanceConfigRequest updateMask
+                             * @property {boolean|null} [validateOnly] UpdateInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new UpdateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an UpdateInstanceConfigRequest.
+                             * @implements IUpdateInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function UpdateInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateInstanceConfigRequest instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.instanceConfig = null;
+    
+                            /**
+                             * UpdateInstanceConfigRequest updateMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} updateMask
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.updateMask = null;
+    
+                            /**
+                             * UpdateInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new UpdateInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest instance
+                             */
+                            UpdateInstanceConfigRequest.create = function create(properties) {
+                                return new UpdateInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} message UpdateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.updateMask != null && Object.hasOwnProperty.call(message, "updateMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} message UpdateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.updateMask);
+                                    if (error)
+                                        return "updateMask." + error;
+                                }
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             */
+                            UpdateInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.updateMask != null) {
+                                    if (typeof object.updateMask !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.updateMask: object expected");
+                                    message.updateMask = $root.google.protobuf.FieldMask.fromObject(object.updateMask);
+                                }
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} message UpdateInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.updateMask = null;
+                                    object.validateOnly = false;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                                    object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceConfigRequest";
+                            };
+    
+                            return UpdateInstanceConfigRequest;
+                        })();
+    
+                        v1.DeleteInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of a DeleteInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IDeleteInstanceConfigRequest
+                             * @property {string|null} [name] DeleteInstanceConfigRequest name
+                             * @property {string|null} [etag] DeleteInstanceConfigRequest etag
+                             * @property {boolean|null} [validateOnly] DeleteInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new DeleteInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a DeleteInstanceConfigRequest.
+                             * @implements IDeleteInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function DeleteInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * DeleteInstanceConfigRequest name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.name = "";
+    
+                            /**
+                             * DeleteInstanceConfigRequest etag.
+                             * @member {string} etag
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.etag = "";
+    
+                            /**
+                             * DeleteInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new DeleteInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest instance
+                             */
+                            DeleteInstanceConfigRequest.create = function create(properties) {
+                                return new DeleteInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} message DeleteInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.etag != null && Object.hasOwnProperty.call(message, "etag"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.etag);
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} message DeleteInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.etag = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a DeleteInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            DeleteInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    if (!$util.isString(message.etag))
+                                        return "etag: string expected";
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a DeleteInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             */
+                            DeleteInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.etag != null)
+                                    message.etag = String(object.etag);
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a DeleteInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} message DeleteInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            DeleteInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.etag = "";
+                                    object.validateOnly = false;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    object.etag = message.etag;
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this DeleteInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            DeleteInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DeleteInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DeleteInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.DeleteInstanceConfigRequest";
+                            };
+    
+                            return DeleteInstanceConfigRequest;
+                        })();
+    
+                        v1.ListInstanceConfigOperationsRequest = (function() {
+    
+                            /**
+                             * Properties of a ListInstanceConfigOperationsRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IListInstanceConfigOperationsRequest
+                             * @property {string|null} [parent] ListInstanceConfigOperationsRequest parent
+                             * @property {string|null} [filter] ListInstanceConfigOperationsRequest filter
+                             * @property {number|null} [pageSize] ListInstanceConfigOperationsRequest pageSize
+                             * @property {string|null} [pageToken] ListInstanceConfigOperationsRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListInstanceConfigOperationsRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a ListInstanceConfigOperationsRequest.
+                             * @implements IListInstanceConfigOperationsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest=} [properties] Properties to set
+                             */
+                            function ListInstanceConfigOperationsRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.parent = "";
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest filter.
+                             * @member {string} filter
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.filter = "";
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListInstanceConfigOperationsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest instance
+                             */
+                            ListInstanceConfigOperationsRequest.create = function create(properties) {
+                                return new ListInstanceConfigOperationsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.filter != null && Object.hasOwnProperty.call(message, "filter"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.filter);
+                                if (message.pageSize != null && Object.hasOwnProperty.call(message, "pageSize"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.pageSize);
+                                if (message.pageToken != null && Object.hasOwnProperty.call(message, "pageToken"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListInstanceConfigOperationsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListInstanceConfigOperationsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    if (!$util.isString(message.filter))
+                                        return "filter: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListInstanceConfigOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             */
+                            ListInstanceConfigOperationsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.filter != null)
+                                    message.filter = String(object.filter);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListInstanceConfigOperationsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListInstanceConfigOperationsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.filter = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    object.filter = message.filter;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListInstanceConfigOperationsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListInstanceConfigOperationsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigOperationsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest";
+                            };
+    
+                            return ListInstanceConfigOperationsRequest;
+                        })();
+    
+                        v1.ListInstanceConfigOperationsResponse = (function() {
+    
+                            /**
+                             * Properties of a ListInstanceConfigOperationsResponse.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IListInstanceConfigOperationsResponse
+                             * @property {Array.<google.longrunning.IOperation>|null} [operations] ListInstanceConfigOperationsResponse operations
+                             * @property {string|null} [nextPageToken] ListInstanceConfigOperationsResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListInstanceConfigOperationsResponse.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a ListInstanceConfigOperationsResponse.
+                             * @implements IListInstanceConfigOperationsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse=} [properties] Properties to set
+                             */
+                            function ListInstanceConfigOperationsResponse(properties) {
+                                this.operations = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListInstanceConfigOperationsResponse operations.
+                             * @member {Array.<google.longrunning.IOperation>} operations
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.operations = $util.emptyArray;
+    
+                            /**
+                             * ListInstanceConfigOperationsResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListInstanceConfigOperationsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse instance
+                             */
+                            ListInstanceConfigOperationsResponse.create = function create(properties) {
+                                return new ListInstanceConfigOperationsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.operations != null && message.operations.length)
+                                    for (var i = 0; i < message.operations.length; ++i)
+                                        $root.google.longrunning.Operation.encode(message.operations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && Object.hasOwnProperty.call(message, "nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            if (!(message.operations && message.operations.length))
+                                                message.operations = [];
+                                            message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListInstanceConfigOperationsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListInstanceConfigOperationsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.operations != null && message.hasOwnProperty("operations")) {
+                                    if (!Array.isArray(message.operations))
+                                        return "operations: array expected";
+                                    for (var i = 0; i < message.operations.length; ++i) {
+                                        var error = $root.google.longrunning.Operation.verify(message.operations[i]);
+                                        if (error)
+                                            return "operations." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListInstanceConfigOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             */
+                            ListInstanceConfigOperationsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse();
+                                if (object.operations) {
+                                    if (!Array.isArray(object.operations))
+                                        throw TypeError(".google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.operations: array expected");
+                                    message.operations = [];
+                                    for (var i = 0; i < object.operations.length; ++i) {
+                                        if (typeof object.operations[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.operations: object expected");
+                                        message.operations[i] = $root.google.longrunning.Operation.fromObject(object.operations[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListInstanceConfigOperationsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListInstanceConfigOperationsResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.operations = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.operations && message.operations.length) {
+                                    object.operations = [];
+                                    for (var j = 0; j < message.operations.length; ++j)
+                                        object.operations[j] = $root.google.longrunning.Operation.toObject(message.operations[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListInstanceConfigOperationsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListInstanceConfigOperationsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigOperationsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse";
+                            };
+    
+                            return ListInstanceConfigOperationsResponse;
                         })();
     
                         v1.GetInstanceRequest = (function() {
@@ -30563,6 +32550,536 @@
                             };
     
                             return UpdateInstanceMetadata;
+                        })();
+    
+                        v1.CreateInstanceConfigMetadata = (function() {
+    
+                            /**
+                             * Properties of a CreateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface ICreateInstanceConfigMetadata
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] CreateInstanceConfigMetadata instanceConfig
+                             * @property {google.spanner.admin.instance.v1.IOperationProgress|null} [progress] CreateInstanceConfigMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] CreateInstanceConfigMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new CreateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a CreateInstanceConfigMetadata.
+                             * @implements ICreateInstanceConfigMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata=} [properties] Properties to set
+                             */
+                            function CreateInstanceConfigMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateInstanceConfigMetadata instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.instanceConfig = null;
+    
+                            /**
+                             * CreateInstanceConfigMetadata progress.
+                             * @member {google.spanner.admin.instance.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.progress = null;
+    
+                            /**
+                             * CreateInstanceConfigMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new CreateInstanceConfigMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata instance
+                             */
+                            CreateInstanceConfigMetadata.create = function create(properties) {
+                                return new CreateInstanceConfigMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata} message CreateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.instance.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata} message CreateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateInstanceConfigMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateInstanceConfigMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.instance.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             */
+                            CreateInstanceConfigMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateInstanceConfigMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} message CreateInstanceConfigMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateInstanceConfigMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.instance.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateInstanceConfigMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateInstanceConfigMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateInstanceConfigMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceConfigMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata";
+                            };
+    
+                            return CreateInstanceConfigMetadata;
+                        })();
+    
+                        v1.UpdateInstanceConfigMetadata = (function() {
+    
+                            /**
+                             * Properties of an UpdateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IUpdateInstanceConfigMetadata
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] UpdateInstanceConfigMetadata instanceConfig
+                             * @property {google.spanner.admin.instance.v1.IOperationProgress|null} [progress] UpdateInstanceConfigMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] UpdateInstanceConfigMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new UpdateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an UpdateInstanceConfigMetadata.
+                             * @implements IUpdateInstanceConfigMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata=} [properties] Properties to set
+                             */
+                            function UpdateInstanceConfigMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateInstanceConfigMetadata instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.instanceConfig = null;
+    
+                            /**
+                             * UpdateInstanceConfigMetadata progress.
+                             * @member {google.spanner.admin.instance.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.progress = null;
+    
+                            /**
+                             * UpdateInstanceConfigMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new UpdateInstanceConfigMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata instance
+                             */
+                            UpdateInstanceConfigMetadata.create = function create(properties) {
+                                return new UpdateInstanceConfigMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.instance.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateInstanceConfigMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateInstanceConfigMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.instance.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             */
+                            UpdateInstanceConfigMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateInstanceConfigMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateInstanceConfigMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.instance.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateInstanceConfigMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateInstanceConfigMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateInstanceConfigMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceConfigMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata";
+                            };
+    
+                            return UpdateInstanceConfigMetadata;
                         })();
     
                         return v1;
