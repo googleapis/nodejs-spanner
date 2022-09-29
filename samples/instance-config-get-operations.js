@@ -34,7 +34,10 @@ function main(projectId = 'my-project-id') {
     // Lists the instance config operations.
     try {
       const [instanceConfigOperations] =
-        await spanner.getInstanceConfigOperations();
+        await spanner.getInstanceConfigOperations({
+          filter:
+            '(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)',
+        });
       console.log(
         `Available instance config operations for project ${projectId}:`
       );
