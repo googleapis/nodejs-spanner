@@ -147,7 +147,7 @@ class FakeTransactionRunner {
 
 let fakeAsyncTransactionRunner: FakeAsyncTransactionRunner<{}>;
 
-class FakeAsyncTransactionRunner<T> {
+class FakeAsyncTransactionRunner<T extends {}> {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
