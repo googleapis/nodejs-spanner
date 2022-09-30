@@ -49,7 +49,7 @@ function main(
       });
 
       console.log(
-        `Waiting for operation on ${instanceConfig.id} to complete...`
+        `Waiting for update operation on ${instanceConfig.id} to complete...`
       );
       await operation.promise();
 

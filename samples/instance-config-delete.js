@@ -40,9 +40,8 @@ function main(
 
     try {
       // Delete the instance config.
-      console.log(`Deleting instance config ${instanceConfig.formattedName_}.`);
       console.log(
-        `Waiting for operation on ${instanceConfig.id} to complete...`
+        `Waiting for delete operation on ${instanceConfig.id} to complete...\n`
       );
       await instanceConfig.delete();
 
@@ -55,7 +54,7 @@ function main(
           ' still exists'
         );
       } else {
-        console.log(`Deleted instance config ${instanceConfigId}.`);
+        console.log(`Deleted instance config ${instanceConfigId}.\n`);
       }
     } catch (err) {
       console.error(

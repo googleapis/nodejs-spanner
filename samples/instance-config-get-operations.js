@@ -33,6 +33,9 @@ function main(projectId = 'my-project-id') {
   async function listInstanceConfigOperations() {
     // Lists the instance config operations.
     try {
+      console.log(
+          `Waiting for listing instance config operations on project ${projectId} to complete...\n`,
+          );
       const [instanceConfigOperations] =
         await spanner.getInstanceConfigOperations({
           filter:

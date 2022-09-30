@@ -55,7 +55,7 @@ function main(
       });
 
       console.log(
-        `Waiting for operation on ${instanceConfig.id} to complete...`
+        `Waiting for create operation on ${instanceConfig.id} to complete...`
       );
       await operation.promise();
 
