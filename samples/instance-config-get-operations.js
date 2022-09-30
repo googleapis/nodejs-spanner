@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+// sample-metadata:
+// title: Lists the instance configuration operations.
+// usage: node instance-config-get-operations <PROJECT_ID>
+
 'use strict';
 
 function main(projectId = 'my-project-id') {

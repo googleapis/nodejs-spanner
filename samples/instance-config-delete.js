@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+// sample-metadata:
+// title: Deletes a user-managed instance configuration.
+// usage: node instance-config-delete <INSTANCE_CONFIG_ID> <PROJECT_ID>
+
 'use strict';
 
 function main(
