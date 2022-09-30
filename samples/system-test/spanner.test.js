@@ -1312,7 +1312,7 @@ describe('Spanner', () => {
     // update_instance_config
     it('should update an example custom instance config', async () => {
       const output = execSync(
-        `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} "my display name" ${PROJECT_ID}`
+        `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
