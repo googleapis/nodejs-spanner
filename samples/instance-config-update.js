@@ -17,7 +17,6 @@
 
 function main(
   instanceConfigId = 'custom-my-instance-config',
-  displayName = 'my-display-name',
   projectId = 'my-project-id'
 ) {
   // [START spanner_update_instance_config]
@@ -26,7 +25,6 @@ function main(
    * TODO(developer): Uncomment the following lines before running the sample.
    */
   // const instanceConfigId = 'custom-my-instance-config-id';
-  // const displayName = 'my-display-name';
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
@@ -43,7 +41,10 @@ function main(
       console.log(`Updating instance config ${instanceConfig.formattedName_}.`);
       const [operation] = await instanceConfig.setMetadata({
         instanceConfig: {
-          displayName: displayName,
+          displayName: 'updated custom instance config',
+          labels: {
+            updated: 'true',
+          },
         },
       });
       console.log(
