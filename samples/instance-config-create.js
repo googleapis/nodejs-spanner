@@ -14,8 +14,8 @@
  */
 
 // sample-metadata:
-// title: Creates a user-managed instance configuration.
-// usage: node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>
+//  title: Creates a user-managed instance configuration.
+//  usage: node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>
 
 'use strict';
 

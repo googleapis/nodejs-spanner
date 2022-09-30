@@ -14,8 +14,8 @@
  */
 
 // sample-metadata:
-// title: Updates a user-managed instance configuration.
-// usage: node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>
+//  title: Updates a user-managed instance configuration.
+//  usage: node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>
 
 'use strict';
 
