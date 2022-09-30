@@ -44,10 +44,10 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
-  * [Instance-config-create](#instance-config-create)
-  * [Instance-config-delete](#instance-config-delete)
-  * [Instance-config-get-operations](#instance-config-get-operations)
-  * [Instance-config-update](#instance-config-update)
+  * [Creates a user-managed instance configuration.](#creates-a-user-managed-instance-configuration.)
+  * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
+  * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
+  * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -613,7 +613,7 @@ __Usage:__
 
 
 
-### Instance-config-create
+### Creates a user-managed instance configuration.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-create.js).
 
@@ -622,7 +622,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node samples/instance-config-create.js`
+`node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>`
 
 
 -----
@@ -630,7 +630,7 @@ __Usage:__
 
 
 
-### Instance-config-delete
+### Deletes a user-managed instance configuration.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-delete.js).
 
@@ -639,7 +639,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node samples/instance-config-delete.js`
+`node instance-config-delete <INSTANCE_CONFIG_ID> <PROJECT_ID>`
 
 
 -----
@@ -647,7 +647,7 @@ __Usage:__
 
 
 
-### Instance-config-get-operations
+### Lists the instance configuration operations.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-get-operations.js).
 
@@ -656,7 +656,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node samples/instance-config-get-operations.js`
+`node instance-config-get-operations <PROJECT_ID>`
 
 
 -----
@@ -664,7 +664,7 @@ __Usage:__
 
 
 
-### Instance-config-update
+### Updates a user-managed instance configuration.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-update.js).
 
@@ -673,7 +673,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node samples/instance-config-update.js`
+`node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>`
 
 
 -----
