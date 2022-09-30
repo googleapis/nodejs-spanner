@@ -47,7 +47,6 @@ function main(
       const [baseInstanceConfig] = await spanner.getInstanceConfig(
         baseInstanceConfigId
       );
-      console.log(baseInstanceConfig);
       console.log(`Creating instance config ${instanceConfig.formattedName_}.`);
       const [, operation] = await instanceConfig.create({
         displayName: instanceConfigId,
