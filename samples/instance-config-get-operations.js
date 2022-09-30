@@ -34,11 +34,11 @@ function main(projectId = 'my-project-id') {
   const spanner = new Spanner({
     projectId: projectId,
   });
-  async function listInstanceConfigOperations() {
+  async function getInstanceConfigOperations() {
     // Lists the instance config operations.
     try {
       console.log(
-        `Waiting for listing instance config operations on project ${projectId} to complete...\n`
+        `Getting list of instance config operations on project ${projectId}...\n`
       );
       const [instanceConfigOperations] =
         await spanner.getInstanceConfigOperations({
@@ -65,7 +65,7 @@ function main(projectId = 'my-project-id') {
       console.error('ERROR:', err);
     }
   }
-  listInstanceConfigOperations();
+  getInstanceConfigOperations();
   // [END spanner_list_instance_config_operations]
 }
 

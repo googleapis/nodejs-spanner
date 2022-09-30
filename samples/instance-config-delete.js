@@ -43,9 +43,7 @@ function main(
     const instanceConfig = spanner.instanceConfig(instanceConfigId);
     try {
       // Delete the instance config.
-      console.log(
-        `Waiting for delete operation on ${instanceConfig.id} to complete...\n`
-      );
+      console.log(`Deleting ${instanceConfig.id}...\n`);
       await instanceConfig.delete();
       // Verify instance config no longer exists
       const exists = await instanceConfig.exists();

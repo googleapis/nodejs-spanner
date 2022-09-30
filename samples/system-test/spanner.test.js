@@ -1333,9 +1333,7 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp(
-          `Waiting for delete operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
-        )
+        new RegExp(`Deleting ${SAMPLE_INSTANCE_CONFIG_ID}...`)
       );
       assert.match(
         output,
@@ -1355,6 +1353,10 @@ describe('Spanner', () => {
         )
       );
       assert.include(output, 'Instance config operation for');
+      assert.include(
+        output,
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      );
     });
 
     // list_instance_configs
