@@ -39,7 +39,6 @@ function main(
   async function createInstanceConfig() {
     // Creates a new instance config
     const instanceConfig = spanner.instanceConfig(instanceConfigId);
-
     try {
       const [baseInstanceConfig] = await spanner.getInstanceConfig(
         baseInstanceConfigId
@@ -53,12 +52,10 @@ function main(
           baseInstanceConfig.optionalReplicas[0]
         ),
       });
-
       console.log(
         `Waiting for create operation on ${instanceConfig.id} to complete...`
       );
       await operation.promise();
-
       console.log(`Created instance config ${instanceConfigId}.`);
     } catch (err) {
       console.error(

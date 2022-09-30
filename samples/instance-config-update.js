@@ -39,7 +39,6 @@ function main(
   async function updateInstanceConfig() {
     // Updates an instance config
     const instanceConfig = spanner.instanceConfig(instanceConfigId);
-
     try {
       console.log(`Updating instance config ${instanceConfig.formattedName_}.`);
       const [operation] = await instanceConfig.setMetadata({
@@ -47,12 +46,10 @@ function main(
           displayName: displayName,
         },
       });
-
       console.log(
         `Waiting for update operation on ${instanceConfig.id} to complete...`
       );
       await operation.promise();
-
       console.log(`Updated instance config ${instanceConfigId}.`);
     } catch (err) {
       console.error(
