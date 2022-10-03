@@ -52,7 +52,7 @@ function main(
         },
       });
       console.log(
-        `Waiting for update operation on ${instanceConfig.id} to complete...`
+        `Waiting for update operation for ${instanceConfig.id} to complete...`
       );
       await operation.promise();
       console.log(`Updated instance config ${instanceConfigId}.`);
