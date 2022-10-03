@@ -45,7 +45,7 @@ function main(
       // Delete the instance config.
       console.log(`Deleting ${instanceConfig.id}...\n`);
       await instanceConfig.delete();
-      // Verify instance config no longer exists
+      // Verify that the instance config no longer exists
       const exists = await instanceConfig.exists();
       if (exists) {
         console.error(
