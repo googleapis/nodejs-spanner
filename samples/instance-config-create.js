@@ -56,7 +56,7 @@ function main(
         ),
       });
       console.log(
-        `Waiting for create operation on ${instanceConfig.id} to complete...`
+        `Waiting for create operation for ${instanceConfig.id} to complete...`
       );
       await operation.promise();
       console.log(`Created instance config ${instanceConfigId}.`);
