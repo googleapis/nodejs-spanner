@@ -1300,7 +1300,7 @@ describe('Spanner', () => {
       assert.match(
         output,
         new RegExp(
-          `Waiting for create operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+          `Waiting for create operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
         )
       );
       assert.match(
@@ -1317,7 +1317,7 @@ describe('Spanner', () => {
       assert.match(
         output,
         new RegExp(
-          `Waiting for update operation on ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+          `Waiting for update operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
         )
       );
       assert.match(
