@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.3.0](https://github.com/googleapis/nodejs-spanner/compare/v6.2.0...v6.3.0) (2022-10-03)
+
+
+### Features
+
+* Support customer managed instance configurations ([#1611](https://github.com/googleapis/nodejs-spanner/issues/1611)) ([bbe8f69](https://github.com/googleapis/nodejs-spanner/commit/bbe8f697e8838e358973cd4a5f2db9e2d4df5349))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v3 ([#1676](https://github.com/googleapis/nodejs-spanner/issues/1676)) ([3f20ec4](https://github.com/googleapis/nodejs-spanner/commit/3f20ec47bbf89e1f72546a8ebf41a8b4ba93832f))
+* Do not import the whole google-gax from proto JS ([#1553](https://github.com/googleapis/nodejs-spanner/issues/1553)) ([#1700](https://github.com/googleapis/nodejs-spanner/issues/1700)) ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+* use google-gax v3.3.0 ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+
 ## [6.2.0](https://github.com/googleapis/nodejs-spanner/compare/v6.1.4...v6.2.0) (2022-09-16)
 
 
