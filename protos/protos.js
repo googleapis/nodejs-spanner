@@ -36851,6 +36851,7 @@
                      * @interface IResultSetMetadata
                      * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
                      * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
+                     * @property {google.spanner.v1.IStructType|null} [undeclaredParameters] ResultSetMetadata undeclaredParameters
                      */
     
                     /**
@@ -36885,6 +36886,14 @@
                     ResultSetMetadata.prototype.transaction = null;
     
                     /**
+                     * ResultSetMetadata undeclaredParameters.
+                     * @member {google.spanner.v1.IStructType|null|undefined} undeclaredParameters
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     */
+                    ResultSetMetadata.prototype.undeclaredParameters = null;
+    
+                    /**
                      * Creates a new ResultSetMetadata instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ResultSetMetadata
@@ -36912,6 +36921,8 @@
                             $root.google.spanner.v1.StructType.encode(message.rowType, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         if (message.transaction != null && Object.hasOwnProperty.call(message, "transaction"))
                             $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.undeclaredParameters != null && Object.hasOwnProperty.call(message, "undeclaredParameters"))
+                            $root.google.spanner.v1.StructType.encode(message.undeclaredParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -36952,6 +36963,10 @@
                                 }
                             case 2: {
                                     message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.undeclaredParameters = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
                                     break;
                                 }
                             default:
@@ -36999,6 +37014,11 @@
                             if (error)
                                 return "transaction." + error;
                         }
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters")) {
+                            var error = $root.google.spanner.v1.StructType.verify(message.undeclaredParameters);
+                            if (error)
+                                return "undeclaredParameters." + error;
+                        }
                         return null;
                     };
     
@@ -37024,6 +37044,11 @@
                                 throw TypeError(".google.spanner.v1.ResultSetMetadata.transaction: object expected");
                             message.transaction = $root.google.spanner.v1.Transaction.fromObject(object.transaction);
                         }
+                        if (object.undeclaredParameters != null) {
+                            if (typeof object.undeclaredParameters !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetMetadata.undeclaredParameters: object expected");
+                            message.undeclaredParameters = $root.google.spanner.v1.StructType.fromObject(object.undeclaredParameters);
+                        }
                         return message;
                     };
     
@@ -37043,11 +37068,14 @@
                         if (options.defaults) {
                             object.rowType = null;
                             object.transaction = null;
+                            object.undeclaredParameters = null;
                         }
                         if (message.rowType != null && message.hasOwnProperty("rowType"))
                             object.rowType = $root.google.spanner.v1.StructType.toObject(message.rowType, options);
                         if (message.transaction != null && message.hasOwnProperty("transaction"))
                             object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters"))
+                            object.undeclaredParameters = $root.google.spanner.v1.StructType.toObject(message.undeclaredParameters, options);
                         return object;
                     };
     

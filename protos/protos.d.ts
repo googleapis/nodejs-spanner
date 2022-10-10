@@ -14846,6 +14846,9 @@ export namespace google {
 
                 /** ResultSetMetadata transaction */
                 transaction?: (google.spanner.v1.ITransaction|null);
+
+                /** ResultSetMetadata undeclaredParameters */
+                undeclaredParameters?: (google.spanner.v1.IStructType|null);
             }
 
             /** Represents a ResultSetMetadata. */
@@ -14862,6 +14865,9 @@ export namespace google {
 
                 /** ResultSetMetadata transaction. */
                 public transaction?: (google.spanner.v1.ITransaction|null);
+
+                /** ResultSetMetadata undeclaredParameters. */
+                public undeclaredParameters?: (google.spanner.v1.IStructType|null);
 
                 /**
                  * Creates a new ResultSetMetadata instance using the specified properties.
