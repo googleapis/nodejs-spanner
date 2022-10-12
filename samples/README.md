@@ -44,6 +44,10 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
+  * [Creates a user-managed instance configuration.](#creates-a-user-managed-instance-configuration.)
+  * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
+  * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
+  * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -602,6 +606,74 @@ __Usage:__
 
 
 `node samples/indexing.js`
+
+
+-----
+
+
+
+
+### Creates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Deletes a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-delete <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Lists the instance configuration operations.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-get-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-get-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-get-operations <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>`
 
 
 -----

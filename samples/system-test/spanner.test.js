@@ -50,6 +50,8 @@ const PREFIX = 'test-instance';
 const INSTANCE_ID =
   process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${CURRENT_TIME}`;
 const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
+const SAMPLE_INSTANCE_CONFIG_ID = `custom-my-sample-instance-config-${CURRENT_TIME}`;
+const BASE_INSTANCE_CONFIG_ID = 'regional-us-west2';
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
@@ -1288,6 +1290,73 @@ describe('Spanner', () => {
     after(async () => {
       const instance = spanner.instance(SAMPLE_INSTANCE_ID);
       await instance.delete();
+    });
+
+    // create_instance_config
+    it('should create an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for create operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // update_instance_config
+    it('should update an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for update operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // delete_instance_config
+    it('should delete an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Deleting ${SAMPLE_INSTANCE_CONFIG_ID}...`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // list_instance_config_operations
+    it('should list all instance config operations', async () => {
+      const output = execSync(
+        `node instance-config-get-operations.js ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Available instance config operations for project ${PROJECT_ID}:`
+        )
+      );
+      assert.include(output, 'Instance config operation for');
+      assert.include(
+        output,
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      );
     });
 
     // list_instance_configs

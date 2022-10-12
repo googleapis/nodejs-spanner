@@ -30,7 +30,7 @@ import {grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import {Duplex} from 'stream';
-import {CreateInstanceRequest} from '../src/index';
+import {CreateInstanceRequest, CreateInstanceConfigRequest} from '../src/index';
 import {
   GetInstanceConfigOptions,
   GetInstanceConfigsOptions,
@@ -83,6 +83,7 @@ const fakePfy = extend({}, pfy, {
       'date',
       'float',
       'instance',
+      'instanceConfig',
       'int',
       'numeric',
       'pgNumeric',
@@ -133,6 +134,16 @@ class FakeInstance {
   }
 }
 
+class FakeInstanceConfig {
+  calledWith_: IArguments;
+  constructor() {
+    this.calledWith_ = arguments;
+  }
+  static formatName_(projectId: string, name: string) {
+    return name;
+  }
+}
+
 describe('Spanner', () => {
   // tslint:disable-next-line variable-name
   let Spanner: typeof spnr.Spanner;
@@ -158,6 +169,7 @@ describe('Spanner', () => {
       'grpc-gcp': fakeGrpcGcp,
       './codec.js': {codec: fakeCodec},
       './instance.js': {Instance: FakeInstance},
+      './instance-config.js': {InstanceConfig: FakeInstanceConfig},
       './v1': fakeV1,
     }).Spanner;
   });
@@ -1034,6 +1046,165 @@ describe('Spanner', () => {
     });
   });
 
+  describe('createInstanceConfig', () => {
+    const NAME = 'instance-config-name';
+    let PATH;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const CONFIG: any = {
+      baseConfig: 'x',
+    };
+    const ORIGINAL_CONFIG = extend({}, CONFIG);
+
+    beforeEach(() => {
+      PATH = 'projects/' + spanner.projectId + '/instanceConfigs/' + NAME;
+      spanner.request = util.noop;
+    });
+
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
+        spanner.createInstanceConfig(null!, {} as CreateInstanceConfigRequest);
+      }, /A name is required to create an instance config\./);
+    });
+
+    it('should throw if a config object is not provided', () => {
+      assert.throws(() => {
+        spanner.createInstanceConfig(NAME, null!);
+      }, /A configuration object is required to create an instance config\./);
+    });
+
+    it('should throw if the provided config object does not have baseConfig', () => {
+      const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
+      assert.throws(() => {
+        spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
+      }, /Base instance config is required to create an instance config\./);
+    });
+
+    it('should set the correct defaults on the request', done => {
+      const stub = sandbox
+        .stub(FakeInstanceConfig, 'formatName_')
+        .returns(PATH);
+
+      spanner.request = config => {
+        const [projectId, name] = stub.lastCall.args;
+        assert.strictEqual(projectId, spanner.projectId);
+        assert.strictEqual(name, NAME);
+
+        assert.deepStrictEqual(CONFIG, ORIGINAL_CONFIG);
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'createInstanceConfig');
+
+        const reqOpts = config.reqOpts;
+        assert.deepStrictEqual(reqOpts, {
+          parent: 'projects/' + spanner.projectId,
+          instanceConfigId: NAME,
+          instanceConfig: {
+            name: PATH,
+            displayName: NAME,
+            baseConfig: `projects/project-id/instanceConfigs/${CONFIG.baseConfig}`,
+          },
+        });
+        assert.strictEqual(config.gaxOpts, undefined);
+        assert.deepStrictEqual(config.headers, spanner.resourceHeader_);
+        done();
+      };
+      spanner.createInstanceConfig(NAME, CONFIG, assert.ifError);
+    });
+
+    it('should accept a path', () => {
+      const stub = sandbox
+        .stub(FakeInstanceConfig, 'formatName_')
+        .callThrough();
+      spanner.createInstanceConfig(PATH, CONFIG, assert.ifError);
+
+      const [, name] = stub.lastCall.args;
+      assert.strictEqual(name, PATH);
+    });
+
+    it('should accept the displayName', done => {
+      const displayName = 'my-instance-config-display-name';
+      const config = Object.assign({}, CONFIG, {displayName});
+
+      spanner.request = config => {
+        assert.strictEqual(
+          config.reqOpts.instanceConfig.displayName,
+          displayName
+        );
+        done();
+      };
+
+      spanner.createInstanceConfig(NAME, config, assert.ifError);
+    });
+
+    it('should accept gaxOptions', done => {
+      const cfg = Object.assign({}, CONFIG, {gaxOptions: {}});
+      spanner.request = config => {
+        assert.strictEqual(config.gaxOpts, cfg.gaxOptions);
+        done();
+      };
+      spanner.createInstanceConfig(NAME, cfg, assert.ifError);
+    });
+
+    describe('error', () => {
+      const ERROR = new Error('Error.');
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        spanner.request = (config, callback) => {
+          callback(ERROR, null, API_RESPONSE);
+        };
+      });
+
+      it('should execute callback with error & API response', done => {
+        spanner.createInstanceConfig(
+          NAME,
+          CONFIG,
+          (err, instance, op, resp) => {
+            assert.strictEqual(err, ERROR);
+            assert.strictEqual(instance, null);
+            assert.strictEqual(op, null);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
+      });
+    });
+
+    describe('success', () => {
+      const OPERATION = {};
+      const API_RESPONSE = {};
+
+      beforeEach(() => {
+        spanner.request = (config, callback) => {
+          callback(null, OPERATION, API_RESPONSE);
+        };
+      });
+
+      it('should create an Instance and return an Operation', done => {
+        const formattedName = 'formatted-name';
+        sandbox.stub(FakeInstanceConfig, 'formatName_').returns(formattedName);
+        const fakeInstanceConfigInstanceConfig = {} as spnr.InstanceConfig;
+        const instanceStub = sandbox
+          .stub(spanner, 'instanceConfig')
+          .returns(fakeInstanceConfigInstanceConfig);
+
+        spanner.createInstanceConfig(
+          NAME,
+          CONFIG,
+          (err, instance, op, resp) => {
+            assert.ifError(err);
+            const [instanceConfigName] = instanceStub.lastCall.args;
+            assert.strictEqual(instanceConfigName, formattedName);
+            assert.strictEqual(instance, fakeInstanceConfigInstanceConfig);
+            assert.strictEqual(op, OPERATION);
+            assert.strictEqual(resp, API_RESPONSE);
+            done();
+          }
+        );
+      });
+    });
+  });
+
   describe('getInstanceConfigs', () => {
     beforeEach(() => {
       spanner.request = util.noop;
@@ -1178,6 +1349,146 @@ describe('Spanner', () => {
         done();
       }
       spanner.getInstanceConfigs(GETINSTANCECONFIGSOPTIONS, callback);
+    });
+  });
+
+  describe('getInstanceConfigOperations', () => {
+    const OPTIONS = {
+      a: 'b',
+    } as spnr.GetInstanceConfigOperationsOptions;
+    const ORIGINAL_OPTIONS = extend({}, OPTIONS);
+
+    it('should make the correct request', done => {
+      const gaxOpts = {
+        timeout: 1000,
+      };
+      const options = {a: 'b', gaxOptions: gaxOpts};
+
+      const expectedReqOpts = extend({}, OPTIONS, {
+        parent: spanner.projectFormattedName_,
+      });
+
+      spanner.request = config => {
+        assert.strictEqual(config.client, 'InstanceAdminClient');
+        assert.strictEqual(config.method, 'listInstanceConfigOperations');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, OPTIONS);
+        assert.deepStrictEqual(OPTIONS, ORIGINAL_OPTIONS);
+
+        assert.deepStrictEqual(config.gaxOpts, options.gaxOptions);
+        done();
+      };
+
+      spanner.getInstanceConfigOperations(options, assert.ifError);
+    });
+
+    it('should pass pageSize and pageToken from gaxOptions into reqOpts', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+      const options = Object.assign({}, OPTIONS, {gaxOptions});
+      const expectedReqOpts = extend(
+        {},
+        OPTIONS,
+        {
+          parent: spanner.projectFormattedName_,
+        },
+        {pageSize: gaxOptions.pageSize, pageToken: gaxOptions.pageToken}
+      );
+
+      spanner.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      spanner.getInstanceConfigOperations(options, assert.ifError);
+    });
+
+    it('pageSize and pageToken in options should take precedence over gaxOptions', done => {
+      const pageSize = 3;
+      const pageToken = 'token';
+      const gaxOptions = {pageSize, pageToken, timeout: 1000};
+      const expectedGaxOpts = {timeout: 1000};
+
+      const optionsPageSize = 5;
+      const optionsPageToken = 'optionsToken';
+      const options = Object.assign({}, OPTIONS, {
+        pageSize: optionsPageSize,
+        pageToken: optionsPageToken,
+        gaxOptions,
+      });
+      const expectedReqOpts = extend(
+        {},
+        OPTIONS,
+        {
+          parent: spanner.projectFormattedName_,
+        },
+        {pageSize: optionsPageSize, pageToken: optionsPageToken}
+      );
+
+      spanner.request = config => {
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+        assert.notStrictEqual(config.gaxOpts, gaxOptions);
+        assert.notDeepStrictEqual(config.gaxOpts, gaxOptions);
+        assert.deepStrictEqual(config.gaxOpts, expectedGaxOpts);
+
+        done();
+      };
+
+      spanner.getInstanceConfigOperations(options, assert.ifError);
+    });
+
+    it('should not require options', done => {
+      spanner.request = config => {
+        assert.deepStrictEqual(config.reqOpts, {
+          parent: spanner.projectFormattedName_,
+        });
+
+        assert.deepStrictEqual(config.gaxOpts, {});
+        done();
+      };
+
+      spanner.getInstanceConfigOperations(assert.ifError);
+    });
+
+    it('should return a complete nextQuery object', done => {
+      const pageSize = 1;
+      const filter = 'filter';
+      const NEXT_PAGE_REQUEST = {
+        parent: spanner.projectFormattedName_,
+        pageSize,
+        filter,
+        pageToken: 'pageToken',
+      };
+      const RESPONSE = [null, [], NEXT_PAGE_REQUEST, {}];
+
+      const GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS = {
+        pageSize,
+        filter,
+        gaxOptions: {timeout: 1000, autoPaginate: false},
+      };
+      const EXPECTED_NEXT_QUERY = extend(
+        {},
+        GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
+        NEXT_PAGE_REQUEST
+      );
+      spanner.request = (config, callback) => {
+        callback(...RESPONSE);
+      };
+      function callback(err, instanceConfigOps, nextQuery) {
+        assert.deepStrictEqual(nextQuery, EXPECTED_NEXT_QUERY);
+        done();
+      }
+      spanner.getInstanceConfigOperations(
+        GET_INSTANCE_CONFIGS_OPERATIONS_OPTIONS,
+        callback
+      );
     });
   });
 
@@ -1393,6 +1704,36 @@ describe('Spanner', () => {
 
       const instance = spanner.instance(NAME);
       assert.strictEqual(instance, fakeInstance);
+    });
+  });
+
+  describe('instanceConfig', () => {
+    const NAME = 'instance-config-name';
+
+    it('should throw if a name is not provided', () => {
+      assert.throws(() => {
+        spanner.instanceConfig(null!);
+      }, /A name is required to access an InstanceConfig object\./);
+    });
+
+    it('should create and cache an InstanceConfig', () => {
+      const cache = spanner.instanceConfigs_;
+      assert.strictEqual(cache.has(NAME), false);
+
+      const instanceConfig = spanner.instanceConfig(NAME)!;
+      assert(instanceConfig instanceof FakeInstanceConfig);
+      assert.strictEqual(getFake(instanceConfig).calledWith_[0], spanner);
+      assert.strictEqual(getFake(instanceConfig).calledWith_[1], NAME);
+      assert.strictEqual(instanceConfig, cache.get(NAME));
+    });
+
+    it('should re-use cached objects', () => {
+      const cache = spanner.instanceConfigs_;
+      const fakeInstanceConfig = {} as spnr.InstanceConfig;
+      cache.set(NAME, fakeInstanceConfig);
+
+      const instanceConfig = spanner.instanceConfig(NAME);
+      assert.strictEqual(instanceConfig, fakeInstanceConfig);
     });
   });
 
