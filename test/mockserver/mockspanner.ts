@@ -136,11 +136,12 @@ export class StatementResult {
   /**
    * Create a StatementResult that will return an update count.
    * @param updateCount The row count to return.
+   * @param error The status error to return.
    */
-  static updateCount(updateCount: number): StatementResult {
+  static updateCount(updateCount: number, error?: Error): StatementResult {
     return new StatementResult(
       StatementResultType.UPDATE_COUNT,
-      null,
+      error || null,
       null,
       updateCount
     );

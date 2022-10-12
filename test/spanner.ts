@@ -328,6 +328,38 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use txn ID from batchUpdate if non-ok status', async () => {
+      const sql = "INSERT INTO TBL (NUM, NAME) VALUES (14, 'Four')";
+      const database = newTestDatabase();
+      const err = {
+        message: 'Not OK',
+      } as MockError;
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.updateCount(1, err)
+      );
+
+      await database.runTransactionAsync(async tx => {
+        await tx!.batchUpdate([sql, insertSql]);
+        await tx!.batchUpdate([sql, insertSql]);
+        return await tx.commit();
+      });
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteBatchDmlRequest).statements;
+      }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(request, 'no ExecuteBatchDmlRequest found');
+      assert.ok(request.transaction?.begin, 'transaction is not empty');
+      const nextBatchRequest = spannerMock
+        .getRequests()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteBatchDmlRequest).statements;
+        }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
+    });
+
     it('should execute update with requestOptions', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -354,6 +386,7 @@ describe('Spanner with mock server', () => {
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
       assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
@@ -406,6 +439,7 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
     });
 
     it('should return an array of json objects', async () => {
@@ -3193,6 +3227,33 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should fail if beginTransaction fails', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          await tx!.run(selectSql);
+          spannerMock.abortTransaction(tx);
+          await tx!.run(insertSql);
+          await tx.commit();
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
     });
 
     it('should use transactionTag on blind commit', async () => {

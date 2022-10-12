@@ -2259,7 +2259,7 @@ export class Transaction extends Dml {
   /**
    * Make sure that single use is not used for a blind commit.
    */
-  disableSingleUse() : void {
+  disableSingleUse(): void {
     this._allowSingleUse = false;
   }
 }
