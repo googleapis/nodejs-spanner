@@ -100,8 +100,14 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
-  getReadSession(callback: GetReadSessionCallback): void;
-  getWriteSession(callback: GetWriteSessionCallback): void;
+  getReadSession(
+    longRunningTransaction: boolean,
+    callback: GetReadSessionCallback
+  ): void;
+  getWriteSession(
+    longRunningTransaction: boolean,
+    callback: GetWriteSessionCallback
+  ): void;
   release(session: Session): void;
 }
 
@@ -145,6 +151,9 @@ export interface SessionPoolOptions {
   min?: number;
   writes?: number;
   incStep?: number;
+  killLongRunningTransactions?: boolean;
+  logging?: boolean;
+  loggingEndpoint?: string;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -159,6 +168,8 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
+  killLongRunningTransactions: false,
+  logging: false,
 };
 
 /**
@@ -340,7 +351,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _numInProcessPrepare = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
-  _traces: Map<string, trace.StackFrame[]>;
+  _traces: Map<Session, trace.StackFrame[]>;
+  _longRunningTransactionHandle!: NodeJS.Timer;
+  _ongoingTransactionDeletion: boolean;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -497,6 +510,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
     this.options.min = Math.min(this.options.min!, this.options.max!);
+    this._ongoingTransactionDeletion = false;
 
     const {writes} = this.options;
 
@@ -567,8 +581,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {GetReadSessionCallback} callback The callback function.
    */
-  getReadSession(callback: GetReadSessionCallback): void {
-    this._acquire(types.ReadOnly).then(
+  getReadSession(
+    longRunningTransaction: boolean,
+    callback: GetReadSessionCallback
+  ): void {
+    this._acquire(types.ReadOnly, longRunningTransaction).then(
       session => callback(null, session),
       callback
     );
@@ -579,8 +596,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    *
    * @param {GetWriteSessionCallback} callback The callback function.
    */
-  getWriteSession(callback: GetWriteSessionCallback): void {
-    this._acquire(types.ReadWrite).then(
+  getWriteSession(
+    longRunningTransaction: boolean,
+    callback: GetWriteSessionCallback
+  ): void {
+    this._acquire(types.ReadWrite, longRunningTransaction).then(
       session => callback(null, session, session.txn!),
       callback
     );
@@ -634,12 +654,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     delete session.txn;
     session.lastUsed = Date.now();
+    session.longRunningTransaction = false;
 
     if (isSessionNotFoundError(session.lastError)) {
       // Remove the session from the pool. It is not necessary to call _destroy,
       // as the session is already removed from the backend.
       this._inventory.borrowed.delete(session);
-      this._traces.delete(session.id);
+      this._traces.delete(session);
       return;
     }
     session.lastError = undefined;
@@ -666,7 +687,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // Delete the trace associated with this session to mark the session as checked
     // back into the pool. This will prevent the session to be marked as leaked if
     // the pool is closed while the session is being prepared.
-    this._traces.delete(session.id);
+    this._traces.delete(session);
     this._pendingPrepare++;
     session.type = types.ReadWrite;
     this._prepareTransaction(session)
@@ -685,7 +706,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {string} type The desired type to borrow.
    * @returns {Promise<Session>}
    */
-  async _acquire(type: types): Promise<Session> {
+  async _acquire(
+    type: types,
+    longRunningTransaction: boolean
+  ): Promise<Session> {
     if (!this.isOpen) {
       throw new GoogleError(errors.Closed);
     }
@@ -704,7 +728,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         throw new GoogleError(errors.Timeout);
       }
 
-      const session = await this._getSession(type, startTime);
+      const session = await this._getSession(
+        type,
+        startTime,
+        longRunningTransaction
+      );
 
       if (this._isValidSession(session)) {
         return session;
@@ -735,7 +763,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // pool options.
     session.type = type;
 
-    this._traces.set(session.id, frames);
+    this._traces.set(session, frames);
     return session;
   }
 
@@ -763,9 +791,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {string} type The desired session type.
    * @return {Session}
    */
-  _borrowFrom(type: types): Session {
+  _borrowFrom(type: types, longRunningTransaction: boolean): Session {
     const session = this._inventory[type].pop()!;
     this._inventory.borrowed.add(session);
+    session.lastUsed = Date.now();
+    session.longRunningTransaction = longRunningTransaction;
     return session;
   }
 
@@ -777,20 +807,23 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {string} type The desired session type.
    * @returns {Promise<Session>}
    */
-  _borrowNextAvailableSession(type: types): Session {
+  _borrowNextAvailableSession(
+    type: types,
+    longRunningTransaction: boolean
+  ): Session {
     const hasReads = !!this._inventory[types.ReadOnly].length;
 
     if (type === types.ReadOnly && hasReads) {
-      return this._borrowFrom(types.ReadOnly);
+      return this._borrowFrom(types.ReadOnly, longRunningTransaction);
     }
 
     const hasWrites = !!this._inventory[types.ReadWrite].length;
 
     if (hasWrites) {
-      return this._borrowFrom(types.ReadWrite);
+      return this._borrowFrom(types.ReadWrite, longRunningTransaction);
     }
 
-    return this._borrowFrom(types.ReadOnly);
+    return this._borrowFrom(types.ReadOnly, longRunningTransaction);
   }
 
   /**
@@ -977,9 +1010,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {number} startTime Timestamp to use when determining timeouts.
    * @returns {Promise<Session>}
    */
-  async _getSession(type: types, startTime: number): Promise<Session> {
+  async _getSession(
+    type: types,
+    startTime: number,
+    longRunningTransaction: boolean
+  ): Promise<Session> {
     if (this._hasSessionUsableFor(type)) {
-      return this._borrowNextAvailableSession(type);
+      return this._borrowNextAvailableSession(type, longRunningTransaction);
     }
     // If a read/write session is requested and the pool has a read-only session
     // available, we should return that session unless there is a session
@@ -990,7 +1027,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this._hasSessionUsableFor(types.ReadOnly) &&
       this.numWriteWaiters >= this.pendingPrepare
     ) {
-      return this._borrowNextAvailableSession(type);
+      return this._borrowNextAvailableSession(type, longRunningTransaction);
     }
 
     if (this.isFull && this.options.fail!) {
@@ -1079,6 +1116,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       })
     );
 
+    const maxSessions: number = this.options.max
+      ? this.options.max
+      : DEFAULTS.max
+      ? DEFAULTS.max
+      : 100;
+
+    if (
+      this.options.killLongRunningTransactions &&
+      this.borrowed / maxSessions >= 0.95
+    ) {
+      this._cleanLongRunningSessions();
+    }
     try {
       this._waiters[type]++;
       await Promise.race(promises);
@@ -1090,7 +1139,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       removeTimeoutListener();
     }
 
-    return this._borrowNextAvailableSession(type);
+    return this._borrowNextAvailableSession(type, longRunningTransaction);
   }
 
   /**
@@ -1163,6 +1212,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     session.txn = transaction;
   }
 
+  async _deleteLongRunningTransactions(): Promise<void> {
+    if (this._ongoingTransactionDeletion) return;
+    this._ongoingTransactionDeletion = true;
+    for (const session of this._traces.keys()) {
+      if (session.lastUsed) {
+        if (
+          !session.longRunningTransaction &&
+          (Date.now() - session?.lastUsed) / 6000 > 60
+        ) {
+          this._release(session);
+        }
+      }
+    }
+    this._ongoingTransactionDeletion = false;
+  }
+
   /**
    * Releases a session back into the pool.
    *
@@ -1178,7 +1243,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._inventory[type].push(session);
     this._inventory.borrowed.delete(session);
-    this._traces.delete(session.id);
+    this._traces.delete(session);
 
     this.emit('available');
     // Determine the type of waiter to unblock.
@@ -1216,6 +1281,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._pingHandle = setInterval(() => this._pingIdleSessions(), pingRate);
     this._pingHandle.unref();
+  }
+
+  _cleanLongRunningSessions(): void {
+    this._longRunningTransactionHandle = setInterval(
+      () => this._deleteLongRunningTransactions(),
+      120000
+    );
   }
 
   /**

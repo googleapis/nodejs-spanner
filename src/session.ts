@@ -105,6 +105,7 @@ export class Session extends common.GrpcServiceObject {
   type?: types;
   txn?: Transaction;
   lastUsed?: number;
+  longRunningTransaction?: boolean;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
   constructor(database: Database, name?: string) {

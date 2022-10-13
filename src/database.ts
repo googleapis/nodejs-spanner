@@ -640,7 +640,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession(true, (err, session) => {
       if (err) {
         callback!(err, null, undefined);
         return;
@@ -1685,7 +1685,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession(false, (err, session) => {
       if (err) {
         callback!(err);
         return;
@@ -1759,7 +1759,7 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession((err, session, transaction) => {
+    this.pool_.getWriteSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
@@ -1872,7 +1872,7 @@ class Database extends common.GrpcServiceObject {
     callback?: PoolRequestCallback
   ): void | Promise<Session> {
     const pool = this.pool_;
-    pool.getReadSession((err, session) => {
+    pool.getReadSession(false, (err, session) => {
       if (err) {
         callback!(err, null);
         return;
@@ -1917,7 +1917,7 @@ class Database extends common.GrpcServiceObject {
       }
     }
     waitForSessionStream.on('reading', () => {
-      pool.getReadSession((err, session_) => {
+      pool.getReadSession(false, (err, session_) => {
         if (err) {
           destroyStream(err);
           return;
@@ -2277,7 +2277,7 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession(true, (err, session) => {
       if (err) {
         callback!(err, 0);
         return;
@@ -2449,7 +2449,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getReadSession(false, (err, session) => {
       if (err) {
         proxyStream.destroy(err);
         return;
@@ -2604,7 +2604,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    this.pool_.getWriteSession((err, session?, transaction?) => {
+    this.pool_.getWriteSession(false, (err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
