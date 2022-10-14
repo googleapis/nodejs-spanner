@@ -1126,7 +1126,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       this.options.killLongRunningTransactions &&
       this.borrowed / maxSessions >= 0.95
     ) {
-      this._cleanLongRunningSessions();
+      this._stopCleaningLongRunningSessions();
     }
     try {
       this._waiters[type]++;
@@ -1264,6 +1264,19 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       emitType = type;
     }
     this.emit(emitType + '-available');
+
+    const maxSessions: number = this.options.max
+      ? this.options.max
+      : DEFAULTS.max
+      ? DEFAULTS.max
+      : 100;
+
+    if (
+      this.options.killLongRunningTransactions &&
+      this.borrowed / maxSessions < 0.95
+    ) {
+      this._startCleaningLongRunningSessions();
+    }
   }
 
   /**
@@ -1283,13 +1296,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._pingHandle.unref();
   }
 
-  _cleanLongRunningSessions(): void {
-    this._longRunningTransactionHandle = setInterval(
-      () => this._deleteLongRunningTransactions(),
-      120000
-    );
-  }
-
   /**
    * Stops housekeeping.
    *
@@ -1298,5 +1304,17 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _stopHouseKeeping(): void {
     clearInterval(this._pingHandle);
     clearInterval(this._evictHandle);
+  }
+
+  _startCleaningLongRunningSessions(): void {
+    this._longRunningTransactionHandle = setInterval(
+      () => this._deleteLongRunningTransactions(),
+      120000
+    );
+    this._longRunningTransactionHandle.ref();
+  }
+
+  _stopCleaningLongRunningSessions(): void {
+    clearInterval(this._longRunningTransactionHandle);
   }
 }
