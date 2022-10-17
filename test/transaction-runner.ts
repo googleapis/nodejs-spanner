@@ -29,7 +29,7 @@ class FakeTransaction extends EventEmitter {
   async begin(): Promise<void> {}
   request() {}
   requestStream() {}
-  disableSingleUse() {}
+  useInRunner() {}
 }
 
 describe('TransactionRunner', () => {
