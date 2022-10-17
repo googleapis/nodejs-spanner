@@ -218,6 +218,7 @@ export class Snapshot extends EventEmitter {
   protected _seqno = 1;
   protected _idWaiter: Readable;
   protected _inlineBeginStarted;
+  protected _useInRunner = false;
   id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -614,11 +615,17 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-    })?.on('response', response => {
-      if (response.metadata && response.metadata!.transaction && !this.id) {
-        this._update(response.metadata!.transaction);
-      }
-    });
+    })
+      ?.on('response', response => {
+        if (response.metadata && response.metadata!.transaction && !this.id) {
+          this._update(response.metadata!.transaction);
+        }
+      })
+      .on('error', () => {
+        if (!this.id && this._useInRunner) {
+          this.begin();
+        }
+      });
   }
 
   /**
@@ -1089,11 +1096,17 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-    }).on('response', response => {
-      if (response.metadata && response.metadata!.transaction && !this.id) {
-        this._update(response.metadata!.transaction);
-      }
-    });
+    })
+      .on('response', response => {
+        if (response.metadata && response.metadata!.transaction && !this.id) {
+          this._update(response.metadata!.transaction);
+        }
+      })
+      .on('error', () => {
+        if (!this.id && this._useInRunner) {
+          this.begin();
+        }
+      });
   }
 
   /**
@@ -1413,7 +1426,6 @@ export class Transaction extends Dml {
   commitTimestamp?: PreciseDate;
   commitTimestampProto?: spannerClient.protobuf.ITimestamp;
   private _queuedMutations: spannerClient.spanner.v1.Mutation[];
-  private _allowSingleUse = true;
 
   /**
    * Timestamp at which the transaction was committed. Will be populated once
@@ -1754,7 +1766,7 @@ export class Transaction extends Dml {
 
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;
-    } else if (this._allowSingleUse) {
+    } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
       this.begin().then(() => this.commit(options, callback));
@@ -2257,10 +2269,10 @@ export class Transaction extends Dml {
   }
 
   /**
-   * Make sure that single use is not used for a blind commit.
+   * Mark transaction as started from the runner.
    */
-  disableSingleUse(): void {
-    this._allowSingleUse = false;
+  useInRunner(): void {
+    this._useInRunner = true;
   }
 }
 

@@ -120,7 +120,7 @@ export abstract class Runner<T> {
     this.attempts = 0;
     this.session = session;
     this.transaction = transaction;
-    this.transaction.disableSingleUse();
+    this.transaction.useInRunner();
 
     const defaults = {timeout: 3600000};
 
