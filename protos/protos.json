@@ -3930,7 +3930,21 @@
                   },
                   "nested": {
                     "ReadWrite": {
-                      "fields": {}
+                      "fields": {
+                        "readLockMode": {
+                          "type": "ReadLockMode",
+                          "id": 1
+                        }
+                      },
+                      "nested": {
+                        "ReadLockMode": {
+                          "values": {
+                            "READ_LOCK_MODE_UNSPECIFIED": 0,
+                            "PESSIMISTIC": 1,
+                            "OPTIMISTIC": 2
+                          }
+                        }
+                      }
                     },
                     "PartitionedDml": {
                       "fields": {}

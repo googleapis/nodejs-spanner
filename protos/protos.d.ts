@@ -15181,6 +15181,9 @@ export namespace google {
 
                 /** Properties of a ReadWrite. */
                 interface IReadWrite {
+
+                    /** ReadWrite readLockMode */
+                    readLockMode?: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null);
                 }
 
                 /** Represents a ReadWrite. */
@@ -15191,6 +15194,9 @@ export namespace google {
                      * @param [properties] Properties to set
                      */
                     constructor(properties?: google.spanner.v1.TransactionOptions.IReadWrite);
+
+                    /** ReadWrite readLockMode. */
+                    public readLockMode: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode);
 
                     /**
                      * Creates a new ReadWrite instance using the specified properties.
@@ -15268,6 +15274,16 @@ export namespace google {
                      * @returns The default type url
                      */
                     public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace ReadWrite {
+
+                    /** ReadLockMode enum. */
+                    enum ReadLockMode {
+                        READ_LOCK_MODE_UNSPECIFIED = 0,
+                        PESSIMISTIC = 1,
+                        OPTIMISTIC = 2
+                    }
                 }
 
                 /** Properties of a PartitionedDml. */
