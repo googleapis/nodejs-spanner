@@ -1480,3 +1480,4 @@ import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};
+export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
