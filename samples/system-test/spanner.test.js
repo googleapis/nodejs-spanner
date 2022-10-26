@@ -1661,10 +1661,6 @@ describe('Spanner', () => {
         output,
         new RegExp('VenueId: 19, Details: {"value":{"open":true,"rating":9}}')
       );
-      assert.match(
-        output,
-        new RegExp('VenueId: 702, Details: {"value":{"rating":6}}')
-      );
     });
 
     // pg_case_sensitivity
