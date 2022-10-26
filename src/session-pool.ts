@@ -153,7 +153,6 @@ export interface SessionPoolOptions {
   incStep?: number;
   killLongRunningTransactions?: boolean;
   logging?: boolean;
-  loggingEndpoint?: string;
 }
 
 const DEFAULTS: SessionPoolOptions = {

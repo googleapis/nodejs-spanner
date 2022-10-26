@@ -15,14 +15,26 @@
  */
 
 import {Database} from './database';
-import {Logger} from 'winston';
-const winston = require('winston');
-winston.createLogger();
+import winston = require('winston');
+const {LoggingWinston} = require('@google-cloud/logging-winston');
+const loggingWinston = new LoggingWinston();
 
 export class DatabaseLogger {
-  static loggers: Map<Database, Logger>;
-  id: string;
-  constructor(Database) {
-      this.id =
+  static loggerMap: Map<Database, winston.Logger>;
+  logger: winston.Logger;
+  constructor(database: Database, transports?: []) {
+    if (!DatabaseLogger.loggerMap) {
+      DatabaseLogger.loggerMap = new Map<Database, winston.Logger>();
+    }
+    if (transports) {
+      this.logger = winston.createLogger({
+        transports: transports,
+      });
+    } else {
+      this.logger = winston.createLogger({
+        transports: [loggingWinston],
+      });
+    }
+    DatabaseLogger.loggerMap.set(database, this.logger);
   }
 }
