@@ -313,17 +313,17 @@ describe('Spanner', () => {
           `
                 CREATE TABLE ${TABLE_NAME}
                 (
-                  "Key"            VARCHAR NOT NULL PRIMARY KEY,
-                  "BytesValue"     BYTEA,
-                  "BoolValue"      BOOL,
-                  "FloatValue"     DOUBLE PRECISION,
-                  "IntValue"       BIGINT,
-                  "NumericValue"   NUMERIC,
-                  "StringValue"    VARCHAR,
-                  "TimestampValue" TIMESTAMPTZ,
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
                   "DateValue"       DATE,
                   "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP,
-                  "JsonbValue"     JSONB
+                  "JsonbValue"      JSONB
                 );
             `
         );
