@@ -352,7 +352,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<Session, trace.StackFrame[]>;
-  _longRunningTransactionHandle!: NodeJS.Timer;
+  _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
 
   /**
@@ -493,6 +493,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   get totalWaiters(): number {
     return this.numReadWaiters + this.numWriteWaiters;
+  }
+
+  get maxSessions(): number {
+    return this.options.max
+      ? this.options.max
+      : DEFAULTS.max
+      ? DEFAULTS.max
+      : 100;
   }
 
   /**
@@ -796,6 +804,16 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._inventory.borrowed.add(session);
     session.lastUsed = Date.now();
     session.longRunningTransaction = longRunningTransaction;
+
+    const maxSessions = this.maxSessions;
+
+    if (
+      this.options.killLongRunningTransactions &&
+      this.borrowed / maxSessions >= 0.95
+    ) {
+      this._startCleaningLongRunningSessions();
+    }
+
     return session;
   }
 
@@ -1116,18 +1134,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       })
     );
 
-    const maxSessions: number = this.options.max
-      ? this.options.max
-      : DEFAULTS.max
-      ? DEFAULTS.max
-      : 100;
-
-    if (
-      this.options.killLongRunningTransactions &&
-      this.borrowed / maxSessions >= 0.95
-    ) {
-      this._stopCleaningLongRunningSessions();
-    }
     try {
       this._waiters[type]++;
       await Promise.race(promises);
@@ -1216,12 +1222,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (this._ongoingTransactionDeletion) return;
     this._ongoingTransactionDeletion = true;
     for (const session of this._traces.keys()) {
-      if (session.lastUsed) {
+      if (session.lastUsed && !session.longRunningTransaction) {
         if (
           !session.longRunningTransaction &&
           (Date.now() - session?.lastUsed) / 6000 > 60
         ) {
-          this._release(session);
+          this.release(session);
         }
       }
     }
@@ -1265,17 +1271,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
     this.emit(emitType + '-available');
 
-    const maxSessions: number = this.options.max
-      ? this.options.max
-      : DEFAULTS.max
-      ? DEFAULTS.max
-      : 100;
+    const maxSessions = this.maxSessions;
 
     if (
       this.options.killLongRunningTransactions &&
       this.borrowed / maxSessions < 0.95
     ) {
-      this._startCleaningLongRunningSessions();
+      this._stopCleaningLongRunningSessions();
     }
   }
 
@@ -1307,6 +1309,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   _startCleaningLongRunningSessions(): void {
+    if (this._longRunningTransactionHandle) return;
     this._longRunningTransactionHandle = setInterval(
       () => this._deleteLongRunningTransactions(),
       120000
@@ -1315,6 +1318,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   _stopCleaningLongRunningSessions(): void {
-    clearInterval(this._longRunningTransactionHandle);
+    if (this._longRunningTransactionHandle)
+      clearInterval(this._longRunningTransactionHandle);
+    this._longRunningTransactionHandle = undefined;
   }
 }
