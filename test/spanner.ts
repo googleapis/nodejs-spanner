@@ -386,7 +386,7 @@ describe('Spanner with mock server', () => {
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
       assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
-      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.ok(request.transaction!.begin!.readWrite, "ReadWrite is not set");
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
@@ -439,7 +439,7 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
-      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.ok(request.transaction!.begin!.readWrite, "ReadWrite is not set");
     });
 
     it('should return an array of json objects', async () => {
@@ -3157,7 +3157,7 @@ describe('Spanner with mock server', () => {
         return (val as v1.ExecuteSqlRequest).sql;
       }) as v1.ExecuteSqlRequest;
       assert.ok(request, 'no ExecuteSqlRequest found');
-      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.ok(request.transaction!.begin!.readWrite, "ReadWrite is not set");
       assert.strictEqual(request.sql, selectSql);
 
       request = spannerMock
@@ -3190,7 +3190,7 @@ describe('Spanner with mock server', () => {
         return (val as v1.ExecuteSqlRequest).sql;
       }) as v1.ExecuteSqlRequest;
       assert.ok(request, 'no ExecuteSqlRequest found');
-      assert.deepStrictEqual(request.transaction!.begin!.readWrite, {});
+      assert.ok(request.transaction!.begin!.readWrite, "ReadWrite is not set");
       assert.strictEqual(request.sql, selectSql);
 
       request = spannerMock
