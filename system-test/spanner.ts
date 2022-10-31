@@ -322,7 +322,8 @@ describe('Spanner', () => {
                   "StringValue"     VARCHAR,
                   "TimestampValue"  TIMESTAMPTZ,
                   "DateValue"       DATE,
-                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP,
+                  "JsonbValue"      JSONB
                 );
             `
         );
@@ -1221,6 +1222,37 @@ describe('Spanner', () => {
           assert.deepStrictEqual(DateArray, values);
           done();
         });
+      });
+    });
+
+    describe('jsonb', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
+      const jsonbInsert = (done, dialect, value) => {
+        insert({JsonbValue: value}, dialect, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbValue, value);
+          done();
+        });
+      };
+
+      it('POSTGRESQL should write jsonb values', done => {
+        jsonbInsert(
+          done,
+          Spanner.POSTGRESQL,
+          Spanner.pgJsonb({
+            key1: 'value1',
+            key2: 'value2',
+          })
+        );
+      });
+
+      it('POSTGRESQL should write null jsonb values', done => {
+        jsonbInsert(done, Spanner.POSTGRESQL, null);
       });
     });
 

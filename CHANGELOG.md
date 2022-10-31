@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.4.0](https://github.com/googleapis/nodejs-spanner/compare/v6.3.0...v6.4.0) (2022-10-27)
+
+
+### Features
+
+* Adding support and samples for Jsonb data type in spangres ([#1729](https://github.com/googleapis/nodejs-spanner/issues/1729)) ([f050354](https://github.com/googleapis/nodejs-spanner/commit/f0503547012ab0ac8a04524ecf7bc92807f35379))
+* Update result_set.proto to return undeclared parameters in ExecuteSql API ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+* Update transaction.proto to include different lock modes ([#1723](https://github.com/googleapis/nodejs-spanner/issues/1723)) ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+
 ## [6.3.0](https://github.com/googleapis/nodejs-spanner/compare/v6.2.0...v6.3.0) (2022-10-03)
 
 
