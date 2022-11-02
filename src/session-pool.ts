@@ -360,7 +360,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {object[]} trace The trace object.
    * @return {string}
    */
-  static formatTrace(frames: trace.StackFrame[]): string {
+  static formatTrace(frames: trace.StackFrame[], message: string): string {
     const stack = frames.map(frame => {
       const name = frame.getFunctionName() || frame.getMethodName();
       const file = frame.getFileName();
@@ -370,7 +370,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `Session leak detected!\n${stack.join('\n')}`;
+    return `${message}\n${stack.join('\n')}`;
   }
 
   /**
@@ -518,6 +518,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.options = Object.assign({}, DEFAULTS, options);
     this.options.min = Math.min(this.options.min!, this.options.max!);
     this._ongoingTransactionDeletion = false;
+
+    if (this.options.logging) {
+      database.enableLogging();
+    }
 
     const {writes} = this.options;
 
@@ -998,7 +1002,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {string[]}
    */
   _getLeaks(): string[] {
-    return [...this._traces.values()].map(SessionPool.formatTrace);
+    return [...this._traces.values()].map(trace =>
+      SessionPool.formatTrace(trace, 'Session leak detected!')
+    );
   }
 
   /**
@@ -1047,8 +1053,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return this._borrowNextAvailableSession(type, longRunningTransaction);
     }
 
-    if (this.isFull && this.options.fail!) {
-      throw new SessionPoolExhaustedError(this._getLeaks());
+    if (this.isFull) {
+      if (this.options.logging) {
+        this.database.logger?.error('Session Pool exhausted!');
+      }
+      if (this.options.fail!)
+        throw new SessionPoolExhaustedError(this._getLeaks());
     }
 
     let removeOnceCloseListener: Function;
@@ -1226,6 +1236,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
           !session.longRunningTransaction &&
           (Date.now() - session?.lastUsed) / 6000 > 60
         ) {
+          if (this.options.logging) {
+            this.database.logger?.warn(
+              SessionPool.formatTrace(
+                this._traces.get(session) || [],
+                'Long running transaction!'
+              )
+            );
+          }
           this.release(session);
         }
       }

@@ -91,6 +91,8 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
+import winston = require('winston');
+const {LoggingWinston} = require('@google-cloud/logging-winston');
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -271,6 +273,8 @@ class Database extends common.GrpcServiceObject {
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
+  logger?: winston.Logger;
+  private loggingEnabled: boolean;
   constructor(
     instance: Instance,
     name: string,
@@ -390,6 +394,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
+    this.loggingEnabled = false;
   }
 
   static getEnvironmentQueryOptions() {
@@ -972,6 +977,25 @@ class Database extends common.GrpcServiceObject {
       );
     });
   }
+
+  disableLogging(): void {
+    this.loggingEnabled = false;
+  }
+
+  enableLogging(options?: winston.LoggerOptions): winston.Logger {
+    this.loggingEnabled = true;
+    if (this.logger) {
+      return this.logger;
+    }
+    options = options || {};
+    if (!options.transports) {
+      const loggingWinston = new LoggingWinston();
+      options.transports = [loggingWinston];
+    }
+    this.logger = winston.createLogger(options);
+    return this.logger;
+  }
+
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
