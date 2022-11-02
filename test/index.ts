@@ -87,6 +87,7 @@ const fakePfy = extend({}, pfy, {
       'int',
       'numeric',
       'pgNumeric',
+      'pgJsonb',
       'operation',
       'timestamp',
     ]);
@@ -544,6 +545,31 @@ describe('Spanner', () => {
 
       const pgNumeric = Spanner.pgNumeric(value);
       assert.strictEqual(pgNumeric, customValue);
+    });
+  });
+
+  describe('jsonb', () => {
+    it('should create a PGJsonb instance', () => {
+      const value = {
+        key1: 'value1',
+        key2: 'value2',
+      };
+      const customValue = {
+        value: {
+          key1: 'value1',
+          key2: 'value2',
+        },
+      };
+
+      fakeCodec.PGJsonb = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const pgJsonb = Spanner.pgJsonb(value);
+      assert.strictEqual(pgJsonb, customValue);
     });
   });
 
