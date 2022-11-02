@@ -602,6 +602,10 @@ export class Snapshot extends EventEmitter {
     );
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
+      if (this.id && transaction.begin) {
+        delete transaction.begin;
+        transaction.id = this.id;
+      }
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
