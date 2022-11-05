@@ -6799,10 +6799,9 @@ describe('Spanner', () => {
           NumberValue: 0,
         };
 
-        beforeEach(() => {
-          return googleSqlTable.update(defaultRowValues).then(() => {
-            postgreSqlTable.update(defaultRowValues);
-          });
+        beforeEach(async () => {
+          await googleSqlTable.update(defaultRowValues);
+          await postgreSqlTable.update(defaultRowValues);
         });
 
         const readConcurrentTransaction = (done, database, table) => {
