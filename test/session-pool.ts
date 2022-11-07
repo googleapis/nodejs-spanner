@@ -1550,21 +1550,6 @@ describe('SessionPool', () => {
     });
   });
 
-  describe('_prepareTransaction', () => {
-    it('should prepare a transaction', async () => {
-      const fakeSession = createSession();
-      const fakeTransaction = new FakeTransaction();
-      const beginStub = sandbox.stub(fakeTransaction, 'begin').resolves();
-
-      fakeSession.transaction = sandbox.stub().returns(fakeTransaction);
-
-      await sessionPool._prepareTransaction(fakeSession);
-
-      assert.strictEqual(fakeSession.txn, fakeTransaction);
-      assert.strictEqual(beginStub.callCount, 1);
-    });
-  });
-
   describe('_release', () => {
     it('should release the session', () => {
       const fakeSession = createSession('id', {type: types.ReadOnly});
