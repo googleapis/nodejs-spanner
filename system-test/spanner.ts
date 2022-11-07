@@ -6801,7 +6801,9 @@ describe('Spanner', () => {
 
         beforeEach(async () => {
           await googleSqlTable.update(defaultRowValues);
-          await postgreSqlTable.update(defaultRowValues);
+          if (!IS_EMULATOR_ENABLED) {
+            await postgreSqlTable.update(defaultRowValues);
+          }
         });
 
         const readConcurrentTransaction = (done, database, table) => {
