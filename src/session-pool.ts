@@ -1159,7 +1159,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const transaction = session.transaction(
       (session.parent as Database).queryOptions_
     );
-    await transaction.begin();
     session.txn = transaction;
   }
 

@@ -91,16 +91,6 @@ class FakeSession {
   }
 }
 
-interface ReadSessionCallback {
-  (err: Error, session?: null): void;
-  (err: null, session: FakeSession): void;
-}
-
-interface WriteSessionCallback {
-  (err: Error, session?: null, transaction?: null): void;
-  (err: null, session: FakeSession, transaction: FakeTransaction): void;
-}
-
 class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
