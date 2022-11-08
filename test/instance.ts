@@ -322,7 +322,7 @@ describe('Instance', () => {
         const poolCtor = {};
 
         const options = extend({}, OPTIONS, {
-          poolCtor,
+          poolCtor: {options: poolCtor},
         });
 
         instance.request = (config, callback: Function) => {

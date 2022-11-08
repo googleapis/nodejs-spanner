@@ -924,7 +924,7 @@ class Instance extends common.GrpcServiceObject {
           callback(err, null, null, resp);
           return;
         }
-        const database = this.database(name, poolOptions || poolCtor);
+        const database = this.database(name, poolOptions || poolCtor?.options);
         callback(null, database, operation, resp);
       }
     );
