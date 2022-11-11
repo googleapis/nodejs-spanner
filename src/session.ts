@@ -42,6 +42,14 @@ import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 export type GetSessionResponse = [Session, r.Response];
 
+/**
+ * @deprecated. enum to capture the possible session types
+ */
+export const enum types {
+  ReadOnly = 'readonly',
+  ReadWrite = 'readwrite',
+}
+
 export type GetSessionMetadataCallback =
   NormalCallback<google.spanner.v1.ISession>;
 export type GetSessionMetadataResponse = [google.spanner.v1.ISession];

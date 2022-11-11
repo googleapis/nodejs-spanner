@@ -567,13 +567,6 @@ describe('SessionPool', () => {
         inventory.borrowed.add(fakeSession);
       });
 
-      it('should prep a new transaction', done => {
-        sandbox.stub(sessionPool, '_release');
-        prepStub.withArgs(fakeSession).callsFake(async () => done());
-
-        sessionPool.release(fakeSession);
-      });
-
       it('should release the read/write session', done => {
         prepStub.resolves();
         sandbox
