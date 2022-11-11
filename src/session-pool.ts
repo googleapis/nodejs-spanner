@@ -143,6 +143,11 @@ export interface SessionPoolOptions {
   max?: number;
   maxIdle?: number;
   min?: number;
+  /**
+   * @deprecated. Starting from v6.5.0 the same session can be reused for
+   * different types of transactions.
+   */
+  writes?: number;
   incStep?: number;
 }
 
@@ -304,6 +309,12 @@ interface SessionInventory {
   borrowed: Set<Session>;
 }
 
+/** @deprecated. */
+export interface CreateSessionsOptions {
+  writes?: number;
+  reads?: number;
+}
+
 /**
  * Class used to manage connections to Spanner.
  *
@@ -324,7 +335,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _pending = 0;
   _pendingPrepare = 0;
   _waiters = 0;
-  _numInProcessPrepare = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
   _traces: Map<string, trace.StackFrame[]>;
@@ -372,12 +382,22 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     return this.size >= this.options.max!;
   }
 
+  /** @deprecated Use `size()` instead. */
+  get reads(): number {
+    return this.size;
+  }
+
   /**
    * Total size of pool.
    * @type {number}
    */
   get size(): number {
     return this.available + this.borrowed;
+  }
+
+  /** @deprecated Use `size()` instead. */
+  get writes(): number {
+    return this.size;
   }
 
   /**
@@ -530,6 +550,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @throws {Error} For unknown sessions.
    * @emits SessionPool#available
    * @emits SessionPool#error
+   * @emits SessionPool#readonly-available
+   * @emits SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
@@ -549,19 +571,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
     session.lastError = undefined;
 
-    // Release it into the pool as a session in if there are more waiters than
-    // there are sessions available. Releasing it will be unblocked as soon as
-    // possible.
-    if (this.totalWaiters > this.available) {
-      this._release(session);
-      return;
-    }
-
     // Delete the trace associated with this session to mark the session as checked
     // back into the pool. This will prevent the session to be marked as leaked if
     // the pool is closed while the session is being prepared.
     this._traces.delete(session.id);
-    this._prepareTransaction(session);
+    // Release it into the pool as a session if there are more waiters than
+    // there are sessions available. Releasing it will unblock a waiter as soon
+    // as possible.
     this._release(session);
   }
 
@@ -622,7 +638,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Borrows the first session from specific group.
+   * Borrows the first session from the inventory.
    *
    * @private
    *
@@ -646,7 +662,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Attempts to create a single session of a certain type.
+   * Attempts to create a single session.
    *
    * @private
    *
@@ -983,6 +999,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    *
    * @fires SessionPool#available
+   * @fires SessionPool#readonly-available
+   * @fires SessionPool#readwrite-available
    * @param {Session} session The session object.
    */
   _release(session: Session): void {
@@ -991,6 +1009,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._traces.delete(session.id);
 
     this.emit('available');
+    this.emit('readonly-available');
+    this.emit('readwrite-available');
   }
 
   /**
