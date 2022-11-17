@@ -22,7 +22,7 @@ import {Database} from './database';
 import {Session} from './session';
 import {Transaction} from './transaction';
 import {NormalCallback} from './common';
-import {GoogleError, grpc} from 'google-gax';
+import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 
 /**
@@ -33,20 +33,25 @@ export interface SessionPoolCloseCallback {
   (error?: SessionLeakError): void;
 }
 
-/**
- * @callback GetReadSessionCallback
- * @param {?Error} error Request error, if any.
- * @param {Session} session The read-only session.
- */
+/** @deprecated. Use GetSessionCallback instead. */
 export type GetReadSessionCallback = NormalCallback<Session>;
 
+/** @deprecated. Use GetSessionCallback instead. */
+export interface GetWriteSessionCallback {
+  (
+    err: Error | null,
+    session?: Session | null,
+    transaction?: Transaction | null
+  ): void;
+}
+
 /**
- * @callback GetWriteSessionCallback
+ * @callback GetSessionCallback
  * @param {?Error} error Request error, if any.
  * @param {Session} session The read-write session.
  * @param {Transaction} transaction The transaction object.
  */
-export interface GetWriteSessionCallback {
+export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
@@ -81,14 +86,22 @@ export interface SessionPoolInterface extends EventEmitter {
    * @name SessionPoolInterface#open
    */
   /**
+   * When called returns a session.
+   *
+   * @name SessionPoolInterface#getSession
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  /**
    * When called returns a read-only session.
    *
+   * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
   /**
    * When called returns a read-write session with prepared transaction.
    *
+   * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getWriteSession
    * @param {GetWriteSessionCallback} callback The callback function.
    */
@@ -100,6 +113,7 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
+  getSession(callback: GetSessionCallback): void;
   getReadSession(callback: GetReadSessionCallback): void;
   getWriteSession(callback: GetWriteSessionCallback): void;
   release(session: Session): void;
@@ -496,18 +510,31 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read session.
    *
+   * @deprecated Use getSession instead.
    * @param {GetReadSessionCallback} callback The callback function.
    */
   getReadSession(callback: GetReadSessionCallback): void {
-    this._acquire().then(session => callback(null, session), callback);
+    this.getSession((error, session) =>
+      callback(error as ServiceError, session)
+    );
   }
 
   /**
    * Retrieve a read/write session.
    *
+   * @deprecated use getSession instead.
    * @param {GetWriteSessionCallback} callback The callback function.
    */
   getWriteSession(callback: GetWriteSessionCallback): void {
+    this.getSession(callback);
+  }
+
+  /**
+   * Retrieve a session.
+   *
+   * @param {GetSessionCallback} callback The callback function.
+   */
+  getSession(callback: GetSessionCallback): void {
     this._acquire().then(
       session => callback(null, session, session.txn!),
       callback

@@ -351,13 +351,13 @@ describe('SessionPool', () => {
     });
   });
 
-  describe('getReadSession', () => {
-    it('should acquire a read session', done => {
+  describe('getSession', () => {
+    it('should acquire a session', done => {
       const fakeSession = createSession();
 
       sandbox.stub(sessionPool, '_acquire').resolves(fakeSession);
 
-      sessionPool.getReadSession((err, session) => {
+      sessionPool.getSession((err, session) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeSession);
         done();
@@ -369,14 +369,12 @@ describe('SessionPool', () => {
 
       sandbox.stub(sessionPool, '_acquire').rejects(error);
 
-      sessionPool.getReadSession(err => {
+      sessionPool.getSession(err => {
         assert.strictEqual(err, error);
         done();
       });
     });
-  });
 
-  describe('getWriteSession', () => {
     it('should pass back the session and txn', done => {
       const fakeTxn = new FakeTransaction() as unknown as Transaction;
       const fakeSession = createSession();
@@ -385,21 +383,10 @@ describe('SessionPool', () => {
 
       sandbox.stub(sessionPool, '_acquire').resolves(fakeSession);
 
-      sessionPool.getWriteSession((err, session, txn) => {
+      sessionPool.getSession((err, session, txn) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeSession);
         assert.strictEqual(txn, fakeTxn);
-        done();
-      });
-    });
-
-    it('should pass any errors to the callback', done => {
-      const error = new Error('err');
-
-      sandbox.stub(sessionPool, '_acquire').rejects(error);
-
-      sessionPool.getWriteSession(err => {
-        assert.strictEqual(err, error);
         done();
       });
     });
