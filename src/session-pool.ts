@@ -577,8 +577,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @throws {Error} For unknown sessions.
    * @emits SessionPool#available
    * @emits SessionPool#error
-   * @emits SessionPool#readonly-available
-   * @emits SessionPool#readwrite-available
+   * @fires SessionPool#session-available
+   * @fires @deprecated SessionPool#readonly-available
+   * @fires @deprecated SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
@@ -1026,8 +1027,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    *
    * @fires SessionPool#available
-   * @fires SessionPool#readonly-available
-   * @fires SessionPool#readwrite-available
+   * @fires SessionPool#session-available
+   * @fires @deprecated SessionPool#readonly-available
+   * @fires @deprecated SessionPool#readwrite-available
    * @param {Session} session The session object.
    */
   _release(session: Session): void {
@@ -1036,6 +1038,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._traces.delete(session.id);
 
     this.emit('available');
+    this.emit('session-available');
     this.emit('readonly-available');
     this.emit('readwrite-available');
   }
