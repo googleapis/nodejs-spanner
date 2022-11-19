@@ -142,8 +142,7 @@ export interface SessionPoolInterface extends EventEmitter {
  *     the pool at any given time.
  * @property {number} [min=0] Minimum number of resources to keep in the pool at
  *     any given time.
- * @property {number} [writes=0.0] Percentage of sessions to be pre-allocated as
- *     write sessions represented as a float.
+ * @property {number} [writes=0.0]. Deprecated.
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
  */
@@ -347,7 +346,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _inventory: SessionInventory;
   _onClose!: Promise<void>;
   _pending = 0;
-  _pendingPrepare = 0;
   _waiters = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
@@ -378,6 +376,12 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   get available(): number {
     return this._inventory.sessions.length;
+  }
+  /** @deprecated Starting from v6.5.0 the same session can be reused for
+   * different types of transactions.
+   */
+  get currentWriteFraction(): number {
+    return 0;
   }
 
   /**
@@ -414,15 +418,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     return this.size;
   }
 
-  /**
-   * Number of sessions currently being prepared for a read/write transaction
-   * before being released into the pool. This number does not include the
-   * number of sessions being prepared for a read/write transaction that have
-   * already been checked out of the pool.
-   * @type {number}
-   */
+  /** @deprecated Starting v6.5.0 the pending prepare state is obsolete. */
   get pendingPrepare(): number {
-    return this._pendingPrepare;
+    return 0;
   }
 
   /**
@@ -430,7 +428,17 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @type {number}
    */
   get totalPending(): number {
-    return this._pending + this._pendingPrepare;
+    return this._pending;
+  }
+
+  /** @deprecated Use totalWaiters instead. */
+  get numReadWaiters(): number {
+    return this.totalWaiters;
+  }
+
+  /** @deprecated Use totalWaiters instead. */
+  get numWriteWaiters(): number {
+    return this.totalWaiters;
   }
 
   /**
@@ -861,7 +869,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     let removeListener: Function;
 
     // Wait for a session to become available.
-    const availableEvent = 'available';
+    const availableEvent = 'session-available';
     const promises = [
       new Promise((_, reject) => {
         const onceCloseListener = () => reject(new GoogleError(errors.Closed));

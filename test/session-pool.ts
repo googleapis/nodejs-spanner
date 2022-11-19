@@ -1036,7 +1036,7 @@ describe('SessionPool', () => {
       sandbox
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
-      setTimeout(() => sessionPool.emit('available'), 100);
+      setTimeout(() => sessionPool.emit('session-available'), 100);
 
       const session = await sessionPool._getSession(startTime);
       assert.strictEqual(session, fakeSession);
@@ -1065,7 +1065,7 @@ describe('SessionPool', () => {
         .withArgs(1)
         .callsFake(() => {
           // this will fire off via _createSessions
-          setImmediate(() => sessionPool.emit('available'));
+          setImmediate(() => sessionPool.emit('session-available'));
           return Promise.resolve();
         });
 
@@ -1088,7 +1088,7 @@ describe('SessionPool', () => {
         .withArgs(20)
         .callsFake(() => {
           // this will fire off via _createSessions
-          setImmediate(() => sessionPool.emit('available'));
+          setImmediate(() => sessionPool.emit('session-available'));
           return Promise.resolve();
         });
 
@@ -1116,7 +1116,7 @@ describe('SessionPool', () => {
       sandbox
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
-      setTimeout(() => sessionPool.emit('available'), 100);
+      setTimeout(() => sessionPool.emit('session-available'), 100);
 
       const session = await sessionPool._getSession(startTime);
       assert.strictEqual(session, fakeSession);
@@ -1142,7 +1142,7 @@ describe('SessionPool', () => {
 
       const promise = sessionPool._getSession(startTime);
 
-      assert.strictEqual(sessionPool.listenerCount('available'), 1);
+      assert.strictEqual(sessionPool.listenerCount('session-available'), 1);
 
       try {
         await promise;
