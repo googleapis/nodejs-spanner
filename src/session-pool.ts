@@ -92,14 +92,14 @@ export interface SessionPoolInterface extends EventEmitter {
    * @param {GetSessionCallback} callback The callback function.
    */
   /**
-   * When called returns a read-only session.
+   * When called returns a session.
    *
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
   /**
-   * When called returns a read-write session with prepared transaction.
+   * When called returns a session.
    *
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getWriteSession
