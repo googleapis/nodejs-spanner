@@ -4,6 +4,57 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.4.0](https://github.com/googleapis/nodejs-spanner/compare/v6.3.0...v6.4.0) (2022-10-27)
+
+
+### Features
+
+* Adding support and samples for Jsonb data type in spangres ([#1729](https://github.com/googleapis/nodejs-spanner/issues/1729)) ([f050354](https://github.com/googleapis/nodejs-spanner/commit/f0503547012ab0ac8a04524ecf7bc92807f35379))
+* Update result_set.proto to return undeclared parameters in ExecuteSql API ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+* Update transaction.proto to include different lock modes ([#1723](https://github.com/googleapis/nodejs-spanner/issues/1723)) ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+
+## [6.3.0](https://github.com/googleapis/nodejs-spanner/compare/v6.2.0...v6.3.0) (2022-10-03)
+
+
+### Features
+
+* Support customer managed instance configurations ([#1611](https://github.com/googleapis/nodejs-spanner/issues/1611)) ([bbe8f69](https://github.com/googleapis/nodejs-spanner/commit/bbe8f697e8838e358973cd4a5f2db9e2d4df5349))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v3 ([#1676](https://github.com/googleapis/nodejs-spanner/issues/1676)) ([3f20ec4](https://github.com/googleapis/nodejs-spanner/commit/3f20ec47bbf89e1f72546a8ebf41a8b4ba93832f))
+* Do not import the whole google-gax from proto JS ([#1553](https://github.com/googleapis/nodejs-spanner/issues/1553)) ([#1700](https://github.com/googleapis/nodejs-spanner/issues/1700)) ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+* use google-gax v3.3.0 ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+
+## [6.2.0](https://github.com/googleapis/nodejs-spanner/compare/v6.1.4...v6.2.0) (2022-09-16)
+
+
+### Features
+
+* Add custom instance config operations ([#1712](https://github.com/googleapis/nodejs-spanner/issues/1712)) ([4b7716b](https://github.com/googleapis/nodejs-spanner/commit/4b7716be5409698e21bb79edec5cdf1019047de8))
+
+
+### Bug Fixes
+
+* Allow passing gax instance to client constructor ([#1698](https://github.com/googleapis/nodejs-spanner/issues/1698)) ([588c1a2](https://github.com/googleapis/nodejs-spanner/commit/588c1a2e0c449cfcb86cac73da32dd5794ee2baa))
+* **deps:** Use grpc-gcp v1.0.0 ([#1710](https://github.com/googleapis/nodejs-spanner/issues/1710)) ([12eab9d](https://github.com/googleapis/nodejs-spanner/commit/12eab9d628b72b5a7fc88f3d5e932b7a4d70dce2))
+* Move runtime dependencies from dev dependencies to dependencies ([#1704](https://github.com/googleapis/nodejs-spanner/issues/1704)) ([b2c1c0f](https://github.com/googleapis/nodejs-spanner/commit/b2c1c0f93653af6cc7bd9893ca14394f2a631b68))
+* Preserve default values in x-goog-request-params header ([#1711](https://github.com/googleapis/nodejs-spanner/issues/1711)) ([f1ae513](https://github.com/googleapis/nodejs-spanner/commit/f1ae51301d4ea9b0ed1ad4d4762c249fef9f8d08))
+
+## [6.1.4](https://github.com/googleapis/nodejs-spanner/compare/v6.1.3...v6.1.4) (2022-09-06)
+
+
+### Bug Fixes
+
+* Add hashes to requirements.txt ([#1544](https://github.com/googleapis/nodejs-spanner/issues/1544)) ([#1697](https://github.com/googleapis/nodejs-spanner/issues/1697)) ([61a1468](https://github.com/googleapis/nodejs-spanner/commit/61a1468fb0282bad642e643fc98a19d63acdcd1c))
+* Better support for fallback mode ([#1694](https://github.com/googleapis/nodejs-spanner/issues/1694)) ([bbc8831](https://github.com/googleapis/nodejs-spanner/commit/bbc88317149a3d86c50ccfd98092d5bfb77a104e))
+* Change import long to require ([#1695](https://github.com/googleapis/nodejs-spanner/issues/1695)) ([9283f4b](https://github.com/googleapis/nodejs-spanner/commit/9283f4bdfaea0ceececacbb80df3c37bd522b657))
+* **deps:** Update dependency @google-cloud/projectify to v3 ([#1678](https://github.com/googleapis/nodejs-spanner/issues/1678)) ([e3c1499](https://github.com/googleapis/nodejs-spanner/commit/e3c1499d0bdcbe3b578c5e7dc1d725630a1a0a30))
+* **deps:** Update dependency protobufjs to v7 ([#1686](https://github.com/googleapis/nodejs-spanner/issues/1686)) ([2839d23](https://github.com/googleapis/nodejs-spanner/commit/2839d2317ca7368d288ee9d7feb806f0ac2069c6))
+* Target new spanner db admin service config ([#1685](https://github.com/googleapis/nodejs-spanner/issues/1685)) ([2495c07](https://github.com/googleapis/nodejs-spanner/commit/2495c0723be70cf679ffa9e86f45199dbcd8c77b))
+* Test case fix to avoid the latest typescript dependency issue ([#1703](https://github.com/googleapis/nodejs-spanner/issues/1703)) ([6282f64](https://github.com/googleapis/nodejs-spanner/commit/6282f64560510ae54be26d992d168091f7e943bc))
+
 ## [6.1.3](https://github.com/googleapis/nodejs-spanner/compare/v6.1.2...v6.1.3) (2022-07-07)
 
 

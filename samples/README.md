@@ -44,6 +44,10 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
+  * [Creates a user-managed instance configuration.](#creates-a-user-managed-instance-configuration.)
+  * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
+  * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
+  * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -65,6 +69,9 @@ and automatic, synchronous replication for high availability.
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
   * [Created interleaved table hierarchy using PostgreSQL dialect.](#created-interleaved-table-hierarchy-using-postgresql-dialect.)
+  * [Showcase how add a jsonb column in a PostgreSQL table.](#showcase-how-add-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how query data to a jsonb column in a PostgreSQL table.](#showcase-how-query-data-to-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how update data to a jsonb column in a PostgreSQL table.](#showcase-how-update-data-to-a-jsonb-column-in-a-postgresql-table.)
   * [Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.](#showcase-how-to-work-with-the-postgresql-numeric/decimal-data-type-on-a-spanner-postgresql-database.)
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
   * [Execute a query with parameters on a Spanner PostgreSQL database.](#execute-a-query-with-parameters-on-a-spanner-postgresql-database.)
@@ -609,6 +616,74 @@ __Usage:__
 
 
 
+### Creates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Deletes a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-delete <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Lists the instance configuration operations.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-get-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-get-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-get-operations <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Instance-with-processing-units
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-processing-units.js).
@@ -959,6 +1034,57 @@ __Usage:__
 
 
 `node pg-interleaving.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how add a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how query data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-query-parameter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-query-parameter.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-query-parameter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how update data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-update-data.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

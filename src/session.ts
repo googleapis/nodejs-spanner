@@ -44,7 +44,7 @@ import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMod
 export type GetSessionResponse = [Session, r.Response];
 
 /**
- * enum to capture the possible session types
+ * @deprecated. enum to capture the possible session types
  */
 export const enum types {
   ReadOnly = 'readonly',
@@ -103,7 +103,6 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
 export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
-  type?: types;
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
