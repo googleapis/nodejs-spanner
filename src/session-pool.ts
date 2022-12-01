@@ -116,8 +116,7 @@ export interface SessionPoolInterface extends EventEmitter {
   getSession(callback: GetSessionCallback): void;
   getReadSession(callback: GetReadSessionCallback): void;
   getWriteSession(callback: GetWriteSessionCallback): void;
-  getOptimisticWriteSession(callback: GetWriteSessionCallback): void;
-  release(session: Session, optimisticLock?: boolean): void;
+  release(session: Session): void;
 }
 
 /**
@@ -551,18 +550,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
-   * Retrieve a read/write session for an optimistic lock transaction.
-   *
-   * @param {GetWriteSessionCallback} callback The callback function.
-   */
-  getOptimisticWriteSession(callback: GetWriteSessionCallback): void {
-    this._acquire(types.ReadWrite, true).then(
-      session => callback(null, session, session.txn!),
-      callback
-    );
-  }
-
-  /**
    * Opens the pool, filling it to the configured number of read and write
    * sessions.
    *
@@ -603,7 +590,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @fires @deprecated SessionPool#readwrite-available
    * @param {Session} session The session to release.
    */
-  release(session: Session, optimisticLock?: boolean): void {
+  release(session: Session): void {
     if (!this._inventory.borrowed.has(session)) {
       throw new ReleaseError(session);
     }
@@ -1037,9 +1024,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _prepareTransaction(session: Session): void {
     const transaction = session.transaction(
-      (session.parent as Database).queryOptions_,
-      undefined,
-      optimisticLock
+      (session.parent as Database).queryOptions_
     );
     session.txn = transaction;
   }

@@ -1369,7 +1369,8 @@ describe('Transaction', () => {
             google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
               .OPTIMISTIC,
         };
-        transaction = new Transaction(SESSION, rw);
+        transaction = new Transaction(SESSION);
+        transaction.useOptimisticLock();
         const stub = sandbox.stub(transaction, 'request');
         transaction.begin();
 

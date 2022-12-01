@@ -39,7 +39,6 @@ import {ServiceObjectConfig} from '@google-cloud/common';
 import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -463,8 +462,6 @@ export class Session extends common.GrpcServiceObject {
    * Create a read write Transaction.
    *
    * @param {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions] The default query options to use.
-   * @param {google.spanner.v1.IRequestOptions} [requestOptions] The request options to use.
-   * @param {boolean} [optimisticLock] The flag to enable optimistic concurrency control for the transaction.
    * @return {Transaction}
    *
    * @example
@@ -474,14 +471,9 @@ export class Session extends common.GrpcServiceObject {
    */
   transaction(
     queryOptions?: google.spanner.v1.ExecuteSqlRequest.IQueryOptions,
-    requestOptions?: Pick<IRequestOptions, 'transactionTag'>,
-    optimisticLock?: boolean
+    requestOptions?: Pick<IRequestOptions, 'transactionTag'>
   ) {
-    const readWrite = {} as google.spanner.v1.TransactionOptions.ReadWrite;
-    if (optimisticLock) {
-      readWrite.readLockMode = ReadLockMode.OPTIMISTIC;
-    }
-    return new Transaction(this, readWrite, queryOptions, requestOptions);
+    return new Transaction(this, undefined, queryOptions, requestOptions);
   }
   /**
    * Format the session name to include the parent database's name.

@@ -390,36 +390,6 @@ describe('SessionPool', () => {
         done();
       });
     });
-
-    it('should pass any errors to the callback', done => {
-      const error = new Error('err');
-
-      sandbox.stub(sessionPool, '_acquire').rejects(error);
-
-      sessionPool.getWriteSession(err => {
-        assert.strictEqual(err, error);
-        done();
-      });
-    });
-
-    it('should pass optimistic lock parameter', done => {
-      const fakeTxn = new FakeTransaction() as unknown as Transaction;
-      const fakeSession = createSession();
-
-      fakeSession.txn = fakeTxn;
-
-      sandbox
-        .stub(sessionPool, '_acquire')
-        .withArgs(types.ReadWrite, true)
-        .resolves(fakeSession);
-
-      sessionPool.getOptimisticWriteSession((err, session, txn) => {
-        assert.ifError(err);
-        assert.strictEqual(session, fakeSession);
-        assert.strictEqual(txn, fakeTxn);
-        done();
-      });
-    });
   });
 
   describe('open', () => {

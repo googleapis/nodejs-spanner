@@ -194,10 +194,11 @@ export abstract class Runner<T> {
     }
 
     const transaction = this.session.transaction(
-      (this.session.parent as Database).queryOptions_,
-      undefined,
-      this.options.optimisticLock
+      (this.session.parent as Database).queryOptions_
     );
+    if (this.options.optimisticLock) {
+      transaction.useOptimisticLock();
+    }
     if (this.attempts > 0) {
       await transaction.begin();
     }
