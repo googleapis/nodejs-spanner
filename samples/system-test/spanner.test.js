@@ -27,7 +27,13 @@ const batchCmd = 'node batch.js';
 const crudCmd = 'node crud.js';
 const schemaCmd = 'node schema.js';
 const queryOptionsCmd = 'node queryoptions.js';
-const rpcPriorityCommand = 'node rpc-priority.js';
+const rpcPriorityRunCommand = 'node rpc-priority-run.js';
+const rpcPriorityReadCommand = 'node rpc-priority-read.js';
+const rpcPriorityBatchDMLCommand = 'node rpc-priority-batch-dml.js';
+const rpcPriorityPartitionedDMLCommand = 'node rpc-priority-partitioned-dml.js';
+const rpcPriorityTransactionCommand = 'node rpc-priority-transaction.js';
+const rpcPriorityQueryPartitionsCommand =
+  'node rpc-priority-query-partitions.js';
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
@@ -44,6 +50,8 @@ const PREFIX = 'test-instance';
 const INSTANCE_ID =
   process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${CURRENT_TIME}`;
 const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
+const SAMPLE_INSTANCE_CONFIG_ID = `custom-my-sample-instance-config-${CURRENT_TIME}`;
+const BASE_INSTANCE_CONFIG_ID = 'regional-us-west2';
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
@@ -521,15 +529,76 @@ describe('Spanner', () => {
     );
   });
 
-  // query with RPC priority
-  it('should use RPC priority from request options', async () => {
+  // query with RPC priority for run command
+  it('should use RPC priority from request options for run command', async () => {
     const output = execSync(
-      `${rpcPriorityCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `${rpcPriorityRunCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully fetched \d rows using low RPC priority\./
     );
     assert.match(
       output,
       /AlbumId: 2, AlbumTitle: Forever Hold your Peace, MarketingBudget:/
     );
+  });
+
+  // query with RPC priority for Read command
+  it('should use RPC priority from request options for read command', async () => {
+    const output = execSync(
+      `${rpcPriorityReadCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully fetched \d rows using low RPC priority\./
+    );
+    assert.match(output, /SingerId: 1, AlbumId: 1, AlbumTitle: Total Junk/);
+  });
+
+  // query with RPC priority for transaction command
+  it('should use RPC priority from request options for transaction command', async () => {
+    const output = execSync(
+      `${rpcPriorityTransactionCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully inserted 1 record into the Singers table using low RPC priority\./
+    );
+  });
+
+  // query with RPC priority for batch DML command
+  it('should use RPC priority from request options for batch DML command', async () => {
+    const output = execSync(
+      `${rpcPriorityBatchDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully executed 2 SQL statements using Batch DML using low RPC priority\./
+    );
+  });
+
+  // query with RPC priority for partitioned DML command
+  it('should use RPC priority from request options for partitioned DML command', async () => {
+    const output = execSync(
+      `${rpcPriorityPartitionedDMLCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('Successfully updated (\\d+) records using low RPC priority.')
+    );
+  });
+
+  // query with RPC priority for Query partitions command
+  it('should use RPC priority from request options for Query partition command', async () => {
+    const output = execSync(
+      `${rpcPriorityQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      /Successfully created \d query partitions using low RPC priority\./
+    );
+    assert.match(output, /Successfully received \d from executed partitions\./);
   });
 
   // read_only_transactioni
@@ -729,7 +798,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${dmlCmd} updateUsingDmlWithTimestamp ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully updated 2 records/);
+    assert.match(output, /Successfully updated 3 records/);
   });
 
   // dml_write_then_read
@@ -788,7 +857,7 @@ describe('Spanner', () => {
     const output = execSync(
       `${dmlCmd} deleteUsingPartitionedDml ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, /Successfully deleted 5 records/);
+    assert.match(output, /Successfully deleted 6 records/);
   });
 
   //  dml_batch_update
@@ -1223,6 +1292,73 @@ describe('Spanner', () => {
       await instance.delete();
     });
 
+    // create_instance_config
+    it('should create an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for create operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // update_instance_config
+    it('should update an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-update.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Waiting for update operation for ${SAMPLE_INSTANCE_CONFIG_ID} to complete...`
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(`Updated instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // delete_instance_config
+    it('should delete an example custom instance config', async () => {
+      const output = execSync(
+        `node instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Deleting ${SAMPLE_INSTANCE_CONFIG_ID}...`)
+      );
+      assert.match(
+        output,
+        new RegExp(`Deleted instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
+      );
+    });
+
+    // list_instance_config_operations
+    it('should list all instance config operations', async () => {
+      const output = execSync(
+        `node instance-config-get-operations.js ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Available instance config operations for project ${PROJECT_ID}:`
+        )
+      );
+      assert.include(output, 'Instance config operation for');
+      assert.include(
+        output,
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      );
+    });
+
     // list_instance_configs
     it('should list available instance configs', async () => {
       const output = execSync(`node list-instance-configs.js ${PROJECT_ID}`);
@@ -1489,6 +1625,42 @@ describe('Spanner', () => {
       assert.match(output, new RegExp('VenueId: 4, Revenue: 97372.3863'));
       assert.match(output, new RegExp('VenueId: 19, Revenue: 7629'));
       assert.match(output, new RegExp('VenueId: 398, Revenue: 0.000000123'));
+    });
+
+    // pg_jsonb_add_column
+    it('should add a jsonb column to a table', async () => {
+      const output = execSync(
+        `node pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Added jsonb column to table venues to database ${PG_DATABASE_ID}.`
+        )
+      );
+    });
+
+    // pg_jsonb_insert_data
+    it('should insert pg jsonb data', async () => {
+      const output = execSync(
+        `node pg-jsonb-update-data.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Updated data.'));
+    });
+
+    // pg_jsonb_query_data
+    it('should query pg jsonb data', async () => {
+      const output = execSync(
+        `node pg-jsonb-query-parameter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('VenueId: 19, Details: {"value":{"open":true,"rating":9}}')
+      );
     });
 
     // pg_case_sensitivity

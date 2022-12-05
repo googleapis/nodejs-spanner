@@ -44,6 +44,10 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
+  * [Creates a user-managed instance configuration.](#creates-a-user-managed-instance-configuration.)
+  * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
+  * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
+  * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -65,6 +69,9 @@ and automatic, synchronous replication for high availability.
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
   * [Created interleaved table hierarchy using PostgreSQL dialect.](#created-interleaved-table-hierarchy-using-postgresql-dialect.)
+  * [Showcase how add a jsonb column in a PostgreSQL table.](#showcase-how-add-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how query data to a jsonb column in a PostgreSQL table.](#showcase-how-query-data-to-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how update data to a jsonb column in a PostgreSQL table.](#showcase-how-update-data-to-a-jsonb-column-in-a-postgresql-table.)
   * [Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.](#showcase-how-to-work-with-the-postgresql-numeric/decimal-data-type-on-a-spanner-postgresql-database.)
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
   * [Execute a query with parameters on a Spanner PostgreSQL database.](#execute-a-query-with-parameters-on-a-spanner-postgresql-database.)
@@ -72,7 +79,12 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
-  * [Rpc-priority](#rpc-priority)
+  * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
+  * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
+  * [Create partitions with RPC priority](#create-partitions-with-rpc-priority)
+  * [Read data with RPC Priority](#read-data-with-rpc-priority)
+  * [Query data with RPC Priority](#query-data-with-rpc-priority)
+  * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
   * [Timestamp](#timestamp)
@@ -604,6 +616,74 @@ __Usage:__
 
 
 
+### Creates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-create <INSTANCE_CONFIG_ID> <BASE_INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Deletes a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-delete <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Lists the instance configuration operations.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-get-operations.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-get-operations.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-get-operations <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates a user-managed instance configuration.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-config-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-config-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Instance-with-processing-units
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-processing-units.js).
@@ -961,6 +1041,57 @@ __Usage:__
 
 
 
+### Showcase how add a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how query data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-query-parameter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-query-parameter.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-query-parameter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how update data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-update-data.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-numeric-data-type.js).
@@ -1080,16 +1211,101 @@ __Usage:__
 
 
 
-### Rpc-priority
+### Run Batch update with RPC priority
 
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority.js).
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-batch-dml.js).
 
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority.js,samples/README.md)
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-batch-dml.js,samples/README.md)
 
 __Usage:__
 
 
-`node samples/rpc-priority.js`
+`node rpc-priority-batch-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Run partitioned update with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-partitioned-dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-partitioned-dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-partitioned-dml.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Create partitions with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-query-partitions.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-query-partitions.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-query-partitions.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Read data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-read.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-read.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Query data with RPC Priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-run.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-run.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-run.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Run transaction with RPC priority
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/rpc-priority-transaction.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/rpc-priority-transaction.js,samples/README.md)
+
+__Usage:__
+
+
+`node rpc-priority-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

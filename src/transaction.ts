@@ -216,6 +216,9 @@ export type CommitCallback =
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
+  protected _idWaiter: Readable;
+  protected _inlineBeginStarted;
+  protected _useInRunner = false;
   id?: Uint8Array | string;
   ended: boolean;
   metadata?: spannerClient.spanner.v1.ITransaction;
@@ -289,6 +292,10 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
+    this._idWaiter = new Readable({
+      read() {},
+    });
+    this._inlineBeginStarted = false;
   }
 
   /**
@@ -378,17 +385,7 @@ export class Snapshot extends EventEmitter {
           callback!(err, resp);
           return;
         }
-
-        const {id, readTimestamp} = resp;
-
-        this.id = id!;
-        this.metadata = resp;
-
-        if (readTimestamp) {
-          this.readTimestampProto = readTimestamp;
-          this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
-        }
-
+        this._update(resp);
         callback!(null, resp);
       }
     );
@@ -573,6 +570,8 @@ export class Snapshot extends EventEmitter {
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
+    } else if (this._options.readWrite) {
+      transaction.begin = this._options;
     } else {
       transaction.singleUse = this._options;
     }
@@ -603,6 +602,10 @@ export class Snapshot extends EventEmitter {
     );
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
+      if (this.id && transaction.begin) {
+        delete transaction.begin;
+        transaction.id = this.id;
+      }
       return this.requestStream({
         client: 'SpannerClient',
         method: 'streamingRead',
@@ -612,11 +615,21 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    return partialResultStream(this._wrapWithIdWaiter(makeRequest), {
       json,
       jsonOptions,
       maxResumeRetries,
-    });
+    })
+      ?.on('response', response => {
+        if (response.metadata && response.metadata!.transaction && !this.id) {
+          this._update(response.metadata!.transaction);
+        }
+      })
+      .on('error', () => {
+        if (!this.id && this._useInRunner) {
+          this.begin();
+        }
+      });
   }
 
   /**
@@ -909,6 +922,9 @@ export class Snapshot extends EventEmitter {
       .on('response', response => {
         if (response.metadata) {
           metadata = response.metadata;
+          if (metadata.transaction && !this.id) {
+            this._update(metadata.transaction);
+          }
         }
       })
       .on('data', row => rows.push(row))
@@ -1034,6 +1050,8 @@ export class Snapshot extends EventEmitter {
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
       if (this.id) {
         transaction.id = this.id as Uint8Array;
+      } else if (this._options.readWrite) {
+        transaction.begin = this._options;
       } else {
         transaction.singleUse = this._options;
       }
@@ -1059,7 +1077,7 @@ export class Snapshot extends EventEmitter {
     };
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
-      if (!reqOpts) {
+      if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
         try {
           sanitizeRequest();
         } catch (e) {
@@ -1078,11 +1096,21 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    return partialResultStream(makeRequest, {
+    return partialResultStream(this._wrapWithIdWaiter(makeRequest), {
       json,
       jsonOptions,
       maxResumeRetries,
-    });
+    })
+      .on('response', response => {
+        if (response.metadata && response.metadata!.transaction && !this.id) {
+          this._update(response.metadata!.transaction);
+        }
+      })
+      .on('error', () => {
+        if (!this.id && this._useInRunner) {
+          this.begin();
+        }
+      });
   }
 
   /**
@@ -1225,6 +1253,51 @@ export class Snapshot extends EventEmitter {
     }
 
     return {params, paramTypes};
+  }
+
+  /**
+   * Update transaction properties from the response.
+   *
+   * @private
+   *
+   * @param {spannerClient.spanner.v1.ITransaction} resp Response object.
+   */
+  protected _update(resp: spannerClient.spanner.v1.ITransaction): void {
+    const {id, readTimestamp} = resp;
+
+    this.id = id!;
+    this.metadata = resp;
+
+    if (readTimestamp) {
+      this.readTimestampProto = readTimestamp;
+      this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
+    }
+    this._idWaiter.emit('notify');
+  }
+
+  /**
+   * Wrap `makeRequest` function with the lock to make sure the inline begin
+   * transaction can happen only once.
+   *
+   * @param makeRequest
+   * @private
+   */
+  private _wrapWithIdWaiter(
+    makeRequest: (resumeToken?: ResumeToken) => Readable
+  ): (resumeToken?: ResumeToken) => Readable {
+    if (this.id || !this._options.readWrite) {
+      return makeRequest;
+    }
+    if (!this._inlineBeginStarted) {
+      this._inlineBeginStarted = true;
+      return makeRequest;
+    }
+    return (resumeToken?: ResumeToken): Readable =>
+      this._idWaiter.once('notify', () =>
+        makeRequest(resumeToken)
+          .on('data', chunk => this._idWaiter.emit('data', chunk))
+          .once('end', () => this._idWaiter.emit('end'))
+      );
   }
 }
 
@@ -1528,6 +1601,12 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       });
 
+    const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    if (this.id) {
+      transaction.id = this.id as Uint8Array;
+    } else {
+      transaction.begin = this._options;
+    }
     const reqOpts: spannerClient.spanner.v1.ExecuteBatchDmlRequest = {
       session: this.session.formattedName_!,
       requestOptions: this.configureTagOptions(
@@ -1535,7 +1614,7 @@ export class Transaction extends Dml {
         this.requestOptions?.transactionTag ?? undefined,
         (options as BatchUpdateOptions).requestOptions
       ),
-      transaction: {id: this.id!},
+      transaction,
       seqno: this._seqno++,
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
@@ -1562,6 +1641,11 @@ export class Transaction extends Dml {
         }
 
         const {resultSets, status} = resp;
+        for (const resultSet of resultSets) {
+          if (!this.id && resultSet.metadata?.transaction) {
+            this._update(resultSet.metadata.transaction);
+          }
+        }
         const rowCounts: number[] = resultSets.map(({stats}) => {
           return (
             (stats &&
@@ -1686,8 +1770,11 @@ export class Transaction extends Dml {
 
     if (this.id) {
       reqOpts.transactionId = this.id as Uint8Array;
-    } else {
+    } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
+    } else {
+      this.begin().then(() => this.commit(options, callback));
+      return;
     }
 
     if (
@@ -2183,6 +2270,13 @@ export class Transaction extends Dml {
     rows.forEach(row => allKeys.push(...Object.keys(row)));
     const unique = new Set(allKeys);
     return Array.from(unique).sort();
+  }
+
+  /**
+   * Mark transaction as started from the runner.
+   */
+  useInRunner(): void {
+    this._useInRunner = true;
   }
 }
 

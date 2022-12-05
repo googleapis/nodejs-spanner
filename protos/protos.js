@@ -19,7 +19,7 @@
         define(["protobufjs/minimal"], factory);
 
     /* CommonJS */ else if (typeof require === 'function' && typeof module === 'object' && module && module.exports)
-        module.exports = factory(require("google-gax").protobufMinimal);
+        module.exports = factory(require("google-gax/build/src/protobuf").protobufMinimal);
 
 })(this, function($protobuf) {
     "use strict";
@@ -151,12 +151,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.seconds = reader.int64();
-                            break;
-                        case 2:
-                            message.nanos = reader.int32();
-                            break;
+                        case 1: {
+                                message.seconds = reader.int64();
+                                break;
+                            }
+                        case 2: {
+                                message.nanos = reader.int32();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -269,6 +271,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for Duration
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Duration
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Duration.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Duration";
+                };
+    
                 return Duration;
             })();
     
@@ -366,11 +383,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.file && message.file.length))
-                                message.file = [];
-                            message.file.push($root.google.protobuf.FileDescriptorProto.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.file && message.file.length))
+                                    message.file = [];
+                                message.file.push($root.google.protobuf.FileDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -477,6 +495,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for FileDescriptorSet
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FileDescriptorSet
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FileDescriptorSet.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FileDescriptorSet";
+                };
+    
                 return FileDescriptorSet;
             })();
     
@@ -498,6 +531,7 @@
                  * @property {google.protobuf.IFileOptions|null} [options] FileDescriptorProto options
                  * @property {google.protobuf.ISourceCodeInfo|null} [sourceCodeInfo] FileDescriptorProto sourceCodeInfo
                  * @property {string|null} [syntax] FileDescriptorProto syntax
+                 * @property {string|null} [edition] FileDescriptorProto edition
                  */
     
                 /**
@@ -619,6 +653,14 @@
                 FileDescriptorProto.prototype.syntax = "";
     
                 /**
+                 * FileDescriptorProto edition.
+                 * @member {string} edition
+                 * @memberof google.protobuf.FileDescriptorProto
+                 * @instance
+                 */
+                FileDescriptorProto.prototype.edition = "";
+    
+                /**
                  * Creates a new FileDescriptorProto instance using the specified properties.
                  * @function create
                  * @memberof google.protobuf.FileDescriptorProto
@@ -673,6 +715,8 @@
                             writer.uint32(/* id 11, wireType 0 =*/88).int32(message.weakDependency[i]);
                     if (message.syntax != null && Object.hasOwnProperty.call(message, "syntax"))
                         writer.uint32(/* id 12, wireType 2 =*/98).string(message.syntax);
+                    if (message.edition != null && Object.hasOwnProperty.call(message, "edition"))
+                        writer.uint32(/* id 13, wireType 2 =*/106).string(message.edition);
                     return writer;
                 };
     
@@ -707,66 +751,82 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message["package"] = reader.string();
-                            break;
-                        case 3:
-                            if (!(message.dependency && message.dependency.length))
-                                message.dependency = [];
-                            message.dependency.push(reader.string());
-                            break;
-                        case 10:
-                            if (!(message.publicDependency && message.publicDependency.length))
-                                message.publicDependency = [];
-                            if ((tag & 7) === 2) {
-                                var end2 = reader.uint32() + reader.pos;
-                                while (reader.pos < end2)
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message["package"] = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                if (!(message.dependency && message.dependency.length))
+                                    message.dependency = [];
+                                message.dependency.push(reader.string());
+                                break;
+                            }
+                        case 10: {
+                                if (!(message.publicDependency && message.publicDependency.length))
+                                    message.publicDependency = [];
+                                if ((tag & 7) === 2) {
+                                    var end2 = reader.uint32() + reader.pos;
+                                    while (reader.pos < end2)
+                                        message.publicDependency.push(reader.int32());
+                                } else
                                     message.publicDependency.push(reader.int32());
-                            } else
-                                message.publicDependency.push(reader.int32());
-                            break;
-                        case 11:
-                            if (!(message.weakDependency && message.weakDependency.length))
-                                message.weakDependency = [];
-                            if ((tag & 7) === 2) {
-                                var end2 = reader.uint32() + reader.pos;
-                                while (reader.pos < end2)
+                                break;
+                            }
+                        case 11: {
+                                if (!(message.weakDependency && message.weakDependency.length))
+                                    message.weakDependency = [];
+                                if ((tag & 7) === 2) {
+                                    var end2 = reader.uint32() + reader.pos;
+                                    while (reader.pos < end2)
+                                        message.weakDependency.push(reader.int32());
+                                } else
                                     message.weakDependency.push(reader.int32());
-                            } else
-                                message.weakDependency.push(reader.int32());
-                            break;
-                        case 4:
-                            if (!(message.messageType && message.messageType.length))
-                                message.messageType = [];
-                            message.messageType.push($root.google.protobuf.DescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 5:
-                            if (!(message.enumType && message.enumType.length))
-                                message.enumType = [];
-                            message.enumType.push($root.google.protobuf.EnumDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 6:
-                            if (!(message.service && message.service.length))
-                                message.service = [];
-                            message.service.push($root.google.protobuf.ServiceDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 7:
-                            if (!(message.extension && message.extension.length))
-                                message.extension = [];
-                            message.extension.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 8:
-                            message.options = $root.google.protobuf.FileOptions.decode(reader, reader.uint32());
-                            break;
-                        case 9:
-                            message.sourceCodeInfo = $root.google.protobuf.SourceCodeInfo.decode(reader, reader.uint32());
-                            break;
-                        case 12:
-                            message.syntax = reader.string();
-                            break;
+                                break;
+                            }
+                        case 4: {
+                                if (!(message.messageType && message.messageType.length))
+                                    message.messageType = [];
+                                message.messageType.push($root.google.protobuf.DescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 5: {
+                                if (!(message.enumType && message.enumType.length))
+                                    message.enumType = [];
+                                message.enumType.push($root.google.protobuf.EnumDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 6: {
+                                if (!(message.service && message.service.length))
+                                    message.service = [];
+                                message.service.push($root.google.protobuf.ServiceDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 7: {
+                                if (!(message.extension && message.extension.length))
+                                    message.extension = [];
+                                message.extension.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 8: {
+                                message.options = $root.google.protobuf.FileOptions.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 9: {
+                                message.sourceCodeInfo = $root.google.protobuf.SourceCodeInfo.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 12: {
+                                message.syntax = reader.string();
+                                break;
+                            }
+                        case 13: {
+                                message.edition = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -878,6 +938,9 @@
                     if (message.syntax != null && message.hasOwnProperty("syntax"))
                         if (!$util.isString(message.syntax))
                             return "syntax: string expected";
+                    if (message.edition != null && message.hasOwnProperty("edition"))
+                        if (!$util.isString(message.edition))
+                            return "edition: string expected";
                     return null;
                 };
     
@@ -970,6 +1033,8 @@
                     }
                     if (object.syntax != null)
                         message.syntax = String(object.syntax);
+                    if (object.edition != null)
+                        message.edition = String(object.edition);
                     return message;
                 };
     
@@ -1001,6 +1066,7 @@
                         object.options = null;
                         object.sourceCodeInfo = null;
                         object.syntax = "";
+                        object.edition = "";
                     }
                     if (message.name != null && message.hasOwnProperty("name"))
                         object.name = message.name;
@@ -1047,6 +1113,8 @@
                     }
                     if (message.syntax != null && message.hasOwnProperty("syntax"))
                         object.syntax = message.syntax;
+                    if (message.edition != null && message.hasOwnProperty("edition"))
+                        object.edition = message.edition;
                     return object;
                 };
     
@@ -1059,6 +1127,21 @@
                  */
                 FileDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for FileDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FileDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FileDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FileDescriptorProto";
                 };
     
                 return FileDescriptorProto;
@@ -1271,52 +1354,62 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            if (!(message.field && message.field.length))
-                                message.field = [];
-                            message.field.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 6:
-                            if (!(message.extension && message.extension.length))
-                                message.extension = [];
-                            message.extension.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 3:
-                            if (!(message.nestedType && message.nestedType.length))
-                                message.nestedType = [];
-                            message.nestedType.push($root.google.protobuf.DescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 4:
-                            if (!(message.enumType && message.enumType.length))
-                                message.enumType = [];
-                            message.enumType.push($root.google.protobuf.EnumDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 5:
-                            if (!(message.extensionRange && message.extensionRange.length))
-                                message.extensionRange = [];
-                            message.extensionRange.push($root.google.protobuf.DescriptorProto.ExtensionRange.decode(reader, reader.uint32()));
-                            break;
-                        case 8:
-                            if (!(message.oneofDecl && message.oneofDecl.length))
-                                message.oneofDecl = [];
-                            message.oneofDecl.push($root.google.protobuf.OneofDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 7:
-                            message.options = $root.google.protobuf.MessageOptions.decode(reader, reader.uint32());
-                            break;
-                        case 9:
-                            if (!(message.reservedRange && message.reservedRange.length))
-                                message.reservedRange = [];
-                            message.reservedRange.push($root.google.protobuf.DescriptorProto.ReservedRange.decode(reader, reader.uint32()));
-                            break;
-                        case 10:
-                            if (!(message.reservedName && message.reservedName.length))
-                                message.reservedName = [];
-                            message.reservedName.push(reader.string());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                if (!(message.field && message.field.length))
+                                    message.field = [];
+                                message.field.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 6: {
+                                if (!(message.extension && message.extension.length))
+                                    message.extension = [];
+                                message.extension.push($root.google.protobuf.FieldDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 3: {
+                                if (!(message.nestedType && message.nestedType.length))
+                                    message.nestedType = [];
+                                message.nestedType.push($root.google.protobuf.DescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 4: {
+                                if (!(message.enumType && message.enumType.length))
+                                    message.enumType = [];
+                                message.enumType.push($root.google.protobuf.EnumDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 5: {
+                                if (!(message.extensionRange && message.extensionRange.length))
+                                    message.extensionRange = [];
+                                message.extensionRange.push($root.google.protobuf.DescriptorProto.ExtensionRange.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 8: {
+                                if (!(message.oneofDecl && message.oneofDecl.length))
+                                    message.oneofDecl = [];
+                                message.oneofDecl.push($root.google.protobuf.OneofDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 7: {
+                                message.options = $root.google.protobuf.MessageOptions.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 9: {
+                                if (!(message.reservedRange && message.reservedRange.length))
+                                    message.reservedRange = [];
+                                message.reservedRange.push($root.google.protobuf.DescriptorProto.ReservedRange.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 10: {
+                                if (!(message.reservedName && message.reservedName.length))
+                                    message.reservedName = [];
+                                message.reservedName.push(reader.string());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -1617,6 +1710,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for DescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.DescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                DescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.DescriptorProto";
+                };
+    
                 DescriptorProto.ExtensionRange = (function() {
     
                     /**
@@ -1731,15 +1839,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.start = reader.int32();
-                                break;
-                            case 2:
-                                message.end = reader.int32();
-                                break;
-                            case 3:
-                                message.options = $root.google.protobuf.ExtensionRangeOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.start = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.end = reader.int32();
+                                    break;
+                                }
+                            case 3: {
+                                    message.options = $root.google.protobuf.ExtensionRangeOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -1851,6 +1962,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ExtensionRange
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.DescriptorProto.ExtensionRange
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ExtensionRange.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.DescriptorProto.ExtensionRange";
+                    };
+    
                     return ExtensionRange;
                 })();
     
@@ -1957,12 +2083,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.start = reader.int32();
-                                break;
-                            case 2:
-                                message.end = reader.int32();
-                                break;
+                            case 1: {
+                                    message.start = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.end = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -2059,6 +2187,21 @@
                      */
                     ReservedRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for ReservedRange
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.DescriptorProto.ReservedRange
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ReservedRange.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.DescriptorProto.ReservedRange";
                     };
     
                     return ReservedRange;
@@ -2161,11 +2304,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -2270,6 +2414,21 @@
                  */
                 ExtensionRangeOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ExtensionRangeOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.ExtensionRangeOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ExtensionRangeOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.ExtensionRangeOptions";
                 };
     
                 return ExtensionRangeOptions;
@@ -2477,39 +2636,50 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 3:
-                            message.number = reader.int32();
-                            break;
-                        case 4:
-                            message.label = reader.int32();
-                            break;
-                        case 5:
-                            message.type = reader.int32();
-                            break;
-                        case 6:
-                            message.typeName = reader.string();
-                            break;
-                        case 2:
-                            message.extendee = reader.string();
-                            break;
-                        case 7:
-                            message.defaultValue = reader.string();
-                            break;
-                        case 9:
-                            message.oneofIndex = reader.int32();
-                            break;
-                        case 10:
-                            message.jsonName = reader.string();
-                            break;
-                        case 8:
-                            message.options = $root.google.protobuf.FieldOptions.decode(reader, reader.uint32());
-                            break;
-                        case 17:
-                            message.proto3Optional = reader.bool();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.number = reader.int32();
+                                break;
+                            }
+                        case 4: {
+                                message.label = reader.int32();
+                                break;
+                            }
+                        case 5: {
+                                message.type = reader.int32();
+                                break;
+                            }
+                        case 6: {
+                                message.typeName = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.extendee = reader.string();
+                                break;
+                            }
+                        case 7: {
+                                message.defaultValue = reader.string();
+                                break;
+                            }
+                        case 9: {
+                                message.oneofIndex = reader.int32();
+                                break;
+                            }
+                        case 10: {
+                                message.jsonName = reader.string();
+                                break;
+                            }
+                        case 8: {
+                                message.options = $root.google.protobuf.FieldOptions.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 17: {
+                                message.proto3Optional = reader.bool();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -2627,6 +2797,12 @@
                     if (object.number != null)
                         message.number = object.number | 0;
                     switch (object.label) {
+                    default:
+                        if (typeof object.label === "number") {
+                            message.label = object.label;
+                            break;
+                        }
+                        break;
                     case "LABEL_OPTIONAL":
                     case 1:
                         message.label = 1;
@@ -2641,6 +2817,12 @@
                         break;
                     }
                     switch (object.type) {
+                    default:
+                        if (typeof object.type === "number") {
+                            message.type = object.type;
+                            break;
+                        }
+                        break;
                     case "TYPE_DOUBLE":
                     case 1:
                         message.type = 1;
@@ -2767,9 +2949,9 @@
                     if (message.number != null && message.hasOwnProperty("number"))
                         object.number = message.number;
                     if (message.label != null && message.hasOwnProperty("label"))
-                        object.label = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Label[message.label] : message.label;
+                        object.label = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Label[message.label] === undefined ? message.label : $root.google.protobuf.FieldDescriptorProto.Label[message.label] : message.label;
                     if (message.type != null && message.hasOwnProperty("type"))
-                        object.type = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Type[message.type] : message.type;
+                        object.type = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Type[message.type] === undefined ? message.type : $root.google.protobuf.FieldDescriptorProto.Type[message.type] : message.type;
                     if (message.typeName != null && message.hasOwnProperty("typeName"))
                         object.typeName = message.typeName;
                     if (message.defaultValue != null && message.hasOwnProperty("defaultValue"))
@@ -2794,6 +2976,21 @@
                  */
                 FieldDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for FieldDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FieldDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FieldDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FieldDescriptorProto";
                 };
     
                 /**
@@ -2964,12 +3161,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.options = $root.google.protobuf.OneofOptions.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.options = $root.google.protobuf.OneofOptions.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -3071,6 +3270,21 @@
                  */
                 OneofDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for OneofDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.OneofDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                OneofDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.OneofDescriptorProto";
                 };
     
                 return OneofDescriptorProto;
@@ -3218,27 +3432,32 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            if (!(message.value && message.value.length))
-                                message.value = [];
-                            message.value.push($root.google.protobuf.EnumValueDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 3:
-                            message.options = $root.google.protobuf.EnumOptions.decode(reader, reader.uint32());
-                            break;
-                        case 4:
-                            if (!(message.reservedRange && message.reservedRange.length))
-                                message.reservedRange = [];
-                            message.reservedRange.push($root.google.protobuf.EnumDescriptorProto.EnumReservedRange.decode(reader, reader.uint32()));
-                            break;
-                        case 5:
-                            if (!(message.reservedName && message.reservedName.length))
-                                message.reservedName = [];
-                            message.reservedName.push(reader.string());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                if (!(message.value && message.value.length))
+                                    message.value = [];
+                                message.value.push($root.google.protobuf.EnumValueDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 3: {
+                                message.options = $root.google.protobuf.EnumOptions.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 4: {
+                                if (!(message.reservedRange && message.reservedRange.length))
+                                    message.reservedRange = [];
+                                message.reservedRange.push($root.google.protobuf.EnumDescriptorProto.EnumReservedRange.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 5: {
+                                if (!(message.reservedName && message.reservedName.length))
+                                    message.reservedName = [];
+                                message.reservedName.push(reader.string());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -3414,6 +3633,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for EnumDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.EnumDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                EnumDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.EnumDescriptorProto";
+                };
+    
                 EnumDescriptorProto.EnumReservedRange = (function() {
     
                     /**
@@ -3517,12 +3751,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.start = reader.int32();
-                                break;
-                            case 2:
-                                message.end = reader.int32();
-                                break;
+                            case 1: {
+                                    message.start = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.end = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -3619,6 +3855,21 @@
                      */
                     EnumReservedRange.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for EnumReservedRange
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.EnumDescriptorProto.EnumReservedRange
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    EnumReservedRange.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.EnumDescriptorProto.EnumReservedRange";
                     };
     
                     return EnumReservedRange;
@@ -3741,15 +3992,18 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.number = reader.int32();
-                            break;
-                        case 3:
-                            message.options = $root.google.protobuf.EnumValueOptions.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.number = reader.int32();
+                                break;
+                            }
+                        case 3: {
+                                message.options = $root.google.protobuf.EnumValueOptions.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -3859,6 +4113,21 @@
                  */
                 EnumValueDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for EnumValueDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.EnumValueDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                EnumValueDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.EnumValueDescriptorProto";
                 };
     
                 return EnumValueDescriptorProto;
@@ -3980,17 +4249,20 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            if (!(message.method && message.method.length))
-                                message.method = [];
-                            message.method.push($root.google.protobuf.MethodDescriptorProto.decode(reader, reader.uint32()));
-                            break;
-                        case 3:
-                            message.options = $root.google.protobuf.ServiceOptions.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                if (!(message.method && message.method.length))
+                                    message.method = [];
+                                message.method.push($root.google.protobuf.MethodDescriptorProto.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 3: {
+                                message.options = $root.google.protobuf.ServiceOptions.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -4118,6 +4390,21 @@
                  */
                 ServiceDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ServiceDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.ServiceDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ServiceDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.ServiceDescriptorProto";
                 };
     
                 return ServiceDescriptorProto;
@@ -4270,24 +4557,30 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.inputType = reader.string();
-                            break;
-                        case 3:
-                            message.outputType = reader.string();
-                            break;
-                        case 4:
-                            message.options = $root.google.protobuf.MethodOptions.decode(reader, reader.uint32());
-                            break;
-                        case 5:
-                            message.clientStreaming = reader.bool();
-                            break;
-                        case 6:
-                            message.serverStreaming = reader.bool();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.inputType = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.outputType = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.options = $root.google.protobuf.MethodOptions.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 5: {
+                                message.clientStreaming = reader.bool();
+                                break;
+                            }
+                        case 6: {
+                                message.serverStreaming = reader.bool();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -4421,6 +4714,21 @@
                  */
                 MethodDescriptorProto.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for MethodDescriptorProto
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.MethodDescriptorProto
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                MethodDescriptorProto.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.MethodDescriptorProto";
                 };
     
                 return MethodDescriptorProto;
@@ -4753,76 +5061,98 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.javaPackage = reader.string();
-                            break;
-                        case 8:
-                            message.javaOuterClassname = reader.string();
-                            break;
-                        case 10:
-                            message.javaMultipleFiles = reader.bool();
-                            break;
-                        case 20:
-                            message.javaGenerateEqualsAndHash = reader.bool();
-                            break;
-                        case 27:
-                            message.javaStringCheckUtf8 = reader.bool();
-                            break;
-                        case 9:
-                            message.optimizeFor = reader.int32();
-                            break;
-                        case 11:
-                            message.goPackage = reader.string();
-                            break;
-                        case 16:
-                            message.ccGenericServices = reader.bool();
-                            break;
-                        case 17:
-                            message.javaGenericServices = reader.bool();
-                            break;
-                        case 18:
-                            message.pyGenericServices = reader.bool();
-                            break;
-                        case 42:
-                            message.phpGenericServices = reader.bool();
-                            break;
-                        case 23:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 31:
-                            message.ccEnableArenas = reader.bool();
-                            break;
-                        case 36:
-                            message.objcClassPrefix = reader.string();
-                            break;
-                        case 37:
-                            message.csharpNamespace = reader.string();
-                            break;
-                        case 39:
-                            message.swiftPrefix = reader.string();
-                            break;
-                        case 40:
-                            message.phpClassPrefix = reader.string();
-                            break;
-                        case 41:
-                            message.phpNamespace = reader.string();
-                            break;
-                        case 44:
-                            message.phpMetadataNamespace = reader.string();
-                            break;
-                        case 45:
-                            message.rubyPackage = reader.string();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
-                        case 1053:
-                            if (!(message[".google.api.resourceDefinition"] && message[".google.api.resourceDefinition"].length))
-                                message[".google.api.resourceDefinition"] = [];
-                            message[".google.api.resourceDefinition"].push($root.google.api.ResourceDescriptor.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.javaPackage = reader.string();
+                                break;
+                            }
+                        case 8: {
+                                message.javaOuterClassname = reader.string();
+                                break;
+                            }
+                        case 10: {
+                                message.javaMultipleFiles = reader.bool();
+                                break;
+                            }
+                        case 20: {
+                                message.javaGenerateEqualsAndHash = reader.bool();
+                                break;
+                            }
+                        case 27: {
+                                message.javaStringCheckUtf8 = reader.bool();
+                                break;
+                            }
+                        case 9: {
+                                message.optimizeFor = reader.int32();
+                                break;
+                            }
+                        case 11: {
+                                message.goPackage = reader.string();
+                                break;
+                            }
+                        case 16: {
+                                message.ccGenericServices = reader.bool();
+                                break;
+                            }
+                        case 17: {
+                                message.javaGenericServices = reader.bool();
+                                break;
+                            }
+                        case 18: {
+                                message.pyGenericServices = reader.bool();
+                                break;
+                            }
+                        case 42: {
+                                message.phpGenericServices = reader.bool();
+                                break;
+                            }
+                        case 23: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 31: {
+                                message.ccEnableArenas = reader.bool();
+                                break;
+                            }
+                        case 36: {
+                                message.objcClassPrefix = reader.string();
+                                break;
+                            }
+                        case 37: {
+                                message.csharpNamespace = reader.string();
+                                break;
+                            }
+                        case 39: {
+                                message.swiftPrefix = reader.string();
+                                break;
+                            }
+                        case 40: {
+                                message.phpClassPrefix = reader.string();
+                                break;
+                            }
+                        case 41: {
+                                message.phpNamespace = reader.string();
+                                break;
+                            }
+                        case 44: {
+                                message.phpMetadataNamespace = reader.string();
+                                break;
+                            }
+                        case 45: {
+                                message.rubyPackage = reader.string();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 1053: {
+                                if (!(message[".google.api.resourceDefinition"] && message[".google.api.resourceDefinition"].length))
+                                    message[".google.api.resourceDefinition"] = [];
+                                message[".google.api.resourceDefinition"].push($root.google.api.ResourceDescriptor.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -4968,6 +5298,12 @@
                     if (object.javaStringCheckUtf8 != null)
                         message.javaStringCheckUtf8 = Boolean(object.javaStringCheckUtf8);
                     switch (object.optimizeFor) {
+                    default:
+                        if (typeof object.optimizeFor === "number") {
+                            message.optimizeFor = object.optimizeFor;
+                            break;
+                        }
+                        break;
                     case "SPEED":
                     case 1:
                         message.optimizeFor = 1;
@@ -5076,7 +5412,7 @@
                     if (message.javaOuterClassname != null && message.hasOwnProperty("javaOuterClassname"))
                         object.javaOuterClassname = message.javaOuterClassname;
                     if (message.optimizeFor != null && message.hasOwnProperty("optimizeFor"))
-                        object.optimizeFor = options.enums === String ? $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] : message.optimizeFor;
+                        object.optimizeFor = options.enums === String ? $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] === undefined ? message.optimizeFor : $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] : message.optimizeFor;
                     if (message.javaMultipleFiles != null && message.hasOwnProperty("javaMultipleFiles"))
                         object.javaMultipleFiles = message.javaMultipleFiles;
                     if (message.goPackage != null && message.hasOwnProperty("goPackage"))
@@ -5133,6 +5469,21 @@
                  */
                 FileOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for FileOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FileOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FileOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FileOptions";
                 };
     
                 /**
@@ -5303,26 +5654,32 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.messageSetWireFormat = reader.bool();
-                            break;
-                        case 2:
-                            message.noStandardDescriptorAccessor = reader.bool();
-                            break;
-                        case 3:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 7:
-                            message.mapEntry = reader.bool();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
-                        case 1053:
-                            message[".google.api.resource"] = $root.google.api.ResourceDescriptor.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.messageSetWireFormat = reader.bool();
+                                break;
+                            }
+                        case 2: {
+                                message.noStandardDescriptorAccessor = reader.bool();
+                                break;
+                            }
+                        case 3: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 7: {
+                                message.mapEntry = reader.bool();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 1053: {
+                                message[".google.api.resource"] = $root.google.api.ResourceDescriptor.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5476,6 +5833,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for MessageOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.MessageOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                MessageOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.MessageOptions";
+                };
+    
                 return MessageOptions;
             })();
     
@@ -5489,6 +5861,7 @@
                  * @property {boolean|null} [packed] FieldOptions packed
                  * @property {google.protobuf.FieldOptions.JSType|null} [jstype] FieldOptions jstype
                  * @property {boolean|null} [lazy] FieldOptions lazy
+                 * @property {boolean|null} [unverifiedLazy] FieldOptions unverifiedLazy
                  * @property {boolean|null} [deprecated] FieldOptions deprecated
                  * @property {boolean|null} [weak] FieldOptions weak
                  * @property {Array.<google.protobuf.IUninterpretedOption>|null} [uninterpretedOption] FieldOptions uninterpretedOption
@@ -5544,6 +5917,14 @@
                  * @instance
                  */
                 FieldOptions.prototype.lazy = false;
+    
+                /**
+                 * FieldOptions unverifiedLazy.
+                 * @member {boolean} unverifiedLazy
+                 * @memberof google.protobuf.FieldOptions
+                 * @instance
+                 */
+                FieldOptions.prototype.unverifiedLazy = false;
     
                 /**
                  * FieldOptions deprecated.
@@ -5621,6 +6002,8 @@
                         writer.uint32(/* id 6, wireType 0 =*/48).int32(message.jstype);
                     if (message.weak != null && Object.hasOwnProperty.call(message, "weak"))
                         writer.uint32(/* id 10, wireType 0 =*/80).bool(message.weak);
+                    if (message.unverifiedLazy != null && Object.hasOwnProperty.call(message, "unverifiedLazy"))
+                        writer.uint32(/* id 15, wireType 0 =*/120).bool(message.unverifiedLazy);
                     if (message.uninterpretedOption != null && message.uninterpretedOption.length)
                         for (var i = 0; i < message.uninterpretedOption.length; ++i)
                             $root.google.protobuf.UninterpretedOption.encode(message.uninterpretedOption[i], writer.uint32(/* id 999, wireType 2 =*/7994).fork()).ldelim();
@@ -5666,42 +6049,55 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.ctype = reader.int32();
-                            break;
-                        case 2:
-                            message.packed = reader.bool();
-                            break;
-                        case 6:
-                            message.jstype = reader.int32();
-                            break;
-                        case 5:
-                            message.lazy = reader.bool();
-                            break;
-                        case 3:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 10:
-                            message.weak = reader.bool();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
-                        case 1052:
-                            if (!(message[".google.api.fieldBehavior"] && message[".google.api.fieldBehavior"].length))
-                                message[".google.api.fieldBehavior"] = [];
-                            if ((tag & 7) === 2) {
-                                var end2 = reader.uint32() + reader.pos;
-                                while (reader.pos < end2)
+                        case 1: {
+                                message.ctype = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.packed = reader.bool();
+                                break;
+                            }
+                        case 6: {
+                                message.jstype = reader.int32();
+                                break;
+                            }
+                        case 5: {
+                                message.lazy = reader.bool();
+                                break;
+                            }
+                        case 15: {
+                                message.unverifiedLazy = reader.bool();
+                                break;
+                            }
+                        case 3: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 10: {
+                                message.weak = reader.bool();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 1052: {
+                                if (!(message[".google.api.fieldBehavior"] && message[".google.api.fieldBehavior"].length))
+                                    message[".google.api.fieldBehavior"] = [];
+                                if ((tag & 7) === 2) {
+                                    var end2 = reader.uint32() + reader.pos;
+                                    while (reader.pos < end2)
+                                        message[".google.api.fieldBehavior"].push(reader.int32());
+                                } else
                                     message[".google.api.fieldBehavior"].push(reader.int32());
-                            } else
-                                message[".google.api.fieldBehavior"].push(reader.int32());
-                            break;
-                        case 1055:
-                            message[".google.api.resourceReference"] = $root.google.api.ResourceReference.decode(reader, reader.uint32());
-                            break;
+                                break;
+                            }
+                        case 1055: {
+                                message[".google.api.resourceReference"] = $root.google.api.ResourceReference.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -5761,6 +6157,9 @@
                     if (message.lazy != null && message.hasOwnProperty("lazy"))
                         if (typeof message.lazy !== "boolean")
                             return "lazy: boolean expected";
+                    if (message.unverifiedLazy != null && message.hasOwnProperty("unverifiedLazy"))
+                        if (typeof message.unverifiedLazy !== "boolean")
+                            return "unverifiedLazy: boolean expected";
                     if (message.deprecated != null && message.hasOwnProperty("deprecated"))
                         if (typeof message.deprecated !== "boolean")
                             return "deprecated: boolean expected";
@@ -5815,6 +6214,12 @@
                         return object;
                     var message = new $root.google.protobuf.FieldOptions();
                     switch (object.ctype) {
+                    default:
+                        if (typeof object.ctype === "number") {
+                            message.ctype = object.ctype;
+                            break;
+                        }
+                        break;
                     case "STRING":
                     case 0:
                         message.ctype = 0;
@@ -5831,6 +6236,12 @@
                     if (object.packed != null)
                         message.packed = Boolean(object.packed);
                     switch (object.jstype) {
+                    default:
+                        if (typeof object.jstype === "number") {
+                            message.jstype = object.jstype;
+                            break;
+                        }
+                        break;
                     case "JS_NORMAL":
                     case 0:
                         message.jstype = 0;
@@ -5846,6 +6257,8 @@
                     }
                     if (object.lazy != null)
                         message.lazy = Boolean(object.lazy);
+                    if (object.unverifiedLazy != null)
+                        message.unverifiedLazy = Boolean(object.unverifiedLazy);
                     if (object.deprecated != null)
                         message.deprecated = Boolean(object.deprecated);
                     if (object.weak != null)
@@ -5867,6 +6280,10 @@
                         for (var i = 0; i < object[".google.api.fieldBehavior"].length; ++i)
                             switch (object[".google.api.fieldBehavior"][i]) {
                             default:
+                                if (typeof object[".google.api.fieldBehavior"][i] === "number") {
+                                    message[".google.api.fieldBehavior"][i] = object[".google.api.fieldBehavior"][i];
+                                    break;
+                                }
                             case "FIELD_BEHAVIOR_UNSPECIFIED":
                             case 0:
                                 message[".google.api.fieldBehavior"][i] = 0;
@@ -5933,10 +6350,11 @@
                         object.lazy = false;
                         object.jstype = options.enums === String ? "JS_NORMAL" : 0;
                         object.weak = false;
+                        object.unverifiedLazy = false;
                         object[".google.api.resourceReference"] = null;
                     }
                     if (message.ctype != null && message.hasOwnProperty("ctype"))
-                        object.ctype = options.enums === String ? $root.google.protobuf.FieldOptions.CType[message.ctype] : message.ctype;
+                        object.ctype = options.enums === String ? $root.google.protobuf.FieldOptions.CType[message.ctype] === undefined ? message.ctype : $root.google.protobuf.FieldOptions.CType[message.ctype] : message.ctype;
                     if (message.packed != null && message.hasOwnProperty("packed"))
                         object.packed = message.packed;
                     if (message.deprecated != null && message.hasOwnProperty("deprecated"))
@@ -5944,9 +6362,11 @@
                     if (message.lazy != null && message.hasOwnProperty("lazy"))
                         object.lazy = message.lazy;
                     if (message.jstype != null && message.hasOwnProperty("jstype"))
-                        object.jstype = options.enums === String ? $root.google.protobuf.FieldOptions.JSType[message.jstype] : message.jstype;
+                        object.jstype = options.enums === String ? $root.google.protobuf.FieldOptions.JSType[message.jstype] === undefined ? message.jstype : $root.google.protobuf.FieldOptions.JSType[message.jstype] : message.jstype;
                     if (message.weak != null && message.hasOwnProperty("weak"))
                         object.weak = message.weak;
+                    if (message.unverifiedLazy != null && message.hasOwnProperty("unverifiedLazy"))
+                        object.unverifiedLazy = message.unverifiedLazy;
                     if (message.uninterpretedOption && message.uninterpretedOption.length) {
                         object.uninterpretedOption = [];
                         for (var j = 0; j < message.uninterpretedOption.length; ++j)
@@ -5955,7 +6375,7 @@
                     if (message[".google.api.fieldBehavior"] && message[".google.api.fieldBehavior"].length) {
                         object[".google.api.fieldBehavior"] = [];
                         for (var j = 0; j < message[".google.api.fieldBehavior"].length; ++j)
-                            object[".google.api.fieldBehavior"][j] = options.enums === String ? $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] : message[".google.api.fieldBehavior"][j];
+                            object[".google.api.fieldBehavior"][j] = options.enums === String ? $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] === undefined ? message[".google.api.fieldBehavior"][j] : $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] : message[".google.api.fieldBehavior"][j];
                     }
                     if (message[".google.api.resourceReference"] != null && message.hasOwnProperty(".google.api.resourceReference"))
                         object[".google.api.resourceReference"] = $root.google.api.ResourceReference.toObject(message[".google.api.resourceReference"], options);
@@ -5971,6 +6391,21 @@
                  */
                 FieldOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for FieldOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FieldOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FieldOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FieldOptions";
                 };
     
                 /**
@@ -6102,11 +6537,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6211,6 +6647,21 @@
                  */
                 OneofOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for OneofOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.OneofOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                OneofOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.OneofOptions";
                 };
     
                 return OneofOptions;
@@ -6332,17 +6783,20 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 2:
-                            message.allowAlias = reader.bool();
-                            break;
-                        case 3:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
+                        case 2: {
+                                message.allowAlias = reader.bool();
+                                break;
+                            }
+                        case 3: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6467,6 +6921,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for EnumOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.EnumOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                EnumOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.EnumOptions";
+                };
+    
                 return EnumOptions;
             })();
     
@@ -6575,14 +7044,16 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6696,6 +7167,21 @@
                  */
                 EnumValueOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for EnumValueOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.EnumValueOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                EnumValueOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.EnumValueOptions";
                 };
     
                 return EnumValueOptions;
@@ -6828,20 +7314,24 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 33:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
-                        case 1049:
-                            message[".google.api.defaultHost"] = reader.string();
-                            break;
-                        case 1050:
-                            message[".google.api.oauthScopes"] = reader.string();
-                            break;
+                        case 33: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 1049: {
+                                message[".google.api.defaultHost"] = reader.string();
+                                break;
+                            }
+                        case 1050: {
+                                message[".google.api.oauthScopes"] = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -6972,6 +7462,21 @@
                  */
                 ServiceOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ServiceOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.ServiceOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ServiceOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.ServiceOptions";
                 };
     
                 return ServiceOptions;
@@ -7128,28 +7633,34 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 33:
-                            message.deprecated = reader.bool();
-                            break;
-                        case 34:
-                            message.idempotencyLevel = reader.int32();
-                            break;
-                        case 999:
-                            if (!(message.uninterpretedOption && message.uninterpretedOption.length))
-                                message.uninterpretedOption = [];
-                            message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
-                            break;
-                        case 72295728:
-                            message[".google.api.http"] = $root.google.api.HttpRule.decode(reader, reader.uint32());
-                            break;
-                        case 1051:
-                            if (!(message[".google.api.methodSignature"] && message[".google.api.methodSignature"].length))
-                                message[".google.api.methodSignature"] = [];
-                            message[".google.api.methodSignature"].push(reader.string());
-                            break;
-                        case 1049:
-                            message[".google.longrunning.operationInfo"] = $root.google.longrunning.OperationInfo.decode(reader, reader.uint32());
-                            break;
+                        case 33: {
+                                message.deprecated = reader.bool();
+                                break;
+                            }
+                        case 34: {
+                                message.idempotencyLevel = reader.int32();
+                                break;
+                            }
+                        case 999: {
+                                if (!(message.uninterpretedOption && message.uninterpretedOption.length))
+                                    message.uninterpretedOption = [];
+                                message.uninterpretedOption.push($root.google.protobuf.UninterpretedOption.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 72295728: {
+                                message[".google.api.http"] = $root.google.api.HttpRule.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 1051: {
+                                if (!(message[".google.api.methodSignature"] && message[".google.api.methodSignature"].length))
+                                    message[".google.api.methodSignature"] = [];
+                                message[".google.api.methodSignature"].push(reader.string());
+                                break;
+                            }
+                        case 1049: {
+                                message[".google.longrunning.operationInfo"] = $root.google.longrunning.OperationInfo.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -7241,6 +7752,12 @@
                     if (object.deprecated != null)
                         message.deprecated = Boolean(object.deprecated);
                     switch (object.idempotencyLevel) {
+                    default:
+                        if (typeof object.idempotencyLevel === "number") {
+                            message.idempotencyLevel = object.idempotencyLevel;
+                            break;
+                        }
+                        break;
                     case "IDEMPOTENCY_UNKNOWN":
                     case 0:
                         message.idempotencyLevel = 0;
@@ -7310,7 +7827,7 @@
                     if (message.deprecated != null && message.hasOwnProperty("deprecated"))
                         object.deprecated = message.deprecated;
                     if (message.idempotencyLevel != null && message.hasOwnProperty("idempotencyLevel"))
-                        object.idempotencyLevel = options.enums === String ? $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] : message.idempotencyLevel;
+                        object.idempotencyLevel = options.enums === String ? $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] === undefined ? message.idempotencyLevel : $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] : message.idempotencyLevel;
                     if (message.uninterpretedOption && message.uninterpretedOption.length) {
                         object.uninterpretedOption = [];
                         for (var j = 0; j < message.uninterpretedOption.length; ++j)
@@ -7337,6 +7854,21 @@
                  */
                 MethodOptions.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for MethodOptions
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.MethodOptions
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                MethodOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.MethodOptions";
                 };
     
                 /**
@@ -7518,29 +8050,36 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 2:
-                            if (!(message.name && message.name.length))
-                                message.name = [];
-                            message.name.push($root.google.protobuf.UninterpretedOption.NamePart.decode(reader, reader.uint32()));
-                            break;
-                        case 3:
-                            message.identifierValue = reader.string();
-                            break;
-                        case 4:
-                            message.positiveIntValue = reader.uint64();
-                            break;
-                        case 5:
-                            message.negativeIntValue = reader.int64();
-                            break;
-                        case 6:
-                            message.doubleValue = reader.double();
-                            break;
-                        case 7:
-                            message.stringValue = reader.bytes();
-                            break;
-                        case 8:
-                            message.aggregateValue = reader.string();
-                            break;
+                        case 2: {
+                                if (!(message.name && message.name.length))
+                                    message.name = [];
+                                message.name.push($root.google.protobuf.UninterpretedOption.NamePart.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 3: {
+                                message.identifierValue = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.positiveIntValue = reader.uint64();
+                                break;
+                            }
+                        case 5: {
+                                message.negativeIntValue = reader.int64();
+                                break;
+                            }
+                        case 6: {
+                                message.doubleValue = reader.double();
+                                break;
+                            }
+                        case 7: {
+                                message.stringValue = reader.bytes();
+                                break;
+                            }
+                        case 8: {
+                                message.aggregateValue = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -7653,7 +8192,7 @@
                     if (object.stringValue != null)
                         if (typeof object.stringValue === "string")
                             $util.base64.decode(object.stringValue, message.stringValue = $util.newBuffer($util.base64.length(object.stringValue)), 0);
-                        else if (object.stringValue.length)
+                        else if (object.stringValue.length >= 0)
                             message.stringValue = object.stringValue;
                     if (object.aggregateValue != null)
                         message.aggregateValue = String(object.aggregateValue);
@@ -7732,6 +8271,21 @@
                  */
                 UninterpretedOption.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for UninterpretedOption
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.UninterpretedOption
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                UninterpretedOption.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.UninterpretedOption";
                 };
     
                 UninterpretedOption.NamePart = (function() {
@@ -7835,12 +8389,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.namePart = reader.string();
-                                break;
-                            case 2:
-                                message.isExtension = reader.bool();
-                                break;
+                            case 1: {
+                                    message.namePart = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.isExtension = reader.bool();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -7939,6 +8495,21 @@
                      */
                     NamePart.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for NamePart
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.UninterpretedOption.NamePart
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    NamePart.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.UninterpretedOption.NamePart";
                     };
     
                     return NamePart;
@@ -8041,11 +8612,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.location && message.location.length))
-                                message.location = [];
-                            message.location.push($root.google.protobuf.SourceCodeInfo.Location.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.location && message.location.length))
+                                    message.location = [];
+                                message.location.push($root.google.protobuf.SourceCodeInfo.Location.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -8150,6 +8722,21 @@
                  */
                 SourceCodeInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for SourceCodeInfo
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.SourceCodeInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                SourceCodeInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.SourceCodeInfo";
                 };
     
                 SourceCodeInfo.Location = (function() {
@@ -8300,37 +8887,42 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.path && message.path.length))
-                                    message.path = [];
-                                if ((tag & 7) === 2) {
-                                    var end2 = reader.uint32() + reader.pos;
-                                    while (reader.pos < end2)
+                            case 1: {
+                                    if (!(message.path && message.path.length))
+                                        message.path = [];
+                                    if ((tag & 7) === 2) {
+                                        var end2 = reader.uint32() + reader.pos;
+                                        while (reader.pos < end2)
+                                            message.path.push(reader.int32());
+                                    } else
                                         message.path.push(reader.int32());
-                                } else
-                                    message.path.push(reader.int32());
-                                break;
-                            case 2:
-                                if (!(message.span && message.span.length))
-                                    message.span = [];
-                                if ((tag & 7) === 2) {
-                                    var end2 = reader.uint32() + reader.pos;
-                                    while (reader.pos < end2)
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.span && message.span.length))
+                                        message.span = [];
+                                    if ((tag & 7) === 2) {
+                                        var end2 = reader.uint32() + reader.pos;
+                                        while (reader.pos < end2)
+                                            message.span.push(reader.int32());
+                                    } else
                                         message.span.push(reader.int32());
-                                } else
-                                    message.span.push(reader.int32());
-                                break;
-                            case 3:
-                                message.leadingComments = reader.string();
-                                break;
-                            case 4:
-                                message.trailingComments = reader.string();
-                                break;
-                            case 6:
-                                if (!(message.leadingDetachedComments && message.leadingDetachedComments.length))
-                                    message.leadingDetachedComments = [];
-                                message.leadingDetachedComments.push(reader.string());
-                                break;
+                                    break;
+                                }
+                            case 3: {
+                                    message.leadingComments = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.trailingComments = reader.string();
+                                    break;
+                                }
+                            case 6: {
+                                    if (!(message.leadingDetachedComments && message.leadingDetachedComments.length))
+                                        message.leadingDetachedComments = [];
+                                    message.leadingDetachedComments.push(reader.string());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -8491,6 +9083,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for Location
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.SourceCodeInfo.Location
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Location.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.SourceCodeInfo.Location";
+                    };
+    
                     return Location;
                 })();
     
@@ -8591,11 +9198,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.annotation && message.annotation.length))
-                                message.annotation = [];
-                            message.annotation.push($root.google.protobuf.GeneratedCodeInfo.Annotation.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.annotation && message.annotation.length))
+                                    message.annotation = [];
+                                message.annotation.push($root.google.protobuf.GeneratedCodeInfo.Annotation.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -8702,6 +9310,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for GeneratedCodeInfo
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.GeneratedCodeInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                GeneratedCodeInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.GeneratedCodeInfo";
+                };
+    
                 GeneratedCodeInfo.Annotation = (function() {
     
                     /**
@@ -8712,6 +9335,7 @@
                      * @property {string|null} [sourceFile] Annotation sourceFile
                      * @property {number|null} [begin] Annotation begin
                      * @property {number|null} [end] Annotation end
+                     * @property {google.protobuf.GeneratedCodeInfo.Annotation.Semantic|null} [semantic] Annotation semantic
                      */
     
                     /**
@@ -8763,6 +9387,14 @@
                     Annotation.prototype.end = 0;
     
                     /**
+                     * Annotation semantic.
+                     * @member {google.protobuf.GeneratedCodeInfo.Annotation.Semantic} semantic
+                     * @memberof google.protobuf.GeneratedCodeInfo.Annotation
+                     * @instance
+                     */
+                    Annotation.prototype.semantic = 0;
+    
+                    /**
                      * Creates a new Annotation instance using the specified properties.
                      * @function create
                      * @memberof google.protobuf.GeneratedCodeInfo.Annotation
@@ -8798,6 +9430,8 @@
                             writer.uint32(/* id 3, wireType 0 =*/24).int32(message.begin);
                         if (message.end != null && Object.hasOwnProperty.call(message, "end"))
                             writer.uint32(/* id 4, wireType 0 =*/32).int32(message.end);
+                        if (message.semantic != null && Object.hasOwnProperty.call(message, "semantic"))
+                            writer.uint32(/* id 5, wireType 0 =*/40).int32(message.semantic);
                         return writer;
                     };
     
@@ -8832,25 +9466,33 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.path && message.path.length))
-                                    message.path = [];
-                                if ((tag & 7) === 2) {
-                                    var end2 = reader.uint32() + reader.pos;
-                                    while (reader.pos < end2)
+                            case 1: {
+                                    if (!(message.path && message.path.length))
+                                        message.path = [];
+                                    if ((tag & 7) === 2) {
+                                        var end2 = reader.uint32() + reader.pos;
+                                        while (reader.pos < end2)
+                                            message.path.push(reader.int32());
+                                    } else
                                         message.path.push(reader.int32());
-                                } else
-                                    message.path.push(reader.int32());
-                                break;
-                            case 2:
-                                message.sourceFile = reader.string();
-                                break;
-                            case 3:
-                                message.begin = reader.int32();
-                                break;
-                            case 4:
-                                message.end = reader.int32();
-                                break;
+                                    break;
+                                }
+                            case 2: {
+                                    message.sourceFile = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.begin = reader.int32();
+                                    break;
+                                }
+                            case 4: {
+                                    message.end = reader.int32();
+                                    break;
+                                }
+                            case 5: {
+                                    message.semantic = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -8902,6 +9544,15 @@
                         if (message.end != null && message.hasOwnProperty("end"))
                             if (!$util.isInteger(message.end))
                                 return "end: integer expected";
+                        if (message.semantic != null && message.hasOwnProperty("semantic"))
+                            switch (message.semantic) {
+                            default:
+                                return "semantic: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                                break;
+                            }
                         return null;
                     };
     
@@ -8930,6 +9581,26 @@
                             message.begin = object.begin | 0;
                         if (object.end != null)
                             message.end = object.end | 0;
+                        switch (object.semantic) {
+                        default:
+                            if (typeof object.semantic === "number") {
+                                message.semantic = object.semantic;
+                                break;
+                            }
+                            break;
+                        case "NONE":
+                        case 0:
+                            message.semantic = 0;
+                            break;
+                        case "SET":
+                        case 1:
+                            message.semantic = 1;
+                            break;
+                        case "ALIAS":
+                        case 2:
+                            message.semantic = 2;
+                            break;
+                        }
                         return message;
                     };
     
@@ -8952,6 +9623,7 @@
                             object.sourceFile = "";
                             object.begin = 0;
                             object.end = 0;
+                            object.semantic = options.enums === String ? "NONE" : 0;
                         }
                         if (message.path && message.path.length) {
                             object.path = [];
@@ -8964,6 +9636,8 @@
                             object.begin = message.begin;
                         if (message.end != null && message.hasOwnProperty("end"))
                             object.end = message.end;
+                        if (message.semantic != null && message.hasOwnProperty("semantic"))
+                            object.semantic = options.enums === String ? $root.google.protobuf.GeneratedCodeInfo.Annotation.Semantic[message.semantic] === undefined ? message.semantic : $root.google.protobuf.GeneratedCodeInfo.Annotation.Semantic[message.semantic] : message.semantic;
                         return object;
                     };
     
@@ -8977,6 +9651,37 @@
                     Annotation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
+    
+                    /**
+                     * Gets the default type url for Annotation
+                     * @function getTypeUrl
+                     * @memberof google.protobuf.GeneratedCodeInfo.Annotation
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Annotation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.protobuf.GeneratedCodeInfo.Annotation";
+                    };
+    
+                    /**
+                     * Semantic enum.
+                     * @name google.protobuf.GeneratedCodeInfo.Annotation.Semantic
+                     * @enum {number}
+                     * @property {number} NONE=0 NONE value
+                     * @property {number} SET=1 SET value
+                     * @property {number} ALIAS=2 ALIAS value
+                     */
+                    Annotation.Semantic = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "NONE"] = 0;
+                        values[valuesById[1] = "SET"] = 1;
+                        values[valuesById[2] = "ALIAS"] = 2;
+                        return values;
+                    })();
     
                     return Annotation;
                 })();
@@ -9087,12 +9792,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.type_url = reader.string();
-                            break;
-                        case 2:
-                            message.value = reader.bytes();
-                            break;
+                        case 1: {
+                                message.type_url = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.value = reader.bytes();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -9154,7 +9861,7 @@
                     if (object.value != null)
                         if (typeof object.value === "string")
                             $util.base64.decode(object.value, message.value = $util.newBuffer($util.base64.length(object.value)), 0);
-                        else if (object.value.length)
+                        else if (object.value.length >= 0)
                             message.value = object.value;
                     return message;
                 };
@@ -9198,6 +9905,21 @@
                  */
                 Any.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Any
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Any
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Any.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Any";
                 };
     
                 return Any;
@@ -9360,6 +10082,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for Empty
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Empty
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Empty.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Empty";
+                };
+    
                 return Empty;
             })();
     
@@ -9457,11 +10194,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.paths && message.paths.length))
-                                message.paths = [];
-                            message.paths.push(reader.string());
-                            break;
+                        case 1: {
+                                if (!(message.paths && message.paths.length))
+                                    message.paths = [];
+                                message.paths.push(reader.string());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -9561,6 +10299,21 @@
                  */
                 FieldMask.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for FieldMask
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.FieldMask
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                FieldMask.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.FieldMask";
                 };
     
                 return FieldMask;
@@ -9669,12 +10422,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.seconds = reader.int64();
-                            break;
-                        case 2:
-                            message.nanos = reader.int32();
-                            break;
+                        case 1: {
+                                message.seconds = reader.int64();
+                                break;
+                            }
+                        case 2: {
+                                message.nanos = reader.int32();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -9787,6 +10542,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for Timestamp
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Timestamp
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Timestamp.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Timestamp";
+                };
+    
                 return Timestamp;
             })();
     
@@ -9886,28 +10656,29 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (message.fields === $util.emptyObject)
-                                message.fields = {};
-                            var end2 = reader.uint32() + reader.pos;
-                            key = "";
-                            value = null;
-                            while (reader.pos < end2) {
-                                var tag2 = reader.uint32();
-                                switch (tag2 >>> 3) {
-                                case 1:
-                                    key = reader.string();
-                                    break;
-                                case 2:
-                                    value = $root.google.protobuf.Value.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag2 & 7);
-                                    break;
+                        case 1: {
+                                if (message.fields === $util.emptyObject)
+                                    message.fields = {};
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = null;
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = $root.google.protobuf.Value.decode(reader, reader.uint32());
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
                                 }
+                                message.fields[key] = value;
+                                break;
                             }
-                            message.fields[key] = value;
-                            break;
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -10014,6 +10785,21 @@
                  */
                 Struct.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Struct
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Struct
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Struct.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Struct";
                 };
     
                 return Struct;
@@ -10180,24 +10966,30 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.nullValue = reader.int32();
-                            break;
-                        case 2:
-                            message.numberValue = reader.double();
-                            break;
-                        case 3:
-                            message.stringValue = reader.string();
-                            break;
-                        case 4:
-                            message.boolValue = reader.bool();
-                            break;
-                        case 5:
-                            message.structValue = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                            break;
-                        case 6:
-                            message.listValue = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.nullValue = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.numberValue = reader.double();
+                                break;
+                            }
+                        case 3: {
+                                message.stringValue = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.boolValue = reader.bool();
+                                break;
+                            }
+                        case 5: {
+                                message.structValue = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 6: {
+                                message.listValue = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -10300,6 +11092,12 @@
                         return object;
                     var message = new $root.google.protobuf.Value();
                     switch (object.nullValue) {
+                    default:
+                        if (typeof object.nullValue === "number") {
+                            message.nullValue = object.nullValue;
+                            break;
+                        }
+                        break;
                     case "NULL_VALUE":
                     case 0:
                         message.nullValue = 0;
@@ -10338,7 +11136,7 @@
                         options = {};
                     var object = {};
                     if (message.nullValue != null && message.hasOwnProperty("nullValue")) {
-                        object.nullValue = options.enums === String ? $root.google.protobuf.NullValue[message.nullValue] : message.nullValue;
+                        object.nullValue = options.enums === String ? $root.google.protobuf.NullValue[message.nullValue] === undefined ? message.nullValue : $root.google.protobuf.NullValue[message.nullValue] : message.nullValue;
                         if (options.oneofs)
                             object.kind = "nullValue";
                     }
@@ -10379,6 +11177,21 @@
                  */
                 Value.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Value
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.Value
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Value.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.Value";
                 };
     
                 return Value;
@@ -10490,11 +11303,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.values && message.values.length))
-                                message.values = [];
-                            message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.values && message.values.length))
+                                    message.values = [];
+                                message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -10599,6 +11413,21 @@
                  */
                 ListValue.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ListValue
+                 * @function getTypeUrl
+                 * @memberof google.protobuf.ListValue
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ListValue.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.protobuf.ListValue";
                 };
     
                 return ListValue;
@@ -10708,9 +11537,10 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.retryDelay = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.retryDelay = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -10803,6 +11633,21 @@
                  */
                 RetryInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for RetryInfo
+                 * @function getTypeUrl
+                 * @memberof google.rpc.RetryInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                RetryInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.RetryInfo";
                 };
     
                 return RetryInfo;
@@ -10913,14 +11758,16 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.stackEntries && message.stackEntries.length))
-                                message.stackEntries = [];
-                            message.stackEntries.push(reader.string());
-                            break;
-                        case 2:
-                            message.detail = reader.string();
-                            break;
+                        case 1: {
+                                if (!(message.stackEntries && message.stackEntries.length))
+                                    message.stackEntries = [];
+                                message.stackEntries.push(reader.string());
+                                break;
+                            }
+                        case 2: {
+                                message.detail = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -11031,6 +11878,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for DebugInfo
+                 * @function getTypeUrl
+                 * @memberof google.rpc.DebugInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                DebugInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.DebugInfo";
+                };
+    
                 return DebugInfo;
             })();
     
@@ -11128,11 +11990,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.violations && message.violations.length))
-                                message.violations = [];
-                            message.violations.push($root.google.rpc.QuotaFailure.Violation.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.violations && message.violations.length))
+                                    message.violations = [];
+                                message.violations.push($root.google.rpc.QuotaFailure.Violation.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -11239,6 +12102,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for QuotaFailure
+                 * @function getTypeUrl
+                 * @memberof google.rpc.QuotaFailure
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                QuotaFailure.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.QuotaFailure";
+                };
+    
                 QuotaFailure.Violation = (function() {
     
                     /**
@@ -11342,12 +12220,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.subject = reader.string();
-                                break;
-                            case 2:
-                                message.description = reader.string();
-                                break;
+                            case 1: {
+                                    message.subject = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.description = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -11444,6 +12324,21 @@
                      */
                     Violation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Violation
+                     * @function getTypeUrl
+                     * @memberof google.rpc.QuotaFailure.Violation
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Violation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.rpc.QuotaFailure.Violation";
                     };
     
                     return Violation;
@@ -11568,34 +12463,37 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.reason = reader.string();
-                            break;
-                        case 2:
-                            message.domain = reader.string();
-                            break;
-                        case 3:
-                            if (message.metadata === $util.emptyObject)
-                                message.metadata = {};
-                            var end2 = reader.uint32() + reader.pos;
-                            key = "";
-                            value = "";
-                            while (reader.pos < end2) {
-                                var tag2 = reader.uint32();
-                                switch (tag2 >>> 3) {
-                                case 1:
-                                    key = reader.string();
-                                    break;
-                                case 2:
-                                    value = reader.string();
-                                    break;
-                                default:
-                                    reader.skipType(tag2 & 7);
-                                    break;
-                                }
+                        case 1: {
+                                message.reason = reader.string();
+                                break;
                             }
-                            message.metadata[key] = value;
-                            break;
+                        case 2: {
+                                message.domain = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                if (message.metadata === $util.emptyObject)
+                                    message.metadata = {};
+                                var end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = "";
+                                while (reader.pos < end2) {
+                                    var tag2 = reader.uint32();
+                                    switch (tag2 >>> 3) {
+                                    case 1:
+                                        key = reader.string();
+                                        break;
+                                    case 2:
+                                        value = reader.string();
+                                        break;
+                                    default:
+                                        reader.skipType(tag2 & 7);
+                                        break;
+                                    }
+                                }
+                                message.metadata[key] = value;
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -11717,6 +12615,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for ErrorInfo
+                 * @function getTypeUrl
+                 * @memberof google.rpc.ErrorInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ErrorInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.ErrorInfo";
+                };
+    
                 return ErrorInfo;
             })();
     
@@ -11814,11 +12727,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.violations && message.violations.length))
-                                message.violations = [];
-                            message.violations.push($root.google.rpc.PreconditionFailure.Violation.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.violations && message.violations.length))
+                                    message.violations = [];
+                                message.violations.push($root.google.rpc.PreconditionFailure.Violation.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -11923,6 +12837,21 @@
                  */
                 PreconditionFailure.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for PreconditionFailure
+                 * @function getTypeUrl
+                 * @memberof google.rpc.PreconditionFailure
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                PreconditionFailure.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.PreconditionFailure";
                 };
     
                 PreconditionFailure.Violation = (function() {
@@ -12039,15 +12968,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.type = reader.string();
-                                break;
-                            case 2:
-                                message.subject = reader.string();
-                                break;
-                            case 3:
-                                message.description = reader.string();
-                                break;
+                            case 1: {
+                                    message.type = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.subject = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.description = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -12154,6 +13086,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for Violation
+                     * @function getTypeUrl
+                     * @memberof google.rpc.PreconditionFailure.Violation
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Violation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.rpc.PreconditionFailure.Violation";
+                    };
+    
                     return Violation;
                 })();
     
@@ -12254,11 +13201,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.fieldViolations && message.fieldViolations.length))
-                                message.fieldViolations = [];
-                            message.fieldViolations.push($root.google.rpc.BadRequest.FieldViolation.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.fieldViolations && message.fieldViolations.length))
+                                    message.fieldViolations = [];
+                                message.fieldViolations.push($root.google.rpc.BadRequest.FieldViolation.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -12365,6 +13313,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for BadRequest
+                 * @function getTypeUrl
+                 * @memberof google.rpc.BadRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                BadRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.BadRequest";
+                };
+    
                 BadRequest.FieldViolation = (function() {
     
                     /**
@@ -12468,12 +13431,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.field = reader.string();
-                                break;
-                            case 2:
-                                message.description = reader.string();
-                                break;
+                            case 1: {
+                                    message.field = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.description = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -12570,6 +13535,21 @@
                      */
                     FieldViolation.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for FieldViolation
+                     * @function getTypeUrl
+                     * @memberof google.rpc.BadRequest.FieldViolation
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    FieldViolation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.rpc.BadRequest.FieldViolation";
                     };
     
                     return FieldViolation;
@@ -12681,12 +13661,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.requestId = reader.string();
-                            break;
-                        case 2:
-                            message.servingData = reader.string();
-                            break;
+                        case 1: {
+                                message.requestId = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.servingData = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -12783,6 +13765,21 @@
                  */
                 RequestInfo.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for RequestInfo
+                 * @function getTypeUrl
+                 * @memberof google.rpc.RequestInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                RequestInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.RequestInfo";
                 };
     
                 return RequestInfo;
@@ -12913,18 +13910,22 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.resourceType = reader.string();
-                            break;
-                        case 2:
-                            message.resourceName = reader.string();
-                            break;
-                        case 3:
-                            message.owner = reader.string();
-                            break;
-                        case 4:
-                            message.description = reader.string();
-                            break;
+                        case 1: {
+                                message.resourceType = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.resourceName = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.owner = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.description = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -13039,6 +14040,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for ResourceInfo
+                 * @function getTypeUrl
+                 * @memberof google.rpc.ResourceInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ResourceInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.ResourceInfo";
+                };
+    
                 return ResourceInfo;
             })();
     
@@ -13136,11 +14152,12 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.links && message.links.length))
-                                message.links = [];
-                            message.links.push($root.google.rpc.Help.Link.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                if (!(message.links && message.links.length))
+                                    message.links = [];
+                                message.links.push($root.google.rpc.Help.Link.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -13247,6 +14264,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for Help
+                 * @function getTypeUrl
+                 * @memberof google.rpc.Help
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Help.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.Help";
+                };
+    
                 Help.Link = (function() {
     
                     /**
@@ -13350,12 +14382,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.description = reader.string();
-                                break;
-                            case 2:
-                                message.url = reader.string();
-                                break;
+                            case 1: {
+                                    message.description = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.url = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -13452,6 +14486,21 @@
                      */
                     Link.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Link
+                     * @function getTypeUrl
+                     * @memberof google.rpc.Help.Link
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Link.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.rpc.Help.Link";
                     };
     
                     return Link;
@@ -13563,12 +14612,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.locale = reader.string();
-                            break;
-                        case 2:
-                            message.message = reader.string();
-                            break;
+                        case 1: {
+                                message.locale = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.message = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -13665,6 +14716,21 @@
                  */
                 LocalizedMessage.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for LocalizedMessage
+                 * @function getTypeUrl
+                 * @memberof google.rpc.LocalizedMessage
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                LocalizedMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.LocalizedMessage";
                 };
     
                 return LocalizedMessage;
@@ -13786,17 +14852,20 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.code = reader.int32();
-                            break;
-                        case 2:
-                            message.message = reader.string();
-                            break;
-                        case 3:
-                            if (!(message.details && message.details.length))
-                                message.details = [];
-                            message.details.push($root.google.protobuf.Any.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.code = reader.int32();
+                                break;
+                            }
+                        case 2: {
+                                message.message = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                if (!(message.details && message.details.length))
+                                    message.details = [];
+                                message.details.push($root.google.protobuf.Any.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -13919,6 +14988,21 @@
                  */
                 Status.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Status
+                 * @function getTypeUrl
+                 * @memberof google.rpc.Status
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Status.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.rpc.Status";
                 };
     
                 return Status;
@@ -14180,46 +15264,58 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 2:
-                                        message.database = reader.string();
-                                        break;
-                                    case 9:
-                                        message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 3:
-                                        message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 4:
-                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 5:
-                                        message.sizeBytes = reader.int64();
-                                        break;
-                                    case 6:
-                                        message.state = reader.int32();
-                                        break;
-                                    case 7:
-                                        if (!(message.referencingDatabases && message.referencingDatabases.length))
-                                            message.referencingDatabases = [];
-                                        message.referencingDatabases.push(reader.string());
-                                        break;
-                                    case 8:
-                                        message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32());
-                                        break;
-                                    case 10:
-                                        message.databaseDialect = reader.int32();
-                                        break;
-                                    case 11:
-                                        if (!(message.referencingBackups && message.referencingBackups.length))
-                                            message.referencingBackups = [];
-                                        message.referencingBackups.push(reader.string());
-                                        break;
-                                    case 12:
-                                        message.maxExpireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 2: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
+                                    case 9: {
+                                            message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.sizeBytes = reader.int64();
+                                            break;
+                                        }
+                                    case 6: {
+                                            message.state = reader.int32();
+                                            break;
+                                        }
+                                    case 7: {
+                                            if (!(message.referencingDatabases && message.referencingDatabases.length))
+                                                message.referencingDatabases = [];
+                                            message.referencingDatabases.push(reader.string());
+                                            break;
+                                        }
+                                    case 8: {
+                                            message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 10: {
+                                            message.databaseDialect = reader.int32();
+                                            break;
+                                        }
+                                    case 11: {
+                                            if (!(message.referencingBackups && message.referencingBackups.length))
+                                                message.referencingBackups = [];
+                                            message.referencingBackups.push(reader.string());
+                                            break;
+                                        }
+                                    case 12: {
+                                            message.maxExpireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -14365,6 +15461,12 @@
                                     else if (typeof object.sizeBytes === "object")
                                         message.sizeBytes = new $util.LongBits(object.sizeBytes.low >>> 0, object.sizeBytes.high >>> 0).toNumber();
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -14391,6 +15493,12 @@
                                     message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.fromObject(object.encryptionInfo);
                                 }
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -14466,7 +15574,7 @@
                                     else
                                         object.sizeBytes = options.longs === String ? $util.Long.prototype.toString.call(message.sizeBytes) : options.longs === Number ? new $util.LongBits(message.sizeBytes.low >>> 0, message.sizeBytes.high >>> 0).toNumber() : message.sizeBytes;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Backup.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Backup.State[message.state] === undefined ? message.state : $root.google.spanner.admin.database.v1.Backup.State[message.state] : message.state;
                                 if (message.referencingDatabases && message.referencingDatabases.length) {
                                     object.referencingDatabases = [];
                                     for (var j = 0; j < message.referencingDatabases.length; ++j)
@@ -14477,7 +15585,7 @@
                                 if (message.versionTime != null && message.hasOwnProperty("versionTime"))
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 if (message.referencingBackups && message.referencingBackups.length) {
                                     object.referencingBackups = [];
                                     for (var j = 0; j < message.referencingBackups.length; ++j)
@@ -14497,6 +15605,21 @@
                              */
                             Backup.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for Backup
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.Backup
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            Backup.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.Backup";
                             };
     
                             /**
@@ -14643,18 +15766,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.backupId = reader.string();
-                                        break;
-                                    case 3:
-                                        message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.backupId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.encryptionConfig = $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -14777,6 +15904,21 @@
                              */
                             CreateBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateBackupRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CreateBackupRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateBackupRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CreateBackupRequest";
                             };
     
                             return CreateBackupRequest;
@@ -14907,18 +16049,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.database = reader.string();
-                                        break;
-                                    case 3:
-                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -15041,6 +16187,21 @@
                              */
                             CreateBackupMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateBackupMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CreateBackupMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateBackupMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CreateBackupMetadata";
                             };
     
                             return CreateBackupMetadata;
@@ -15182,21 +16343,26 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.backupId = reader.string();
-                                        break;
-                                    case 3:
-                                        message.sourceBackup = reader.string();
-                                        break;
-                                    case 4:
-                                        message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 5:
-                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.backupId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.sourceBackup = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.expireTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.encryptionConfig = $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -15329,6 +16495,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for CopyBackupRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CopyBackupRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CopyBackupRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CopyBackupRequest";
+                            };
+    
                             return CopyBackupRequest;
                         })();
     
@@ -15457,18 +16638,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.sourceBackup = reader.string();
-                                        break;
-                                    case 3:
-                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.sourceBackup = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -15593,6 +16778,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for CopyBackupMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CopyBackupMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CopyBackupMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CopyBackupMetadata";
+                            };
+    
                             return CopyBackupMetadata;
                         })();
     
@@ -15699,12 +16899,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.backup = $root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -15813,6 +17015,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for UpdateBackupRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.UpdateBackupRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateBackupRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.UpdateBackupRequest";
+                            };
+    
                             return UpdateBackupRequest;
                         })();
     
@@ -15908,9 +17125,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -15998,6 +17216,21 @@
                              */
                             GetBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for GetBackupRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.GetBackupRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetBackupRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.GetBackupRequest";
                             };
     
                             return GetBackupRequest;
@@ -16095,9 +17328,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -16185,6 +17419,21 @@
                              */
                             DeleteBackupRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DeleteBackupRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.DeleteBackupRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DeleteBackupRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.DeleteBackupRequest";
                             };
     
                             return DeleteBackupRequest;
@@ -16315,18 +17564,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.filter = reader.string();
-                                        break;
-                                    case 3:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 4:
-                                        message.pageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -16441,6 +17694,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListBackupsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListBackupsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListBackupsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListBackupsRequest";
+                            };
+    
                             return ListBackupsRequest;
                         })();
     
@@ -16549,14 +17817,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.backups && message.backups.length))
-                                            message.backups = [];
-                                        message.backups.push($root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.backups && message.backups.length))
+                                                message.backups = [];
+                                            message.backups.push($root.google.spanner.admin.database.v1.Backup.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -16670,6 +17940,21 @@
                              */
                             ListBackupsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListBackupsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListBackupsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListBackupsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListBackupsResponse";
                             };
     
                             return ListBackupsResponse;
@@ -16800,18 +18085,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.filter = reader.string();
-                                        break;
-                                    case 3:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 4:
-                                        message.pageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -16926,6 +18215,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListBackupOperationsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListBackupOperationsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListBackupOperationsRequest";
+                            };
+    
                             return ListBackupOperationsRequest;
                         })();
     
@@ -17034,14 +18338,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.operations && message.operations.length))
-                                            message.operations = [];
-                                        message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.operations && message.operations.length))
+                                                message.operations = [];
+                                            message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -17155,6 +18461,21 @@
                              */
                             ListBackupOperationsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListBackupOperationsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListBackupOperationsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListBackupOperationsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListBackupOperationsResponse";
                             };
     
                             return ListBackupOperationsResponse;
@@ -17285,18 +18606,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.backup = reader.string();
-                                        break;
-                                    case 4:
-                                        message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 3:
-                                        message.sourceDatabase = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.backup = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.versionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.sourceDatabase = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -17421,6 +18746,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for BackupInfo
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.BackupInfo
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            BackupInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.BackupInfo";
+                            };
+    
                             return BackupInfo;
                         })();
     
@@ -17527,12 +18867,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.encryptionType = reader.int32();
-                                        break;
-                                    case 2:
-                                        message.kmsKeyName = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.encryptionType = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.kmsKeyName = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -17597,6 +18939,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -17637,7 +18985,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -17652,6 +19000,21 @@
                              */
                             CreateBackupEncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateBackupEncryptionConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CreateBackupEncryptionConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateBackupEncryptionConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CreateBackupEncryptionConfig";
                             };
     
                             /**
@@ -17778,12 +19141,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.encryptionType = reader.int32();
-                                        break;
-                                    case 2:
-                                        message.kmsKeyName = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.encryptionType = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.kmsKeyName = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -17848,6 +19213,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -17888,7 +19259,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -17903,6 +19274,21 @@
                              */
                             CopyBackupEncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CopyBackupEncryptionConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CopyBackupEncryptionConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CopyBackupEncryptionConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CopyBackupEncryptionConfig";
                             };
     
                             /**
@@ -18040,15 +19426,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.progressPercent = reader.int32();
-                                        break;
-                                    case 2:
-                                        message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 3:
-                                        message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.progressPercent = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -18165,6 +19554,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for OperationProgress
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.OperationProgress
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            OperationProgress.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.OperationProgress";
+                            };
+    
                             return OperationProgress;
                         })();
     
@@ -18260,9 +19664,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 2:
-                                        message.kmsKeyName = reader.string();
-                                        break;
+                                    case 2: {
+                                            message.kmsKeyName = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -18350,6 +19755,21 @@
                              */
                             EncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for EncryptionConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.EncryptionConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            EncryptionConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.EncryptionConfig";
                             };
     
                             return EncryptionConfig;
@@ -18469,15 +19889,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 3:
-                                        message.encryptionType = reader.int32();
-                                        break;
-                                    case 4:
-                                        message.encryptionStatus = $root.google.rpc.Status.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.kmsKeyVersion = reader.string();
-                                        break;
+                                    case 3: {
+                                            message.encryptionType = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.encryptionStatus = $root.google.rpc.Status.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.kmsKeyVersion = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -18546,6 +19969,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.EncryptionInfo();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -18590,7 +20019,7 @@
                                 if (message.kmsKeyVersion != null && message.hasOwnProperty("kmsKeyVersion"))
                                     object.kmsKeyVersion = message.kmsKeyVersion;
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] : message.encryptionType;
                                 if (message.encryptionStatus != null && message.hasOwnProperty("encryptionStatus"))
                                     object.encryptionStatus = $root.google.rpc.Status.toObject(message.encryptionStatus, options);
                                 return object;
@@ -18605,6 +20034,21 @@
                              */
                             EncryptionInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for EncryptionInfo
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.EncryptionInfo
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            EncryptionInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.EncryptionInfo";
                             };
     
                             /**
@@ -18675,7 +20119,7 @@
                             };
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabases}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabases}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef ListDatabasesCallback
                              * @type {function}
@@ -18708,7 +20152,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createDatabase}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef CreateDatabaseCallback
                              * @type {function}
@@ -18741,7 +20185,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabase}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef GetDatabaseCallback
                              * @type {function}
@@ -18774,7 +20218,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateDatabaseDdl}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabaseDdl}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef UpdateDatabaseDdlCallback
                              * @type {function}
@@ -18807,7 +20251,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#dropDatabase}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|dropDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef DropDatabaseCallback
                              * @type {function}
@@ -18840,7 +20284,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getDatabaseDdl}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getDatabaseDdl}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef GetDatabaseDdlCallback
                              * @type {function}
@@ -18873,7 +20317,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#setIamPolicy}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|setIamPolicy}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef SetIamPolicyCallback
                              * @type {function}
@@ -18906,7 +20350,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getIamPolicy}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getIamPolicy}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef GetIamPolicyCallback
                              * @type {function}
@@ -18939,7 +20383,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#testIamPermissions}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|testIamPermissions}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef TestIamPermissionsCallback
                              * @type {function}
@@ -18972,7 +20416,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#createBackup}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|createBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef CreateBackupCallback
                              * @type {function}
@@ -19005,7 +20449,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#copyBackup}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|copyBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef CopyBackupCallback
                              * @type {function}
@@ -19038,7 +20482,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#getBackup}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|getBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef GetBackupCallback
                              * @type {function}
@@ -19071,7 +20515,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#updateBackup}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef UpdateBackupCallback
                              * @type {function}
@@ -19104,7 +20548,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#deleteBackup}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|deleteBackup}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef DeleteBackupCallback
                              * @type {function}
@@ -19137,7 +20581,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackups}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listBackups}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef ListBackupsCallback
                              * @type {function}
@@ -19170,7 +20614,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#restoreDatabase}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|restoreDatabase}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef RestoreDatabaseCallback
                              * @type {function}
@@ -19203,7 +20647,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listDatabaseOperations}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabaseOperations}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef ListDatabaseOperationsCallback
                              * @type {function}
@@ -19236,7 +20680,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin#listBackupOperations}.
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listBackupOperations}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef ListBackupOperationsCallback
                              * @type {function}
@@ -19265,6 +20709,39 @@
                              * @instance
                              * @param {google.spanner.admin.database.v1.IListBackupOperationsRequest} request ListBackupOperationsRequest message or plain object
                              * @returns {Promise<google.spanner.admin.database.v1.ListBackupOperationsResponse>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|listDatabaseRoles}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef ListDatabaseRolesCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesResponse} [response] ListDatabaseRolesResponse
+                             */
+    
+                            /**
+                             * Calls ListDatabaseRoles.
+                             * @function listDatabaseRoles
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} request ListDatabaseRolesRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.ListDatabaseRolesCallback} callback Node-style callback called with the error, if any, and ListDatabaseRolesResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.listDatabaseRoles = function listDatabaseRoles(request, callback) {
+                                return this.rpcCall(listDatabaseRoles, $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest, $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse, request, callback);
+                            }, "name", { value: "ListDatabaseRoles" });
+    
+                            /**
+                             * Calls ListDatabaseRoles.
+                             * @function listDatabaseRoles
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} request ListDatabaseRolesRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.database.v1.ListDatabaseRolesResponse>} Promise
                              * @variation 2
                              */
     
@@ -19388,12 +20865,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.sourceType = reader.int32();
-                                        break;
-                                    case 2:
-                                        message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.sourceType = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -19462,6 +20941,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.RestoreInfo();
                                 switch (object.sourceType) {
+                                default:
+                                    if (typeof object.sourceType === "number") {
+                                        message.sourceType = object.sourceType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.sourceType = 0;
@@ -19495,7 +20980,7 @@
                                 if (options.defaults)
                                     object.sourceType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
                                 if (message.sourceType != null && message.hasOwnProperty("sourceType"))
-                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] === undefined ? message.sourceType : $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
                                 if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
                                     object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
                                     if (options.oneofs)
@@ -19513,6 +20998,21 @@
                              */
                             RestoreInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for RestoreInfo
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.RestoreInfo
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            RestoreInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.RestoreInfo";
                             };
     
                             return RestoreInfo;
@@ -19711,38 +21211,48 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.state = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.decode(reader, reader.uint32());
-                                        break;
-                                    case 5:
-                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.decode(reader, reader.uint32());
-                                        break;
-                                    case 8:
-                                        if (!(message.encryptionInfo && message.encryptionInfo.length))
-                                            message.encryptionInfo = [];
-                                        message.encryptionInfo.push($root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32()));
-                                        break;
-                                    case 6:
-                                        message.versionRetentionPeriod = reader.string();
-                                        break;
-                                    case 7:
-                                        message.earliestVersionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 9:
-                                        message.defaultLeader = reader.string();
-                                        break;
-                                    case 10:
-                                        message.databaseDialect = reader.int32();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.state = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.restoreInfo = $root.google.spanner.admin.database.v1.RestoreInfo.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 8: {
+                                            if (!(message.encryptionInfo && message.encryptionInfo.length))
+                                                message.encryptionInfo = [];
+                                            message.encryptionInfo.push($root.google.spanner.admin.database.v1.EncryptionInfo.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 6: {
+                                            message.versionRetentionPeriod = reader.string();
+                                            break;
+                                        }
+                                    case 7: {
+                                            message.earliestVersionTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 9: {
+                                            message.defaultLeader = reader.string();
+                                            break;
+                                        }
+                                    case 10: {
+                                            message.databaseDialect = reader.int32();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -19853,6 +21363,12 @@
                                 if (object.name != null)
                                     message.name = String(object.name);
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -19905,6 +21421,12 @@
                                 if (object.defaultLeader != null)
                                     message.defaultLeader = String(object.defaultLeader);
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -19950,7 +21472,7 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Database.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Database.State[message.state] === undefined ? message.state : $root.google.spanner.admin.database.v1.Database.State[message.state] : message.state;
                                 if (message.createTime != null && message.hasOwnProperty("createTime"))
                                     object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                                 if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo"))
@@ -19969,7 +21491,7 @@
                                 if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
                                     object.defaultLeader = message.defaultLeader;
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -19982,6 +21504,21 @@
                              */
                             Database.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for Database
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            Database.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.Database";
                             };
     
                             /**
@@ -20119,15 +21656,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 3:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 4:
-                                        message.pageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -20232,6 +21772,21 @@
                              */
                             ListDatabasesRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListDatabasesRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabasesRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabasesRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabasesRequest";
                             };
     
                             return ListDatabasesRequest;
@@ -20342,14 +21897,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.databases && message.databases.length))
-                                            message.databases = [];
-                                        message.databases.push($root.google.spanner.admin.database.v1.Database.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.databases && message.databases.length))
+                                                message.databases = [];
+                                            message.databases.push($root.google.spanner.admin.database.v1.Database.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -20463,6 +22020,21 @@
                              */
                             ListDatabasesResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListDatabasesResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabasesResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabasesResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabasesResponse";
                             };
     
                             return ListDatabasesResponse;
@@ -20606,23 +22178,28 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.createStatement = reader.string();
-                                        break;
-                                    case 3:
-                                        if (!(message.extraStatements && message.extraStatements.length))
-                                            message.extraStatements = [];
-                                        message.extraStatements.push(reader.string());
-                                        break;
-                                    case 4:
-                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.decode(reader, reader.uint32());
-                                        break;
-                                    case 5:
-                                        message.databaseDialect = reader.int32();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.createStatement = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            if (!(message.extraStatements && message.extraStatements.length))
+                                                message.extraStatements = [];
+                                            message.extraStatements.push(reader.string());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.databaseDialect = reader.int32();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -20717,6 +22294,12 @@
                                     message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.fromObject(object.encryptionConfig);
                                 }
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -20766,7 +22349,7 @@
                                 if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig"))
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.toObject(message.encryptionConfig, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -20779,6 +22362,21 @@
                              */
                             CreateDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateDatabaseRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CreateDatabaseRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateDatabaseRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CreateDatabaseRequest";
                             };
     
                             return CreateDatabaseRequest;
@@ -20876,9 +22474,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.database = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -20966,6 +22565,21 @@
                              */
                             CreateDatabaseMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateDatabaseMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.CreateDatabaseMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateDatabaseMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.CreateDatabaseMetadata";
                             };
     
                             return CreateDatabaseMetadata;
@@ -21063,9 +22677,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -21153,6 +22768,21 @@
                              */
                             GetDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for GetDatabaseRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.GetDatabaseRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetDatabaseRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.GetDatabaseRequest";
                             };
     
                             return GetDatabaseRequest;
@@ -21274,17 +22904,20 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.database = reader.string();
-                                        break;
-                                    case 2:
-                                        if (!(message.statements && message.statements.length))
-                                            message.statements = [];
-                                        message.statements.push(reader.string());
-                                        break;
-                                    case 3:
-                                        message.operationId = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            if (!(message.statements && message.statements.length))
+                                                message.statements = [];
+                                            message.statements.push(reader.string());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.operationId = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -21402,6 +23035,21 @@
                              */
                             UpdateDatabaseDdlRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateDatabaseDdlRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateDatabaseDdlRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.UpdateDatabaseDdlRequest";
                             };
     
                             return UpdateDatabaseDdlRequest;
@@ -21549,27 +23197,32 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.database = reader.string();
-                                        break;
-                                    case 2:
-                                        if (!(message.statements && message.statements.length))
-                                            message.statements = [];
-                                        message.statements.push(reader.string());
-                                        break;
-                                    case 3:
-                                        if (!(message.commitTimestamps && message.commitTimestamps.length))
-                                            message.commitTimestamps = [];
-                                        message.commitTimestamps.push($root.google.protobuf.Timestamp.decode(reader, reader.uint32()));
-                                        break;
-                                    case 4:
-                                        message.throttled = reader.bool();
-                                        break;
-                                    case 5:
-                                        if (!(message.progress && message.progress.length))
-                                            message.progress = [];
-                                        message.progress.push($root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32()));
-                                        break;
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            if (!(message.statements && message.statements.length))
+                                                message.statements = [];
+                                            message.statements.push(reader.string());
+                                            break;
+                                        }
+                                    case 3: {
+                                            if (!(message.commitTimestamps && message.commitTimestamps.length))
+                                                message.commitTimestamps = [];
+                                            message.commitTimestamps.push($root.google.protobuf.Timestamp.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.throttled = reader.bool();
+                                            break;
+                                        }
+                                    case 5: {
+                                            if (!(message.progress && message.progress.length))
+                                                message.progress = [];
+                                            message.progress.push($root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32()));
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -21740,6 +23393,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for UpdateDatabaseDdlMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateDatabaseDdlMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata";
+                            };
+    
                             return UpdateDatabaseDdlMetadata;
                         })();
     
@@ -21835,9 +23503,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.database = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -21925,6 +23594,21 @@
                              */
                             DropDatabaseRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DropDatabaseRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.DropDatabaseRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DropDatabaseRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.DropDatabaseRequest";
                             };
     
                             return DropDatabaseRequest;
@@ -22022,9 +23706,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.database = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.database = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -22112,6 +23797,21 @@
                              */
                             GetDatabaseDdlRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for GetDatabaseDdlRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.GetDatabaseDdlRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetDatabaseDdlRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.GetDatabaseDdlRequest";
                             };
     
                             return GetDatabaseDdlRequest;
@@ -22211,11 +23911,12 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.statements && message.statements.length))
-                                            message.statements = [];
-                                        message.statements.push(reader.string());
-                                        break;
+                                    case 1: {
+                                            if (!(message.statements && message.statements.length))
+                                                message.statements = [];
+                                            message.statements.push(reader.string());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -22315,6 +24016,21 @@
                              */
                             GetDatabaseDdlResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for GetDatabaseDdlResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.GetDatabaseDdlResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetDatabaseDdlResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.GetDatabaseDdlResponse";
                             };
     
                             return GetDatabaseDdlResponse;
@@ -22445,18 +24161,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.filter = reader.string();
-                                        break;
-                                    case 3:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 4:
-                                        message.pageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -22571,6 +24291,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListDatabaseOperationsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabaseOperationsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabaseOperationsRequest";
+                            };
+    
                             return ListDatabaseOperationsRequest;
                         })();
     
@@ -22679,14 +24414,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.operations && message.operations.length))
-                                            message.operations = [];
-                                        message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.operations && message.operations.length))
+                                                message.operations = [];
+                                            message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -22800,6 +24537,21 @@
                              */
                             ListDatabaseOperationsResponse.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListDatabaseOperationsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseOperationsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabaseOperationsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabaseOperationsResponse";
                             };
     
                             return ListDatabaseOperationsResponse;
@@ -22944,18 +24696,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.databaseId = reader.string();
-                                        break;
-                                    case 3:
-                                        message.backup = reader.string();
-                                        break;
-                                    case 4:
-                                        message.encryptionConfig = $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.databaseId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.backup = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.encryptionConfig = $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -23080,6 +24836,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for RestoreDatabaseRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            RestoreDatabaseRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.RestoreDatabaseRequest";
+                            };
+    
                             return RestoreDatabaseRequest;
                         })();
     
@@ -23186,12 +24957,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.encryptionType = reader.int32();
-                                        break;
-                                    case 2:
-                                        message.kmsKeyName = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.encryptionType = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.kmsKeyName = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -23256,6 +25029,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -23296,7 +25075,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -23311,6 +25090,21 @@
                              */
                             RestoreDatabaseEncryptionConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for RestoreDatabaseEncryptionConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            RestoreDatabaseEncryptionConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig";
                             };
     
                             /**
@@ -23495,24 +25289,30 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.sourceType = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
-                                        break;
-                                    case 5:
-                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 6:
-                                        message.optimizeDatabaseOperationName = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.sourceType = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 6: {
+                                            message.optimizeDatabaseOperationName = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -23599,6 +25399,12 @@
                                 if (object.name != null)
                                     message.name = String(object.name);
                                 switch (object.sourceType) {
+                                default:
+                                    if (typeof object.sourceType === "number") {
+                                        message.sourceType = object.sourceType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.sourceType = 0;
@@ -23651,7 +25457,7 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
                                 if (message.sourceType != null && message.hasOwnProperty("sourceType"))
-                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] === undefined ? message.sourceType : $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
                                 if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
                                     object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
                                     if (options.oneofs)
@@ -23675,6 +25481,21 @@
                              */
                             RestoreDatabaseMetadata.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for RestoreDatabaseMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.RestoreDatabaseMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            RestoreDatabaseMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.RestoreDatabaseMetadata";
                             };
     
                             return RestoreDatabaseMetadata;
@@ -23783,12 +25604,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -23892,6 +25715,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for OptimizeRestoredDatabaseMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            OptimizeRestoredDatabaseMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata";
+                            };
+    
                             return OptimizeRestoredDatabaseMetadata;
                         })();
     
@@ -23907,6 +25745,707 @@
                             values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
                             values[valuesById[1] = "BACKUP"] = 1;
                             return values;
+                        })();
+    
+                        v1.DatabaseRole = (function() {
+    
+                            /**
+                             * Properties of a DatabaseRole.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IDatabaseRole
+                             * @property {string|null} [name] DatabaseRole name
+                             */
+    
+                            /**
+                             * Constructs a new DatabaseRole.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a DatabaseRole.
+                             * @implements IDatabaseRole
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IDatabaseRole=} [properties] Properties to set
+                             */
+                            function DatabaseRole(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * DatabaseRole name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @instance
+                             */
+                            DatabaseRole.prototype.name = "";
+    
+                            /**
+                             * Creates a new DatabaseRole instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDatabaseRole=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole instance
+                             */
+                            DatabaseRole.create = function create(properties) {
+                                return new DatabaseRole(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified DatabaseRole message. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDatabaseRole} message DatabaseRole message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DatabaseRole.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified DatabaseRole message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DatabaseRole.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDatabaseRole} message DatabaseRole message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DatabaseRole.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a DatabaseRole message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DatabaseRole.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.DatabaseRole();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a DatabaseRole message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DatabaseRole.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a DatabaseRole message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            DatabaseRole.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a DatabaseRole message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.DatabaseRole} DatabaseRole
+                             */
+                            DatabaseRole.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.DatabaseRole)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.DatabaseRole();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a DatabaseRole message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {google.spanner.admin.database.v1.DatabaseRole} message DatabaseRole
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            DatabaseRole.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults)
+                                    object.name = "";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this DatabaseRole to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            DatabaseRole.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DatabaseRole
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.DatabaseRole
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DatabaseRole.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.DatabaseRole";
+                            };
+    
+                            return DatabaseRole;
+                        })();
+    
+                        v1.ListDatabaseRolesRequest = (function() {
+    
+                            /**
+                             * Properties of a ListDatabaseRolesRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListDatabaseRolesRequest
+                             * @property {string|null} [parent] ListDatabaseRolesRequest parent
+                             * @property {number|null} [pageSize] ListDatabaseRolesRequest pageSize
+                             * @property {string|null} [pageToken] ListDatabaseRolesRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListDatabaseRolesRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListDatabaseRolesRequest.
+                             * @implements IListDatabaseRolesRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest=} [properties] Properties to set
+                             */
+                            function ListDatabaseRolesRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListDatabaseRolesRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @instance
+                             */
+                            ListDatabaseRolesRequest.prototype.parent = "";
+    
+                            /**
+                             * ListDatabaseRolesRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @instance
+                             */
+                            ListDatabaseRolesRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListDatabaseRolesRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @instance
+                             */
+                            ListDatabaseRolesRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListDatabaseRolesRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest instance
+                             */
+                            ListDatabaseRolesRequest.create = function create(properties) {
+                                return new ListDatabaseRolesRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseRolesRequest message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} message ListDatabaseRolesRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseRolesRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.pageSize != null && Object.hasOwnProperty.call(message, "pageSize"))
+                                    writer.uint32(/* id 2, wireType 0 =*/16).int32(message.pageSize);
+                                if (message.pageToken != null && Object.hasOwnProperty.call(message, "pageToken"))
+                                    writer.uint32(/* id 3, wireType 2 =*/26).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseRolesRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesRequest} message ListDatabaseRolesRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseRolesRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseRolesRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseRolesRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseRolesRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListDatabaseRolesRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListDatabaseRolesRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListDatabaseRolesRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesRequest} ListDatabaseRolesRequest
+                             */
+                            ListDatabaseRolesRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListDatabaseRolesRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesRequest} message ListDatabaseRolesRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListDatabaseRolesRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListDatabaseRolesRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListDatabaseRolesRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListDatabaseRolesRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabaseRolesRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabaseRolesRequest";
+                            };
+    
+                            return ListDatabaseRolesRequest;
+                        })();
+    
+                        v1.ListDatabaseRolesResponse = (function() {
+    
+                            /**
+                             * Properties of a ListDatabaseRolesResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IListDatabaseRolesResponse
+                             * @property {Array.<google.spanner.admin.database.v1.IDatabaseRole>|null} [databaseRoles] ListDatabaseRolesResponse databaseRoles
+                             * @property {string|null} [nextPageToken] ListDatabaseRolesResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListDatabaseRolesResponse.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a ListDatabaseRolesResponse.
+                             * @implements IListDatabaseRolesResponse
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse=} [properties] Properties to set
+                             */
+                            function ListDatabaseRolesResponse(properties) {
+                                this.databaseRoles = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListDatabaseRolesResponse databaseRoles.
+                             * @member {Array.<google.spanner.admin.database.v1.IDatabaseRole>} databaseRoles
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @instance
+                             */
+                            ListDatabaseRolesResponse.prototype.databaseRoles = $util.emptyArray;
+    
+                            /**
+                             * ListDatabaseRolesResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @instance
+                             */
+                            ListDatabaseRolesResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListDatabaseRolesResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse instance
+                             */
+                            ListDatabaseRolesResponse.create = function create(properties) {
+                                return new ListDatabaseRolesResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseRolesResponse message. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse} message ListDatabaseRolesResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseRolesResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.databaseRoles != null && message.databaseRoles.length)
+                                    for (var i = 0; i < message.databaseRoles.length; ++i)
+                                        $root.google.spanner.admin.database.v1.DatabaseRole.encode(message.databaseRoles[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && Object.hasOwnProperty.call(message, "nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListDatabaseRolesResponse message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.ListDatabaseRolesResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IListDatabaseRolesResponse} message ListDatabaseRolesResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListDatabaseRolesResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseRolesResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            if (!(message.databaseRoles && message.databaseRoles.length))
+                                                message.databaseRoles = [];
+                                            message.databaseRoles.push($root.google.spanner.admin.database.v1.DatabaseRole.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListDatabaseRolesResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListDatabaseRolesResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListDatabaseRolesResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListDatabaseRolesResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.databaseRoles != null && message.hasOwnProperty("databaseRoles")) {
+                                    if (!Array.isArray(message.databaseRoles))
+                                        return "databaseRoles: array expected";
+                                    for (var i = 0; i < message.databaseRoles.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.DatabaseRole.verify(message.databaseRoles[i]);
+                                        if (error)
+                                            return "databaseRoles." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListDatabaseRolesResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.ListDatabaseRolesResponse} ListDatabaseRolesResponse
+                             */
+                            ListDatabaseRolesResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.ListDatabaseRolesResponse();
+                                if (object.databaseRoles) {
+                                    if (!Array.isArray(object.databaseRoles))
+                                        throw TypeError(".google.spanner.admin.database.v1.ListDatabaseRolesResponse.databaseRoles: array expected");
+                                    message.databaseRoles = [];
+                                    for (var i = 0; i < object.databaseRoles.length; ++i) {
+                                        if (typeof object.databaseRoles[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.ListDatabaseRolesResponse.databaseRoles: object expected");
+                                        message.databaseRoles[i] = $root.google.spanner.admin.database.v1.DatabaseRole.fromObject(object.databaseRoles[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListDatabaseRolesResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {google.spanner.admin.database.v1.ListDatabaseRolesResponse} message ListDatabaseRolesResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListDatabaseRolesResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.databaseRoles = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.databaseRoles && message.databaseRoles.length) {
+                                    object.databaseRoles = [];
+                                    for (var j = 0; j < message.databaseRoles.length; ++j)
+                                        object.databaseRoles[j] = $root.google.spanner.admin.database.v1.DatabaseRole.toObject(message.databaseRoles[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListDatabaseRolesResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListDatabaseRolesResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListDatabaseRolesResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.ListDatabaseRolesResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListDatabaseRolesResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.ListDatabaseRolesResponse";
+                            };
+    
+                            return ListDatabaseRolesResponse;
                         })();
     
                         return v1;
@@ -23932,6 +26471,266 @@
                          * @namespace
                          */
                         var v1 = {};
+    
+                        v1.OperationProgress = (function() {
+    
+                            /**
+                             * Properties of an OperationProgress.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IOperationProgress
+                             * @property {number|null} [progressPercent] OperationProgress progressPercent
+                             * @property {google.protobuf.ITimestamp|null} [startTime] OperationProgress startTime
+                             * @property {google.protobuf.ITimestamp|null} [endTime] OperationProgress endTime
+                             */
+    
+                            /**
+                             * Constructs a new OperationProgress.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an OperationProgress.
+                             * @implements IOperationProgress
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress=} [properties] Properties to set
+                             */
+                            function OperationProgress(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * OperationProgress progressPercent.
+                             * @member {number} progressPercent
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.progressPercent = 0;
+    
+                            /**
+                             * OperationProgress startTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} startTime
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.startTime = null;
+    
+                            /**
+                             * OperationProgress endTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} endTime
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             */
+                            OperationProgress.prototype.endTime = null;
+    
+                            /**
+                             * Creates a new OperationProgress instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress instance
+                             */
+                            OperationProgress.create = function create(properties) {
+                                return new OperationProgress(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message. Does not implicitly {@link google.spanner.admin.instance.v1.OperationProgress.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.progressPercent != null && Object.hasOwnProperty.call(message, "progressPercent"))
+                                    writer.uint32(/* id 1, wireType 0 =*/8).int32(message.progressPercent);
+                                if (message.startTime != null && Object.hasOwnProperty.call(message, "startTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.startTime, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.endTime != null && Object.hasOwnProperty.call(message, "endTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.endTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified OperationProgress message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.OperationProgress.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IOperationProgress} message OperationProgress message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            OperationProgress.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.OperationProgress();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.progressPercent = reader.int32();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an OperationProgress message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            OperationProgress.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an OperationProgress message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            OperationProgress.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    if (!$util.isInteger(message.progressPercent))
+                                        return "progressPercent: integer expected";
+                                if (message.startTime != null && message.hasOwnProperty("startTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.startTime);
+                                    if (error)
+                                        return "startTime." + error;
+                                }
+                                if (message.endTime != null && message.hasOwnProperty("endTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.endTime);
+                                    if (error)
+                                        return "endTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an OperationProgress message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.OperationProgress} OperationProgress
+                             */
+                            OperationProgress.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.OperationProgress)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.OperationProgress();
+                                if (object.progressPercent != null)
+                                    message.progressPercent = object.progressPercent | 0;
+                                if (object.startTime != null) {
+                                    if (typeof object.startTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.OperationProgress.startTime: object expected");
+                                    message.startTime = $root.google.protobuf.Timestamp.fromObject(object.startTime);
+                                }
+                                if (object.endTime != null) {
+                                    if (typeof object.endTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.OperationProgress.endTime: object expected");
+                                    message.endTime = $root.google.protobuf.Timestamp.fromObject(object.endTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an OperationProgress message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.OperationProgress} message OperationProgress
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            OperationProgress.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.progressPercent = 0;
+                                    object.startTime = null;
+                                    object.endTime = null;
+                                }
+                                if (message.progressPercent != null && message.hasOwnProperty("progressPercent"))
+                                    object.progressPercent = message.progressPercent;
+                                if (message.startTime != null && message.hasOwnProperty("startTime"))
+                                    object.startTime = $root.google.protobuf.Timestamp.toObject(message.startTime, options);
+                                if (message.endTime != null && message.hasOwnProperty("endTime"))
+                                    object.endTime = $root.google.protobuf.Timestamp.toObject(message.endTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this OperationProgress to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            OperationProgress.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for OperationProgress
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.OperationProgress
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            OperationProgress.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.OperationProgress";
+                            };
+    
+                            return OperationProgress;
+                        })();
     
                         v1.InstanceAdmin = (function() {
     
@@ -23966,7 +26765,7 @@
                             };
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstanceConfigs}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstanceConfigs}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef ListInstanceConfigsCallback
                              * @type {function}
@@ -23999,7 +26798,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstanceConfig}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstanceConfig}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef GetInstanceConfigCallback
                              * @type {function}
@@ -24032,7 +26831,139 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#listInstances}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef CreateInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls CreateInstanceConfig.
+                             * @function createInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} request CreateInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfigCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.createInstanceConfig = function createInstanceConfig(request, callback) {
+                                return this.rpcCall(createInstanceConfig, $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "CreateInstanceConfig" });
+    
+                            /**
+                             * Calls CreateInstanceConfig.
+                             * @function createInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} request CreateInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef UpdateInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls UpdateInstanceConfig.
+                             * @function updateInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} request UpdateInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstanceConfigCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.updateInstanceConfig = function updateInstanceConfig(request, callback) {
+                                return this.rpcCall(updateInstanceConfig, $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "UpdateInstanceConfig" });
+    
+                            /**
+                             * Calls UpdateInstanceConfig.
+                             * @function updateInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} request UpdateInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstanceConfig}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef DeleteInstanceConfigCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.protobuf.Empty} [response] Empty
+                             */
+    
+                            /**
+                             * Calls DeleteInstanceConfig.
+                             * @function deleteInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} request DeleteInstanceConfigRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfigCallback} callback Node-style callback called with the error, if any, and Empty
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.deleteInstanceConfig = function deleteInstanceConfig(request, callback) {
+                                return this.rpcCall(deleteInstanceConfig, $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest, $root.google.protobuf.Empty, request, callback);
+                            }, "name", { value: "DeleteInstanceConfig" });
+    
+                            /**
+                             * Calls DeleteInstanceConfig.
+                             * @function deleteInstanceConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} request DeleteInstanceConfigRequest message or plain object
+                             * @returns {Promise<google.protobuf.Empty>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstanceConfigOperations}.
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @typedef ListInstanceConfigOperationsCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} [response] ListInstanceConfigOperationsResponse
+                             */
+    
+                            /**
+                             * Calls ListInstanceConfigOperations.
+                             * @function listInstanceConfigOperations
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} request ListInstanceConfigOperationsRequest message or plain object
+                             * @param {google.spanner.admin.instance.v1.InstanceAdmin.ListInstanceConfigOperationsCallback} callback Node-style callback called with the error, if any, and ListInstanceConfigOperationsResponse
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(InstanceAdmin.prototype.listInstanceConfigOperations = function listInstanceConfigOperations(request, callback) {
+                                return this.rpcCall(listInstanceConfigOperations, $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest, $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse, request, callback);
+                            }, "name", { value: "ListInstanceConfigOperations" });
+    
+                            /**
+                             * Calls ListInstanceConfigOperations.
+                             * @function listInstanceConfigOperations
+                             * @memberof google.spanner.admin.instance.v1.InstanceAdmin
+                             * @instance
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} request ListInstanceConfigOperationsRequest message or plain object
+                             * @returns {Promise<google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstances}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef ListInstancesCallback
                              * @type {function}
@@ -24065,7 +26996,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getInstance}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef GetInstanceCallback
                              * @type {function}
@@ -24098,7 +27029,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#createInstance}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef CreateInstanceCallback
                              * @type {function}
@@ -24131,7 +27062,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#updateInstance}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef UpdateInstanceCallback
                              * @type {function}
@@ -24164,7 +27095,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#deleteInstance}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstance}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef DeleteInstanceCallback
                              * @type {function}
@@ -24197,7 +27128,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#setIamPolicy}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|setIamPolicy}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef SetIamPolicyCallback
                              * @type {function}
@@ -24230,7 +27161,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#getIamPolicy}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getIamPolicy}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef GetIamPolicyCallback
                              * @type {function}
@@ -24263,7 +27194,7 @@
                              */
     
                             /**
-                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin#testIamPermissions}.
+                             * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|testIamPermissions}.
                              * @memberof google.spanner.admin.instance.v1.InstanceAdmin
                              * @typedef TestIamPermissionsCallback
                              * @type {function}
@@ -24412,15 +27343,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.location = reader.string();
-                                        break;
-                                    case 2:
-                                        message.type = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.defaultLeaderLocation = reader.bool();
-                                        break;
+                                    case 1: {
+                                            message.location = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.type = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.defaultLeaderLocation = reader.bool();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -24490,6 +27424,12 @@
                                 if (object.location != null)
                                     message.location = String(object.location);
                                 switch (object.type) {
+                                default:
+                                    if (typeof object.type === "number") {
+                                        message.type = object.type;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.type = 0;
@@ -24533,7 +27473,7 @@
                                 if (message.location != null && message.hasOwnProperty("location"))
                                     object.location = message.location;
                                 if (message.type != null && message.hasOwnProperty("type"))
-                                    object.type = options.enums === String ? $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] : message.type;
+                                    object.type = options.enums === String ? $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] === undefined ? message.type : $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] : message.type;
                                 if (message.defaultLeaderLocation != null && message.hasOwnProperty("defaultLeaderLocation"))
                                     object.defaultLeaderLocation = message.defaultLeaderLocation;
                                 return object;
@@ -24548,6 +27488,21 @@
                              */
                             ReplicaInfo.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ReplicaInfo
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ReplicaInfo
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ReplicaInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ReplicaInfo";
                             };
     
                             /**
@@ -24579,8 +27534,15 @@
                              * @interface IInstanceConfig
                              * @property {string|null} [name] InstanceConfig name
                              * @property {string|null} [displayName] InstanceConfig displayName
+                             * @property {google.spanner.admin.instance.v1.InstanceConfig.Type|null} [configType] InstanceConfig configType
                              * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [replicas] InstanceConfig replicas
+                             * @property {Array.<google.spanner.admin.instance.v1.IReplicaInfo>|null} [optionalReplicas] InstanceConfig optionalReplicas
+                             * @property {string|null} [baseConfig] InstanceConfig baseConfig
+                             * @property {Object.<string,string>|null} [labels] InstanceConfig labels
+                             * @property {string|null} [etag] InstanceConfig etag
                              * @property {Array.<string>|null} [leaderOptions] InstanceConfig leaderOptions
+                             * @property {boolean|null} [reconciling] InstanceConfig reconciling
+                             * @property {google.spanner.admin.instance.v1.InstanceConfig.State|null} [state] InstanceConfig state
                              */
     
                             /**
@@ -24593,6 +27555,8 @@
                              */
                             function InstanceConfig(properties) {
                                 this.replicas = [];
+                                this.optionalReplicas = [];
+                                this.labels = {};
                                 this.leaderOptions = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
@@ -24617,6 +27581,14 @@
                             InstanceConfig.prototype.displayName = "";
     
                             /**
+                             * InstanceConfig configType.
+                             * @member {google.spanner.admin.instance.v1.InstanceConfig.Type} configType
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.configType = 0;
+    
+                            /**
                              * InstanceConfig replicas.
                              * @member {Array.<google.spanner.admin.instance.v1.IReplicaInfo>} replicas
                              * @memberof google.spanner.admin.instance.v1.InstanceConfig
@@ -24625,12 +27597,60 @@
                             InstanceConfig.prototype.replicas = $util.emptyArray;
     
                             /**
+                             * InstanceConfig optionalReplicas.
+                             * @member {Array.<google.spanner.admin.instance.v1.IReplicaInfo>} optionalReplicas
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.optionalReplicas = $util.emptyArray;
+    
+                            /**
+                             * InstanceConfig baseConfig.
+                             * @member {string} baseConfig
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.baseConfig = "";
+    
+                            /**
+                             * InstanceConfig labels.
+                             * @member {Object.<string,string>} labels
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.labels = $util.emptyObject;
+    
+                            /**
+                             * InstanceConfig etag.
+                             * @member {string} etag
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.etag = "";
+    
+                            /**
                              * InstanceConfig leaderOptions.
                              * @member {Array.<string>} leaderOptions
                              * @memberof google.spanner.admin.instance.v1.InstanceConfig
                              * @instance
                              */
                             InstanceConfig.prototype.leaderOptions = $util.emptyArray;
+    
+                            /**
+                             * InstanceConfig reconciling.
+                             * @member {boolean} reconciling
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.reconciling = false;
+    
+                            /**
+                             * InstanceConfig state.
+                             * @member {google.spanner.admin.instance.v1.InstanceConfig.State} state
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @instance
+                             */
+                            InstanceConfig.prototype.state = 0;
     
                             /**
                              * Creates a new InstanceConfig instance using the specified properties.
@@ -24666,6 +27686,22 @@
                                 if (message.leaderOptions != null && message.leaderOptions.length)
                                     for (var i = 0; i < message.leaderOptions.length; ++i)
                                         writer.uint32(/* id 4, wireType 2 =*/34).string(message.leaderOptions[i]);
+                                if (message.configType != null && Object.hasOwnProperty.call(message, "configType"))
+                                    writer.uint32(/* id 5, wireType 0 =*/40).int32(message.configType);
+                                if (message.optionalReplicas != null && message.optionalReplicas.length)
+                                    for (var i = 0; i < message.optionalReplicas.length; ++i)
+                                        $root.google.spanner.admin.instance.v1.ReplicaInfo.encode(message.optionalReplicas[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                                if (message.baseConfig != null && Object.hasOwnProperty.call(message, "baseConfig"))
+                                    writer.uint32(/* id 7, wireType 2 =*/58).string(message.baseConfig);
+                                if (message.labels != null && Object.hasOwnProperty.call(message, "labels"))
+                                    for (var keys = Object.keys(message.labels), i = 0; i < keys.length; ++i)
+                                        writer.uint32(/* id 8, wireType 2 =*/66).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.labels[keys[i]]).ldelim();
+                                if (message.etag != null && Object.hasOwnProperty.call(message, "etag"))
+                                    writer.uint32(/* id 9, wireType 2 =*/74).string(message.etag);
+                                if (message.reconciling != null && Object.hasOwnProperty.call(message, "reconciling"))
+                                    writer.uint32(/* id 10, wireType 0 =*/80).bool(message.reconciling);
+                                if (message.state != null && Object.hasOwnProperty.call(message, "state"))
+                                    writer.uint32(/* id 11, wireType 0 =*/88).int32(message.state);
                                 return writer;
                             };
     
@@ -24696,26 +27732,79 @@
                             InstanceConfig.decode = function decode(reader, length) {
                                 if (!(reader instanceof $Reader))
                                     reader = $Reader.create(reader);
-                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.InstanceConfig();
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.InstanceConfig(), key, value;
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.displayName = reader.string();
-                                        break;
-                                    case 3:
-                                        if (!(message.replicas && message.replicas.length))
-                                            message.replicas = [];
-                                        message.replicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
-                                        break;
-                                    case 4:
-                                        if (!(message.leaderOptions && message.leaderOptions.length))
-                                            message.leaderOptions = [];
-                                        message.leaderOptions.push(reader.string());
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.displayName = reader.string();
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.configType = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            if (!(message.replicas && message.replicas.length))
+                                                message.replicas = [];
+                                            message.replicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 6: {
+                                            if (!(message.optionalReplicas && message.optionalReplicas.length))
+                                                message.optionalReplicas = [];
+                                            message.optionalReplicas.push($root.google.spanner.admin.instance.v1.ReplicaInfo.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 7: {
+                                            message.baseConfig = reader.string();
+                                            break;
+                                        }
+                                    case 8: {
+                                            if (message.labels === $util.emptyObject)
+                                                message.labels = {};
+                                            var end2 = reader.uint32() + reader.pos;
+                                            key = "";
+                                            value = "";
+                                            while (reader.pos < end2) {
+                                                var tag2 = reader.uint32();
+                                                switch (tag2 >>> 3) {
+                                                case 1:
+                                                    key = reader.string();
+                                                    break;
+                                                case 2:
+                                                    value = reader.string();
+                                                    break;
+                                                default:
+                                                    reader.skipType(tag2 & 7);
+                                                    break;
+                                                }
+                                            }
+                                            message.labels[key] = value;
+                                            break;
+                                        }
+                                    case 9: {
+                                            message.etag = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            if (!(message.leaderOptions && message.leaderOptions.length))
+                                                message.leaderOptions = [];
+                                            message.leaderOptions.push(reader.string());
+                                            break;
+                                        }
+                                    case 10: {
+                                            message.reconciling = reader.bool();
+                                            break;
+                                        }
+                                    case 11: {
+                                            message.state = reader.int32();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -24757,6 +27846,15 @@
                                 if (message.displayName != null && message.hasOwnProperty("displayName"))
                                     if (!$util.isString(message.displayName))
                                         return "displayName: string expected";
+                                if (message.configType != null && message.hasOwnProperty("configType"))
+                                    switch (message.configType) {
+                                    default:
+                                        return "configType: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 if (message.replicas != null && message.hasOwnProperty("replicas")) {
                                     if (!Array.isArray(message.replicas))
                                         return "replicas: array expected";
@@ -24766,6 +27864,29 @@
                                             return "replicas." + error;
                                     }
                                 }
+                                if (message.optionalReplicas != null && message.hasOwnProperty("optionalReplicas")) {
+                                    if (!Array.isArray(message.optionalReplicas))
+                                        return "optionalReplicas: array expected";
+                                    for (var i = 0; i < message.optionalReplicas.length; ++i) {
+                                        var error = $root.google.spanner.admin.instance.v1.ReplicaInfo.verify(message.optionalReplicas[i]);
+                                        if (error)
+                                            return "optionalReplicas." + error;
+                                    }
+                                }
+                                if (message.baseConfig != null && message.hasOwnProperty("baseConfig"))
+                                    if (!$util.isString(message.baseConfig))
+                                        return "baseConfig: string expected";
+                                if (message.labels != null && message.hasOwnProperty("labels")) {
+                                    if (!$util.isObject(message.labels))
+                                        return "labels: object expected";
+                                    var key = Object.keys(message.labels);
+                                    for (var i = 0; i < key.length; ++i)
+                                        if (!$util.isString(message.labels[key[i]]))
+                                            return "labels: string{k:string} expected";
+                                }
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    if (!$util.isString(message.etag))
+                                        return "etag: string expected";
                                 if (message.leaderOptions != null && message.hasOwnProperty("leaderOptions")) {
                                     if (!Array.isArray(message.leaderOptions))
                                         return "leaderOptions: array expected";
@@ -24773,6 +27894,18 @@
                                         if (!$util.isString(message.leaderOptions[i]))
                                             return "leaderOptions: string[] expected";
                                 }
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    if (typeof message.reconciling !== "boolean")
+                                        return "reconciling: boolean expected";
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    switch (message.state) {
+                                    default:
+                                        return "state: enum value expected";
+                                    case 0:
+                                    case 1:
+                                    case 2:
+                                        break;
+                                    }
                                 return null;
                             };
     
@@ -24792,6 +27925,26 @@
                                     message.name = String(object.name);
                                 if (object.displayName != null)
                                     message.displayName = String(object.displayName);
+                                switch (object.configType) {
+                                default:
+                                    if (typeof object.configType === "number") {
+                                        message.configType = object.configType;
+                                        break;
+                                    }
+                                    break;
+                                case "TYPE_UNSPECIFIED":
+                                case 0:
+                                    message.configType = 0;
+                                    break;
+                                case "GOOGLE_MANAGED":
+                                case 1:
+                                    message.configType = 1;
+                                    break;
+                                case "USER_MANAGED":
+                                case 2:
+                                    message.configType = 2;
+                                    break;
+                                }
                                 if (object.replicas) {
                                     if (!Array.isArray(object.replicas))
                                         throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.replicas: array expected");
@@ -24802,12 +27955,55 @@
                                         message.replicas[i] = $root.google.spanner.admin.instance.v1.ReplicaInfo.fromObject(object.replicas[i]);
                                     }
                                 }
+                                if (object.optionalReplicas) {
+                                    if (!Array.isArray(object.optionalReplicas))
+                                        throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.optionalReplicas: array expected");
+                                    message.optionalReplicas = [];
+                                    for (var i = 0; i < object.optionalReplicas.length; ++i) {
+                                        if (typeof object.optionalReplicas[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.optionalReplicas: object expected");
+                                        message.optionalReplicas[i] = $root.google.spanner.admin.instance.v1.ReplicaInfo.fromObject(object.optionalReplicas[i]);
+                                    }
+                                }
+                                if (object.baseConfig != null)
+                                    message.baseConfig = String(object.baseConfig);
+                                if (object.labels) {
+                                    if (typeof object.labels !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.labels: object expected");
+                                    message.labels = {};
+                                    for (var keys = Object.keys(object.labels), i = 0; i < keys.length; ++i)
+                                        message.labels[keys[i]] = String(object.labels[keys[i]]);
+                                }
+                                if (object.etag != null)
+                                    message.etag = String(object.etag);
                                 if (object.leaderOptions) {
                                     if (!Array.isArray(object.leaderOptions))
                                         throw TypeError(".google.spanner.admin.instance.v1.InstanceConfig.leaderOptions: array expected");
                                     message.leaderOptions = [];
                                     for (var i = 0; i < object.leaderOptions.length; ++i)
                                         message.leaderOptions[i] = String(object.leaderOptions[i]);
+                                }
+                                if (object.reconciling != null)
+                                    message.reconciling = Boolean(object.reconciling);
+                                switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
+                                case "STATE_UNSPECIFIED":
+                                case 0:
+                                    message.state = 0;
+                                    break;
+                                case "CREATING":
+                                case 1:
+                                    message.state = 1;
+                                    break;
+                                case "READY":
+                                case 2:
+                                    message.state = 2;
+                                    break;
                                 }
                                 return message;
                             };
@@ -24828,10 +28024,18 @@
                                 if (options.arrays || options.defaults) {
                                     object.replicas = [];
                                     object.leaderOptions = [];
+                                    object.optionalReplicas = [];
                                 }
+                                if (options.objects || options.defaults)
+                                    object.labels = {};
                                 if (options.defaults) {
                                     object.name = "";
                                     object.displayName = "";
+                                    object.configType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
+                                    object.baseConfig = "";
+                                    object.etag = "";
+                                    object.reconciling = false;
+                                    object.state = options.enums === String ? "STATE_UNSPECIFIED" : 0;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -24847,6 +28051,27 @@
                                     for (var j = 0; j < message.leaderOptions.length; ++j)
                                         object.leaderOptions[j] = message.leaderOptions[j];
                                 }
+                                if (message.configType != null && message.hasOwnProperty("configType"))
+                                    object.configType = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] === undefined ? message.configType : $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] : message.configType;
+                                if (message.optionalReplicas && message.optionalReplicas.length) {
+                                    object.optionalReplicas = [];
+                                    for (var j = 0; j < message.optionalReplicas.length; ++j)
+                                        object.optionalReplicas[j] = $root.google.spanner.admin.instance.v1.ReplicaInfo.toObject(message.optionalReplicas[j], options);
+                                }
+                                if (message.baseConfig != null && message.hasOwnProperty("baseConfig"))
+                                    object.baseConfig = message.baseConfig;
+                                var keys2;
+                                if (message.labels && (keys2 = Object.keys(message.labels)).length) {
+                                    object.labels = {};
+                                    for (var j = 0; j < keys2.length; ++j)
+                                        object.labels[keys2[j]] = message.labels[keys2[j]];
+                                }
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    object.etag = message.etag;
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    object.reconciling = message.reconciling;
+                                if (message.state != null && message.hasOwnProperty("state"))
+                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] === undefined ? message.state : $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] : message.state;
                                 return object;
                             };
     
@@ -24860,6 +28085,53 @@
                             InstanceConfig.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
+    
+                            /**
+                             * Gets the default type url for InstanceConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.InstanceConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            InstanceConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.InstanceConfig";
+                            };
+    
+                            /**
+                             * Type enum.
+                             * @name google.spanner.admin.instance.v1.InstanceConfig.Type
+                             * @enum {number}
+                             * @property {number} TYPE_UNSPECIFIED=0 TYPE_UNSPECIFIED value
+                             * @property {number} GOOGLE_MANAGED=1 GOOGLE_MANAGED value
+                             * @property {number} USER_MANAGED=2 USER_MANAGED value
+                             */
+                            InstanceConfig.Type = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "GOOGLE_MANAGED"] = 1;
+                                values[valuesById[2] = "USER_MANAGED"] = 2;
+                                return values;
+                            })();
+    
+                            /**
+                             * State enum.
+                             * @name google.spanner.admin.instance.v1.InstanceConfig.State
+                             * @enum {number}
+                             * @property {number} STATE_UNSPECIFIED=0 STATE_UNSPECIFIED value
+                             * @property {number} CREATING=1 CREATING value
+                             * @property {number} READY=2 READY value
+                             */
+                            InstanceConfig.State = (function() {
+                                var valuesById = {}, values = Object.create(valuesById);
+                                values[valuesById[0] = "STATE_UNSPECIFIED"] = 0;
+                                values[valuesById[1] = "CREATING"] = 1;
+                                values[valuesById[2] = "READY"] = 2;
+                                return values;
+                            })();
     
                             return InstanceConfig;
                         })();
@@ -25059,57 +28331,67 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.config = reader.string();
-                                        break;
-                                    case 3:
-                                        message.displayName = reader.string();
-                                        break;
-                                    case 5:
-                                        message.nodeCount = reader.int32();
-                                        break;
-                                    case 9:
-                                        message.processingUnits = reader.int32();
-                                        break;
-                                    case 6:
-                                        message.state = reader.int32();
-                                        break;
-                                    case 7:
-                                        if (message.labels === $util.emptyObject)
-                                            message.labels = {};
-                                        var end2 = reader.uint32() + reader.pos;
-                                        key = "";
-                                        value = "";
-                                        while (reader.pos < end2) {
-                                            var tag2 = reader.uint32();
-                                            switch (tag2 >>> 3) {
-                                            case 1:
-                                                key = reader.string();
-                                                break;
-                                            case 2:
-                                                value = reader.string();
-                                                break;
-                                            default:
-                                                reader.skipType(tag2 & 7);
-                                                break;
-                                            }
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
                                         }
-                                        message.labels[key] = value;
-                                        break;
-                                    case 8:
-                                        if (!(message.endpointUris && message.endpointUris.length))
-                                            message.endpointUris = [];
-                                        message.endpointUris.push(reader.string());
-                                        break;
-                                    case 11:
-                                        message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 12:
-                                        message.updateTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 2: {
+                                            message.config = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.displayName = reader.string();
+                                            break;
+                                        }
+                                    case 5: {
+                                            message.nodeCount = reader.int32();
+                                            break;
+                                        }
+                                    case 9: {
+                                            message.processingUnits = reader.int32();
+                                            break;
+                                        }
+                                    case 6: {
+                                            message.state = reader.int32();
+                                            break;
+                                        }
+                                    case 7: {
+                                            if (message.labels === $util.emptyObject)
+                                                message.labels = {};
+                                            var end2 = reader.uint32() + reader.pos;
+                                            key = "";
+                                            value = "";
+                                            while (reader.pos < end2) {
+                                                var tag2 = reader.uint32();
+                                                switch (tag2 >>> 3) {
+                                                case 1:
+                                                    key = reader.string();
+                                                    break;
+                                                case 2:
+                                                    value = reader.string();
+                                                    break;
+                                                default:
+                                                    reader.skipType(tag2 & 7);
+                                                    break;
+                                                }
+                                            }
+                                            message.labels[key] = value;
+                                            break;
+                                        }
+                                    case 8: {
+                                            if (!(message.endpointUris && message.endpointUris.length))
+                                                message.endpointUris = [];
+                                            message.endpointUris.push(reader.string());
+                                            break;
+                                        }
+                                    case 11: {
+                                            message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 12: {
+                                            message.updateTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -25220,6 +28502,12 @@
                                 if (object.processingUnits != null)
                                     message.processingUnits = object.processingUnits | 0;
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -25296,7 +28584,7 @@
                                 if (message.nodeCount != null && message.hasOwnProperty("nodeCount"))
                                     object.nodeCount = message.nodeCount;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.Instance.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.Instance.State[message.state] === undefined ? message.state : $root.google.spanner.admin.instance.v1.Instance.State[message.state] : message.state;
                                 var keys2;
                                 if (message.labels && (keys2 = Object.keys(message.labels)).length) {
                                     object.labels = {};
@@ -25326,6 +28614,21 @@
                              */
                             Instance.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for Instance
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            Instance.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.Instance";
                             };
     
                             /**
@@ -25461,15 +28764,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.pageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -25574,6 +28880,21 @@
                              */
                             ListInstanceConfigsRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListInstanceConfigsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigsRequest";
                             };
     
                             return ListInstanceConfigsRequest;
@@ -25684,14 +29005,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.instanceConfigs && message.instanceConfigs.length))
-                                            message.instanceConfigs = [];
-                                        message.instanceConfigs.push($root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.instanceConfigs && message.instanceConfigs.length))
+                                                message.instanceConfigs = [];
+                                            message.instanceConfigs.push($root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -25807,6 +29130,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListInstanceConfigsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigsResponse";
+                            };
+    
                             return ListInstanceConfigsResponse;
                         })();
     
@@ -25902,9 +29240,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -25994,7 +29333,1331 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for GetInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.GetInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.GetInstanceConfigRequest";
+                            };
+    
                             return GetInstanceConfigRequest;
+                        })();
+    
+                        v1.CreateInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of a CreateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface ICreateInstanceConfigRequest
+                             * @property {string|null} [parent] CreateInstanceConfigRequest parent
+                             * @property {string|null} [instanceConfigId] CreateInstanceConfigRequest instanceConfigId
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] CreateInstanceConfigRequest instanceConfig
+                             * @property {boolean|null} [validateOnly] CreateInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new CreateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a CreateInstanceConfigRequest.
+                             * @implements ICreateInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function CreateInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateInstanceConfigRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.parent = "";
+    
+                            /**
+                             * CreateInstanceConfigRequest instanceConfigId.
+                             * @member {string} instanceConfigId
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.instanceConfigId = "";
+    
+                            /**
+                             * CreateInstanceConfigRequest instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.instanceConfig = null;
+    
+                            /**
+                             * CreateInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             */
+                            CreateInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new CreateInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest instance
+                             */
+                            CreateInstanceConfigRequest.create = function create(properties) {
+                                return new CreateInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} message CreateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.instanceConfigId != null && Object.hasOwnProperty.call(message, "instanceConfigId"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.instanceConfigId);
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 4, wireType 0 =*/32).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigRequest} message CreateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.instanceConfigId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.instanceConfigId != null && message.hasOwnProperty("instanceConfigId"))
+                                    if (!$util.isString(message.instanceConfigId))
+                                        return "instanceConfigId: string expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} CreateInstanceConfigRequest
+                             */
+                            CreateInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.instanceConfigId != null)
+                                    message.instanceConfigId = String(object.instanceConfigId);
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigRequest.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.CreateInstanceConfigRequest} message CreateInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.instanceConfigId = "";
+                                    object.instanceConfig = null;
+                                    object.validateOnly = false;
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.instanceConfigId != null && message.hasOwnProperty("instanceConfigId"))
+                                    object.instanceConfigId = message.instanceConfigId;
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceConfigRequest";
+                            };
+    
+                            return CreateInstanceConfigRequest;
+                        })();
+    
+                        v1.UpdateInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of an UpdateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IUpdateInstanceConfigRequest
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] UpdateInstanceConfigRequest instanceConfig
+                             * @property {google.protobuf.IFieldMask|null} [updateMask] UpdateInstanceConfigRequest updateMask
+                             * @property {boolean|null} [validateOnly] UpdateInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new UpdateInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an UpdateInstanceConfigRequest.
+                             * @implements IUpdateInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function UpdateInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateInstanceConfigRequest instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.instanceConfig = null;
+    
+                            /**
+                             * UpdateInstanceConfigRequest updateMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} updateMask
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.updateMask = null;
+    
+                            /**
+                             * UpdateInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             */
+                            UpdateInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new UpdateInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest instance
+                             */
+                            UpdateInstanceConfigRequest.create = function create(properties) {
+                                return new UpdateInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} message UpdateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.updateMask != null && Object.hasOwnProperty.call(message, "updateMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest} message UpdateInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.updateMask);
+                                    if (error)
+                                        return "updateMask." + error;
+                                }
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} UpdateInstanceConfigRequest
+                             */
+                            UpdateInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigRequest();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.updateMask != null) {
+                                    if (typeof object.updateMask !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigRequest.updateMask: object expected");
+                                    message.updateMask = $root.google.protobuf.FieldMask.fromObject(object.updateMask);
+                                }
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.UpdateInstanceConfigRequest} message UpdateInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.updateMask = null;
+                                    object.validateOnly = false;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                                    object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceConfigRequest";
+                            };
+    
+                            return UpdateInstanceConfigRequest;
+                        })();
+    
+                        v1.DeleteInstanceConfigRequest = (function() {
+    
+                            /**
+                             * Properties of a DeleteInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IDeleteInstanceConfigRequest
+                             * @property {string|null} [name] DeleteInstanceConfigRequest name
+                             * @property {string|null} [etag] DeleteInstanceConfigRequest etag
+                             * @property {boolean|null} [validateOnly] DeleteInstanceConfigRequest validateOnly
+                             */
+    
+                            /**
+                             * Constructs a new DeleteInstanceConfigRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a DeleteInstanceConfigRequest.
+                             * @implements IDeleteInstanceConfigRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest=} [properties] Properties to set
+                             */
+                            function DeleteInstanceConfigRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * DeleteInstanceConfigRequest name.
+                             * @member {string} name
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.name = "";
+    
+                            /**
+                             * DeleteInstanceConfigRequest etag.
+                             * @member {string} etag
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.etag = "";
+    
+                            /**
+                             * DeleteInstanceConfigRequest validateOnly.
+                             * @member {boolean} validateOnly
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             */
+                            DeleteInstanceConfigRequest.prototype.validateOnly = false;
+    
+                            /**
+                             * Creates a new DeleteInstanceConfigRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest instance
+                             */
+                            DeleteInstanceConfigRequest.create = function create(properties) {
+                                return new DeleteInstanceConfigRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteInstanceConfigRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} message DeleteInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteInstanceConfigRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                                if (message.etag != null && Object.hasOwnProperty.call(message, "etag"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.etag);
+                                if (message.validateOnly != null && Object.hasOwnProperty.call(message, "validateOnly"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).bool(message.validateOnly);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified DeleteInstanceConfigRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstanceConfigRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest} message DeleteInstanceConfigRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DeleteInstanceConfigRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteInstanceConfigRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.etag = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.validateOnly = reader.bool();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a DeleteInstanceConfigRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DeleteInstanceConfigRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a DeleteInstanceConfigRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            DeleteInstanceConfigRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    if (!$util.isString(message.name))
+                                        return "name: string expected";
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    if (!$util.isString(message.etag))
+                                        return "etag: string expected";
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    if (typeof message.validateOnly !== "boolean")
+                                        return "validateOnly: boolean expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a DeleteInstanceConfigRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} DeleteInstanceConfigRequest
+                             */
+                            DeleteInstanceConfigRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.DeleteInstanceConfigRequest();
+                                if (object.name != null)
+                                    message.name = String(object.name);
+                                if (object.etag != null)
+                                    message.etag = String(object.etag);
+                                if (object.validateOnly != null)
+                                    message.validateOnly = Boolean(object.validateOnly);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a DeleteInstanceConfigRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.DeleteInstanceConfigRequest} message DeleteInstanceConfigRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            DeleteInstanceConfigRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.name = "";
+                                    object.etag = "";
+                                    object.validateOnly = false;
+                                }
+                                if (message.name != null && message.hasOwnProperty("name"))
+                                    object.name = message.name;
+                                if (message.etag != null && message.hasOwnProperty("etag"))
+                                    object.etag = message.etag;
+                                if (message.validateOnly != null && message.hasOwnProperty("validateOnly"))
+                                    object.validateOnly = message.validateOnly;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this DeleteInstanceConfigRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            DeleteInstanceConfigRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DeleteInstanceConfigRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceConfigRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DeleteInstanceConfigRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.DeleteInstanceConfigRequest";
+                            };
+    
+                            return DeleteInstanceConfigRequest;
+                        })();
+    
+                        v1.ListInstanceConfigOperationsRequest = (function() {
+    
+                            /**
+                             * Properties of a ListInstanceConfigOperationsRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IListInstanceConfigOperationsRequest
+                             * @property {string|null} [parent] ListInstanceConfigOperationsRequest parent
+                             * @property {string|null} [filter] ListInstanceConfigOperationsRequest filter
+                             * @property {number|null} [pageSize] ListInstanceConfigOperationsRequest pageSize
+                             * @property {string|null} [pageToken] ListInstanceConfigOperationsRequest pageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListInstanceConfigOperationsRequest.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a ListInstanceConfigOperationsRequest.
+                             * @implements IListInstanceConfigOperationsRequest
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest=} [properties] Properties to set
+                             */
+                            function ListInstanceConfigOperationsRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest parent.
+                             * @member {string} parent
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.parent = "";
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest filter.
+                             * @member {string} filter
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.filter = "";
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest pageSize.
+                             * @member {number} pageSize
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.pageSize = 0;
+    
+                            /**
+                             * ListInstanceConfigOperationsRequest pageToken.
+                             * @member {string} pageToken
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.pageToken = "";
+    
+                            /**
+                             * Creates a new ListInstanceConfigOperationsRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest instance
+                             */
+                            ListInstanceConfigOperationsRequest.create = function create(properties) {
+                                return new ListInstanceConfigOperationsRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.parent != null && Object.hasOwnProperty.call(message, "parent"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.parent);
+                                if (message.filter != null && Object.hasOwnProperty.call(message, "filter"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.filter);
+                                if (message.pageSize != null && Object.hasOwnProperty.call(message, "pageSize"))
+                                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.pageSize);
+                                if (message.pageToken != null && Object.hasOwnProperty.call(message, "pageToken"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.pageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListInstanceConfigOperationsRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListInstanceConfigOperationsRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    if (!$util.isString(message.parent))
+                                        return "parent: string expected";
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    if (!$util.isString(message.filter))
+                                        return "filter: string expected";
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    if (!$util.isInteger(message.pageSize))
+                                        return "pageSize: integer expected";
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    if (!$util.isString(message.pageToken))
+                                        return "pageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListInstanceConfigOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} ListInstanceConfigOperationsRequest
+                             */
+                            ListInstanceConfigOperationsRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest();
+                                if (object.parent != null)
+                                    message.parent = String(object.parent);
+                                if (object.filter != null)
+                                    message.filter = String(object.filter);
+                                if (object.pageSize != null)
+                                    message.pageSize = object.pageSize | 0;
+                                if (object.pageToken != null)
+                                    message.pageToken = String(object.pageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListInstanceConfigOperationsRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest} message ListInstanceConfigOperationsRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListInstanceConfigOperationsRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.parent = "";
+                                    object.filter = "";
+                                    object.pageSize = 0;
+                                    object.pageToken = "";
+                                }
+                                if (message.parent != null && message.hasOwnProperty("parent"))
+                                    object.parent = message.parent;
+                                if (message.filter != null && message.hasOwnProperty("filter"))
+                                    object.filter = message.filter;
+                                if (message.pageSize != null && message.hasOwnProperty("pageSize"))
+                                    object.pageSize = message.pageSize;
+                                if (message.pageToken != null && message.hasOwnProperty("pageToken"))
+                                    object.pageToken = message.pageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListInstanceConfigOperationsRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListInstanceConfigOperationsRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListInstanceConfigOperationsRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigOperationsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigOperationsRequest";
+                            };
+    
+                            return ListInstanceConfigOperationsRequest;
+                        })();
+    
+                        v1.ListInstanceConfigOperationsResponse = (function() {
+    
+                            /**
+                             * Properties of a ListInstanceConfigOperationsResponse.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IListInstanceConfigOperationsResponse
+                             * @property {Array.<google.longrunning.IOperation>|null} [operations] ListInstanceConfigOperationsResponse operations
+                             * @property {string|null} [nextPageToken] ListInstanceConfigOperationsResponse nextPageToken
+                             */
+    
+                            /**
+                             * Constructs a new ListInstanceConfigOperationsResponse.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a ListInstanceConfigOperationsResponse.
+                             * @implements IListInstanceConfigOperationsResponse
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse=} [properties] Properties to set
+                             */
+                            function ListInstanceConfigOperationsResponse(properties) {
+                                this.operations = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * ListInstanceConfigOperationsResponse operations.
+                             * @member {Array.<google.longrunning.IOperation>} operations
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.operations = $util.emptyArray;
+    
+                            /**
+                             * ListInstanceConfigOperationsResponse nextPageToken.
+                             * @member {string} nextPageToken
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.nextPageToken = "";
+    
+                            /**
+                             * Creates a new ListInstanceConfigOperationsResponse instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse instance
+                             */
+                            ListInstanceConfigOperationsResponse.create = function create(properties) {
+                                return new ListInstanceConfigOperationsResponse(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsResponse.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.operations != null && message.operations.length)
+                                    for (var i = 0; i < message.operations.length; ++i)
+                                        $root.google.longrunning.Operation.encode(message.operations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.nextPageToken != null && Object.hasOwnProperty.call(message, "nextPageToken"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.nextPageToken);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified ListInstanceConfigOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            ListInstanceConfigOperationsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsResponse.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            if (!(message.operations && message.operations.length))
+                                                message.operations = [];
+                                            message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a ListInstanceConfigOperationsResponse message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            ListInstanceConfigOperationsResponse.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a ListInstanceConfigOperationsResponse message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            ListInstanceConfigOperationsResponse.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.operations != null && message.hasOwnProperty("operations")) {
+                                    if (!Array.isArray(message.operations))
+                                        return "operations: array expected";
+                                    for (var i = 0; i < message.operations.length; ++i) {
+                                        var error = $root.google.longrunning.Operation.verify(message.operations[i]);
+                                        if (error)
+                                            return "operations." + error;
+                                    }
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    if (!$util.isString(message.nextPageToken))
+                                        return "nextPageToken: string expected";
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a ListInstanceConfigOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} ListInstanceConfigOperationsResponse
+                             */
+                            ListInstanceConfigOperationsResponse.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse();
+                                if (object.operations) {
+                                    if (!Array.isArray(object.operations))
+                                        throw TypeError(".google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.operations: array expected");
+                                    message.operations = [];
+                                    for (var i = 0; i < object.operations.length; ++i) {
+                                        if (typeof object.operations[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse.operations: object expected");
+                                        message.operations[i] = $root.google.longrunning.Operation.fromObject(object.operations[i]);
+                                    }
+                                }
+                                if (object.nextPageToken != null)
+                                    message.nextPageToken = String(object.nextPageToken);
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a ListInstanceConfigOperationsResponse message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse} message ListInstanceConfigOperationsResponse
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            ListInstanceConfigOperationsResponse.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.operations = [];
+                                if (options.defaults)
+                                    object.nextPageToken = "";
+                                if (message.operations && message.operations.length) {
+                                    object.operations = [];
+                                    for (var j = 0; j < message.operations.length; ++j)
+                                        object.operations[j] = $root.google.longrunning.Operation.toObject(message.operations[j], options);
+                                }
+                                if (message.nextPageToken != null && message.hasOwnProperty("nextPageToken"))
+                                    object.nextPageToken = message.nextPageToken;
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this ListInstanceConfigOperationsResponse to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            ListInstanceConfigOperationsResponse.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for ListInstanceConfigOperationsResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstanceConfigOperationsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstanceConfigOperationsResponse";
+                            };
+    
+                            return ListInstanceConfigOperationsResponse;
                         })();
     
                         v1.GetInstanceRequest = (function() {
@@ -26100,12 +30763,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
-                                    case 2:
-                                        message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -26207,6 +30872,21 @@
                              */
                             GetInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for GetInstanceRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.GetInstanceRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            GetInstanceRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.GetInstanceRequest";
                             };
     
                             return GetInstanceRequest;
@@ -26326,15 +31006,18 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.instanceId = reader.string();
-                                        break;
-                                    case 3:
-                                        message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.instanceId = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -26444,6 +31127,21 @@
                              */
                             CreateInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateInstanceRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceRequest";
                             };
     
                             return CreateInstanceRequest;
@@ -26574,18 +31272,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.parent = reader.string();
-                                        break;
-                                    case 2:
-                                        message.pageSize = reader.int32();
-                                        break;
-                                    case 3:
-                                        message.pageToken = reader.string();
-                                        break;
-                                    case 4:
-                                        message.filter = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.parent = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.pageSize = reader.int32();
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.pageToken = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.filter = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -26700,6 +31402,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListInstancesRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstancesRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstancesRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstancesRequest";
+                            };
+    
                             return ListInstancesRequest;
                         })();
     
@@ -26808,14 +31525,16 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        if (!(message.instances && message.instances.length))
-                                            message.instances = [];
-                                        message.instances.push($root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32()));
-                                        break;
-                                    case 2:
-                                        message.nextPageToken = reader.string();
-                                        break;
+                                    case 1: {
+                                            if (!(message.instances && message.instances.length))
+                                                message.instances = [];
+                                            message.instances.push($root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.nextPageToken = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -26931,6 +31650,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for ListInstancesResponse
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.ListInstancesResponse
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            ListInstancesResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.ListInstancesResponse";
+                            };
+    
                             return ListInstancesResponse;
                         })();
     
@@ -27037,12 +31771,14 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.fieldMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -27151,6 +31887,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for UpdateInstanceRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceRequest";
+                            };
+    
                             return UpdateInstanceRequest;
                         })();
     
@@ -27246,9 +31997,10 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.name = reader.string();
-                                        break;
+                                    case 1: {
+                                            message.name = reader.string();
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -27336,6 +32088,21 @@
                              */
                             DeleteInstanceRequest.prototype.toJSON = function toJSON() {
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DeleteInstanceRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.DeleteInstanceRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DeleteInstanceRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.DeleteInstanceRequest";
                             };
     
                             return DeleteInstanceRequest;
@@ -27466,18 +32233,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 3:
-                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -27612,6 +32383,21 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for CreateInstanceMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceMetadata";
+                            };
+    
                             return CreateInstanceMetadata;
                         })();
     
@@ -27740,18 +32526,22 @@
                                 while (reader.pos < end) {
                                     var tag = reader.uint32();
                                     switch (tag >>> 3) {
-                                    case 1:
-                                        message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
-                                        break;
-                                    case 2:
-                                        message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 3:
-                                        message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
-                                    case 4:
-                                        message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                        break;
+                                    case 1: {
+                                            message.instance = $root.google.spanner.admin.instance.v1.Instance.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.startTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.endTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
                                     default:
                                         reader.skipType(tag & 7);
                                         break;
@@ -27886,7 +32676,552 @@
                                 return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                             };
     
+                            /**
+                             * Gets the default type url for UpdateInstanceMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceMetadata";
+                            };
+    
                             return UpdateInstanceMetadata;
+                        })();
+    
+                        v1.CreateInstanceConfigMetadata = (function() {
+    
+                            /**
+                             * Properties of a CreateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface ICreateInstanceConfigMetadata
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] CreateInstanceConfigMetadata instanceConfig
+                             * @property {google.spanner.admin.instance.v1.IOperationProgress|null} [progress] CreateInstanceConfigMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] CreateInstanceConfigMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new CreateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents a CreateInstanceConfigMetadata.
+                             * @implements ICreateInstanceConfigMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata=} [properties] Properties to set
+                             */
+                            function CreateInstanceConfigMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * CreateInstanceConfigMetadata instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.instanceConfig = null;
+    
+                            /**
+                             * CreateInstanceConfigMetadata progress.
+                             * @member {google.spanner.admin.instance.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.progress = null;
+    
+                            /**
+                             * CreateInstanceConfigMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             */
+                            CreateInstanceConfigMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new CreateInstanceConfigMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata instance
+                             */
+                            CreateInstanceConfigMetadata.create = function create(properties) {
+                                return new CreateInstanceConfigMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata} message CreateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.instance.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified CreateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata} message CreateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            CreateInstanceConfigMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a CreateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            CreateInstanceConfigMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a CreateInstanceConfigMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            CreateInstanceConfigMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.instance.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a CreateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} CreateInstanceConfigMetadata
+                             */
+                            CreateInstanceConfigMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.CreateInstanceConfigMetadata();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.CreateInstanceConfigMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a CreateInstanceConfigMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.CreateInstanceConfigMetadata} message CreateInstanceConfigMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            CreateInstanceConfigMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.instance.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this CreateInstanceConfigMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            CreateInstanceConfigMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for CreateInstanceConfigMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.CreateInstanceConfigMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            CreateInstanceConfigMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata";
+                            };
+    
+                            return CreateInstanceConfigMetadata;
+                        })();
+    
+                        v1.UpdateInstanceConfigMetadata = (function() {
+    
+                            /**
+                             * Properties of an UpdateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IUpdateInstanceConfigMetadata
+                             * @property {google.spanner.admin.instance.v1.IInstanceConfig|null} [instanceConfig] UpdateInstanceConfigMetadata instanceConfig
+                             * @property {google.spanner.admin.instance.v1.IOperationProgress|null} [progress] UpdateInstanceConfigMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] UpdateInstanceConfigMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new UpdateInstanceConfigMetadata.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an UpdateInstanceConfigMetadata.
+                             * @implements IUpdateInstanceConfigMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata=} [properties] Properties to set
+                             */
+                            function UpdateInstanceConfigMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateInstanceConfigMetadata instanceConfig.
+                             * @member {google.spanner.admin.instance.v1.IInstanceConfig|null|undefined} instanceConfig
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.instanceConfig = null;
+    
+                            /**
+                             * UpdateInstanceConfigMetadata progress.
+                             * @member {google.spanner.admin.instance.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.progress = null;
+    
+                            /**
+                             * UpdateInstanceConfigMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             */
+                            UpdateInstanceConfigMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new UpdateInstanceConfigMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata instance
+                             */
+                            UpdateInstanceConfigMetadata.create = function create(properties) {
+                                return new UpdateInstanceConfigMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.instanceConfig != null && Object.hasOwnProperty.call(message, "instanceConfig"))
+                                    $root.google.spanner.admin.instance.v1.InstanceConfig.encode(message.instanceConfig, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.instance.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateInstanceConfigMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateInstanceConfigMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateInstanceConfigMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateInstanceConfigMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateInstanceConfigMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateInstanceConfigMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.InstanceConfig.verify(message.instanceConfig);
+                                    if (error)
+                                        return "instanceConfig." + error;
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.instance.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateInstanceConfigMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} UpdateInstanceConfigMetadata
+                             */
+                            UpdateInstanceConfigMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata();
+                                if (object.instanceConfig != null) {
+                                    if (typeof object.instanceConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.instanceConfig: object expected");
+                                    message.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.fromObject(object.instanceConfig);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.instance.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateInstanceConfigMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata} message UpdateInstanceConfigMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateInstanceConfigMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.instanceConfig = null;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.instanceConfig != null && message.hasOwnProperty("instanceConfig"))
+                                    object.instanceConfig = $root.google.spanner.admin.instance.v1.InstanceConfig.toObject(message.instanceConfig, options);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.instance.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateInstanceConfigMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateInstanceConfigMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateInstanceConfigMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateInstanceConfigMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.UpdateInstanceConfigMetadata";
+                            };
+    
+                            return UpdateInstanceConfigMetadata;
                         })();
     
                         return v1;
@@ -28010,12 +33345,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.commitStats = $root.google.spanner.v1.CommitResponse.CommitStats.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -28124,6 +33461,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for CommitResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.CommitResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    CommitResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.CommitResponse";
+                    };
+    
                     CommitResponse.CommitStats = (function() {
     
                         /**
@@ -28216,9 +33568,10 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.mutationCount = reader.int64();
-                                    break;
+                                case 1: {
+                                        message.mutationCount = reader.int64();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -28320,6 +33673,21 @@
                          */
                         CommitStats.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for CommitStats
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.CommitResponse.CommitStats
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        CommitStats.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.CommitResponse.CommitStats";
                         };
     
                         return CommitStats;
@@ -28478,18 +33846,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.startClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.startOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.endClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.endOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.startClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.startOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.endClosed = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    message.endOpen = $root.google.protobuf.ListValue.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -28647,6 +34019,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for KeyRange
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.KeyRange
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    KeyRange.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.KeyRange";
+                    };
+    
                     return KeyRange;
                 })();
     
@@ -28768,19 +34155,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.keys && message.keys.length))
-                                    message.keys = [];
-                                message.keys.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                if (!(message.ranges && message.ranges.length))
-                                    message.ranges = [];
-                                message.ranges.push($root.google.spanner.v1.KeyRange.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.all = reader.bool();
-                                break;
+                            case 1: {
+                                    if (!(message.keys && message.keys.length))
+                                        message.keys = [];
+                                    message.keys.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.ranges && message.ranges.length))
+                                        message.ranges = [];
+                                    message.ranges.push($root.google.spanner.v1.KeyRange.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 3: {
+                                    message.all = reader.bool();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -28920,6 +34310,21 @@
                      */
                     KeySet.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for KeySet
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.KeySet
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    KeySet.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.KeySet";
                     };
     
                     return KeySet;
@@ -29075,21 +34480,26 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.insert = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.update = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.replace = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
-                                break;
-                            case 5:
-                                message["delete"] = $root.google.spanner.v1.Mutation.Delete.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.insert = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.update = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.insertOrUpdate = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    message.replace = $root.google.spanner.v1.Mutation.Write.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 5: {
+                                    message["delete"] = $root.google.spanner.v1.Mutation.Delete.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -29269,6 +34679,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for Mutation
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.Mutation
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Mutation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.Mutation";
+                    };
+    
                     Mutation.Write = (function() {
     
                         /**
@@ -29387,19 +34812,22 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.table = reader.string();
-                                    break;
-                                case 2:
-                                    if (!(message.columns && message.columns.length))
-                                        message.columns = [];
-                                    message.columns.push(reader.string());
-                                    break;
-                                case 3:
-                                    if (!(message.values && message.values.length))
-                                        message.values = [];
-                                    message.values.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                    break;
+                                case 1: {
+                                        message.table = reader.string();
+                                        break;
+                                    }
+                                case 2: {
+                                        if (!(message.columns && message.columns.length))
+                                            message.columns = [];
+                                        message.columns.push(reader.string());
+                                        break;
+                                    }
+                                case 3: {
+                                        if (!(message.values && message.values.length))
+                                            message.values = [];
+                                        message.values.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -29536,6 +34964,21 @@
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
     
+                        /**
+                         * Gets the default type url for Write
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.Mutation.Write
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        Write.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.Mutation.Write";
+                        };
+    
                         return Write;
                     })();
     
@@ -29642,12 +35085,14 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.table = reader.string();
-                                    break;
-                                case 2:
-                                    message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
-                                    break;
+                                case 1: {
+                                        message.table = reader.string();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -29749,6 +35194,21 @@
                          */
                         Delete.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for Delete
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.Mutation.Delete
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        Delete.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.Mutation.Delete";
                         };
     
                         return Delete;
@@ -29917,29 +35377,36 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.index = reader.int32();
-                                break;
-                            case 2:
-                                message.kind = reader.int32();
-                                break;
-                            case 3:
-                                message.displayName = reader.string();
-                                break;
-                            case 4:
-                                if (!(message.childLinks && message.childLinks.length))
-                                    message.childLinks = [];
-                                message.childLinks.push($root.google.spanner.v1.PlanNode.ChildLink.decode(reader, reader.uint32()));
-                                break;
-                            case 5:
-                                message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.decode(reader, reader.uint32());
-                                break;
-                            case 6:
-                                message.metadata = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 7:
-                                message.executionStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.index = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.kind = reader.int32();
+                                    break;
+                                }
+                            case 3: {
+                                    message.displayName = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    if (!(message.childLinks && message.childLinks.length))
+                                        message.childLinks = [];
+                                    message.childLinks.push($root.google.spanner.v1.PlanNode.ChildLink.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 5: {
+                                    message.shortRepresentation = $root.google.spanner.v1.PlanNode.ShortRepresentation.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 6: {
+                                    message.metadata = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 7: {
+                                    message.executionStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -30032,6 +35499,12 @@
                         if (object.index != null)
                             message.index = object.index | 0;
                         switch (object.kind) {
+                        default:
+                            if (typeof object.kind === "number") {
+                                message.kind = object.kind;
+                                break;
+                            }
+                            break;
                         case "KIND_UNSPECIFIED":
                         case 0:
                             message.kind = 0;
@@ -30101,7 +35574,7 @@
                         if (message.index != null && message.hasOwnProperty("index"))
                             object.index = message.index;
                         if (message.kind != null && message.hasOwnProperty("kind"))
-                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
+                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] === undefined ? message.kind : $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
                         if (message.displayName != null && message.hasOwnProperty("displayName"))
                             object.displayName = message.displayName;
                         if (message.childLinks && message.childLinks.length) {
@@ -30127,6 +35600,21 @@
                      */
                     PlanNode.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for PlanNode
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PlanNode
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PlanNode.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PlanNode";
                     };
     
                     /**
@@ -30259,15 +35747,18 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.childIndex = reader.int32();
-                                    break;
-                                case 2:
-                                    message.type = reader.string();
-                                    break;
-                                case 3:
-                                    message.variable = reader.string();
-                                    break;
+                                case 1: {
+                                        message.childIndex = reader.int32();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.type = reader.string();
+                                        break;
+                                    }
+                                case 3: {
+                                        message.variable = reader.string();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -30372,6 +35863,21 @@
                          */
                         ChildLink.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for ChildLink
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.PlanNode.ChildLink
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ChildLink.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.PlanNode.ChildLink";
                         };
     
                         return ChildLink;
@@ -30482,31 +35988,33 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.description = reader.string();
-                                    break;
-                                case 2:
-                                    if (message.subqueries === $util.emptyObject)
-                                        message.subqueries = {};
-                                    var end2 = reader.uint32() + reader.pos;
-                                    key = "";
-                                    value = 0;
-                                    while (reader.pos < end2) {
-                                        var tag2 = reader.uint32();
-                                        switch (tag2 >>> 3) {
-                                        case 1:
-                                            key = reader.string();
-                                            break;
-                                        case 2:
-                                            value = reader.int32();
-                                            break;
-                                        default:
-                                            reader.skipType(tag2 & 7);
-                                            break;
-                                        }
+                                case 1: {
+                                        message.description = reader.string();
+                                        break;
                                     }
-                                    message.subqueries[key] = value;
-                                    break;
+                                case 2: {
+                                        if (message.subqueries === $util.emptyObject)
+                                            message.subqueries = {};
+                                        var end2 = reader.uint32() + reader.pos;
+                                        key = "";
+                                        value = 0;
+                                        while (reader.pos < end2) {
+                                            var tag2 = reader.uint32();
+                                            switch (tag2 >>> 3) {
+                                            case 1:
+                                                key = reader.string();
+                                                break;
+                                            case 2:
+                                                value = reader.int32();
+                                                break;
+                                            default:
+                                                reader.skipType(tag2 & 7);
+                                                break;
+                                            }
+                                        }
+                                        message.subqueries[key] = value;
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -30619,6 +36127,21 @@
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
     
+                        /**
+                         * Gets the default type url for ShortRepresentation
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.PlanNode.ShortRepresentation
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ShortRepresentation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.PlanNode.ShortRepresentation";
+                        };
+    
                         return ShortRepresentation;
                     })();
     
@@ -30719,11 +36242,12 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.planNodes && message.planNodes.length))
-                                    message.planNodes = [];
-                                message.planNodes.push($root.google.spanner.v1.PlanNode.decode(reader, reader.uint32()));
-                                break;
+                            case 1: {
+                                    if (!(message.planNodes && message.planNodes.length))
+                                        message.planNodes = [];
+                                    message.planNodes.push($root.google.spanner.v1.PlanNode.decode(reader, reader.uint32()));
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -30828,6 +36352,21 @@
                      */
                     QueryPlan.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for QueryPlan
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.QueryPlan
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    QueryPlan.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.QueryPlan";
                     };
     
                     return QueryPlan;
@@ -30949,17 +36488,20 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                if (!(message.rows && message.rows.length))
-                                    message.rows = [];
-                                message.rows.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.rows && message.rows.length))
+                                        message.rows = [];
+                                    message.rows.push($root.google.protobuf.ListValue.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 3: {
+                                    message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -31092,6 +36634,21 @@
                      */
                     ResultSet.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for ResultSet
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ResultSet
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ResultSet.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ResultSet";
                     };
     
                     return ResultSet;
@@ -31235,23 +36792,28 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                if (!(message.values && message.values.length))
-                                    message.values = [];
-                                message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.chunkedValue = reader.bool();
-                                break;
-                            case 4:
-                                message.resumeToken = reader.bytes();
-                                break;
-                            case 5:
-                                message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.metadata = $root.google.spanner.v1.ResultSetMetadata.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.values && message.values.length))
+                                        message.values = [];
+                                    message.values.push($root.google.protobuf.Value.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 3: {
+                                    message.chunkedValue = reader.bool();
+                                    break;
+                                }
+                            case 4: {
+                                    message.resumeToken = reader.bytes();
+                                    break;
+                                }
+                            case 5: {
+                                    message.stats = $root.google.spanner.v1.ResultSetStats.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -31347,7 +36909,7 @@
                         if (object.resumeToken != null)
                             if (typeof object.resumeToken === "string")
                                 $util.base64.decode(object.resumeToken, message.resumeToken = $util.newBuffer($util.base64.length(object.resumeToken)), 0);
-                            else if (object.resumeToken.length)
+                            else if (object.resumeToken.length >= 0)
                                 message.resumeToken = object.resumeToken;
                         if (object.stats != null) {
                             if (typeof object.stats !== "object")
@@ -31411,6 +36973,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for PartialResultSet
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PartialResultSet
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PartialResultSet.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PartialResultSet";
+                    };
+    
                     return PartialResultSet;
                 })();
     
@@ -31422,6 +36999,7 @@
                      * @interface IResultSetMetadata
                      * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
                      * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
+                     * @property {google.spanner.v1.IStructType|null} [undeclaredParameters] ResultSetMetadata undeclaredParameters
                      */
     
                     /**
@@ -31456,6 +37034,14 @@
                     ResultSetMetadata.prototype.transaction = null;
     
                     /**
+                     * ResultSetMetadata undeclaredParameters.
+                     * @member {google.spanner.v1.IStructType|null|undefined} undeclaredParameters
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     */
+                    ResultSetMetadata.prototype.undeclaredParameters = null;
+    
+                    /**
                      * Creates a new ResultSetMetadata instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ResultSetMetadata
@@ -31483,6 +37069,8 @@
                             $root.google.spanner.v1.StructType.encode(message.rowType, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         if (message.transaction != null && Object.hasOwnProperty.call(message, "transaction"))
                             $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.undeclaredParameters != null && Object.hasOwnProperty.call(message, "undeclaredParameters"))
+                            $root.google.spanner.v1.StructType.encode(message.undeclaredParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -31517,12 +37105,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.rowType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.rowType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.undeclaredParameters = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -31568,6 +37162,11 @@
                             if (error)
                                 return "transaction." + error;
                         }
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters")) {
+                            var error = $root.google.spanner.v1.StructType.verify(message.undeclaredParameters);
+                            if (error)
+                                return "undeclaredParameters." + error;
+                        }
                         return null;
                     };
     
@@ -31593,6 +37192,11 @@
                                 throw TypeError(".google.spanner.v1.ResultSetMetadata.transaction: object expected");
                             message.transaction = $root.google.spanner.v1.Transaction.fromObject(object.transaction);
                         }
+                        if (object.undeclaredParameters != null) {
+                            if (typeof object.undeclaredParameters !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetMetadata.undeclaredParameters: object expected");
+                            message.undeclaredParameters = $root.google.spanner.v1.StructType.fromObject(object.undeclaredParameters);
+                        }
                         return message;
                     };
     
@@ -31612,11 +37216,14 @@
                         if (options.defaults) {
                             object.rowType = null;
                             object.transaction = null;
+                            object.undeclaredParameters = null;
                         }
                         if (message.rowType != null && message.hasOwnProperty("rowType"))
                             object.rowType = $root.google.spanner.v1.StructType.toObject(message.rowType, options);
                         if (message.transaction != null && message.hasOwnProperty("transaction"))
                             object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters"))
+                            object.undeclaredParameters = $root.google.spanner.v1.StructType.toObject(message.undeclaredParameters, options);
                         return object;
                     };
     
@@ -31629,6 +37236,21 @@
                      */
                     ResultSetMetadata.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for ResultSetMetadata
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ResultSetMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ResultSetMetadata";
                     };
     
                     return ResultSetMetadata;
@@ -31773,18 +37395,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.queryPlan = $root.google.spanner.v1.QueryPlan.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.queryStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.rowCountExact = reader.int64();
-                                break;
-                            case 4:
-                                message.rowCountLowerBound = reader.int64();
-                                break;
+                            case 1: {
+                                    message.queryPlan = $root.google.spanner.v1.QueryPlan.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.queryStats = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.rowCountExact = reader.int64();
+                                    break;
+                                }
+                            case 4: {
+                                    message.rowCountLowerBound = reader.int64();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -31940,6 +37566,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ResultSetStats
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ResultSetStats
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ResultSetStats.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ResultSetStats";
+                    };
+    
                     return ResultSetStats;
                 })();
     
@@ -32071,15 +37712,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.partitionedDml = $root.google.spanner.v1.TransactionOptions.PartitionedDml.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -32219,12 +37863,28 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for TransactionOptions
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    TransactionOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.TransactionOptions";
+                    };
+    
                     TransactionOptions.ReadWrite = (function() {
     
                         /**
                          * Properties of a ReadWrite.
                          * @memberof google.spanner.v1.TransactionOptions
                          * @interface IReadWrite
+                         * @property {google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null} [readLockMode] ReadWrite readLockMode
                          */
     
                         /**
@@ -32241,6 +37901,14 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
+    
+                        /**
+                         * ReadWrite readLockMode.
+                         * @member {google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode} readLockMode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @instance
+                         */
+                        ReadWrite.prototype.readLockMode = 0;
     
                         /**
                          * Creates a new ReadWrite instance using the specified properties.
@@ -32266,6 +37934,8 @@
                         ReadWrite.encode = function encode(message, writer) {
                             if (!writer)
                                 writer = $Writer.create();
+                            if (message.readLockMode != null && Object.hasOwnProperty.call(message, "readLockMode"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.readLockMode);
                             return writer;
                         };
     
@@ -32300,6 +37970,10 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
+                                case 1: {
+                                        message.readLockMode = reader.int32();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -32335,6 +38009,15 @@
                         ReadWrite.verify = function verify(message) {
                             if (typeof message !== "object" || message === null)
                                 return "object expected";
+                            if (message.readLockMode != null && message.hasOwnProperty("readLockMode"))
+                                switch (message.readLockMode) {
+                                default:
+                                    return "readLockMode: enum value expected";
+                                case 0:
+                                case 1:
+                                case 2:
+                                    break;
+                                }
                             return null;
                         };
     
@@ -32349,7 +38032,28 @@
                         ReadWrite.fromObject = function fromObject(object) {
                             if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadWrite)
                                 return object;
-                            return new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                            var message = new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                            switch (object.readLockMode) {
+                            default:
+                                if (typeof object.readLockMode === "number") {
+                                    message.readLockMode = object.readLockMode;
+                                    break;
+                                }
+                                break;
+                            case "READ_LOCK_MODE_UNSPECIFIED":
+                            case 0:
+                                message.readLockMode = 0;
+                                break;
+                            case "PESSIMISTIC":
+                            case 1:
+                                message.readLockMode = 1;
+                                break;
+                            case "OPTIMISTIC":
+                            case 2:
+                                message.readLockMode = 2;
+                                break;
+                            }
+                            return message;
                         };
     
                         /**
@@ -32361,8 +38065,15 @@
                          * @param {$protobuf.IConversionOptions} [options] Conversion options
                          * @returns {Object.<string,*>} Plain object
                          */
-                        ReadWrite.toObject = function toObject() {
-                            return {};
+                        ReadWrite.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                object.readLockMode = options.enums === String ? "READ_LOCK_MODE_UNSPECIFIED" : 0;
+                            if (message.readLockMode != null && message.hasOwnProperty("readLockMode"))
+                                object.readLockMode = options.enums === String ? $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] === undefined ? message.readLockMode : $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] : message.readLockMode;
+                            return object;
                         };
     
                         /**
@@ -32375,6 +38086,37 @@
                         ReadWrite.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
+    
+                        /**
+                         * Gets the default type url for ReadWrite
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ReadWrite.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.TransactionOptions.ReadWrite";
+                        };
+    
+                        /**
+                         * ReadLockMode enum.
+                         * @name google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+                         * @enum {number}
+                         * @property {number} READ_LOCK_MODE_UNSPECIFIED=0 READ_LOCK_MODE_UNSPECIFIED value
+                         * @property {number} PESSIMISTIC=1 PESSIMISTIC value
+                         * @property {number} OPTIMISTIC=2 OPTIMISTIC value
+                         */
+                        ReadWrite.ReadLockMode = (function() {
+                            var valuesById = {}, values = Object.create(valuesById);
+                            values[valuesById[0] = "READ_LOCK_MODE_UNSPECIFIED"] = 0;
+                            values[valuesById[1] = "PESSIMISTIC"] = 1;
+                            values[valuesById[2] = "OPTIMISTIC"] = 2;
+                            return values;
+                        })();
     
                         return ReadWrite;
                     })();
@@ -32534,6 +38276,21 @@
                          */
                         PartitionedDml.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for PartitionedDml
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.TransactionOptions.PartitionedDml
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        PartitionedDml.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.TransactionOptions.PartitionedDml";
                         };
     
                         return PartitionedDml;
@@ -32700,24 +38457,30 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.strong = reader.bool();
-                                    break;
-                                case 2:
-                                    message.minReadTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                    break;
-                                case 3:
-                                    message.maxStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                                    break;
-                                case 4:
-                                    message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                    break;
-                                case 5:
-                                    message.exactStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                                    break;
-                                case 6:
-                                    message.returnReadTimestamp = reader.bool();
-                                    break;
+                                case 1: {
+                                        message.strong = reader.bool();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.minReadTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    }
+                                case 3: {
+                                        message.maxStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                        break;
+                                    }
+                                case 4: {
+                                        message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                        break;
+                                    }
+                                case 5: {
+                                        message.exactStaleness = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                        break;
+                                    }
+                                case 6: {
+                                        message.returnReadTimestamp = reader.bool();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -32900,6 +38663,21 @@
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
     
+                        /**
+                         * Gets the default type url for ReadOnly
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.TransactionOptions.ReadOnly
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ReadOnly.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.TransactionOptions.ReadOnly";
+                        };
+    
                         return ReadOnly;
                     })();
     
@@ -33009,12 +38787,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.id = reader.bytes();
-                                break;
-                            case 2:
-                                message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.id = reader.bytes();
+                                    break;
+                                }
+                            case 2: {
+                                    message.readTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -33076,7 +38856,7 @@
                         if (object.id != null)
                             if (typeof object.id === "string")
                                 $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
-                            else if (object.id.length)
+                            else if (object.id.length >= 0)
                                 message.id = object.id;
                         if (object.readTimestamp != null) {
                             if (typeof object.readTimestamp !== "object")
@@ -33125,6 +38905,21 @@
                      */
                     Transaction.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Transaction
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.Transaction
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Transaction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.Transaction";
                     };
     
                     return Transaction;
@@ -33258,15 +39053,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.singleUse = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
-                            case 2:
-                                message.id = reader.bytes();
-                                break;
-                            case 3:
-                                message.begin = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.singleUse = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.id = reader.bytes();
+                                    break;
+                                }
+                            case 3: {
+                                    message.begin = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -33351,7 +39149,7 @@
                         if (object.id != null)
                             if (typeof object.id === "string")
                                 $util.base64.decode(object.id, message.id = $util.newBuffer($util.base64.length(object.id)), 0);
-                            else if (object.id.length)
+                            else if (object.id.length >= 0)
                                 message.id = object.id;
                         if (object.begin != null) {
                             if (typeof object.begin !== "object")
@@ -33401,6 +39199,21 @@
                      */
                     TransactionSelector.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for TransactionSelector
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.TransactionSelector
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    TransactionSelector.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.TransactionSelector";
                     };
     
                     return TransactionSelector;
@@ -33531,18 +39344,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.code = reader.int32();
-                                break;
-                            case 2:
-                                message.arrayElementType = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.structType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.typeAnnotation = reader.int32();
-                                break;
+                            case 1: {
+                                    message.code = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.arrayElementType = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.structType = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    message.typeAnnotation = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -33612,6 +39429,7 @@
                                 return "typeAnnotation: enum value expected";
                             case 0:
                             case 2:
+                            case 3:
                                 break;
                             }
                         return null;
@@ -33630,6 +39448,12 @@
                             return object;
                         var message = new $root.google.spanner.v1.Type();
                         switch (object.code) {
+                        default:
+                            if (typeof object.code === "number") {
+                                message.code = object.code;
+                                break;
+                            }
+                            break;
                         case "TYPE_CODE_UNSPECIFIED":
                         case 0:
                             message.code = 0;
@@ -33690,6 +39514,12 @@
                             message.structType = $root.google.spanner.v1.StructType.fromObject(object.structType);
                         }
                         switch (object.typeAnnotation) {
+                        default:
+                            if (typeof object.typeAnnotation === "number") {
+                                message.typeAnnotation = object.typeAnnotation;
+                                break;
+                            }
+                            break;
                         case "TYPE_ANNOTATION_CODE_UNSPECIFIED":
                         case 0:
                             message.typeAnnotation = 0;
@@ -33697,6 +39527,10 @@
                         case "PG_NUMERIC":
                         case 2:
                             message.typeAnnotation = 2;
+                            break;
+                        case "PG_JSONB":
+                        case 3:
+                            message.typeAnnotation = 3;
                             break;
                         }
                         return message;
@@ -33722,13 +39556,13 @@
                             object.typeAnnotation = options.enums === String ? "TYPE_ANNOTATION_CODE_UNSPECIFIED" : 0;
                         }
                         if (message.code != null && message.hasOwnProperty("code"))
-                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] : message.code;
+                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] === undefined ? message.code : $root.google.spanner.v1.TypeCode[message.code] : message.code;
                         if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
                             object.arrayElementType = $root.google.spanner.v1.Type.toObject(message.arrayElementType, options);
                         if (message.structType != null && message.hasOwnProperty("structType"))
                             object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
                         if (message.typeAnnotation != null && message.hasOwnProperty("typeAnnotation"))
-                            object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
+                            object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] === undefined ? message.typeAnnotation : $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
                         return object;
                     };
     
@@ -33741,6 +39575,21 @@
                      */
                     Type.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Type
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.Type
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Type.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.Type";
                     };
     
                     return Type;
@@ -33840,11 +39689,12 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.fields && message.fields.length))
-                                    message.fields = [];
-                                message.fields.push($root.google.spanner.v1.StructType.Field.decode(reader, reader.uint32()));
-                                break;
+                            case 1: {
+                                    if (!(message.fields && message.fields.length))
+                                        message.fields = [];
+                                    message.fields.push($root.google.spanner.v1.StructType.Field.decode(reader, reader.uint32()));
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -33951,6 +39801,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for StructType
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.StructType
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    StructType.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.StructType";
+                    };
+    
                     StructType.Field = (function() {
     
                         /**
@@ -34054,12 +39919,14 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.name = reader.string();
-                                    break;
-                                case 2:
-                                    message.type = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                    break;
+                                case 1: {
+                                        message.name = reader.string();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.type = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -34163,6 +40030,21 @@
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
     
+                        /**
+                         * Gets the default type url for Field
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.StructType.Field
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        Field.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.StructType.Field";
+                        };
+    
                         return Field;
                     })();
     
@@ -34209,11 +40091,13 @@
                  * @enum {number}
                  * @property {number} TYPE_ANNOTATION_CODE_UNSPECIFIED=0 TYPE_ANNOTATION_CODE_UNSPECIFIED value
                  * @property {number} PG_NUMERIC=2 PG_NUMERIC value
+                 * @property {number} PG_JSONB=3 PG_JSONB value
                  */
                 v1.TypeAnnotationCode = (function() {
                     var valuesById = {}, values = Object.create(valuesById);
                     values[valuesById[0] = "TYPE_ANNOTATION_CODE_UNSPECIFIED"] = 0;
                     values[valuesById[2] = "PG_NUMERIC"] = 2;
+                    values[valuesById[3] = "PG_JSONB"] = 3;
                     return values;
                 })();
     
@@ -34250,7 +40134,7 @@
                     };
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#createSession}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|createSession}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef CreateSessionCallback
                      * @type {function}
@@ -34283,7 +40167,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#batchCreateSessions}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|batchCreateSessions}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef BatchCreateSessionsCallback
                      * @type {function}
@@ -34316,7 +40200,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#getSession}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|getSession}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef GetSessionCallback
                      * @type {function}
@@ -34349,7 +40233,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#listSessions}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|listSessions}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef ListSessionsCallback
                      * @type {function}
@@ -34382,7 +40266,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#deleteSession}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|deleteSession}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef DeleteSessionCallback
                      * @type {function}
@@ -34415,7 +40299,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#executeSql}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|executeSql}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef ExecuteSqlCallback
                      * @type {function}
@@ -34448,7 +40332,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#executeStreamingSql}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|executeStreamingSql}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef ExecuteStreamingSqlCallback
                      * @type {function}
@@ -34481,7 +40365,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#executeBatchDml}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|executeBatchDml}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef ExecuteBatchDmlCallback
                      * @type {function}
@@ -34514,7 +40398,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#read}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|read}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef ReadCallback
                      * @type {function}
@@ -34547,7 +40431,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#streamingRead}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|streamingRead}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef StreamingReadCallback
                      * @type {function}
@@ -34580,7 +40464,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#beginTransaction}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|beginTransaction}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef BeginTransactionCallback
                      * @type {function}
@@ -34613,7 +40497,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#commit}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|commit}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef CommitCallback
                      * @type {function}
@@ -34646,7 +40530,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#rollback}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|rollback}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef RollbackCallback
                      * @type {function}
@@ -34679,7 +40563,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#partitionQuery}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|partitionQuery}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef PartitionQueryCallback
                      * @type {function}
@@ -34712,7 +40596,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.spanner.v1.Spanner#partitionRead}.
+                     * Callback as used by {@link google.spanner.v1.Spanner|partitionRead}.
                      * @memberof google.spanner.v1.Spanner
                      * @typedef PartitionReadCallback
                      * @type {function}
@@ -34850,12 +40734,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.database = reader.string();
-                                break;
-                            case 2:
-                                message.session = $root.google.spanner.v1.Session.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.database = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.session = $root.google.spanner.v1.Session.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -34957,6 +40843,21 @@
                      */
                     CreateSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for CreateSessionRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.CreateSessionRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    CreateSessionRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.CreateSessionRequest";
                     };
     
                     return CreateSessionRequest;
@@ -35076,15 +40977,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.database = reader.string();
-                                break;
-                            case 2:
-                                message.sessionTemplate = $root.google.spanner.v1.Session.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.sessionCount = reader.int32();
-                                break;
+                            case 1: {
+                                    message.database = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.sessionTemplate = $root.google.spanner.v1.Session.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.sessionCount = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35196,6 +41100,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for BatchCreateSessionsRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.BatchCreateSessionsRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BatchCreateSessionsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.BatchCreateSessionsRequest";
+                    };
+    
                     return BatchCreateSessionsRequest;
                 })();
     
@@ -35293,11 +41212,12 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.session && message.session.length))
-                                    message.session = [];
-                                message.session.push($root.google.spanner.v1.Session.decode(reader, reader.uint32()));
-                                break;
+                            case 1: {
+                                    if (!(message.session && message.session.length))
+                                        message.session = [];
+                                    message.session.push($root.google.spanner.v1.Session.decode(reader, reader.uint32()));
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35402,6 +41322,21 @@
                      */
                     BatchCreateSessionsResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for BatchCreateSessionsResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.BatchCreateSessionsResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BatchCreateSessionsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.BatchCreateSessionsResponse";
                     };
     
                     return BatchCreateSessionsResponse;
@@ -35545,40 +41480,45 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.name = reader.string();
-                                break;
-                            case 2:
-                                if (message.labels === $util.emptyObject)
-                                    message.labels = {};
-                                var end2 = reader.uint32() + reader.pos;
-                                key = "";
-                                value = "";
-                                while (reader.pos < end2) {
-                                    var tag2 = reader.uint32();
-                                    switch (tag2 >>> 3) {
-                                    case 1:
-                                        key = reader.string();
-                                        break;
-                                    case 2:
-                                        value = reader.string();
-                                        break;
-                                    default:
-                                        reader.skipType(tag2 & 7);
-                                        break;
-                                    }
+                            case 1: {
+                                    message.name = reader.string();
+                                    break;
                                 }
-                                message.labels[key] = value;
-                                break;
-                            case 3:
-                                message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                message.approximateLastUseTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
-                                break;
-                            case 5:
-                                message.creatorRole = reader.string();
-                                break;
+                            case 2: {
+                                    if (message.labels === $util.emptyObject)
+                                        message.labels = {};
+                                    var end2 = reader.uint32() + reader.pos;
+                                    key = "";
+                                    value = "";
+                                    while (reader.pos < end2) {
+                                        var tag2 = reader.uint32();
+                                        switch (tag2 >>> 3) {
+                                        case 1:
+                                            key = reader.string();
+                                            break;
+                                        case 2:
+                                            value = reader.string();
+                                            break;
+                                        default:
+                                            reader.skipType(tag2 & 7);
+                                            break;
+                                        }
+                                    }
+                                    message.labels[key] = value;
+                                    break;
+                                }
+                            case 3: {
+                                    message.createTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    message.approximateLastUseTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 5: {
+                                    message.creatorRole = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35726,6 +41666,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for Session
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.Session
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Session.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.Session";
+                    };
+    
                     return Session;
                 })();
     
@@ -35821,9 +41776,10 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.name = reader.string();
-                                break;
+                            case 1: {
+                                    message.name = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -35911,6 +41867,21 @@
                      */
                     GetSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for GetSessionRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.GetSessionRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    GetSessionRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.GetSessionRequest";
                     };
     
                     return GetSessionRequest;
@@ -36041,18 +42012,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.database = reader.string();
-                                break;
-                            case 2:
-                                message.pageSize = reader.int32();
-                                break;
-                            case 3:
-                                message.pageToken = reader.string();
-                                break;
-                            case 4:
-                                message.filter = reader.string();
-                                break;
+                            case 1: {
+                                    message.database = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.pageSize = reader.int32();
+                                    break;
+                                }
+                            case 3: {
+                                    message.pageToken = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.filter = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -36167,6 +42142,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ListSessionsRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ListSessionsRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ListSessionsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ListSessionsRequest";
+                    };
+    
                     return ListSessionsRequest;
                 })();
     
@@ -36275,14 +42265,16 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.sessions && message.sessions.length))
-                                    message.sessions = [];
-                                message.sessions.push($root.google.spanner.v1.Session.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                message.nextPageToken = reader.string();
-                                break;
+                            case 1: {
+                                    if (!(message.sessions && message.sessions.length))
+                                        message.sessions = [];
+                                    message.sessions.push($root.google.spanner.v1.Session.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 2: {
+                                    message.nextPageToken = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -36398,6 +42390,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ListSessionsResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ListSessionsResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ListSessionsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ListSessionsResponse";
+                    };
+    
                     return ListSessionsResponse;
                 })();
     
@@ -36493,9 +42500,10 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.name = reader.string();
-                                break;
+                            case 1: {
+                                    message.name = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -36583,6 +42591,21 @@
                      */
                     DeleteSessionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for DeleteSessionRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.DeleteSessionRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    DeleteSessionRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.DeleteSessionRequest";
                     };
     
                     return DeleteSessionRequest;
@@ -36702,15 +42725,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.priority = reader.int32();
-                                break;
-                            case 2:
-                                message.requestTag = reader.string();
-                                break;
-                            case 3:
-                                message.transactionTag = reader.string();
-                                break;
+                            case 1: {
+                                    message.priority = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.requestTag = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.transactionTag = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -36778,6 +42804,12 @@
                             return object;
                         var message = new $root.google.spanner.v1.RequestOptions();
                         switch (object.priority) {
+                        default:
+                            if (typeof object.priority === "number") {
+                                message.priority = object.priority;
+                                break;
+                            }
+                            break;
                         case "PRIORITY_UNSPECIFIED":
                         case 0:
                             message.priority = 0;
@@ -36821,7 +42853,7 @@
                             object.transactionTag = "";
                         }
                         if (message.priority != null && message.hasOwnProperty("priority"))
-                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
+                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] === undefined ? message.priority : $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
                         if (message.requestTag != null && message.hasOwnProperty("requestTag"))
                             object.requestTag = message.requestTag;
                         if (message.transactionTag != null && message.hasOwnProperty("transactionTag"))
@@ -36838,6 +42870,21 @@
                      */
                     RequestOptions.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for RequestOptions
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.RequestOptions
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    RequestOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.RequestOptions";
                     };
     
                     /**
@@ -37067,58 +43114,69 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.sql = reader.string();
-                                break;
-                            case 4:
-                                message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 5:
-                                if (message.paramTypes === $util.emptyObject)
-                                    message.paramTypes = {};
-                                var end2 = reader.uint32() + reader.pos;
-                                key = "";
-                                value = null;
-                                while (reader.pos < end2) {
-                                    var tag2 = reader.uint32();
-                                    switch (tag2 >>> 3) {
-                                    case 1:
-                                        key = reader.string();
-                                        break;
-                                    case 2:
-                                        value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                        break;
-                                    default:
-                                        reader.skipType(tag2 & 7);
-                                        break;
-                                    }
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
                                 }
-                                message.paramTypes[key] = value;
-                                break;
-                            case 6:
-                                message.resumeToken = reader.bytes();
-                                break;
-                            case 7:
-                                message.queryMode = reader.int32();
-                                break;
-                            case 8:
-                                message.partitionToken = reader.bytes();
-                                break;
-                            case 9:
-                                message.seqno = reader.int64();
-                                break;
-                            case 10:
-                                message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
-                                break;
-                            case 11:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.sql = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 5: {
+                                    if (message.paramTypes === $util.emptyObject)
+                                        message.paramTypes = {};
+                                    var end2 = reader.uint32() + reader.pos;
+                                    key = "";
+                                    value = null;
+                                    while (reader.pos < end2) {
+                                        var tag2 = reader.uint32();
+                                        switch (tag2 >>> 3) {
+                                        case 1:
+                                            key = reader.string();
+                                            break;
+                                        case 2:
+                                            value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                            break;
+                                        default:
+                                            reader.skipType(tag2 & 7);
+                                            break;
+                                        }
+                                    }
+                                    message.paramTypes[key] = value;
+                                    break;
+                                }
+                            case 6: {
+                                    message.resumeToken = reader.bytes();
+                                    break;
+                                }
+                            case 7: {
+                                    message.queryMode = reader.int32();
+                                    break;
+                                }
+                            case 8: {
+                                    message.partitionToken = reader.bytes();
+                                    break;
+                                }
+                            case 9: {
+                                    message.seqno = reader.int64();
+                                    break;
+                                }
+                            case 10: {
+                                    message.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 11: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -37250,9 +43308,15 @@
                         if (object.resumeToken != null)
                             if (typeof object.resumeToken === "string")
                                 $util.base64.decode(object.resumeToken, message.resumeToken = $util.newBuffer($util.base64.length(object.resumeToken)), 0);
-                            else if (object.resumeToken.length)
+                            else if (object.resumeToken.length >= 0)
                                 message.resumeToken = object.resumeToken;
                         switch (object.queryMode) {
+                        default:
+                            if (typeof object.queryMode === "number") {
+                                message.queryMode = object.queryMode;
+                                break;
+                            }
+                            break;
                         case "NORMAL":
                         case 0:
                             message.queryMode = 0;
@@ -37269,7 +43333,7 @@
                         if (object.partitionToken != null)
                             if (typeof object.partitionToken === "string")
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
-                            else if (object.partitionToken.length)
+                            else if (object.partitionToken.length >= 0)
                                 message.partitionToken = object.partitionToken;
                         if (object.seqno != null)
                             if ($util.Long)
@@ -37353,7 +43417,7 @@
                         if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
                             object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
                         if (message.queryMode != null && message.hasOwnProperty("queryMode"))
-                            object.queryMode = options.enums === String ? $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] : message.queryMode;
+                            object.queryMode = options.enums === String ? $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] === undefined ? message.queryMode : $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] : message.queryMode;
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
@@ -37377,6 +43441,21 @@
                      */
                     ExecuteSqlRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for ExecuteSqlRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ExecuteSqlRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ExecuteSqlRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ExecuteSqlRequest";
                     };
     
                     /**
@@ -37498,12 +43577,14 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.optimizerVersion = reader.string();
-                                    break;
-                                case 2:
-                                    message.optimizerStatisticsPackage = reader.string();
-                                    break;
+                                case 1: {
+                                        message.optimizerVersion = reader.string();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.optimizerStatisticsPackage = reader.string();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -37600,6 +43681,21 @@
                          */
                         QueryOptions.prototype.toJSON = function toJSON() {
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for QueryOptions
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.ExecuteSqlRequest.QueryOptions
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        QueryOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.ExecuteSqlRequest.QueryOptions";
                         };
     
                         return QueryOptions;
@@ -37746,23 +43842,28 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                if (!(message.statements && message.statements.length))
-                                    message.statements = [];
-                                message.statements.push($root.google.spanner.v1.ExecuteBatchDmlRequest.Statement.decode(reader, reader.uint32()));
-                                break;
-                            case 4:
-                                message.seqno = reader.int64();
-                                break;
-                            case 5:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    if (!(message.statements && message.statements.length))
+                                        message.statements = [];
+                                    message.statements.push($root.google.spanner.v1.ExecuteBatchDmlRequest.Statement.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 4: {
+                                    message.seqno = reader.int64();
+                                    break;
+                                }
+                            case 5: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -37927,6 +44028,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ExecuteBatchDmlRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ExecuteBatchDmlRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ExecuteBatchDmlRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ExecuteBatchDmlRequest";
+                    };
+    
                     ExecuteBatchDmlRequest.Statement = (function() {
     
                         /**
@@ -38045,34 +44161,37 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
-                                case 1:
-                                    message.sql = reader.string();
-                                    break;
-                                case 2:
-                                    message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                    break;
-                                case 3:
-                                    if (message.paramTypes === $util.emptyObject)
-                                        message.paramTypes = {};
-                                    var end2 = reader.uint32() + reader.pos;
-                                    key = "";
-                                    value = null;
-                                    while (reader.pos < end2) {
-                                        var tag2 = reader.uint32();
-                                        switch (tag2 >>> 3) {
-                                        case 1:
-                                            key = reader.string();
-                                            break;
-                                        case 2:
-                                            value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                            break;
-                                        default:
-                                            reader.skipType(tag2 & 7);
-                                            break;
-                                        }
+                                case 1: {
+                                        message.sql = reader.string();
+                                        break;
                                     }
-                                    message.paramTypes[key] = value;
-                                    break;
+                                case 2: {
+                                        message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                        break;
+                                    }
+                                case 3: {
+                                        if (message.paramTypes === $util.emptyObject)
+                                            message.paramTypes = {};
+                                        var end2 = reader.uint32() + reader.pos;
+                                        key = "";
+                                        value = null;
+                                        while (reader.pos < end2) {
+                                            var tag2 = reader.uint32();
+                                            switch (tag2 >>> 3) {
+                                            case 1:
+                                                key = reader.string();
+                                                break;
+                                            case 2:
+                                                value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                                break;
+                                            default:
+                                                reader.skipType(tag2 & 7);
+                                                break;
+                                            }
+                                        }
+                                        message.paramTypes[key] = value;
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -38204,6 +44323,21 @@
                             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                         };
     
+                        /**
+                         * Gets the default type url for Statement
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.ExecuteBatchDmlRequest.Statement
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        Statement.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.ExecuteBatchDmlRequest.Statement";
+                        };
+    
                         return Statement;
                     })();
     
@@ -38315,14 +44449,16 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.resultSets && message.resultSets.length))
-                                    message.resultSets = [];
-                                message.resultSets.push($root.google.spanner.v1.ResultSet.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                message.status = $root.google.rpc.Status.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    if (!(message.resultSets && message.resultSets.length))
+                                        message.resultSets = [];
+                                    message.resultSets.push($root.google.spanner.v1.ResultSet.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 2: {
+                                    message.status = $root.google.rpc.Status.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -38443,6 +44579,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for ExecuteBatchDmlResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ExecuteBatchDmlResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ExecuteBatchDmlResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ExecuteBatchDmlResponse";
+                    };
+    
                     return ExecuteBatchDmlResponse;
                 })();
     
@@ -38549,12 +44700,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.partitionSizeBytes = reader.int64();
-                                break;
-                            case 2:
-                                message.maxPartitions = reader.int64();
-                                break;
+                            case 1: {
+                                    message.partitionSizeBytes = reader.int64();
+                                    break;
+                                }
+                            case 2: {
+                                    message.maxPartitions = reader.int64();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -38679,6 +44832,21 @@
                      */
                     PartitionOptions.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for PartitionOptions
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PartitionOptions
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PartitionOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PartitionOptions";
                     };
     
                     return PartitionOptions;
@@ -38835,43 +45003,49 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.sql = reader.string();
-                                break;
-                            case 4:
-                                message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
-                                break;
-                            case 5:
-                                if (message.paramTypes === $util.emptyObject)
-                                    message.paramTypes = {};
-                                var end2 = reader.uint32() + reader.pos;
-                                key = "";
-                                value = null;
-                                while (reader.pos < end2) {
-                                    var tag2 = reader.uint32();
-                                    switch (tag2 >>> 3) {
-                                    case 1:
-                                        key = reader.string();
-                                        break;
-                                    case 2:
-                                        value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
-                                        break;
-                                    default:
-                                        reader.skipType(tag2 & 7);
-                                        break;
-                                    }
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
                                 }
-                                message.paramTypes[key] = value;
-                                break;
-                            case 6:
-                                message.partitionOptions = $root.google.spanner.v1.PartitionOptions.decode(reader, reader.uint32());
-                                break;
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.sql = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.params = $root.google.protobuf.Struct.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 5: {
+                                    if (message.paramTypes === $util.emptyObject)
+                                        message.paramTypes = {};
+                                    var end2 = reader.uint32() + reader.pos;
+                                    key = "";
+                                    value = null;
+                                    while (reader.pos < end2) {
+                                        var tag2 = reader.uint32();
+                                        switch (tag2 >>> 3) {
+                                        case 1:
+                                            key = reader.string();
+                                            break;
+                                        case 2:
+                                            value = $root.google.spanner.v1.Type.decode(reader, reader.uint32());
+                                            break;
+                                        default:
+                                            reader.skipType(tag2 & 7);
+                                            break;
+                                        }
+                                    }
+                                    message.paramTypes[key] = value;
+                                    break;
+                                }
+                            case 6: {
+                                    message.partitionOptions = $root.google.spanner.v1.PartitionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -39037,6 +45211,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for PartitionQueryRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PartitionQueryRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PartitionQueryRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PartitionQueryRequest";
+                    };
+    
                     return PartitionQueryRequest;
                 })();
     
@@ -39200,29 +45389,36 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.table = reader.string();
-                                break;
-                            case 4:
-                                message.index = reader.string();
-                                break;
-                            case 5:
-                                if (!(message.columns && message.columns.length))
-                                    message.columns = [];
-                                message.columns.push(reader.string());
-                                break;
-                            case 6:
-                                message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
-                                break;
-                            case 9:
-                                message.partitionOptions = $root.google.spanner.v1.PartitionOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.table = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.index = reader.string();
+                                    break;
+                                }
+                            case 5: {
+                                    if (!(message.columns && message.columns.length))
+                                        message.columns = [];
+                                    message.columns.push(reader.string());
+                                    break;
+                                }
+                            case 6: {
+                                    message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 9: {
+                                    message.partitionOptions = $root.google.spanner.v1.PartitionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -39389,6 +45585,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for PartitionReadRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PartitionReadRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PartitionReadRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PartitionReadRequest";
+                    };
+    
                     return PartitionReadRequest;
                 })();
     
@@ -39484,9 +45695,10 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.partitionToken = reader.bytes();
-                                break;
+                            case 1: {
+                                    message.partitionToken = reader.bytes();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -39543,7 +45755,7 @@
                         if (object.partitionToken != null)
                             if (typeof object.partitionToken === "string")
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
-                            else if (object.partitionToken.length)
+                            else if (object.partitionToken.length >= 0)
                                 message.partitionToken = object.partitionToken;
                         return message;
                     };
@@ -39583,6 +45795,21 @@
                      */
                     Partition.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Partition
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.Partition
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Partition.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.Partition";
                     };
     
                     return Partition;
@@ -39693,14 +45920,16 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.partitions && message.partitions.length))
-                                    message.partitions = [];
-                                message.partitions.push($root.google.spanner.v1.Partition.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    if (!(message.partitions && message.partitions.length))
+                                        message.partitions = [];
+                                    message.partitions.push($root.google.spanner.v1.Partition.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -39819,6 +46048,21 @@
                      */
                     PartitionResponse.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for PartitionResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.PartitionResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PartitionResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.PartitionResponse";
                     };
     
                     return PartitionResponse;
@@ -40017,38 +46261,48 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.table = reader.string();
-                                break;
-                            case 4:
-                                message.index = reader.string();
-                                break;
-                            case 5:
-                                if (!(message.columns && message.columns.length))
-                                    message.columns = [];
-                                message.columns.push(reader.string());
-                                break;
-                            case 6:
-                                message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
-                                break;
-                            case 8:
-                                message.limit = reader.int64();
-                                break;
-                            case 9:
-                                message.resumeToken = reader.bytes();
-                                break;
-                            case 10:
-                                message.partitionToken = reader.bytes();
-                                break;
-                            case 11:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.transaction = $root.google.spanner.v1.TransactionSelector.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.table = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.index = reader.string();
+                                    break;
+                                }
+                            case 5: {
+                                    if (!(message.columns && message.columns.length))
+                                        message.columns = [];
+                                    message.columns.push(reader.string());
+                                    break;
+                                }
+                            case 6: {
+                                    message.keySet = $root.google.spanner.v1.KeySet.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 8: {
+                                    message.limit = reader.int64();
+                                    break;
+                                }
+                            case 9: {
+                                    message.resumeToken = reader.bytes();
+                                    break;
+                                }
+                            case 10: {
+                                    message.partitionToken = reader.bytes();
+                                    break;
+                                }
+                            case 11: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -40174,12 +46428,12 @@
                         if (object.resumeToken != null)
                             if (typeof object.resumeToken === "string")
                                 $util.base64.decode(object.resumeToken, message.resumeToken = $util.newBuffer($util.base64.length(object.resumeToken)), 0);
-                            else if (object.resumeToken.length)
+                            else if (object.resumeToken.length >= 0)
                                 message.resumeToken = object.resumeToken;
                         if (object.partitionToken != null)
                             if (typeof object.partitionToken === "string")
                                 $util.base64.decode(object.partitionToken, message.partitionToken = $util.newBuffer($util.base64.length(object.partitionToken)), 0);
-                            else if (object.partitionToken.length)
+                            else if (object.partitionToken.length >= 0)
                                 message.partitionToken = object.partitionToken;
                         if (object.requestOptions != null) {
                             if (typeof object.requestOptions !== "object")
@@ -40269,6 +46523,21 @@
                      */
                     ReadRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for ReadRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.ReadRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    ReadRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.ReadRequest";
                     };
     
                     return ReadRequest;
@@ -40388,15 +46657,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.options = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
-                            case 3:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.options = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -40511,6 +46783,21 @@
                      */
                     BeginTransactionRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for BeginTransactionRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.BeginTransactionRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BeginTransactionRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.BeginTransactionRequest";
                     };
     
                     return BeginTransactionRequest;
@@ -40679,26 +46966,32 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transactionId = reader.bytes();
-                                break;
-                            case 3:
-                                message.singleUseTransaction = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
-                                break;
-                            case 4:
-                                if (!(message.mutations && message.mutations.length))
-                                    message.mutations = [];
-                                message.mutations.push($root.google.spanner.v1.Mutation.decode(reader, reader.uint32()));
-                                break;
-                            case 5:
-                                message.returnCommitStats = reader.bool();
-                                break;
-                            case 6:
-                                message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.transactionId = reader.bytes();
+                                    break;
+                                }
+                            case 3: {
+                                    message.singleUseTransaction = $root.google.spanner.v1.TransactionOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    if (!(message.mutations && message.mutations.length))
+                                        message.mutations = [];
+                                    message.mutations.push($root.google.spanner.v1.Mutation.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 5: {
+                                    message.returnCommitStats = reader.bool();
+                                    break;
+                                }
+                            case 6: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -40790,7 +47083,7 @@
                         if (object.transactionId != null)
                             if (typeof object.transactionId === "string")
                                 $util.base64.decode(object.transactionId, message.transactionId = $util.newBuffer($util.base64.length(object.transactionId)), 0);
-                            else if (object.transactionId.length)
+                            else if (object.transactionId.length >= 0)
                                 message.transactionId = object.transactionId;
                         if (object.singleUseTransaction != null) {
                             if (typeof object.singleUseTransaction !== "object")
@@ -40870,6 +47163,21 @@
                      */
                     CommitRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for CommitRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    CommitRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.CommitRequest";
                     };
     
                     return CommitRequest;
@@ -40978,12 +47286,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.session = reader.string();
-                                break;
-                            case 2:
-                                message.transactionId = reader.bytes();
-                                break;
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.transactionId = reader.bytes();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -41045,7 +47355,7 @@
                         if (object.transactionId != null)
                             if (typeof object.transactionId === "string")
                                 $util.base64.decode(object.transactionId, message.transactionId = $util.newBuffer($util.base64.length(object.transactionId)), 0);
-                            else if (object.transactionId.length)
+                            else if (object.transactionId.length >= 0)
                                 message.transactionId = object.transactionId;
                         return message;
                     };
@@ -41089,6 +47399,21 @@
                      */
                     RollbackRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for RollbackRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.RollbackRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    RollbackRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.RollbackRequest";
                     };
     
                     return RollbackRequest;
@@ -41300,36 +47625,43 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.type = reader.string();
-                            break;
-                        case 2:
-                            if (!(message.pattern && message.pattern.length))
-                                message.pattern = [];
-                            message.pattern.push(reader.string());
-                            break;
-                        case 3:
-                            message.nameField = reader.string();
-                            break;
-                        case 4:
-                            message.history = reader.int32();
-                            break;
-                        case 5:
-                            message.plural = reader.string();
-                            break;
-                        case 6:
-                            message.singular = reader.string();
-                            break;
-                        case 10:
-                            if (!(message.style && message.style.length))
-                                message.style = [];
-                            if ((tag & 7) === 2) {
-                                var end2 = reader.uint32() + reader.pos;
-                                while (reader.pos < end2)
+                        case 1: {
+                                message.type = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                if (!(message.pattern && message.pattern.length))
+                                    message.pattern = [];
+                                message.pattern.push(reader.string());
+                                break;
+                            }
+                        case 3: {
+                                message.nameField = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.history = reader.int32();
+                                break;
+                            }
+                        case 5: {
+                                message.plural = reader.string();
+                                break;
+                            }
+                        case 6: {
+                                message.singular = reader.string();
+                                break;
+                            }
+                        case 10: {
+                                if (!(message.style && message.style.length))
+                                    message.style = [];
+                                if ((tag & 7) === 2) {
+                                    var end2 = reader.uint32() + reader.pos;
+                                    while (reader.pos < end2)
+                                        message.style.push(reader.int32());
+                                } else
                                     message.style.push(reader.int32());
-                            } else
-                                message.style.push(reader.int32());
-                            break;
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -41432,6 +47764,12 @@
                     if (object.nameField != null)
                         message.nameField = String(object.nameField);
                     switch (object.history) {
+                    default:
+                        if (typeof object.history === "number") {
+                            message.history = object.history;
+                            break;
+                        }
+                        break;
                     case "HISTORY_UNSPECIFIED":
                     case 0:
                         message.history = 0;
@@ -41456,6 +47794,10 @@
                         for (var i = 0; i < object.style.length; ++i)
                             switch (object.style[i]) {
                             default:
+                                if (typeof object.style[i] === "number") {
+                                    message.style[i] = object.style[i];
+                                    break;
+                                }
                             case "STYLE_UNSPECIFIED":
                             case 0:
                                 message.style[i] = 0;
@@ -41503,7 +47845,7 @@
                     if (message.nameField != null && message.hasOwnProperty("nameField"))
                         object.nameField = message.nameField;
                     if (message.history != null && message.hasOwnProperty("history"))
-                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] : message.history;
+                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] === undefined ? message.history : $root.google.api.ResourceDescriptor.History[message.history] : message.history;
                     if (message.plural != null && message.hasOwnProperty("plural"))
                         object.plural = message.plural;
                     if (message.singular != null && message.hasOwnProperty("singular"))
@@ -41511,7 +47853,7 @@
                     if (message.style && message.style.length) {
                         object.style = [];
                         for (var j = 0; j < message.style.length; ++j)
-                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
+                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] === undefined ? message.style[j] : $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
                     }
                     return object;
                 };
@@ -41525,6 +47867,21 @@
                  */
                 ResourceDescriptor.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ResourceDescriptor
+                 * @function getTypeUrl
+                 * @memberof google.api.ResourceDescriptor
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ResourceDescriptor.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.api.ResourceDescriptor";
                 };
     
                 /**
@@ -41663,12 +48020,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.type = reader.string();
-                            break;
-                        case 2:
-                            message.childType = reader.string();
-                            break;
+                        case 1: {
+                                message.type = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.childType = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -41765,6 +48124,21 @@
                  */
                 ResourceReference.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for ResourceReference
+                 * @function getTypeUrl
+                 * @memberof google.api.ResourceReference
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ResourceReference.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.api.ResourceReference";
                 };
     
                 return ResourceReference;
@@ -41875,14 +48249,16 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.rules && message.rules.length))
-                                message.rules = [];
-                            message.rules.push($root.google.api.HttpRule.decode(reader, reader.uint32()));
-                            break;
-                        case 2:
-                            message.fullyDecodeReservedExpansion = reader.bool();
-                            break;
+                        case 1: {
+                                if (!(message.rules && message.rules.length))
+                                    message.rules = [];
+                                message.rules.push($root.google.api.HttpRule.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 2: {
+                                message.fullyDecodeReservedExpansion = reader.bool();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -41996,6 +48372,21 @@
                  */
                 Http.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Http
+                 * @function getTypeUrl
+                 * @memberof google.api.Http
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Http.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.api.Http";
                 };
     
                 return Http;
@@ -42208,38 +48599,48 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.selector = reader.string();
-                            break;
-                        case 2:
-                            message.get = reader.string();
-                            break;
-                        case 3:
-                            message.put = reader.string();
-                            break;
-                        case 4:
-                            message.post = reader.string();
-                            break;
-                        case 5:
-                            message["delete"] = reader.string();
-                            break;
-                        case 6:
-                            message.patch = reader.string();
-                            break;
-                        case 8:
-                            message.custom = $root.google.api.CustomHttpPattern.decode(reader, reader.uint32());
-                            break;
-                        case 7:
-                            message.body = reader.string();
-                            break;
-                        case 12:
-                            message.responseBody = reader.string();
-                            break;
-                        case 11:
-                            if (!(message.additionalBindings && message.additionalBindings.length))
-                                message.additionalBindings = [];
-                            message.additionalBindings.push($root.google.api.HttpRule.decode(reader, reader.uint32()));
-                            break;
+                        case 1: {
+                                message.selector = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.get = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.put = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.post = reader.string();
+                                break;
+                            }
+                        case 5: {
+                                message["delete"] = reader.string();
+                                break;
+                            }
+                        case 6: {
+                                message.patch = reader.string();
+                                break;
+                            }
+                        case 8: {
+                                message.custom = $root.google.api.CustomHttpPattern.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 7: {
+                                message.body = reader.string();
+                                break;
+                            }
+                        case 12: {
+                                message.responseBody = reader.string();
+                                break;
+                            }
+                        case 11: {
+                                if (!(message.additionalBindings && message.additionalBindings.length))
+                                    message.additionalBindings = [];
+                                message.additionalBindings.push($root.google.api.HttpRule.decode(reader, reader.uint32()));
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -42461,6 +48862,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for HttpRule
+                 * @function getTypeUrl
+                 * @memberof google.api.HttpRule
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                HttpRule.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.api.HttpRule";
+                };
+    
                 return HttpRule;
             })();
     
@@ -42567,12 +48983,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.kind = reader.string();
-                            break;
-                        case 2:
-                            message.path = reader.string();
-                            break;
+                        case 1: {
+                                message.kind = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.path = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -42671,6 +49089,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for CustomHttpPattern
+                 * @function getTypeUrl
+                 * @memberof google.api.CustomHttpPattern
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                CustomHttpPattern.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.api.CustomHttpPattern";
+                };
+    
                 return CustomHttpPattern;
             })();
     
@@ -42719,7 +49152,7 @@
                 };
     
                 /**
-                 * Callback as used by {@link google.longrunning.Operations#listOperations}.
+                 * Callback as used by {@link google.longrunning.Operations|listOperations}.
                  * @memberof google.longrunning.Operations
                  * @typedef ListOperationsCallback
                  * @type {function}
@@ -42752,7 +49185,7 @@
                  */
     
                 /**
-                 * Callback as used by {@link google.longrunning.Operations#getOperation}.
+                 * Callback as used by {@link google.longrunning.Operations|getOperation}.
                  * @memberof google.longrunning.Operations
                  * @typedef GetOperationCallback
                  * @type {function}
@@ -42785,7 +49218,7 @@
                  */
     
                 /**
-                 * Callback as used by {@link google.longrunning.Operations#deleteOperation}.
+                 * Callback as used by {@link google.longrunning.Operations|deleteOperation}.
                  * @memberof google.longrunning.Operations
                  * @typedef DeleteOperationCallback
                  * @type {function}
@@ -42818,7 +49251,7 @@
                  */
     
                 /**
-                 * Callback as used by {@link google.longrunning.Operations#cancelOperation}.
+                 * Callback as used by {@link google.longrunning.Operations|cancelOperation}.
                  * @memberof google.longrunning.Operations
                  * @typedef CancelOperationCallback
                  * @type {function}
@@ -42851,7 +49284,7 @@
                  */
     
                 /**
-                 * Callback as used by {@link google.longrunning.Operations#waitOperation}.
+                 * Callback as used by {@link google.longrunning.Operations|waitOperation}.
                  * @memberof google.longrunning.Operations
                  * @typedef WaitOperationCallback
                  * @type {function}
@@ -43036,21 +49469,26 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.metadata = $root.google.protobuf.Any.decode(reader, reader.uint32());
-                            break;
-                        case 3:
-                            message.done = reader.bool();
-                            break;
-                        case 4:
-                            message.error = $root.google.rpc.Status.decode(reader, reader.uint32());
-                            break;
-                        case 5:
-                            message.response = $root.google.protobuf.Any.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.metadata = $root.google.protobuf.Any.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 3: {
+                                message.done = reader.bool();
+                                break;
+                            }
+                        case 4: {
+                                message.error = $root.google.rpc.Status.decode(reader, reader.uint32());
+                                break;
+                            }
+                        case 5: {
+                                message.response = $root.google.protobuf.Any.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -43201,6 +49639,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for Operation
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.Operation
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Operation.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.Operation";
+                };
+    
                 return Operation;
             })();
     
@@ -43296,9 +49749,10 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -43386,6 +49840,21 @@
                  */
                 GetOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for GetOperationRequest
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.GetOperationRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                GetOperationRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.GetOperationRequest";
                 };
     
                 return GetOperationRequest;
@@ -43516,18 +49985,22 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 4:
-                            message.name = reader.string();
-                            break;
-                        case 1:
-                            message.filter = reader.string();
-                            break;
-                        case 2:
-                            message.pageSize = reader.int32();
-                            break;
-                        case 3:
-                            message.pageToken = reader.string();
-                            break;
+                        case 4: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 1: {
+                                message.filter = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.pageSize = reader.int32();
+                                break;
+                            }
+                        case 3: {
+                                message.pageToken = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -43642,6 +50115,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for ListOperationsRequest
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.ListOperationsRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ListOperationsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.ListOperationsRequest";
+                };
+    
                 return ListOperationsRequest;
             })();
     
@@ -43750,14 +50238,16 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            if (!(message.operations && message.operations.length))
-                                message.operations = [];
-                            message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
-                            break;
-                        case 2:
-                            message.nextPageToken = reader.string();
-                            break;
+                        case 1: {
+                                if (!(message.operations && message.operations.length))
+                                    message.operations = [];
+                                message.operations.push($root.google.longrunning.Operation.decode(reader, reader.uint32()));
+                                break;
+                            }
+                        case 2: {
+                                message.nextPageToken = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -43873,6 +50363,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for ListOperationsResponse
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.ListOperationsResponse
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                ListOperationsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.ListOperationsResponse";
+                };
+    
                 return ListOperationsResponse;
             })();
     
@@ -43968,9 +50473,10 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -44058,6 +50564,21 @@
                  */
                 CancelOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for CancelOperationRequest
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.CancelOperationRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                CancelOperationRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.CancelOperationRequest";
                 };
     
                 return CancelOperationRequest;
@@ -44155,9 +50676,10 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -44245,6 +50767,21 @@
                  */
                 DeleteOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for DeleteOperationRequest
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.DeleteOperationRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                DeleteOperationRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.DeleteOperationRequest";
                 };
     
                 return DeleteOperationRequest;
@@ -44353,12 +50890,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.name = reader.string();
-                            break;
-                        case 2:
-                            message.timeout = $root.google.protobuf.Duration.decode(reader, reader.uint32());
-                            break;
+                        case 1: {
+                                message.name = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.timeout = $root.google.protobuf.Duration.decode(reader, reader.uint32());
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -44460,6 +50999,21 @@
                  */
                 WaitOperationRequest.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for WaitOperationRequest
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.WaitOperationRequest
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                WaitOperationRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.WaitOperationRequest";
                 };
     
                 return WaitOperationRequest;
@@ -44568,12 +51122,14 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.responseType = reader.string();
-                            break;
-                        case 2:
-                            message.metadataType = reader.string();
-                            break;
+                        case 1: {
+                                message.responseType = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.metadataType = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -44672,6 +51228,21 @@
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                 };
     
+                /**
+                 * Gets the default type url for OperationInfo
+                 * @function getTypeUrl
+                 * @memberof google.longrunning.OperationInfo
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                OperationInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.longrunning.OperationInfo";
+                };
+    
                 return OperationInfo;
             })();
     
@@ -44729,7 +51300,7 @@
                     };
     
                     /**
-                     * Callback as used by {@link google.iam.v1.IAMPolicy#setIamPolicy}.
+                     * Callback as used by {@link google.iam.v1.IAMPolicy|setIamPolicy}.
                      * @memberof google.iam.v1.IAMPolicy
                      * @typedef SetIamPolicyCallback
                      * @type {function}
@@ -44762,7 +51333,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.iam.v1.IAMPolicy#getIamPolicy}.
+                     * Callback as used by {@link google.iam.v1.IAMPolicy|getIamPolicy}.
                      * @memberof google.iam.v1.IAMPolicy
                      * @typedef GetIamPolicyCallback
                      * @type {function}
@@ -44795,7 +51366,7 @@
                      */
     
                     /**
-                     * Callback as used by {@link google.iam.v1.IAMPolicy#testIamPermissions}.
+                     * Callback as used by {@link google.iam.v1.IAMPolicy|testIamPermissions}.
                      * @memberof google.iam.v1.IAMPolicy
                      * @typedef TestIamPermissionsCallback
                      * @type {function}
@@ -44838,6 +51409,7 @@
                      * @interface ISetIamPolicyRequest
                      * @property {string|null} [resource] SetIamPolicyRequest resource
                      * @property {google.iam.v1.IPolicy|null} [policy] SetIamPolicyRequest policy
+                     * @property {google.protobuf.IFieldMask|null} [updateMask] SetIamPolicyRequest updateMask
                      */
     
                     /**
@@ -44872,6 +51444,14 @@
                     SetIamPolicyRequest.prototype.policy = null;
     
                     /**
+                     * SetIamPolicyRequest updateMask.
+                     * @member {google.protobuf.IFieldMask|null|undefined} updateMask
+                     * @memberof google.iam.v1.SetIamPolicyRequest
+                     * @instance
+                     */
+                    SetIamPolicyRequest.prototype.updateMask = null;
+    
+                    /**
                      * Creates a new SetIamPolicyRequest instance using the specified properties.
                      * @function create
                      * @memberof google.iam.v1.SetIamPolicyRequest
@@ -44899,6 +51479,8 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.resource);
                         if (message.policy != null && Object.hasOwnProperty.call(message, "policy"))
                             $root.google.iam.v1.Policy.encode(message.policy, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.updateMask != null && Object.hasOwnProperty.call(message, "updateMask"))
+                            $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -44933,12 +51515,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.resource = reader.string();
-                                break;
-                            case 2:
-                                message.policy = $root.google.iam.v1.Policy.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.resource = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.policy = $root.google.iam.v1.Policy.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -44982,6 +51570,11 @@
                             if (error)
                                 return "policy." + error;
                         }
+                        if (message.updateMask != null && message.hasOwnProperty("updateMask")) {
+                            var error = $root.google.protobuf.FieldMask.verify(message.updateMask);
+                            if (error)
+                                return "updateMask." + error;
+                        }
                         return null;
                     };
     
@@ -45004,6 +51597,11 @@
                                 throw TypeError(".google.iam.v1.SetIamPolicyRequest.policy: object expected");
                             message.policy = $root.google.iam.v1.Policy.fromObject(object.policy);
                         }
+                        if (object.updateMask != null) {
+                            if (typeof object.updateMask !== "object")
+                                throw TypeError(".google.iam.v1.SetIamPolicyRequest.updateMask: object expected");
+                            message.updateMask = $root.google.protobuf.FieldMask.fromObject(object.updateMask);
+                        }
                         return message;
                     };
     
@@ -45023,11 +51621,14 @@
                         if (options.defaults) {
                             object.resource = "";
                             object.policy = null;
+                            object.updateMask = null;
                         }
                         if (message.resource != null && message.hasOwnProperty("resource"))
                             object.resource = message.resource;
                         if (message.policy != null && message.hasOwnProperty("policy"))
                             object.policy = $root.google.iam.v1.Policy.toObject(message.policy, options);
+                        if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                            object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
                         return object;
                     };
     
@@ -45040,6 +51641,21 @@
                      */
                     SetIamPolicyRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for SetIamPolicyRequest
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.SetIamPolicyRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    SetIamPolicyRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.SetIamPolicyRequest";
                     };
     
                     return SetIamPolicyRequest;
@@ -45148,12 +51764,14 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.resource = reader.string();
-                                break;
-                            case 2:
-                                message.options = $root.google.iam.v1.GetPolicyOptions.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.resource = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    message.options = $root.google.iam.v1.GetPolicyOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -45255,6 +51873,21 @@
                      */
                     GetIamPolicyRequest.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for GetIamPolicyRequest
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.GetIamPolicyRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    GetIamPolicyRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.GetIamPolicyRequest";
                     };
     
                     return GetIamPolicyRequest;
@@ -45365,14 +51998,16 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.resource = reader.string();
-                                break;
-                            case 2:
-                                if (!(message.permissions && message.permissions.length))
-                                    message.permissions = [];
-                                message.permissions.push(reader.string());
-                                break;
+                            case 1: {
+                                    message.resource = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.permissions && message.permissions.length))
+                                        message.permissions = [];
+                                    message.permissions.push(reader.string());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -45483,6 +52118,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for TestIamPermissionsRequest
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.TestIamPermissionsRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    TestIamPermissionsRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.TestIamPermissionsRequest";
+                    };
+    
                     return TestIamPermissionsRequest;
                 })();
     
@@ -45580,11 +52230,12 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.permissions && message.permissions.length))
-                                    message.permissions = [];
-                                message.permissions.push(reader.string());
-                                break;
+                            case 1: {
+                                    if (!(message.permissions && message.permissions.length))
+                                        message.permissions = [];
+                                    message.permissions.push(reader.string());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -45686,6 +52337,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for TestIamPermissionsResponse
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.TestIamPermissionsResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    TestIamPermissionsResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.TestIamPermissionsResponse";
+                    };
+    
                     return TestIamPermissionsResponse;
                 })();
     
@@ -45781,9 +52447,10 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.requestedPolicyVersion = reader.int32();
-                                break;
+                            case 1: {
+                                    message.requestedPolicyVersion = reader.int32();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -45873,6 +52540,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for GetPolicyOptions
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.GetPolicyOptions
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    GetPolicyOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.GetPolicyOptions";
+                    };
+    
                     return GetPolicyOptions;
                 })();
     
@@ -45884,6 +52566,7 @@
                      * @interface IPolicy
                      * @property {number|null} [version] Policy version
                      * @property {Array.<google.iam.v1.IBinding>|null} [bindings] Policy bindings
+                     * @property {Array.<google.iam.v1.IAuditConfig>|null} [auditConfigs] Policy auditConfigs
                      * @property {Uint8Array|null} [etag] Policy etag
                      */
     
@@ -45897,6 +52580,7 @@
                      */
                     function Policy(properties) {
                         this.bindings = [];
+                        this.auditConfigs = [];
                         if (properties)
                             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                 if (properties[keys[i]] != null)
@@ -45918,6 +52602,14 @@
                      * @instance
                      */
                     Policy.prototype.bindings = $util.emptyArray;
+    
+                    /**
+                     * Policy auditConfigs.
+                     * @member {Array.<google.iam.v1.IAuditConfig>} auditConfigs
+                     * @memberof google.iam.v1.Policy
+                     * @instance
+                     */
+                    Policy.prototype.auditConfigs = $util.emptyArray;
     
                     /**
                      * Policy etag.
@@ -45958,6 +52650,9 @@
                         if (message.bindings != null && message.bindings.length)
                             for (var i = 0; i < message.bindings.length; ++i)
                                 $root.google.iam.v1.Binding.encode(message.bindings[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.auditConfigs != null && message.auditConfigs.length)
+                            for (var i = 0; i < message.auditConfigs.length; ++i)
+                                $root.google.iam.v1.AuditConfig.encode(message.auditConfigs[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                         return writer;
                     };
     
@@ -45992,17 +52687,26 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.version = reader.int32();
-                                break;
-                            case 4:
-                                if (!(message.bindings && message.bindings.length))
-                                    message.bindings = [];
-                                message.bindings.push($root.google.iam.v1.Binding.decode(reader, reader.uint32()));
-                                break;
-                            case 3:
-                                message.etag = reader.bytes();
-                                break;
+                            case 1: {
+                                    message.version = reader.int32();
+                                    break;
+                                }
+                            case 4: {
+                                    if (!(message.bindings && message.bindings.length))
+                                        message.bindings = [];
+                                    message.bindings.push($root.google.iam.v1.Binding.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 6: {
+                                    if (!(message.auditConfigs && message.auditConfigs.length))
+                                        message.auditConfigs = [];
+                                    message.auditConfigs.push($root.google.iam.v1.AuditConfig.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 3: {
+                                    message.etag = reader.bytes();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -46050,6 +52754,15 @@
                                     return "bindings." + error;
                             }
                         }
+                        if (message.auditConfigs != null && message.hasOwnProperty("auditConfigs")) {
+                            if (!Array.isArray(message.auditConfigs))
+                                return "auditConfigs: array expected";
+                            for (var i = 0; i < message.auditConfigs.length; ++i) {
+                                var error = $root.google.iam.v1.AuditConfig.verify(message.auditConfigs[i]);
+                                if (error)
+                                    return "auditConfigs." + error;
+                            }
+                        }
                         if (message.etag != null && message.hasOwnProperty("etag"))
                             if (!(message.etag && typeof message.etag.length === "number" || $util.isString(message.etag)))
                                 return "etag: buffer expected";
@@ -46080,10 +52793,20 @@
                                 message.bindings[i] = $root.google.iam.v1.Binding.fromObject(object.bindings[i]);
                             }
                         }
+                        if (object.auditConfigs) {
+                            if (!Array.isArray(object.auditConfigs))
+                                throw TypeError(".google.iam.v1.Policy.auditConfigs: array expected");
+                            message.auditConfigs = [];
+                            for (var i = 0; i < object.auditConfigs.length; ++i) {
+                                if (typeof object.auditConfigs[i] !== "object")
+                                    throw TypeError(".google.iam.v1.Policy.auditConfigs: object expected");
+                                message.auditConfigs[i] = $root.google.iam.v1.AuditConfig.fromObject(object.auditConfigs[i]);
+                            }
+                        }
                         if (object.etag != null)
                             if (typeof object.etag === "string")
                                 $util.base64.decode(object.etag, message.etag = $util.newBuffer($util.base64.length(object.etag)), 0);
-                            else if (object.etag.length)
+                            else if (object.etag.length >= 0)
                                 message.etag = object.etag;
                         return message;
                     };
@@ -46101,8 +52824,10 @@
                         if (!options)
                             options = {};
                         var object = {};
-                        if (options.arrays || options.defaults)
+                        if (options.arrays || options.defaults) {
                             object.bindings = [];
+                            object.auditConfigs = [];
+                        }
                         if (options.defaults) {
                             object.version = 0;
                             if (options.bytes === String)
@@ -46122,6 +52847,11 @@
                             for (var j = 0; j < message.bindings.length; ++j)
                                 object.bindings[j] = $root.google.iam.v1.Binding.toObject(message.bindings[j], options);
                         }
+                        if (message.auditConfigs && message.auditConfigs.length) {
+                            object.auditConfigs = [];
+                            for (var j = 0; j < message.auditConfigs.length; ++j)
+                                object.auditConfigs[j] = $root.google.iam.v1.AuditConfig.toObject(message.auditConfigs[j], options);
+                        }
                         return object;
                     };
     
@@ -46134,6 +52864,21 @@
                      */
                     Policy.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for Policy
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.Policy
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Policy.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.Policy";
                     };
     
                     return Policy;
@@ -46255,17 +53000,20 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.role = reader.string();
-                                break;
-                            case 2:
-                                if (!(message.members && message.members.length))
-                                    message.members = [];
-                                message.members.push(reader.string());
-                                break;
-                            case 3:
-                                message.condition = $root.google.type.Expr.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.role = reader.string();
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.members && message.members.length))
+                                        message.members = [];
+                                    message.members.push(reader.string());
+                                    break;
+                                }
+                            case 3: {
+                                    message.condition = $root.google.type.Expr.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -46390,7 +53138,560 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for Binding
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.Binding
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    Binding.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.Binding";
+                    };
+    
                     return Binding;
+                })();
+    
+                v1.AuditConfig = (function() {
+    
+                    /**
+                     * Properties of an AuditConfig.
+                     * @memberof google.iam.v1
+                     * @interface IAuditConfig
+                     * @property {string|null} [service] AuditConfig service
+                     * @property {Array.<google.iam.v1.IAuditLogConfig>|null} [auditLogConfigs] AuditConfig auditLogConfigs
+                     */
+    
+                    /**
+                     * Constructs a new AuditConfig.
+                     * @memberof google.iam.v1
+                     * @classdesc Represents an AuditConfig.
+                     * @implements IAuditConfig
+                     * @constructor
+                     * @param {google.iam.v1.IAuditConfig=} [properties] Properties to set
+                     */
+                    function AuditConfig(properties) {
+                        this.auditLogConfigs = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * AuditConfig service.
+                     * @member {string} service
+                     * @memberof google.iam.v1.AuditConfig
+                     * @instance
+                     */
+                    AuditConfig.prototype.service = "";
+    
+                    /**
+                     * AuditConfig auditLogConfigs.
+                     * @member {Array.<google.iam.v1.IAuditLogConfig>} auditLogConfigs
+                     * @memberof google.iam.v1.AuditConfig
+                     * @instance
+                     */
+                    AuditConfig.prototype.auditLogConfigs = $util.emptyArray;
+    
+                    /**
+                     * Creates a new AuditConfig instance using the specified properties.
+                     * @function create
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditConfig=} [properties] Properties to set
+                     * @returns {google.iam.v1.AuditConfig} AuditConfig instance
+                     */
+                    AuditConfig.create = function create(properties) {
+                        return new AuditConfig(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified AuditConfig message. Does not implicitly {@link google.iam.v1.AuditConfig.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditConfig} message AuditConfig message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    AuditConfig.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.service != null && Object.hasOwnProperty.call(message, "service"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.service);
+                        if (message.auditLogConfigs != null && message.auditLogConfigs.length)
+                            for (var i = 0; i < message.auditLogConfigs.length; ++i)
+                                $root.google.iam.v1.AuditLogConfig.encode(message.auditLogConfigs[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified AuditConfig message, length delimited. Does not implicitly {@link google.iam.v1.AuditConfig.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditConfig} message AuditConfig message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    AuditConfig.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes an AuditConfig message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.iam.v1.AuditConfig} AuditConfig
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    AuditConfig.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.iam.v1.AuditConfig();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.service = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    if (!(message.auditLogConfigs && message.auditLogConfigs.length))
+                                        message.auditLogConfigs = [];
+                                    message.auditLogConfigs.push($root.google.iam.v1.AuditLogConfig.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes an AuditConfig message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.iam.v1.AuditConfig} AuditConfig
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    AuditConfig.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies an AuditConfig message.
+                     * @function verify
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    AuditConfig.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.service != null && message.hasOwnProperty("service"))
+                            if (!$util.isString(message.service))
+                                return "service: string expected";
+                        if (message.auditLogConfigs != null && message.hasOwnProperty("auditLogConfigs")) {
+                            if (!Array.isArray(message.auditLogConfigs))
+                                return "auditLogConfigs: array expected";
+                            for (var i = 0; i < message.auditLogConfigs.length; ++i) {
+                                var error = $root.google.iam.v1.AuditLogConfig.verify(message.auditLogConfigs[i]);
+                                if (error)
+                                    return "auditLogConfigs." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates an AuditConfig message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.iam.v1.AuditConfig} AuditConfig
+                     */
+                    AuditConfig.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.iam.v1.AuditConfig)
+                            return object;
+                        var message = new $root.google.iam.v1.AuditConfig();
+                        if (object.service != null)
+                            message.service = String(object.service);
+                        if (object.auditLogConfigs) {
+                            if (!Array.isArray(object.auditLogConfigs))
+                                throw TypeError(".google.iam.v1.AuditConfig.auditLogConfigs: array expected");
+                            message.auditLogConfigs = [];
+                            for (var i = 0; i < object.auditLogConfigs.length; ++i) {
+                                if (typeof object.auditLogConfigs[i] !== "object")
+                                    throw TypeError(".google.iam.v1.AuditConfig.auditLogConfigs: object expected");
+                                message.auditLogConfigs[i] = $root.google.iam.v1.AuditLogConfig.fromObject(object.auditLogConfigs[i]);
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from an AuditConfig message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {google.iam.v1.AuditConfig} message AuditConfig
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    AuditConfig.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.auditLogConfigs = [];
+                        if (options.defaults)
+                            object.service = "";
+                        if (message.service != null && message.hasOwnProperty("service"))
+                            object.service = message.service;
+                        if (message.auditLogConfigs && message.auditLogConfigs.length) {
+                            object.auditLogConfigs = [];
+                            for (var j = 0; j < message.auditLogConfigs.length; ++j)
+                                object.auditLogConfigs[j] = $root.google.iam.v1.AuditLogConfig.toObject(message.auditLogConfigs[j], options);
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this AuditConfig to JSON.
+                     * @function toJSON
+                     * @memberof google.iam.v1.AuditConfig
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    AuditConfig.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for AuditConfig
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.AuditConfig
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    AuditConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.AuditConfig";
+                    };
+    
+                    return AuditConfig;
+                })();
+    
+                v1.AuditLogConfig = (function() {
+    
+                    /**
+                     * Properties of an AuditLogConfig.
+                     * @memberof google.iam.v1
+                     * @interface IAuditLogConfig
+                     * @property {google.iam.v1.AuditLogConfig.LogType|null} [logType] AuditLogConfig logType
+                     * @property {Array.<string>|null} [exemptedMembers] AuditLogConfig exemptedMembers
+                     */
+    
+                    /**
+                     * Constructs a new AuditLogConfig.
+                     * @memberof google.iam.v1
+                     * @classdesc Represents an AuditLogConfig.
+                     * @implements IAuditLogConfig
+                     * @constructor
+                     * @param {google.iam.v1.IAuditLogConfig=} [properties] Properties to set
+                     */
+                    function AuditLogConfig(properties) {
+                        this.exemptedMembers = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * AuditLogConfig logType.
+                     * @member {google.iam.v1.AuditLogConfig.LogType} logType
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @instance
+                     */
+                    AuditLogConfig.prototype.logType = 0;
+    
+                    /**
+                     * AuditLogConfig exemptedMembers.
+                     * @member {Array.<string>} exemptedMembers
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @instance
+                     */
+                    AuditLogConfig.prototype.exemptedMembers = $util.emptyArray;
+    
+                    /**
+                     * Creates a new AuditLogConfig instance using the specified properties.
+                     * @function create
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditLogConfig=} [properties] Properties to set
+                     * @returns {google.iam.v1.AuditLogConfig} AuditLogConfig instance
+                     */
+                    AuditLogConfig.create = function create(properties) {
+                        return new AuditLogConfig(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified AuditLogConfig message. Does not implicitly {@link google.iam.v1.AuditLogConfig.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditLogConfig} message AuditLogConfig message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    AuditLogConfig.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.logType != null && Object.hasOwnProperty.call(message, "logType"))
+                            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.logType);
+                        if (message.exemptedMembers != null && message.exemptedMembers.length)
+                            for (var i = 0; i < message.exemptedMembers.length; ++i)
+                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.exemptedMembers[i]);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified AuditLogConfig message, length delimited. Does not implicitly {@link google.iam.v1.AuditLogConfig.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {google.iam.v1.IAuditLogConfig} message AuditLogConfig message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    AuditLogConfig.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes an AuditLogConfig message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.iam.v1.AuditLogConfig} AuditLogConfig
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    AuditLogConfig.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.iam.v1.AuditLogConfig();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.logType = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.exemptedMembers && message.exemptedMembers.length))
+                                        message.exemptedMembers = [];
+                                    message.exemptedMembers.push(reader.string());
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes an AuditLogConfig message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.iam.v1.AuditLogConfig} AuditLogConfig
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    AuditLogConfig.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies an AuditLogConfig message.
+                     * @function verify
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    AuditLogConfig.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.logType != null && message.hasOwnProperty("logType"))
+                            switch (message.logType) {
+                            default:
+                                return "logType: enum value expected";
+                            case 0:
+                            case 1:
+                            case 2:
+                            case 3:
+                                break;
+                            }
+                        if (message.exemptedMembers != null && message.hasOwnProperty("exemptedMembers")) {
+                            if (!Array.isArray(message.exemptedMembers))
+                                return "exemptedMembers: array expected";
+                            for (var i = 0; i < message.exemptedMembers.length; ++i)
+                                if (!$util.isString(message.exemptedMembers[i]))
+                                    return "exemptedMembers: string[] expected";
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates an AuditLogConfig message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.iam.v1.AuditLogConfig} AuditLogConfig
+                     */
+                    AuditLogConfig.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.iam.v1.AuditLogConfig)
+                            return object;
+                        var message = new $root.google.iam.v1.AuditLogConfig();
+                        switch (object.logType) {
+                        default:
+                            if (typeof object.logType === "number") {
+                                message.logType = object.logType;
+                                break;
+                            }
+                            break;
+                        case "LOG_TYPE_UNSPECIFIED":
+                        case 0:
+                            message.logType = 0;
+                            break;
+                        case "ADMIN_READ":
+                        case 1:
+                            message.logType = 1;
+                            break;
+                        case "DATA_WRITE":
+                        case 2:
+                            message.logType = 2;
+                            break;
+                        case "DATA_READ":
+                        case 3:
+                            message.logType = 3;
+                            break;
+                        }
+                        if (object.exemptedMembers) {
+                            if (!Array.isArray(object.exemptedMembers))
+                                throw TypeError(".google.iam.v1.AuditLogConfig.exemptedMembers: array expected");
+                            message.exemptedMembers = [];
+                            for (var i = 0; i < object.exemptedMembers.length; ++i)
+                                message.exemptedMembers[i] = String(object.exemptedMembers[i]);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from an AuditLogConfig message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {google.iam.v1.AuditLogConfig} message AuditLogConfig
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    AuditLogConfig.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.exemptedMembers = [];
+                        if (options.defaults)
+                            object.logType = options.enums === String ? "LOG_TYPE_UNSPECIFIED" : 0;
+                        if (message.logType != null && message.hasOwnProperty("logType"))
+                            object.logType = options.enums === String ? $root.google.iam.v1.AuditLogConfig.LogType[message.logType] === undefined ? message.logType : $root.google.iam.v1.AuditLogConfig.LogType[message.logType] : message.logType;
+                        if (message.exemptedMembers && message.exemptedMembers.length) {
+                            object.exemptedMembers = [];
+                            for (var j = 0; j < message.exemptedMembers.length; ++j)
+                                object.exemptedMembers[j] = message.exemptedMembers[j];
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this AuditLogConfig to JSON.
+                     * @function toJSON
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    AuditLogConfig.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for AuditLogConfig
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.AuditLogConfig
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    AuditLogConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.AuditLogConfig";
+                    };
+    
+                    /**
+                     * LogType enum.
+                     * @name google.iam.v1.AuditLogConfig.LogType
+                     * @enum {number}
+                     * @property {number} LOG_TYPE_UNSPECIFIED=0 LOG_TYPE_UNSPECIFIED value
+                     * @property {number} ADMIN_READ=1 ADMIN_READ value
+                     * @property {number} DATA_WRITE=2 DATA_WRITE value
+                     * @property {number} DATA_READ=3 DATA_READ value
+                     */
+                    AuditLogConfig.LogType = (function() {
+                        var valuesById = {}, values = Object.create(valuesById);
+                        values[valuesById[0] = "LOG_TYPE_UNSPECIFIED"] = 0;
+                        values[valuesById[1] = "ADMIN_READ"] = 1;
+                        values[valuesById[2] = "DATA_WRITE"] = 2;
+                        values[valuesById[3] = "DATA_READ"] = 3;
+                        return values;
+                    })();
+    
+                    return AuditLogConfig;
                 })();
     
                 v1.PolicyDelta = (function() {
@@ -46500,16 +53801,18 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                if (!(message.bindingDeltas && message.bindingDeltas.length))
-                                    message.bindingDeltas = [];
-                                message.bindingDeltas.push($root.google.iam.v1.BindingDelta.decode(reader, reader.uint32()));
-                                break;
-                            case 2:
-                                if (!(message.auditConfigDeltas && message.auditConfigDeltas.length))
-                                    message.auditConfigDeltas = [];
-                                message.auditConfigDeltas.push($root.google.iam.v1.AuditConfigDelta.decode(reader, reader.uint32()));
-                                break;
+                            case 1: {
+                                    if (!(message.bindingDeltas && message.bindingDeltas.length))
+                                        message.bindingDeltas = [];
+                                    message.bindingDeltas.push($root.google.iam.v1.BindingDelta.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 2: {
+                                    if (!(message.auditConfigDeltas && message.auditConfigDeltas.length))
+                                        message.auditConfigDeltas = [];
+                                    message.auditConfigDeltas.push($root.google.iam.v1.AuditConfigDelta.decode(reader, reader.uint32()));
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -46642,6 +53945,21 @@
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
                     };
     
+                    /**
+                     * Gets the default type url for PolicyDelta
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.PolicyDelta
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    PolicyDelta.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.PolicyDelta";
+                    };
+    
                     return PolicyDelta;
                 })();
     
@@ -46770,18 +54088,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.action = reader.int32();
-                                break;
-                            case 2:
-                                message.role = reader.string();
-                                break;
-                            case 3:
-                                message.member = reader.string();
-                                break;
-                            case 4:
-                                message.condition = $root.google.type.Expr.decode(reader, reader.uint32());
-                                break;
+                            case 1: {
+                                    message.action = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.role = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.member = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.condition = $root.google.type.Expr.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -46853,6 +54175,12 @@
                             return object;
                         var message = new $root.google.iam.v1.BindingDelta();
                         switch (object.action) {
+                        default:
+                            if (typeof object.action === "number") {
+                                message.action = object.action;
+                                break;
+                            }
+                            break;
                         case "ACTION_UNSPECIFIED":
                         case 0:
                             message.action = 0;
@@ -46898,7 +54226,7 @@
                             object.condition = null;
                         }
                         if (message.action != null && message.hasOwnProperty("action"))
-                            object.action = options.enums === String ? $root.google.iam.v1.BindingDelta.Action[message.action] : message.action;
+                            object.action = options.enums === String ? $root.google.iam.v1.BindingDelta.Action[message.action] === undefined ? message.action : $root.google.iam.v1.BindingDelta.Action[message.action] : message.action;
                         if (message.role != null && message.hasOwnProperty("role"))
                             object.role = message.role;
                         if (message.member != null && message.hasOwnProperty("member"))
@@ -46917,6 +54245,21 @@
                      */
                     BindingDelta.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for BindingDelta
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.BindingDelta
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BindingDelta.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.BindingDelta";
                     };
     
                     /**
@@ -47063,18 +54406,22 @@
                         while (reader.pos < end) {
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 1:
-                                message.action = reader.int32();
-                                break;
-                            case 2:
-                                message.service = reader.string();
-                                break;
-                            case 3:
-                                message.exemptedMember = reader.string();
-                                break;
-                            case 4:
-                                message.logType = reader.string();
-                                break;
+                            case 1: {
+                                    message.action = reader.int32();
+                                    break;
+                                }
+                            case 2: {
+                                    message.service = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.exemptedMember = reader.string();
+                                    break;
+                                }
+                            case 4: {
+                                    message.logType = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -47144,6 +54491,12 @@
                             return object;
                         var message = new $root.google.iam.v1.AuditConfigDelta();
                         switch (object.action) {
+                        default:
+                            if (typeof object.action === "number") {
+                                message.action = object.action;
+                                break;
+                            }
+                            break;
                         case "ACTION_UNSPECIFIED":
                         case 0:
                             message.action = 0;
@@ -47186,7 +54539,7 @@
                             object.logType = "";
                         }
                         if (message.action != null && message.hasOwnProperty("action"))
-                            object.action = options.enums === String ? $root.google.iam.v1.AuditConfigDelta.Action[message.action] : message.action;
+                            object.action = options.enums === String ? $root.google.iam.v1.AuditConfigDelta.Action[message.action] === undefined ? message.action : $root.google.iam.v1.AuditConfigDelta.Action[message.action] : message.action;
                         if (message.service != null && message.hasOwnProperty("service"))
                             object.service = message.service;
                         if (message.exemptedMember != null && message.hasOwnProperty("exemptedMember"))
@@ -47205,6 +54558,21 @@
                      */
                     AuditConfigDelta.prototype.toJSON = function toJSON() {
                         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for AuditConfigDelta
+                     * @function getTypeUrl
+                     * @memberof google.iam.v1.AuditConfigDelta
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    AuditConfigDelta.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.iam.v1.AuditConfigDelta";
                     };
     
                     /**
@@ -47366,18 +54734,22 @@
                     while (reader.pos < end) {
                         var tag = reader.uint32();
                         switch (tag >>> 3) {
-                        case 1:
-                            message.expression = reader.string();
-                            break;
-                        case 2:
-                            message.title = reader.string();
-                            break;
-                        case 3:
-                            message.description = reader.string();
-                            break;
-                        case 4:
-                            message.location = reader.string();
-                            break;
+                        case 1: {
+                                message.expression = reader.string();
+                                break;
+                            }
+                        case 2: {
+                                message.title = reader.string();
+                                break;
+                            }
+                        case 3: {
+                                message.description = reader.string();
+                                break;
+                            }
+                        case 4: {
+                                message.location = reader.string();
+                                break;
+                            }
                         default:
                             reader.skipType(tag & 7);
                             break;
@@ -47490,6 +54862,21 @@
                  */
                 Expr.prototype.toJSON = function toJSON() {
                     return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                /**
+                 * Gets the default type url for Expr
+                 * @function getTypeUrl
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns {string} The default type url
+                 */
+                Expr.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                    if (typeUrlPrefix === undefined) {
+                        typeUrlPrefix = "type.googleapis.com";
+                    }
+                    return typeUrlPrefix + "/google.type.Expr";
                 };
     
                 return Expr;
