@@ -6377,10 +6377,7 @@ describe('Spanner', () => {
 
         const postgreSqlDeleteReturning = {
           sql:
-            'DELETE FROM ' +
-            TABLE_NAME +
-            ' WHERE "Key" = $1 ' +
-            'RETURNING *',
+            'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1 ' + 'RETURNING *',
           params: {p1: key},
         };
 
@@ -6394,10 +6391,7 @@ describe('Spanner', () => {
         };
 
         const postgreSqlDelete = {
-          sql:
-            'DELETE FROM ' +
-            TABLE_NAME +
-            ' WHERE "Key" = $1',
+          sql: 'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
           params: {p1: key},
         };
 
@@ -6523,7 +6517,7 @@ describe('Spanner', () => {
 
         const partitionedUpdate = (done, database, query) => {
           database.runPartitionedUpdate(query, err => {
-            console.log("batch partition error " + err);
+            console.log('batch partition error ' + err);
             assert.match(
               err.details,
               /THEN RETURN is not supported in Partitioned DML\./
