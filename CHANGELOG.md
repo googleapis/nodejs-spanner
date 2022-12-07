@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.5.0](https://github.com/googleapis/nodejs-spanner/compare/v6.4.0...v6.5.0) (2022-11-30)
+
+
+### Features
+
+* Inline BeginTransaction with first statement ([#1692](https://github.com/googleapis/nodejs-spanner/issues/1692)) ([d1b95d2](https://github.com/googleapis/nodejs-spanner/commit/d1b95d21e2c8cb0eff88351265cad248870bb3ea))
+
+
+### Bug Fixes
+
+* Cleanup different types of session pools ([#1739](https://github.com/googleapis/nodejs-spanner/issues/1739)) ([6f55187](https://github.com/googleapis/nodejs-spanner/commit/6f551877ea0d4b67e3c734377bdadd5d570cf839))
+* **deps:** Use google-gax v3.5.2 ([#1732](https://github.com/googleapis/nodejs-spanner/issues/1732)) ([8341b1f](https://github.com/googleapis/nodejs-spanner/commit/8341b1fa5dfcf0b286892efb8b57c7ad694cdbb8))
+
 ## [6.4.0](https://github.com/googleapis/nodejs-spanner/compare/v6.3.0...v6.4.0) (2022-10-27)
 
 
