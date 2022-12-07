@@ -6427,7 +6427,10 @@ describe('Spanner', () => {
           });
         };
 
-        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', done => {
+        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           rowCountRunUpdate(
             done,
             DATABASE,
@@ -6491,7 +6494,10 @@ describe('Spanner', () => {
           });
         };
 
-        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', done => {
+        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           rowCountRun(
             done,
             DATABASE,
@@ -6526,7 +6532,10 @@ describe('Spanner', () => {
           });
         };
 
-        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', done => {
+        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
         });
 
@@ -6556,7 +6565,10 @@ describe('Spanner', () => {
           assert.deepStrictEqual(rowCounts, [1, 1, 1]);
         };
 
-        it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async () => {
+        it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
           await batchUpdate(
             DATABASE,
             googleSqlInsertReturning,
