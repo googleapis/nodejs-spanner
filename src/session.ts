@@ -50,9 +50,16 @@ export const enum types {
   ReadWrite = 'readwrite',
 }
 
+export interface GetSessionMetadataResponse {
+  name?: string | null;
+  labels?: {[k: string]: string} | null;
+  createTime?: google.protobuf.ITimestamp | null;
+  approximateLastUseTime?: google.protobuf.ITimestamp | null;
+  databaseRole?: string | null;
+}
+
 export type GetSessionMetadataCallback =
-  NormalCallback<google.spanner.v1.ISession>;
-export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
+  NormalCallback<GetSessionMetadataResponse>;
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
 export type KeepAliveResponse = [google.spanner.v1.IResultSet];
@@ -230,6 +237,11 @@ export class Session extends common.GrpcServiceObject {
           typeof optionsOrCallback === 'function'
             ? optionsOrCallback
             : callback;
+
+        this.labels = options.labels || null;
+        this.databaseRole =
+          options.databaseRole || database.databaseRole || null;
+
         return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
             callback(err, null, apiResponse);
@@ -376,6 +388,8 @@ export class Session extends common.GrpcServiceObject {
       },
       (err, resp) => {
         if (resp) {
+          resp.databaseRole = resp.creatorRole;
+          delete resp.creatorRole;
           this.metadata = resp;
         }
         callback!(err, resp);
