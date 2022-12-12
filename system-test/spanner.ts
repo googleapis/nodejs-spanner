@@ -2649,7 +2649,7 @@ describe('Spanner', () => {
     const session = DATABASE.session();
 
     const dbNewRole = instance.database(DATABASE.formattedName_, {
-      databaseRole: 'parent',
+      databaseRole: 'parent_role',
     });
 
     const sessionWithDatabaseRole = dbNewRole.session();
@@ -2738,7 +2738,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should batch create sessions with database database role', async () => {
+    it('should batch create sessions with database role', async () => {
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({count});
 
