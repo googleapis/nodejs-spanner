@@ -103,7 +103,7 @@ export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
   type?: types;
-  txn?: Transaction;
+  txn?: Transaction | Snapshot | null;
   lastUsed?: number;
   longRunningTransaction?: boolean;
   lastError?: grpc.ServiceError;

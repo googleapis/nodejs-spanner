@@ -212,7 +212,7 @@ describe('BatchTransaction', () => {
       batchTransaction.createPartitions_(CONFIG, assert.ifError);
       const {headers} = REQUEST.lastCall.args[0];
       assert.deepStrictEqual(headers, {
-        [CLOUD_RESOURCE_HEADER]: (batchTransaction.session.parent as Database)
+        [CLOUD_RESOURCE_HEADER]: (batchTransaction!.session!.parent as Database)
           .formattedName_,
       });
       done();

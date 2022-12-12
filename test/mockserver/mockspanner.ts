@@ -316,7 +316,9 @@ export class MockSpanner {
   }
 
   abortTransaction(transaction: Transaction): void {
-    const formattedId = `${transaction.session.formattedName_}/transactions/${transaction.id}`;
+    const formattedId = `${transaction.session!.formattedName_}/transactions/${
+      transaction.id
+    }`;
     if (this.transactions.has(formattedId)) {
       this.transactions.delete(formattedId);
       this.transactionOptions.delete(formattedId);

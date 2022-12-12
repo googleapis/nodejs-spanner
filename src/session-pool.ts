@@ -20,7 +20,7 @@ import PQueue from 'p-queue';
 
 import {Database} from './database';
 import {Session, types} from './session';
-import {Transaction} from './transaction';
+import {Snapshot, Transaction} from './transaction';
 import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
@@ -50,7 +50,7 @@ export interface GetWriteSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
-    transaction?: Transaction | null
+    transaction?: Transaction
   ): void;
 }
 
@@ -151,7 +151,7 @@ export interface SessionPoolOptions {
   min?: number;
   writes?: number;
   incStep?: number;
-  killLongRunningTransactions?: boolean;
+  closeInactiveTransactions?: boolean;
   logging?: boolean;
 }
 
@@ -167,7 +167,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   writes: 0,
   incStep: 25,
-  killLongRunningTransactions: false,
+  closeInactiveTransactions: false,
   logging: false,
 };
 
@@ -612,6 +612,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     callback: GetWriteSessionCallback
   ): void {
     this._acquire(types.ReadWrite, longRunningTransaction).then(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       session => callback(null, session, session.txn!),
       callback
     );
@@ -811,7 +813,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const maxSessions = this.maxSessions;
 
     if (
-      this.options.killLongRunningTransactions &&
+      this.options.closeInactiveTransactions &&
       this.borrowed / maxSessions >= 0.95
     ) {
       this._startCleaningLongRunningSessions();
@@ -1232,10 +1234,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._ongoingTransactionDeletion = true;
     for (const session of this._traces.keys()) {
       if (session.lastUsed && !session.longRunningTransaction) {
-        if (
-          !session.longRunningTransaction &&
-          (Date.now() - session?.lastUsed) / 6000 > 60
-        ) {
+        const diff = Date.now() - session?.lastUsed;
+        if (!session.longRunningTransaction && diff > 300) {
           if (this.options.logging) {
             this.database.logger?.warn(
               SessionPool.formatTrace(
@@ -1244,7 +1244,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
               )
             );
           }
+
+          session.txn!.session = undefined;
           this.release(session);
+          // await session.delete();
         }
       }
     }
@@ -1291,7 +1294,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const maxSessions = this.maxSessions;
 
     if (
-      this.options.killLongRunningTransactions &&
+      this.options.closeInactiveTransactions &&
       this.borrowed / maxSessions < 0.95
     ) {
       this._stopCleaningLongRunningSessions();

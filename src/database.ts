@@ -651,6 +651,8 @@ class Database extends common.GrpcServiceObject {
         return;
       }
       const transaction = this.batchTransaction({session: session!}, options);
+      session!.txn = transaction;
+
       this._releaseOnEnd(session!, transaction);
       transaction.begin((err, resp) => {
         if (err) {
@@ -893,6 +895,9 @@ class Database extends common.GrpcServiceObject {
    * @returns {Transaction}
    */
   private _releaseOnEnd(session: Session, transaction: Snapshot) {
+    if (!transaction.session) {
+      return;
+    }
     transaction.once('end', () => {
       try {
         this.pool_.release(session);
@@ -1716,6 +1721,7 @@ class Database extends common.GrpcServiceObject {
       }
 
       const snapshot = session!.snapshot(options, this.queryOptions_);
+      session!.txn = snapshot;
 
       snapshot.begin(err => {
         if (err) {
@@ -1787,6 +1793,7 @@ class Database extends common.GrpcServiceObject {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
+      session!.txn = transaction;
       callback!(err as grpc.ServiceError | null, transaction);
     });
   }
@@ -2317,6 +2324,7 @@ class Database extends common.GrpcServiceObject {
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
+    session.txn = transaction;
 
     transaction.begin(err => {
       if (err) {
@@ -2480,6 +2488,7 @@ class Database extends common.GrpcServiceObject {
       }
 
       const snapshot = session!.snapshot(options, this.queryOptions_);
+      session!.txn = snapshot;
 
       this._releaseOnEnd(session!, snapshot);
 
@@ -2629,6 +2638,9 @@ class Database extends common.GrpcServiceObject {
         : {};
 
     this.pool_.getWriteSession(false, (err, session?, transaction?) => {
+      if (session) {
+        session.txn = transaction;
+      }
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;

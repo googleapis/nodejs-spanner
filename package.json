@@ -54,6 +54,7 @@
     "@google-cloud/precise-date": "^3.0.0",
     "@google-cloud/projectify": "^3.0.0",
     "@google-cloud/promisify": "^3.0.0",
+    "@google-cloud/logging-winston": "5.2.1",
     "@grpc/proto-loader": "^0.7.0",
     "@types/big.js": "^6.0.0",
     "@types/stack-trace": "0.0.29",

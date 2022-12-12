@@ -155,15 +155,15 @@ class BatchTransaction extends Snapshot {
    */
   createPartitions_(config, callback) {
     const query = extend({}, config.reqOpts, {
-      session: this.session.formattedName_,
+      session: this.session!.formattedName_,
       transaction: {id: this.id},
     });
     config.reqOpts = extend({}, query);
     config.headers = {
-      [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
+      [CLOUD_RESOURCE_HEADER]: (this.session!.parent as Database).formattedName_,
     };
     delete query.partitionOptions;
-    this.session.request(config, (err, resp) => {
+    this.session!.request(config, (err, resp) => {
       if (err) {
         callback(err, null, resp);
         return;
@@ -340,7 +340,7 @@ class BatchTransaction extends Snapshot {
   identifier(): TransactionIdentifier {
     return {
       transaction: (this.id! as Buffer).toString('base64'),
-      session: this.session.id,
+      session: this.session!.id,
       timestamp: this.readTimestampProto,
     };
   }
