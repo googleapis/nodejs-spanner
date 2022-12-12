@@ -1069,55 +1069,40 @@ describe('Spanner', () => {
   // add_and_drop_new_database_role
   it('should add and drop new database roles', async () => {
     const output = execSync(
-        `node add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, new RegExp('Waiting for operation to complete...'));
     assert.match(
-        output,
-        new RegExp('Created roles child and parent and granted privileges')
+      output,
+      new RegExp('Created roles child and parent and granted privileges')
     );
     assert.match(
-        output,
-        new RegExp('Revoked privileges and dropped role child')
+      output,
+      new RegExp('Revoked privileges and dropped role child')
     );
   });
 
   // read_data_with_database_role
   it('should read data with database role', async () => {
     const output = execSync(
-        `node read-data-with-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node read-data-with-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
-        output,
-        new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson')
+      output,
+      new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson')
     );
   });
 
   // get_database_roles
   it('should list database roles', async () => {
     const output = execSync(
-        `node get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(
-        output,
-        new RegExp(
-            `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`
-        )
-    );
-  });
-
-  // enable_fine_grained_access
-  it('should enable fine grained access control', async () => {
-    const role = 'parent';
-    const title = 'condition title';
-    const output = execSync(
-        `node enable-fine-grained-access.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID} ${IAM_MEMBER} ${role} ${title}`
-    );
-    assert.match(
-        output,
-        new RegExp(
-            `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/parent`
-        )
+      output,
+      new RegExp(
+        `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`
+      )
     );
   });
 
