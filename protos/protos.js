@@ -2797,6 +2797,12 @@
                     if (object.number != null)
                         message.number = object.number | 0;
                     switch (object.label) {
+                    default:
+                        if (typeof object.label === "number") {
+                            message.label = object.label;
+                            break;
+                        }
+                        break;
                     case "LABEL_OPTIONAL":
                     case 1:
                         message.label = 1;
@@ -2811,6 +2817,12 @@
                         break;
                     }
                     switch (object.type) {
+                    default:
+                        if (typeof object.type === "number") {
+                            message.type = object.type;
+                            break;
+                        }
+                        break;
                     case "TYPE_DOUBLE":
                     case 1:
                         message.type = 1;
@@ -2937,9 +2949,9 @@
                     if (message.number != null && message.hasOwnProperty("number"))
                         object.number = message.number;
                     if (message.label != null && message.hasOwnProperty("label"))
-                        object.label = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Label[message.label] : message.label;
+                        object.label = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Label[message.label] === undefined ? message.label : $root.google.protobuf.FieldDescriptorProto.Label[message.label] : message.label;
                     if (message.type != null && message.hasOwnProperty("type"))
-                        object.type = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Type[message.type] : message.type;
+                        object.type = options.enums === String ? $root.google.protobuf.FieldDescriptorProto.Type[message.type] === undefined ? message.type : $root.google.protobuf.FieldDescriptorProto.Type[message.type] : message.type;
                     if (message.typeName != null && message.hasOwnProperty("typeName"))
                         object.typeName = message.typeName;
                     if (message.defaultValue != null && message.hasOwnProperty("defaultValue"))
@@ -5286,6 +5298,12 @@
                     if (object.javaStringCheckUtf8 != null)
                         message.javaStringCheckUtf8 = Boolean(object.javaStringCheckUtf8);
                     switch (object.optimizeFor) {
+                    default:
+                        if (typeof object.optimizeFor === "number") {
+                            message.optimizeFor = object.optimizeFor;
+                            break;
+                        }
+                        break;
                     case "SPEED":
                     case 1:
                         message.optimizeFor = 1;
@@ -5394,7 +5412,7 @@
                     if (message.javaOuterClassname != null && message.hasOwnProperty("javaOuterClassname"))
                         object.javaOuterClassname = message.javaOuterClassname;
                     if (message.optimizeFor != null && message.hasOwnProperty("optimizeFor"))
-                        object.optimizeFor = options.enums === String ? $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] : message.optimizeFor;
+                        object.optimizeFor = options.enums === String ? $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] === undefined ? message.optimizeFor : $root.google.protobuf.FileOptions.OptimizeMode[message.optimizeFor] : message.optimizeFor;
                     if (message.javaMultipleFiles != null && message.hasOwnProperty("javaMultipleFiles"))
                         object.javaMultipleFiles = message.javaMultipleFiles;
                     if (message.goPackage != null && message.hasOwnProperty("goPackage"))
@@ -6196,6 +6214,12 @@
                         return object;
                     var message = new $root.google.protobuf.FieldOptions();
                     switch (object.ctype) {
+                    default:
+                        if (typeof object.ctype === "number") {
+                            message.ctype = object.ctype;
+                            break;
+                        }
+                        break;
                     case "STRING":
                     case 0:
                         message.ctype = 0;
@@ -6212,6 +6236,12 @@
                     if (object.packed != null)
                         message.packed = Boolean(object.packed);
                     switch (object.jstype) {
+                    default:
+                        if (typeof object.jstype === "number") {
+                            message.jstype = object.jstype;
+                            break;
+                        }
+                        break;
                     case "JS_NORMAL":
                     case 0:
                         message.jstype = 0;
@@ -6250,6 +6280,10 @@
                         for (var i = 0; i < object[".google.api.fieldBehavior"].length; ++i)
                             switch (object[".google.api.fieldBehavior"][i]) {
                             default:
+                                if (typeof object[".google.api.fieldBehavior"][i] === "number") {
+                                    message[".google.api.fieldBehavior"][i] = object[".google.api.fieldBehavior"][i];
+                                    break;
+                                }
                             case "FIELD_BEHAVIOR_UNSPECIFIED":
                             case 0:
                                 message[".google.api.fieldBehavior"][i] = 0;
@@ -6320,7 +6354,7 @@
                         object[".google.api.resourceReference"] = null;
                     }
                     if (message.ctype != null && message.hasOwnProperty("ctype"))
-                        object.ctype = options.enums === String ? $root.google.protobuf.FieldOptions.CType[message.ctype] : message.ctype;
+                        object.ctype = options.enums === String ? $root.google.protobuf.FieldOptions.CType[message.ctype] === undefined ? message.ctype : $root.google.protobuf.FieldOptions.CType[message.ctype] : message.ctype;
                     if (message.packed != null && message.hasOwnProperty("packed"))
                         object.packed = message.packed;
                     if (message.deprecated != null && message.hasOwnProperty("deprecated"))
@@ -6328,7 +6362,7 @@
                     if (message.lazy != null && message.hasOwnProperty("lazy"))
                         object.lazy = message.lazy;
                     if (message.jstype != null && message.hasOwnProperty("jstype"))
-                        object.jstype = options.enums === String ? $root.google.protobuf.FieldOptions.JSType[message.jstype] : message.jstype;
+                        object.jstype = options.enums === String ? $root.google.protobuf.FieldOptions.JSType[message.jstype] === undefined ? message.jstype : $root.google.protobuf.FieldOptions.JSType[message.jstype] : message.jstype;
                     if (message.weak != null && message.hasOwnProperty("weak"))
                         object.weak = message.weak;
                     if (message.unverifiedLazy != null && message.hasOwnProperty("unverifiedLazy"))
@@ -6341,7 +6375,7 @@
                     if (message[".google.api.fieldBehavior"] && message[".google.api.fieldBehavior"].length) {
                         object[".google.api.fieldBehavior"] = [];
                         for (var j = 0; j < message[".google.api.fieldBehavior"].length; ++j)
-                            object[".google.api.fieldBehavior"][j] = options.enums === String ? $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] : message[".google.api.fieldBehavior"][j];
+                            object[".google.api.fieldBehavior"][j] = options.enums === String ? $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] === undefined ? message[".google.api.fieldBehavior"][j] : $root.google.api.FieldBehavior[message[".google.api.fieldBehavior"][j]] : message[".google.api.fieldBehavior"][j];
                     }
                     if (message[".google.api.resourceReference"] != null && message.hasOwnProperty(".google.api.resourceReference"))
                         object[".google.api.resourceReference"] = $root.google.api.ResourceReference.toObject(message[".google.api.resourceReference"], options);
@@ -7718,6 +7752,12 @@
                     if (object.deprecated != null)
                         message.deprecated = Boolean(object.deprecated);
                     switch (object.idempotencyLevel) {
+                    default:
+                        if (typeof object.idempotencyLevel === "number") {
+                            message.idempotencyLevel = object.idempotencyLevel;
+                            break;
+                        }
+                        break;
                     case "IDEMPOTENCY_UNKNOWN":
                     case 0:
                         message.idempotencyLevel = 0;
@@ -7787,7 +7827,7 @@
                     if (message.deprecated != null && message.hasOwnProperty("deprecated"))
                         object.deprecated = message.deprecated;
                     if (message.idempotencyLevel != null && message.hasOwnProperty("idempotencyLevel"))
-                        object.idempotencyLevel = options.enums === String ? $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] : message.idempotencyLevel;
+                        object.idempotencyLevel = options.enums === String ? $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] === undefined ? message.idempotencyLevel : $root.google.protobuf.MethodOptions.IdempotencyLevel[message.idempotencyLevel] : message.idempotencyLevel;
                     if (message.uninterpretedOption && message.uninterpretedOption.length) {
                         object.uninterpretedOption = [];
                         for (var j = 0; j < message.uninterpretedOption.length; ++j)
@@ -9542,6 +9582,12 @@
                         if (object.end != null)
                             message.end = object.end | 0;
                         switch (object.semantic) {
+                        default:
+                            if (typeof object.semantic === "number") {
+                                message.semantic = object.semantic;
+                                break;
+                            }
+                            break;
                         case "NONE":
                         case 0:
                             message.semantic = 0;
@@ -9591,7 +9637,7 @@
                         if (message.end != null && message.hasOwnProperty("end"))
                             object.end = message.end;
                         if (message.semantic != null && message.hasOwnProperty("semantic"))
-                            object.semantic = options.enums === String ? $root.google.protobuf.GeneratedCodeInfo.Annotation.Semantic[message.semantic] : message.semantic;
+                            object.semantic = options.enums === String ? $root.google.protobuf.GeneratedCodeInfo.Annotation.Semantic[message.semantic] === undefined ? message.semantic : $root.google.protobuf.GeneratedCodeInfo.Annotation.Semantic[message.semantic] : message.semantic;
                         return object;
                     };
     
@@ -11046,6 +11092,12 @@
                         return object;
                     var message = new $root.google.protobuf.Value();
                     switch (object.nullValue) {
+                    default:
+                        if (typeof object.nullValue === "number") {
+                            message.nullValue = object.nullValue;
+                            break;
+                        }
+                        break;
                     case "NULL_VALUE":
                     case 0:
                         message.nullValue = 0;
@@ -11084,7 +11136,7 @@
                         options = {};
                     var object = {};
                     if (message.nullValue != null && message.hasOwnProperty("nullValue")) {
-                        object.nullValue = options.enums === String ? $root.google.protobuf.NullValue[message.nullValue] : message.nullValue;
+                        object.nullValue = options.enums === String ? $root.google.protobuf.NullValue[message.nullValue] === undefined ? message.nullValue : $root.google.protobuf.NullValue[message.nullValue] : message.nullValue;
                         if (options.oneofs)
                             object.kind = "nullValue";
                     }
@@ -15409,6 +15461,12 @@
                                     else if (typeof object.sizeBytes === "object")
                                         message.sizeBytes = new $util.LongBits(object.sizeBytes.low >>> 0, object.sizeBytes.high >>> 0).toNumber();
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -15435,6 +15493,12 @@
                                     message.encryptionInfo = $root.google.spanner.admin.database.v1.EncryptionInfo.fromObject(object.encryptionInfo);
                                 }
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -15510,7 +15574,7 @@
                                     else
                                         object.sizeBytes = options.longs === String ? $util.Long.prototype.toString.call(message.sizeBytes) : options.longs === Number ? new $util.LongBits(message.sizeBytes.low >>> 0, message.sizeBytes.high >>> 0).toNumber() : message.sizeBytes;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Backup.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Backup.State[message.state] === undefined ? message.state : $root.google.spanner.admin.database.v1.Backup.State[message.state] : message.state;
                                 if (message.referencingDatabases && message.referencingDatabases.length) {
                                     object.referencingDatabases = [];
                                     for (var j = 0; j < message.referencingDatabases.length; ++j)
@@ -15521,7 +15585,7 @@
                                 if (message.versionTime != null && message.hasOwnProperty("versionTime"))
                                     object.versionTime = $root.google.protobuf.Timestamp.toObject(message.versionTime, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 if (message.referencingBackups && message.referencingBackups.length) {
                                     object.referencingBackups = [];
                                     for (var j = 0; j < message.referencingBackups.length; ++j)
@@ -18875,6 +18939,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -18915,7 +18985,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -19143,6 +19213,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -19183,7 +19259,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -19893,6 +19969,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.EncryptionInfo();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -19937,7 +20019,7 @@
                                 if (message.kmsKeyVersion != null && message.hasOwnProperty("kmsKeyVersion"))
                                     object.kmsKeyVersion = message.kmsKeyVersion;
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.EncryptionInfo.Type[message.encryptionType] : message.encryptionType;
                                 if (message.encryptionStatus != null && message.hasOwnProperty("encryptionStatus"))
                                     object.encryptionStatus = $root.google.rpc.Status.toObject(message.encryptionStatus, options);
                                 return object;
@@ -20859,6 +20941,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.RestoreInfo();
                                 switch (object.sourceType) {
+                                default:
+                                    if (typeof object.sourceType === "number") {
+                                        message.sourceType = object.sourceType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.sourceType = 0;
@@ -20892,7 +20980,7 @@
                                 if (options.defaults)
                                     object.sourceType = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
                                 if (message.sourceType != null && message.hasOwnProperty("sourceType"))
-                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] === undefined ? message.sourceType : $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
                                 if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
                                     object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
                                     if (options.oneofs)
@@ -21275,6 +21363,12 @@
                                 if (object.name != null)
                                     message.name = String(object.name);
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -21327,6 +21421,12 @@
                                 if (object.defaultLeader != null)
                                     message.defaultLeader = String(object.defaultLeader);
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -21372,7 +21472,7 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Database.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.database.v1.Database.State[message.state] === undefined ? message.state : $root.google.spanner.admin.database.v1.Database.State[message.state] : message.state;
                                 if (message.createTime != null && message.hasOwnProperty("createTime"))
                                     object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                                 if (message.restoreInfo != null && message.hasOwnProperty("restoreInfo"))
@@ -21391,7 +21491,7 @@
                                 if (message.defaultLeader != null && message.hasOwnProperty("defaultLeader"))
                                     object.defaultLeader = message.defaultLeader;
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -22194,6 +22294,12 @@
                                     message.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.fromObject(object.encryptionConfig);
                                 }
                                 switch (object.databaseDialect) {
+                                default:
+                                    if (typeof object.databaseDialect === "number") {
+                                        message.databaseDialect = object.databaseDialect;
+                                        break;
+                                    }
+                                    break;
                                 case "DATABASE_DIALECT_UNSPECIFIED":
                                 case 0:
                                     message.databaseDialect = 0;
@@ -22243,7 +22349,7 @@
                                 if (message.encryptionConfig != null && message.hasOwnProperty("encryptionConfig"))
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.toObject(message.encryptionConfig, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
-                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                    object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
                                 return object;
                             };
     
@@ -24923,6 +25029,12 @@
                                     return object;
                                 var message = new $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig();
                                 switch (object.encryptionType) {
+                                default:
+                                    if (typeof object.encryptionType === "number") {
+                                        message.encryptionType = object.encryptionType;
+                                        break;
+                                    }
+                                    break;
                                 case "ENCRYPTION_TYPE_UNSPECIFIED":
                                 case 0:
                                     message.encryptionType = 0;
@@ -24963,7 +25075,7 @@
                                     object.kmsKeyName = "";
                                 }
                                 if (message.encryptionType != null && message.hasOwnProperty("encryptionType"))
-                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
+                                    object.encryptionType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] === undefined ? message.encryptionType : $root.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType[message.encryptionType] : message.encryptionType;
                                 if (message.kmsKeyName != null && message.hasOwnProperty("kmsKeyName"))
                                     object.kmsKeyName = message.kmsKeyName;
                                 return object;
@@ -25287,6 +25399,12 @@
                                 if (object.name != null)
                                     message.name = String(object.name);
                                 switch (object.sourceType) {
+                                default:
+                                    if (typeof object.sourceType === "number") {
+                                        message.sourceType = object.sourceType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.sourceType = 0;
@@ -25339,7 +25457,7 @@
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
                                 if (message.sourceType != null && message.hasOwnProperty("sourceType"))
-                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
+                                    object.sourceType = options.enums === String ? $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] === undefined ? message.sourceType : $root.google.spanner.admin.database.v1.RestoreSourceType[message.sourceType] : message.sourceType;
                                 if (message.backupInfo != null && message.hasOwnProperty("backupInfo")) {
                                     object.backupInfo = $root.google.spanner.admin.database.v1.BackupInfo.toObject(message.backupInfo, options);
                                     if (options.oneofs)
@@ -27306,6 +27424,12 @@
                                 if (object.location != null)
                                     message.location = String(object.location);
                                 switch (object.type) {
+                                default:
+                                    if (typeof object.type === "number") {
+                                        message.type = object.type;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.type = 0;
@@ -27349,7 +27473,7 @@
                                 if (message.location != null && message.hasOwnProperty("location"))
                                     object.location = message.location;
                                 if (message.type != null && message.hasOwnProperty("type"))
-                                    object.type = options.enums === String ? $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] : message.type;
+                                    object.type = options.enums === String ? $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] === undefined ? message.type : $root.google.spanner.admin.instance.v1.ReplicaInfo.ReplicaType[message.type] : message.type;
                                 if (message.defaultLeaderLocation != null && message.hasOwnProperty("defaultLeaderLocation"))
                                     object.defaultLeaderLocation = message.defaultLeaderLocation;
                                 return object;
@@ -27802,6 +27926,12 @@
                                 if (object.displayName != null)
                                     message.displayName = String(object.displayName);
                                 switch (object.configType) {
+                                default:
+                                    if (typeof object.configType === "number") {
+                                        message.configType = object.configType;
+                                        break;
+                                    }
+                                    break;
                                 case "TYPE_UNSPECIFIED":
                                 case 0:
                                     message.configType = 0;
@@ -27856,6 +27986,12 @@
                                 if (object.reconciling != null)
                                     message.reconciling = Boolean(object.reconciling);
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -27916,7 +28052,7 @@
                                         object.leaderOptions[j] = message.leaderOptions[j];
                                 }
                                 if (message.configType != null && message.hasOwnProperty("configType"))
-                                    object.configType = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] : message.configType;
+                                    object.configType = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] === undefined ? message.configType : $root.google.spanner.admin.instance.v1.InstanceConfig.Type[message.configType] : message.configType;
                                 if (message.optionalReplicas && message.optionalReplicas.length) {
                                     object.optionalReplicas = [];
                                     for (var j = 0; j < message.optionalReplicas.length; ++j)
@@ -27935,7 +28071,7 @@
                                 if (message.reconciling != null && message.hasOwnProperty("reconciling"))
                                     object.reconciling = message.reconciling;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] === undefined ? message.state : $root.google.spanner.admin.instance.v1.InstanceConfig.State[message.state] : message.state;
                                 return object;
                             };
     
@@ -28366,6 +28502,12 @@
                                 if (object.processingUnits != null)
                                     message.processingUnits = object.processingUnits | 0;
                                 switch (object.state) {
+                                default:
+                                    if (typeof object.state === "number") {
+                                        message.state = object.state;
+                                        break;
+                                    }
+                                    break;
                                 case "STATE_UNSPECIFIED":
                                 case 0:
                                     message.state = 0;
@@ -28442,7 +28584,7 @@
                                 if (message.nodeCount != null && message.hasOwnProperty("nodeCount"))
                                     object.nodeCount = message.nodeCount;
                                 if (message.state != null && message.hasOwnProperty("state"))
-                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.Instance.State[message.state] : message.state;
+                                    object.state = options.enums === String ? $root.google.spanner.admin.instance.v1.Instance.State[message.state] === undefined ? message.state : $root.google.spanner.admin.instance.v1.Instance.State[message.state] : message.state;
                                 var keys2;
                                 if (message.labels && (keys2 = Object.keys(message.labels)).length) {
                                     object.labels = {};
@@ -35357,6 +35499,12 @@
                         if (object.index != null)
                             message.index = object.index | 0;
                         switch (object.kind) {
+                        default:
+                            if (typeof object.kind === "number") {
+                                message.kind = object.kind;
+                                break;
+                            }
+                            break;
                         case "KIND_UNSPECIFIED":
                         case 0:
                             message.kind = 0;
@@ -35426,7 +35574,7 @@
                         if (message.index != null && message.hasOwnProperty("index"))
                             object.index = message.index;
                         if (message.kind != null && message.hasOwnProperty("kind"))
-                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
+                            object.kind = options.enums === String ? $root.google.spanner.v1.PlanNode.Kind[message.kind] === undefined ? message.kind : $root.google.spanner.v1.PlanNode.Kind[message.kind] : message.kind;
                         if (message.displayName != null && message.hasOwnProperty("displayName"))
                             object.displayName = message.displayName;
                         if (message.childLinks && message.childLinks.length) {
@@ -37886,6 +38034,12 @@
                                 return object;
                             var message = new $root.google.spanner.v1.TransactionOptions.ReadWrite();
                             switch (object.readLockMode) {
+                            default:
+                                if (typeof object.readLockMode === "number") {
+                                    message.readLockMode = object.readLockMode;
+                                    break;
+                                }
+                                break;
                             case "READ_LOCK_MODE_UNSPECIFIED":
                             case 0:
                                 message.readLockMode = 0;
@@ -37918,7 +38072,7 @@
                             if (options.defaults)
                                 object.readLockMode = options.enums === String ? "READ_LOCK_MODE_UNSPECIFIED" : 0;
                             if (message.readLockMode != null && message.hasOwnProperty("readLockMode"))
-                                object.readLockMode = options.enums === String ? $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] : message.readLockMode;
+                                object.readLockMode = options.enums === String ? $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] === undefined ? message.readLockMode : $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] : message.readLockMode;
                             return object;
                         };
     
@@ -39294,6 +39448,12 @@
                             return object;
                         var message = new $root.google.spanner.v1.Type();
                         switch (object.code) {
+                        default:
+                            if (typeof object.code === "number") {
+                                message.code = object.code;
+                                break;
+                            }
+                            break;
                         case "TYPE_CODE_UNSPECIFIED":
                         case 0:
                             message.code = 0;
@@ -39354,6 +39514,12 @@
                             message.structType = $root.google.spanner.v1.StructType.fromObject(object.structType);
                         }
                         switch (object.typeAnnotation) {
+                        default:
+                            if (typeof object.typeAnnotation === "number") {
+                                message.typeAnnotation = object.typeAnnotation;
+                                break;
+                            }
+                            break;
                         case "TYPE_ANNOTATION_CODE_UNSPECIFIED":
                         case 0:
                             message.typeAnnotation = 0;
@@ -39390,13 +39556,13 @@
                             object.typeAnnotation = options.enums === String ? "TYPE_ANNOTATION_CODE_UNSPECIFIED" : 0;
                         }
                         if (message.code != null && message.hasOwnProperty("code"))
-                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] : message.code;
+                            object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] === undefined ? message.code : $root.google.spanner.v1.TypeCode[message.code] : message.code;
                         if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType"))
                             object.arrayElementType = $root.google.spanner.v1.Type.toObject(message.arrayElementType, options);
                         if (message.structType != null && message.hasOwnProperty("structType"))
                             object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
                         if (message.typeAnnotation != null && message.hasOwnProperty("typeAnnotation"))
-                            object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
+                            object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] === undefined ? message.typeAnnotation : $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
                         return object;
                     };
     
@@ -42638,6 +42804,12 @@
                             return object;
                         var message = new $root.google.spanner.v1.RequestOptions();
                         switch (object.priority) {
+                        default:
+                            if (typeof object.priority === "number") {
+                                message.priority = object.priority;
+                                break;
+                            }
+                            break;
                         case "PRIORITY_UNSPECIFIED":
                         case 0:
                             message.priority = 0;
@@ -42681,7 +42853,7 @@
                             object.transactionTag = "";
                         }
                         if (message.priority != null && message.hasOwnProperty("priority"))
-                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
+                            object.priority = options.enums === String ? $root.google.spanner.v1.RequestOptions.Priority[message.priority] === undefined ? message.priority : $root.google.spanner.v1.RequestOptions.Priority[message.priority] : message.priority;
                         if (message.requestTag != null && message.hasOwnProperty("requestTag"))
                             object.requestTag = message.requestTag;
                         if (message.transactionTag != null && message.hasOwnProperty("transactionTag"))
@@ -43139,6 +43311,12 @@
                             else if (object.resumeToken.length >= 0)
                                 message.resumeToken = object.resumeToken;
                         switch (object.queryMode) {
+                        default:
+                            if (typeof object.queryMode === "number") {
+                                message.queryMode = object.queryMode;
+                                break;
+                            }
+                            break;
                         case "NORMAL":
                         case 0:
                             message.queryMode = 0;
@@ -43239,7 +43417,7 @@
                         if (message.resumeToken != null && message.hasOwnProperty("resumeToken"))
                             object.resumeToken = options.bytes === String ? $util.base64.encode(message.resumeToken, 0, message.resumeToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.resumeToken) : message.resumeToken;
                         if (message.queryMode != null && message.hasOwnProperty("queryMode"))
-                            object.queryMode = options.enums === String ? $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] : message.queryMode;
+                            object.queryMode = options.enums === String ? $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] === undefined ? message.queryMode : $root.google.spanner.v1.ExecuteSqlRequest.QueryMode[message.queryMode] : message.queryMode;
                         if (message.partitionToken != null && message.hasOwnProperty("partitionToken"))
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         if (message.seqno != null && message.hasOwnProperty("seqno"))
@@ -47586,6 +47764,12 @@
                     if (object.nameField != null)
                         message.nameField = String(object.nameField);
                     switch (object.history) {
+                    default:
+                        if (typeof object.history === "number") {
+                            message.history = object.history;
+                            break;
+                        }
+                        break;
                     case "HISTORY_UNSPECIFIED":
                     case 0:
                         message.history = 0;
@@ -47610,6 +47794,10 @@
                         for (var i = 0; i < object.style.length; ++i)
                             switch (object.style[i]) {
                             default:
+                                if (typeof object.style[i] === "number") {
+                                    message.style[i] = object.style[i];
+                                    break;
+                                }
                             case "STYLE_UNSPECIFIED":
                             case 0:
                                 message.style[i] = 0;
@@ -47657,7 +47845,7 @@
                     if (message.nameField != null && message.hasOwnProperty("nameField"))
                         object.nameField = message.nameField;
                     if (message.history != null && message.hasOwnProperty("history"))
-                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] : message.history;
+                        object.history = options.enums === String ? $root.google.api.ResourceDescriptor.History[message.history] === undefined ? message.history : $root.google.api.ResourceDescriptor.History[message.history] : message.history;
                     if (message.plural != null && message.hasOwnProperty("plural"))
                         object.plural = message.plural;
                     if (message.singular != null && message.hasOwnProperty("singular"))
@@ -47665,7 +47853,7 @@
                     if (message.style && message.style.length) {
                         object.style = [];
                         for (var j = 0; j < message.style.length; ++j)
-                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
+                            object.style[j] = options.enums === String ? $root.google.api.ResourceDescriptor.Style[message.style[j]] === undefined ? message.style[j] : $root.google.api.ResourceDescriptor.Style[message.style[j]] : message.style[j];
                     }
                     return object;
                 };
@@ -53399,6 +53587,12 @@
                             return object;
                         var message = new $root.google.iam.v1.AuditLogConfig();
                         switch (object.logType) {
+                        default:
+                            if (typeof object.logType === "number") {
+                                message.logType = object.logType;
+                                break;
+                            }
+                            break;
                         case "LOG_TYPE_UNSPECIFIED":
                         case 0:
                             message.logType = 0;
@@ -53444,7 +53638,7 @@
                         if (options.defaults)
                             object.logType = options.enums === String ? "LOG_TYPE_UNSPECIFIED" : 0;
                         if (message.logType != null && message.hasOwnProperty("logType"))
-                            object.logType = options.enums === String ? $root.google.iam.v1.AuditLogConfig.LogType[message.logType] : message.logType;
+                            object.logType = options.enums === String ? $root.google.iam.v1.AuditLogConfig.LogType[message.logType] === undefined ? message.logType : $root.google.iam.v1.AuditLogConfig.LogType[message.logType] : message.logType;
                         if (message.exemptedMembers && message.exemptedMembers.length) {
                             object.exemptedMembers = [];
                             for (var j = 0; j < message.exemptedMembers.length; ++j)
@@ -53981,6 +54175,12 @@
                             return object;
                         var message = new $root.google.iam.v1.BindingDelta();
                         switch (object.action) {
+                        default:
+                            if (typeof object.action === "number") {
+                                message.action = object.action;
+                                break;
+                            }
+                            break;
                         case "ACTION_UNSPECIFIED":
                         case 0:
                             message.action = 0;
@@ -54026,7 +54226,7 @@
                             object.condition = null;
                         }
                         if (message.action != null && message.hasOwnProperty("action"))
-                            object.action = options.enums === String ? $root.google.iam.v1.BindingDelta.Action[message.action] : message.action;
+                            object.action = options.enums === String ? $root.google.iam.v1.BindingDelta.Action[message.action] === undefined ? message.action : $root.google.iam.v1.BindingDelta.Action[message.action] : message.action;
                         if (message.role != null && message.hasOwnProperty("role"))
                             object.role = message.role;
                         if (message.member != null && message.hasOwnProperty("member"))
@@ -54291,6 +54491,12 @@
                             return object;
                         var message = new $root.google.iam.v1.AuditConfigDelta();
                         switch (object.action) {
+                        default:
+                            if (typeof object.action === "number") {
+                                message.action = object.action;
+                                break;
+                            }
+                            break;
                         case "ACTION_UNSPECIFIED":
                         case 0:
                             message.action = 0;
@@ -54333,7 +54539,7 @@
                             object.logType = "";
                         }
                         if (message.action != null && message.hasOwnProperty("action"))
-                            object.action = options.enums === String ? $root.google.iam.v1.AuditConfigDelta.Action[message.action] : message.action;
+                            object.action = options.enums === String ? $root.google.iam.v1.AuditConfigDelta.Action[message.action] === undefined ? message.action : $root.google.iam.v1.AuditConfigDelta.Action[message.action] : message.action;
                         if (message.service != null && message.hasOwnProperty("service"))
                             object.service = message.service;
                         if (message.exemptedMember != null && message.hasOwnProperty("exemptedMember"))

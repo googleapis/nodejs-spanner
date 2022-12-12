@@ -640,9 +640,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err, null, undefined);
+        callback!(err as ServiceError, null, undefined);
         return;
       }
       const transaction = this.batchTransaction({session: session!}, options);
@@ -1685,9 +1685,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err);
+        callback!(err as ServiceError);
         return;
       }
 
@@ -1759,7 +1759,7 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession((err, session, transaction) => {
+    this.pool_.getSession((err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
@@ -1872,9 +1872,9 @@ class Database extends common.GrpcServiceObject {
     callback?: PoolRequestCallback
   ): void | Promise<Session> {
     const pool = this.pool_;
-    pool.getReadSession((err, session) => {
+    pool.getSession((err, session) => {
       if (err) {
-        callback!(err, null);
+        callback!(err as ServiceError, null);
         return;
       }
       config.reqOpts.session = session!.formattedName_;
@@ -1917,9 +1917,9 @@ class Database extends common.GrpcServiceObject {
       }
     }
     waitForSessionStream.on('reading', () => {
-      pool.getReadSession((err, session_) => {
+      pool.getSession((err, session_) => {
         if (err) {
-          destroyStream(err);
+          destroyStream(err as ServiceError);
           return;
         }
         session = session_!;
@@ -2277,9 +2277,9 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err, 0);
+        callback!(err as ServiceError, 0);
         return;
       }
 
@@ -2449,7 +2449,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
         proxyStream.destroy(err);
         return;
@@ -2604,7 +2604,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    this.pool_.getWriteSession((err, session?, transaction?) => {
+    this.pool_.getSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
@@ -2713,13 +2713,13 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+    const getSession = this.pool_.getSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
     // (and yes, we like while (true) more than for (;;) here)
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const [session, transaction] = await promisify(getWriteSession)();
+        const [session, transaction] = await promisify(getSession)();
         transaction.requestOptions = Object.assign(
           transaction.requestOptions || {},
           options.requestOptions
