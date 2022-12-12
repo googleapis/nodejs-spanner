@@ -2659,15 +2659,17 @@ describe('Spanner', () => {
     before(async () => {
       await session.create();
       const [operation] = await DATABASE.updateSchema([
-        'CREATE ROLE parent',
-        'CREATE ROLE child',
-        'CREATE ROLE orphan',
+        'CREATE ROLE parent_role',
+        'CREATE ROLE child_role',
+        'CREATE ROLE orphan_role',
       ]);
       await operation.promise();
       await sessionWithDatabaseRole.create();
-      [sessionWithRole] = await DATABASE.createSession({databaseRole: 'child'});
+      [sessionWithRole] = await DATABASE.createSession({
+        databaseRole: 'child_role',
+      });
       [sessionWithOverridingRole] = await dbNewRole.createSession({
-        databaseRole: 'orphan',
+        databaseRole: 'orphan_role',
       });
     });
 
@@ -2715,7 +2717,7 @@ describe('Spanner', () => {
     it('should have created the session with database database role', done => {
       sessionWithDatabaseRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('parent', metadata!.databaseRole);
+        assert.strictEqual('parent_role', metadata!.databaseRole);
         done();
       });
     });
@@ -2723,7 +2725,7 @@ describe('Spanner', () => {
     it('should have created the session with database role', done => {
       sessionWithRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('child', metadata!.databaseRole);
+        assert.strictEqual('child_role', metadata!.databaseRole);
         done();
       });
     });
@@ -2731,7 +2733,7 @@ describe('Spanner', () => {
     it('should have created the session by overriding database database role', done => {
       sessionWithOverridingRole.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual('orphan', metadata!.databaseRole);
+        assert.strictEqual('orphan_role', metadata!.databaseRole);
         done();
       });
     });
@@ -2744,7 +2746,7 @@ describe('Spanner', () => {
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('parent', metadata?.databaseRole);
+          assert.strictEqual('parent_role', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
@@ -2754,14 +2756,14 @@ describe('Spanner', () => {
       const count = 5;
       const [sessions] = await DATABASE.batchCreateSessions({
         count,
-        databaseRole: 'child',
+        databaseRole: 'child_role',
       });
 
       assert.strictEqual(sessions.length, count);
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('child', metadata?.databaseRole);
+          assert.strictEqual('child_role', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
@@ -2771,14 +2773,14 @@ describe('Spanner', () => {
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({
         count,
-        databaseRole: 'orphan',
+        databaseRole: 'orphan_role',
       });
 
       assert.strictEqual(sessions.length, count);
       sessions.forEach(session =>
         session.getMetadata((err, metadata) => {
           assert.ifError(err);
-          assert.strictEqual('orphan', metadata?.databaseRole);
+          assert.strictEqual('orphan_role', metadata?.databaseRole);
         })
       );
       await Promise.all(sessions.map(session => session.delete()));
