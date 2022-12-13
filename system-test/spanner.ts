@@ -2746,7 +2746,10 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should have created the session with database database role', done => {
+    it('should have created the session with database database role', function (done) {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       sessionWithDatabaseRole.getMetadata((err, metadata) => {
         assert.ifError(err);
         assert.strictEqual('parent_role', metadata!.databaseRole);
@@ -2754,7 +2757,10 @@ describe('Spanner', () => {
       });
     });
 
-    it('should have created the session with database role', done => {
+    it('should have created the session with database role', function (done) {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       sessionWithRole.getMetadata((err, metadata) => {
         assert.ifError(err);
         assert.strictEqual('child_role', metadata!.databaseRole);
@@ -2762,7 +2768,10 @@ describe('Spanner', () => {
       });
     });
 
-    it('should have created the session by overriding database database role', done => {
+    it('should have created the session by overriding database database role', function (done) {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       sessionWithOverridingRole.getMetadata((err, metadata) => {
         assert.ifError(err);
         assert.strictEqual('orphan_role', metadata!.databaseRole);
@@ -2770,7 +2779,10 @@ describe('Spanner', () => {
       });
     });
 
-    it('should batch create sessions with database role', async () => {
+    it('should batch create sessions with database role', async function () {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({count});
 
@@ -2784,7 +2796,10 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with database role', async () => {
+    it('should batch create sessions with database role', async function () {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       const count = 5;
       const [sessions] = await DATABASE.batchCreateSessions({
         count,
@@ -2801,7 +2816,10 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with database role by overriding database database role', async () => {
+    it('should batch create sessions with database role by overriding database database role', async function () {
+      if(IS_EMULATOR_ENABLED){
+        this.skip();
+      }
       const count = 5;
       const [sessions] = await dbNewRole.batchCreateSessions({
         count,
