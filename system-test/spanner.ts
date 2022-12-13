@@ -52,6 +52,7 @@ const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
+  apiEndpoint: process.env.API_ENDPOINT,
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -1829,7 +1830,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should create a user defined role', done => {
+      it('GOOGLE_STANDARD_SQL should create a user defined role', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         createUserDefinedDatabaseRole(done, DATABASE, 'CREATE ROLE parent');
       });
 
@@ -1862,7 +1866,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', done => {
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         grantAccessToRole(
           done,
           DATABASE,
@@ -1911,7 +1918,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', done => {
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         userDefinedDatabaseRoleRevoked(
           done,
           DATABASE,
@@ -1950,7 +1960,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should drop the user defined role', done => {
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         userDefinedDatabaseRoleDropped(
           done,
           DATABASE,
@@ -1991,7 +2004,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should run query with access granted', done => {
+      it('GOOGLE_STANDARD_SQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         grantAccessSuccess(done, DATABASE);
       });
 
@@ -2026,7 +2042,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', done => {
+      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         grantAccessFailure(done, DATABASE);
       });
 
@@ -2047,7 +2066,10 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should list database roles', async () => {
+      it('GOOGLE_STANDARD_SQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         await listDatabaseRoles(DATABASE);
       });
 
@@ -2060,7 +2082,10 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should get IAM Policy', done => {
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         getIamPolicy(done, DATABASE);
       });
 
@@ -2091,7 +2116,10 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should get IAM Policy', async () => {
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         await setIamPolicy(DATABASE);
       });
 
