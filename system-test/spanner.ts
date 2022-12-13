@@ -2747,7 +2747,7 @@ describe('Spanner', () => {
     });
 
     it('should have created the session with database database role', function (done) {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       sessionWithDatabaseRole.getMetadata((err, metadata) => {
@@ -2758,7 +2758,7 @@ describe('Spanner', () => {
     });
 
     it('should have created the session with database role', function (done) {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       sessionWithRole.getMetadata((err, metadata) => {
@@ -2769,7 +2769,7 @@ describe('Spanner', () => {
     });
 
     it('should have created the session by overriding database database role', function (done) {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       sessionWithOverridingRole.getMetadata((err, metadata) => {
@@ -2780,7 +2780,7 @@ describe('Spanner', () => {
     });
 
     it('should batch create sessions with database role', async function () {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       const count = 5;
@@ -2797,7 +2797,7 @@ describe('Spanner', () => {
     });
 
     it('should batch create sessions with database role', async function () {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       const count = 5;
@@ -2817,7 +2817,7 @@ describe('Spanner', () => {
     });
 
     it('should batch create sessions with database role by overriding database database role', async function () {
-      if(IS_EMULATOR_ENABLED){
+      if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
       const count = 5;
