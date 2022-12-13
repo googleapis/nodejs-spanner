@@ -2686,25 +2686,29 @@ describe('Spanner', () => {
 
     before(async () => {
       await session.create();
-      const [operation] = await DATABASE.updateSchema([
-        'CREATE ROLE parent_role',
-        'CREATE ROLE child_role',
-        'CREATE ROLE orphan_role',
-      ]);
-      await operation.promise();
-      await sessionWithDatabaseRole.create();
-      [sessionWithRole] = await DATABASE.createSession({
-        databaseRole: 'child_role',
-      });
-      [sessionWithOverridingRole] = await dbNewRole.createSession({
-        databaseRole: 'orphan_role',
-      });
+      if (!IS_EMULATOR_ENABLED) {
+        const [operation] = await DATABASE.updateSchema([
+          'CREATE ROLE parent_role',
+          'CREATE ROLE child_role',
+          'CREATE ROLE orphan_role',
+        ]);
+        await operation.promise();
+        await sessionWithDatabaseRole.create();
+        [sessionWithRole] = await DATABASE.createSession({
+          databaseRole: 'child_role',
+        });
+        [sessionWithOverridingRole] = await dbNewRole.createSession({
+          databaseRole: 'orphan_role',
+        });
+      }
     });
 
     after(async () => {
       await session.delete();
-      await sessionWithDatabaseRole.delete();
-      await sessionWithRole.delete();
+      if (!IS_EMULATOR_ENABLED) {
+        await sessionWithDatabaseRole.delete();
+        await sessionWithRole.delete();
+      }
     });
 
     it('should have created the session', done => {
