@@ -1973,6 +1973,7 @@ describe('Spanner', () => {
       });
 
       const grantAccessSuccess = (done, database) => {
+        const id = 7;
         database.updateSchema(
           [
             'CREATE ROLE read_access',
@@ -1983,7 +1984,7 @@ describe('Spanner', () => {
             const table = database.table('Singers');
             table.insert(
               {
-                SingerId: 7,
+                SingerId: id,
               },
               err => {
                 assert.ifError(err);
@@ -1996,6 +1997,7 @@ describe('Spanner', () => {
                 dbReadRole.run(query, (err, rows) => {
                   assert.ifError(err);
                   assert.ok(rows.length > 0);
+                  table.deleteRows([id]);
                   done();
                 });
               }
@@ -2012,6 +2014,7 @@ describe('Spanner', () => {
       });
 
       const grantAccessFailure = (done, database) => {
+        const id = 8;
         database.updateSchema(
           [
             'CREATE ROLE write_access',
@@ -2022,7 +2025,7 @@ describe('Spanner', () => {
             const table = database.table('Singers');
             table.insert(
               {
-                SingerId: 8,
+                SingerId: id,
               },
               err => {
                 assert.ifError(err);
@@ -2034,6 +2037,7 @@ describe('Spanner', () => {
                 };
                 dbReadRole.run(query, err => {
                   assert(err);
+                  table.deleteRows([id]);
                   done();
                 });
               }

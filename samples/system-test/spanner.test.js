@@ -1089,7 +1089,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      new RegExp('SingerId: 1, FirstName: Alice, LastName: Henderson')
+      new RegExp('SingerId: 1, FirstName: Marc, LastName: Richards')
     );
   });
 
