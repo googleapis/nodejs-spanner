@@ -1428,7 +1428,7 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Options object for requested policy versi.
+   * Options object for requested policy version.
    *
    * @typedef {object} GetIamPolicyOptions
    * @property {number|null} [requestedPolicyVersion] policy version requested, possible values are 0, 1 and 3,
