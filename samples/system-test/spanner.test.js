@@ -1066,6 +1066,46 @@ describe('Spanner', () => {
     assert.match(output, /VenueId: 19, Details: {"open":true,"rating":9}/);
   });
 
+  // add_and_drop_new_database_role
+  it('should add and drop new database roles', async () => {
+    const output = execSync(
+      `node add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, new RegExp('Waiting for operation to complete...'));
+    assert.match(
+      output,
+      new RegExp('Created roles child and parent and granted privileges')
+    );
+    assert.match(
+      output,
+      new RegExp('Revoked privileges and dropped role child')
+    );
+  });
+
+  // read_data_with_database_role
+  it('should read data with database role', async () => {
+    const output = execSync(
+      `node read-data-with-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('SingerId: 1, FirstName: Marc, LastName: Richards')
+    );
+  });
+
+  // get_database_roles
+  it('should list database roles', async () => {
+    const output = execSync(
+      `node get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`
+      )
+    );
+  });
+
   // create_backup
   it('should create a backup of the database', async () => {
     const instance = spanner.instance(INSTANCE_ID);

@@ -14,6 +14,7 @@ and automatic, synchronous replication for high availability.
 
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
+  * [Add and drop new database role](#add-and-drop-new-database-role)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
@@ -36,7 +37,9 @@ and automatic, synchronous replication for high availability.
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Datatypes](#datatypes)
   * [DML](#dml)
+  * [Enable fine grained access control](#enable-fine-grained-access-control)
   * [Get-commit-stats](#get-commit-stats)
+  * [List database roles](#list-database-roles)
   * [Gets the instance config metadata for the configuration nam6](#gets-the-instance-config-metadata-for-the-configuration-nam6)
   * [Creates a new value-storing index](#creates-a-new-value-storing-index)
   * [Creates a new index](#creates-a-new-index)
@@ -78,6 +81,7 @@ and automatic, synchronous replication for high availability.
   * [Query the information schema metadata in a Spanner PostgreSQL database.](#query-the-information-schema-metadata-in-a-spanner-postgresql-database.)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
+  * [Read data with database role](#read-data-with-database-role)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
   * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
@@ -103,6 +107,23 @@ Before running the samples, make sure you've followed the steps outlined in
 `cd ..`
 
 ## Samples
+
+
+
+### Add and drop new database role
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/add-and-drop-new-database-role.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/add-and-drop-new-database-role.js,samples/README.md)
+
+__Usage:__
+
+
+`node add-and-drop-new-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
 
 
 
@@ -480,6 +501,23 @@ __Usage:__
 
 
 
+### Enable fine grained access control
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/enable-fine-grained-access.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/enable-fine-grained-access.js,samples/README.md)
+
+__Usage:__
+
+
+`node enable-fine-grained-access.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Get-commit-stats
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-commit-stats.js).
@@ -490,6 +528,23 @@ __Usage:__
 
 
 `node samples/get-commit-stats.js`
+
+
+-----
+
+
+
+
+### List database roles
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-database-roles.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-database-roles.js,samples/README.md)
+
+__Usage:__
+
+
+`node get-database-roles.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1187,6 +1242,23 @@ __Usage:__
 
 
 `node samples/quickstart.js`
+
+
+-----
+
+
+
+
+### Read data with database role
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-data-with-database-role.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-data-with-database-role.js,samples/README.md)
+
+__Usage:__
+
+
+`node read-data-with-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
