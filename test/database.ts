@@ -91,16 +91,6 @@ class FakeSession {
   }
 }
 
-interface ReadSessionCallback {
-  (err: Error, session?: null): void;
-  (err: null, session: FakeSession): void;
-}
-
-interface WriteSessionCallback {
-  (err: Error, session?: null, transaction?: null): void;
-  (err: null, session: FakeSession, transaction: FakeTransaction): void;
-}
-
 class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
@@ -108,8 +98,7 @@ class FakeSessionPool extends EventEmitter {
     this.calledWith_ = arguments;
   }
   open() {}
-  getReadSession() {}
-  getWriteSession() {}
+  getSession() {}
   release() {}
 }
 
@@ -537,7 +526,7 @@ describe('Database', () => {
 
     beforeEach(() => {
       database.pool_ = {
-        getReadSession(callback) {
+        getSession(callback) {
           callback(null, SESSION);
         },
       };
@@ -547,7 +536,7 @@ describe('Database', () => {
       const error = new Error('err');
 
       database.pool_ = {
-        getReadSession(callback) {
+        getSession(callback) {
           callback(error);
         },
       };
@@ -1133,7 +1122,7 @@ describe('Database', () => {
 
       database.pool_ = POOL;
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(null, SESSION);
       };
 
@@ -1141,7 +1130,7 @@ describe('Database', () => {
     });
 
     it('should get a session', done => {
-      POOL.getReadSession = () => {
+      POOL.getSession = () => {
         done();
       };
 
@@ -1151,7 +1140,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(error);
       };
 
@@ -1230,7 +1219,7 @@ describe('Database', () => {
         return REQUEST_STREAM;
       };
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(null, SESSION);
       };
 
@@ -1238,7 +1227,7 @@ describe('Database', () => {
     });
 
     it('should get a session when stream opens', done => {
-      POOL.getReadSession = () => {
+      POOL.getSession = () => {
         done();
       };
 
@@ -1249,7 +1238,7 @@ describe('Database', () => {
       const ERROR = new Error('Error.');
 
       beforeEach(() => {
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(ERROR);
         };
       });
@@ -1267,7 +1256,7 @@ describe('Database', () => {
 
     describe('session retrieved successfully', () => {
       beforeEach(() => {
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(null, SESSION);
         };
       });
@@ -1344,7 +1333,7 @@ describe('Database', () => {
           cancel: util.noop,
         };
 
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(null, SESSION);
         };
       });
@@ -1478,7 +1467,7 @@ describe('Database', () => {
     let fakeStream: Transform;
     let fakeStream2: Transform;
 
-    let getReadSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
     let runStreamStub: sinon.SinonStub;
 
@@ -1491,9 +1480,7 @@ describe('Database', () => {
       fakeStream = through.obj();
       fakeStream2 = through.obj();
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
-      )
+      getSessionStub = (sandbox.stub(fakePool, 'getSession') as sinon.SinonStub)
         .onFirstCall()
         .callsFake(callback => callback(null, fakeSession))
         .onSecondCall()
@@ -1512,19 +1499,17 @@ describe('Database', () => {
       sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
     });
 
-    it('should get a read session via `getReadSession`', () => {
-      getReadSessionStub.callsFake(() => {});
+    it('should get a read session via `getSession`', () => {
+      getSessionStub.callsFake(() => {});
       database.runStream(QUERY);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
-    it('should destroy the stream if `getReadSession` errors', done => {
+    it('should destroy the stream if `getSession` errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub
-        .onFirstCall()
-        .callsFake(callback => callback(fakeError));
+      getSessionStub.onFirstCall().callsFake(callback => callback(fakeError));
 
       database.runStream(QUERY).on('error', err => {
         assert.strictEqual(err, fakeError);
@@ -1801,7 +1786,7 @@ describe('Database', () => {
     let fakeSnapshot: FakeTransaction;
 
     let beginSnapshotStub: sinon.SinonStub;
-    let getReadSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
 
     beforeEach(() => {
@@ -1813,8 +1798,8 @@ describe('Database', () => {
         sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
       ).callsFake(callback => callback(null));
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
       snapshotStub = sandbox
@@ -1822,18 +1807,18 @@ describe('Database', () => {
         .returns(fakeSnapshot);
     });
 
-    it('should call through to `SessionPool#getReadSession`', () => {
-      getReadSessionStub.callsFake(() => {});
+    it('should call through to `SessionPool#getSession`', () => {
+      getSessionStub.callsFake(() => {});
 
       database.getSnapshot(assert.ifError);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
 
       database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
@@ -1887,7 +1872,7 @@ describe('Database', () => {
       );
       sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-      getReadSessionStub
+      getSessionStub
         .onFirstCall()
         .callsFake(callback => callback(null, fakeSession))
         .onSecondCall()
@@ -1939,32 +1924,32 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
-    let getWriteSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
       fakeTransaction = new FakeTransaction();
 
-      getWriteSessionStub = (
-        sandbox.stub(fakePool, 'getWriteSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession, fakeTransaction);
       });
     });
 
     it('should get a read/write transaction', () => {
-      getWriteSessionStub.callsFake(() => {});
+      getSessionStub.callsFake(() => {});
 
       database.getTransaction(assert.ifError);
 
-      assert.strictEqual(getWriteSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getWriteSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
 
       database.getTransaction(err => {
         assert.strictEqual(err, fakeError);
@@ -2301,7 +2286,7 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakePartitionedDml: FakeTransaction;
 
-    let getReadSessionStub;
+    let getSessionStub;
     let beginStub;
     let runUpdateStub;
 
@@ -2310,8 +2295,8 @@ describe('Database', () => {
       fakeSession = new FakeSession();
       fakePartitionedDml = new FakeTransaction();
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession);
       });
@@ -2328,18 +2313,18 @@ describe('Database', () => {
     });
 
     it('should get a read only session from the pool', () => {
-      getReadSessionStub.callsFake(() => {});
+      getSessionStub.callsFake(() => {});
 
       database.runPartitionedUpdate(QUERY, assert.ifError);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', () => {
       const fakeError = new Error('err');
       const fakeCallback = sandbox.spy();
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
       const [err, rowCount] = fakeCallback.lastCall.args;
@@ -2426,7 +2411,7 @@ describe('Database', () => {
     beforeEach(() => {
       pool = database.pool_;
 
-      (sandbox.stub(pool, 'getWriteSession') as sinon.SinonStub).callsFake(
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }
@@ -2436,7 +2421,7 @@ describe('Database', () => {
     it('should return any errors getting a session', done => {
       const fakeErr = new Error('err');
 
-      (pool.getWriteSession as sinon.SinonStub).callsFake(callback =>
+      (pool.getSession as sinon.SinonStub).callsFake(callback =>
         callback(fakeErr)
       );
 
@@ -2510,7 +2495,7 @@ describe('Database', () => {
     beforeEach(() => {
       pool = database.pool_;
 
-      (sandbox.stub(pool, 'getWriteSession') as sinon.SinonStub).callsFake(
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }

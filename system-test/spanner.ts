@@ -6328,6 +6328,268 @@ describe('Spanner', () => {
         };
         handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
       });
+
+      describe('dml returning', () => {
+        const key = 'k1003';
+        const str = 'abcd';
+        const num = 11;
+
+        const googleSqlInsertReturning = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' (Key, StringValue) VALUES (@key, @str) ' +
+            'THEN RETURN *',
+          params: {key, str},
+        };
+
+        const googleSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.NumberValue = @num WHERE t.KEY = @key ' +
+            'THEN RETURN *',
+          params: {num, key},
+        };
+
+        const googleSqlDeleteReturning = {
+          sql:
+            'DELETE FROM ' +
+            TABLE_NAME +
+            ' t WHERE t.KEY = @key ' +
+            'THEN RETURN *',
+          params: {key},
+        };
+
+        const googleSqlDelete = {
+          sql: 'DELETE FROM ' + TABLE_NAME + ' t WHERE t.KEY = @key',
+          params: {key, num},
+        };
+
+        const postgreSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' SET "NumberValue" = $1 WHERE "Key" = $2 ' +
+            'RETURNING *',
+          params: {p1: num, p2: key},
+        };
+
+        const postgreSqlDeleteReturning = {
+          sql:
+            'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1 ' + 'RETURNING *',
+          params: {p1: key},
+        };
+
+        const postgreSqlInsertReturning = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2) ' +
+            'RETURNING *',
+          params: {p1: key, p2: str},
+        };
+
+        const postgreSqlDelete = {
+          sql: 'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+
+        const rowCountRunUpdate = (
+          done,
+          database,
+          insertQuery,
+          updateQuery,
+          deletequery
+        ) => {
+          database.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!
+              .runUpdate(insertQuery)
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.runUpdate(updateQuery);
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.runUpdate(deletequery);
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.commit();
+              })
+              .then(() => done(), done)
+              .catch(done);
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDeleteReturning
+          );
+        });
+
+        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
+
+        const assertRowsAndRowCount = data => {
+          const rows = data[0];
+          const stats = data[1];
+          const rowCount = Math.floor(stats[stats.rowCount!] as number);
+          assert.strictEqual(rowCount, 1);
+          rows.forEach(row => {
+            const json = row.toJSON();
+            assert.strictEqual(json.Key, key);
+            assert.strictEqual(json.StringValue, str);
+          });
+        };
+
+        const rowCountRun = (
+          done,
+          database,
+          insertQuery,
+          updateQuery,
+          deletequery
+        ) => {
+          database.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!
+              .run(insertQuery)
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.run(updateQuery);
+              })
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.run(deletequery);
+              })
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.commit();
+              })
+              .then(() => done(), done)
+              .catch(done);
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRun(
+            done,
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDeleteReturning
+          );
+        });
+
+        it('POSTGRESQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          rowCountRun(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
+
+        const partitionedUpdate = (done, database, query) => {
+          database.runPartitionedUpdate(query, err => {
+            console.log('batch partition error ' + err);
+            assert.match(
+              err.details,
+              /THEN RETURN is not supported in Partitioned DML\./
+            );
+            done();
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
+        });
+
+        it('POSTGRESQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          partitionedUpdate(done, PG_DATABASE, postgreSqlUpdateReturning);
+        });
+
+        const batchUpdate = async (
+          database,
+          insertquery,
+          updateQuery,
+          deleteQuery
+        ) => {
+          const rowCounts = await database.runTransactionAsync(async txn => {
+            const [rowCounts] = await txn.batchUpdate([
+              insertquery,
+              updateQuery,
+              deleteQuery,
+            ]);
+            await txn.commit();
+            return rowCounts;
+          });
+          assert.deepStrictEqual(rowCounts, [1, 1, 1]);
+        };
+
+        it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          await batchUpdate(
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDelete
+          );
+        });
+
+        it('POSTGRESQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          await batchUpdate(
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDelete
+          );
+        });
+      });
     });
 
     describe('pdml', () => {
@@ -6799,10 +7061,11 @@ describe('Spanner', () => {
           NumberValue: 0,
         };
 
-        beforeEach(() => {
-          return googleSqlTable.update(defaultRowValues).then(() => {
-            postgreSqlTable.update(defaultRowValues);
-          });
+        beforeEach(async () => {
+          await googleSqlTable.update(defaultRowValues);
+          if (!IS_EMULATOR_ENABLED) {
+            await postgreSqlTable.update(defaultRowValues);
+          }
         });
 
         const readConcurrentTransaction = (done, database, table) => {

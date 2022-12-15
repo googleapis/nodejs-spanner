@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_postgresql_jsonb_update_data]
+  // [START spanner_postgresql_jsonb_query_parameter]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -73,7 +73,7 @@ function main(
     }
   }
   pgJsonbDataType();
-  // [END spanner_postgresql_jsonb_update_data]
+  // [END spanner_postgresql_jsonb_query_parameter]
 }
 
 process.on('unhandledRejection', err => {
