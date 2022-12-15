@@ -2023,19 +2023,20 @@ describe('Spanner', () => {
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
+            // INSERT access cannot SELECT data from table
             table.insert(
               {
                 SingerId: id,
               },
               err => {
                 assert.ifError(err);
-                const dbReadRole = instance.database(database.formattedName_, {
+                const dbWriteRole = instance.database(database.formattedName_, {
                   databaseRole: 'write_access',
                 });
                 const query = {
                   sql: 'SELECT SingerId, Name FROM Singers',
                 };
-                dbReadRole.run(query, err => {
+                dbWriteRole.run(query, err => {
                   assert(err);
                   table.deleteRows([id]);
                   done();
@@ -2800,7 +2801,7 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with database role', async function () {
+    it('should batch create sessions with database role by overriding session database-role', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -2820,7 +2821,7 @@ describe('Spanner', () => {
       await Promise.all(sessions.map(session => session.delete()));
     });
 
-    it('should batch create sessions with database role by overriding database database role', async function () {
+    it('should batch create sessions with database role by overriding database-role', async function () {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
