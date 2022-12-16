@@ -1830,11 +1830,12 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should create a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should create a user defined role', async function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         createUserDefinedDatabaseRole(done, DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
       const grantAccessToRole = (
@@ -1844,29 +1845,20 @@ describe('Spanner', () => {
         grantAccessQuery
       ) => {
         database.updateSchema(
-          [createRoleQuery],
+          [createRoleQuery, grantAccessQuery],
           execAfterOperationComplete(err => {
             assert.ifError(err);
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(createRoleQuery));
-              database.updateSchema(
-                [grantAccessQuery],
-                execAfterOperationComplete(err => {
-                  assert.ifError(err);
-                  database.getSchema((err, statements) => {
-                    assert.ifError(err);
-                    assert.ok(statements.includes(grantAccessQuery));
-                    done();
-                  });
-                })
-              );
+              assert.ok(statements.includes(grantAccessQuery));
+              done();
             });
           })
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1876,6 +1868,7 @@ describe('Spanner', () => {
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
       const userDefinedDatabaseRoleRevoked = (
@@ -1886,30 +1879,21 @@ describe('Spanner', () => {
         revokePermissionQuery
       ) => {
         database.updateSchema(
-          [createRoleQuery],
+          [createRoleQuery, grantPermissionQuery],
           execAfterOperationComplete(err => {
             assert.ifError(err);
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(createRoleQuery));
+              assert.ok(statements.includes(grantPermissionQuery));
               database.updateSchema(
-                [grantPermissionQuery],
+                [revokePermissionQuery],
                 execAfterOperationComplete(err => {
                   assert.ifError(err);
                   database.getSchema((err, statements) => {
                     assert.ifError(err);
-                    assert.ok(statements.includes(grantPermissionQuery));
-                    database.updateSchema(
-                      [revokePermissionQuery],
-                      execAfterOperationComplete(err => {
-                        assert.ifError(err);
-                        database.getSchema((err, statements) => {
-                          assert.ifError(err);
-                          assert.ok(!statements.includes(grantPermissionQuery));
-                          done();
-                        });
-                      })
-                    );
+                    assert.ok(!statements.includes(grantPermissionQuery));
+                    done();
                   });
                 })
               );
@@ -1918,7 +1902,7 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1929,6 +1913,7 @@ describe('Spanner', () => {
           'GRANT SELECT ON TABLE Singers TO ROLE orphan',
           'REVOKE SELECT ON TABLE Singers FROM ROLE orphan'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
       const userDefinedDatabaseRoleDropped = (
@@ -1960,7 +1945,7 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should drop the user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', async function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1970,6 +1955,7 @@ describe('Spanner', () => {
           'CREATE ROLE new_parent',
           'DROP ROLE new_parent'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
       const grantAccessSuccess = (done, database) => {
@@ -6969,7 +6955,6 @@ describe('Spanner', () => {
 
         const partitionedUpdate = (done, database, query) => {
           database.runPartitionedUpdate(query, err => {
-            console.log('batch partition error ' + err);
             assert.match(
               err.details,
               /THEN RETURN is not supported in Partitioned DML\./
