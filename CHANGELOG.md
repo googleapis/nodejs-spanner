@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.6.0](https://github.com/googleapis/nodejs-spanner/compare/v6.5.0...v6.6.0) (2022-12-16)
+
+
+### Features
+
+* Export data types in index.ts ([#1726](https://github.com/googleapis/nodejs-spanner/issues/1726)) ([844f57f](https://github.com/googleapis/nodejs-spanner/commit/844f57fa5e79e5e5a5ede80df5e117004427f201)), closes [#1720](https://github.com/googleapis/nodejs-spanner/issues/1720)
+* Fgac support and samples ([#1751](https://github.com/googleapis/nodejs-spanner/issues/1751)) ([0a394df](https://github.com/googleapis/nodejs-spanner/commit/0a394df9bfa193d79edc4c3a3d26238f361c0d45))
+
+
+### Bug Fixes
+
+* Add sleep after admin request intensive tests ([#1758](https://github.com/googleapis/nodejs-spanner/issues/1758)) ([7643ceb](https://github.com/googleapis/nodejs-spanner/commit/7643ceb7cde9f420539877b86fdb0d38b254348d))
+
 ## [6.5.0](https://github.com/googleapis/nodejs-spanner/compare/v6.4.0...v6.5.0) (2022-11-30)
 
 
