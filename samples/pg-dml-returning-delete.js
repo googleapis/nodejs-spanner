@@ -47,7 +47,7 @@ async function main(instanceId, databaseId, projectId) {
       }
       try {
         const [rows, stats] = await transaction.run({
-          sql: 'DELETE FROM Singers WHERE SingerId = 18 THEN RETURNING FullName',
+          sql: 'DELETE FROM Singers WHERE SingerId = 18 RETURNING FullName',
         });
 
         const rowCount = Math.floor(stats[stats.rowCount]);

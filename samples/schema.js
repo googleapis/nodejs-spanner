@@ -43,7 +43,7 @@ async function createDatabase(instanceId, databaseId, projectId) {
         FirstName   STRING(1024),
         LastName    STRING(1024),
         SingerInfo  BYTES(MAX),
-        FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName])) STORED,
+        FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], \" \")) STORED,
       ) PRIMARY KEY (SingerId)`,
       `CREATE TABLE Albums (
         SingerId    INT64 NOT NULL,
