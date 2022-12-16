@@ -1816,7 +1816,7 @@ describe('Spanner', () => {
     });
 
     describe('FineGrainedAccessControl', () => {
-      const createUserDefinedDatabaseRole = (done, database, query) => {
+      const createUserDefinedDatabaseRole = async (database, query) => {
         database.updateSchema(
           [query],
           execAfterOperationComplete(err => {
@@ -1824,92 +1824,70 @@ describe('Spanner', () => {
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(query));
-              done();
             });
           })
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should create a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should create a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        createUserDefinedDatabaseRole(done, DATABASE, 'CREATE ROLE parent');
+        await createUserDefinedDatabaseRole(DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessToRole = (
-        done,
+      const grantAccessToRole = async (
         database,
         createRoleQuery,
         grantAccessQuery
       ) => {
         database.updateSchema(
-          [createRoleQuery],
+          [createRoleQuery, grantAccessQuery],
           execAfterOperationComplete(err => {
             assert.ifError(err);
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(createRoleQuery));
-              database.updateSchema(
-                [grantAccessQuery],
-                execAfterOperationComplete(err => {
-                  assert.ifError(err);
-                  database.getSchema((err, statements) => {
-                    assert.ifError(err);
-                    assert.ok(statements.includes(grantAccessQuery));
-                    done();
-                  });
-                })
-              );
+              assert.ok(statements.includes(grantAccessQuery));
             });
           })
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessToRole(
-          done,
+        await grantAccessToRole(
           DATABASE,
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const userDefinedDatabaseRoleRevoked = (
-        done,
+      const userDefinedDatabaseRoleRevoked = async (
         database,
         createRoleQuery,
         grantPermissionQuery,
         revokePermissionQuery
       ) => {
         database.updateSchema(
-          [createRoleQuery],
+          [createRoleQuery, grantPermissionQuery],
           execAfterOperationComplete(err => {
             assert.ifError(err);
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(createRoleQuery));
+              assert.ok(statements.includes(grantPermissionQuery));
               database.updateSchema(
-                [grantPermissionQuery],
+                [revokePermissionQuery],
                 execAfterOperationComplete(err => {
                   assert.ifError(err);
                   database.getSchema((err, statements) => {
                     assert.ifError(err);
-                    assert.ok(statements.includes(grantPermissionQuery));
-                    database.updateSchema(
-                      [revokePermissionQuery],
-                      execAfterOperationComplete(err => {
-                        assert.ifError(err);
-                        database.getSchema((err, statements) => {
-                          assert.ifError(err);
-                          assert.ok(!statements.includes(grantPermissionQuery));
-                          done();
-                        });
-                      })
-                    );
+                    assert.ok(!statements.includes(grantPermissionQuery));
                   });
                 })
               );
@@ -1918,21 +1896,20 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        userDefinedDatabaseRoleRevoked(
-          done,
+        await userDefinedDatabaseRoleRevoked(
           DATABASE,
           'CREATE ROLE orphan',
           'GRANT SELECT ON TABLE Singers TO ROLE orphan',
           'REVOKE SELECT ON TABLE Singers FROM ROLE orphan'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const userDefinedDatabaseRoleDropped = (
-        done,
+      const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
         dropRoleQuery
@@ -1951,7 +1928,6 @@ describe('Spanner', () => {
                   database.getSchema((err, statements) => {
                     assert.ifError(err);
                     assert.ok(!statements.includes(createRoleQuery));
-                    done();
                   });
                 })
               );
@@ -1960,16 +1936,16 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should drop the user defined role', function (done) {
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        userDefinedDatabaseRoleDropped(
-          done,
+        await userDefinedDatabaseRoleDropped(
           DATABASE,
           'CREATE ROLE new_parent',
           'DROP ROLE new_parent'
         );
+        await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
       const grantAccessSuccess = (done, database) => {
@@ -2121,14 +2097,14 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should get IAM Policy', async function () {
+      it('GOOGLE_STANDARD_SQL should set IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         await setIamPolicy(DATABASE);
       });
 
-      it('POSTGRESQL should should get IAM Policy', async function () {
+      it('POSTGRESQL should should set IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -6969,7 +6945,6 @@ describe('Spanner', () => {
 
         const partitionedUpdate = (done, database, query) => {
           database.runPartitionedUpdate(query, err => {
-            console.log('batch partition error ' + err);
             assert.match(
               err.details,
               /THEN RETURN is not supported in Partitioned DML\./
