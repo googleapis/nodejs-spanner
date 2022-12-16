@@ -52,7 +52,7 @@ async function main(instanceId, databaseId, projectId) {
 
         const rowCount = Math.floor(stats[stats.rowCount]);
         console.log(
-          `Successfully updated ${rowCount} record into Albums table.`
+          `Successfully updated ${rowCount} record into the Albums table.`
         );
         rows.forEach(row => {
           console.log(row.toJSON().MarketingBudget);

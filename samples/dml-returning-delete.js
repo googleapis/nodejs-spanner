@@ -52,7 +52,7 @@ async function main(instanceId, databaseId, projectId) {
 
         const rowCount = Math.floor(stats[stats.rowCount]);
         console.log(
-          `Successfully deleted ${rowCount} record into the Singers table.`
+          `Successfully deleted ${rowCount} record from the Singers table.`
         );
         rows.forEach(row => {
           console.log(row.toJSON().FullName);

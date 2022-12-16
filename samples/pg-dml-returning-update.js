@@ -47,15 +47,20 @@ async function main(instanceId, databaseId, projectId) {
       }
       try {
         const [rows, stats] = await transaction.run({
-          sql: 'UPDATE Albums SET MarketingBudget = 2000000 WHERE SingerId = 1 and AlbumId = 1 RETURNING MarketingBudget',
+          sql: 'UPDATE singers SET FirstName = $1, LastName = $2 WHERE singerid = $3 RETURNING FullName',
+          params: {
+            p1: 'Virginia1',
+            p2: 'Watson1',
+            p3: 1
+          },
         });
 
         const rowCount = Math.floor(stats[stats.rowCount]);
         console.log(
-          `Successfully updated ${rowCount} record into Albums table.`
+          `Successfully updated ${rowCount} record into the Singers table.`
         );
         rows.forEach(row => {
-          console.log(row.toJSON().MarketingBudget);
+          console.log(row.toJSON().FullName);
         });
 
         await transaction.commit();

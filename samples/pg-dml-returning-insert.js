@@ -47,10 +47,11 @@ async function main(instanceId, databaseId, projectId) {
       }
       try {
         const [rows, stats] = await transaction.run({
-          sql: 'INSERT Into Singers (SingerId, FirstName, LastName) VALUES (18, @firstName, @lastName) RETURNING FullName',
+          sql: 'INSERT Into Singers (SingerId, FirstName, LastName) VALUES ($1, $2, $3) RETURNING FullName',
           params: {
-            firstName: 'Virginia',
-            lastName: 'Watson',
+            p1: 18,
+            p2: 'Virginia',
+            p3: 'Watson',
           },
         });
 

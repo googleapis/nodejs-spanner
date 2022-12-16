@@ -884,7 +884,7 @@ describe('Spanner', () => {
   });
 
   // dml_returning_update
-  it('should insert records using DML Returning', async () => {
+  it('should update records using DML Returning', async () => {
     const output = execSync(
       `node dml-returning-update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
@@ -902,7 +902,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      new RegExp('Successfully deleted 1 record into the Singers table')
+      new RegExp('Successfully deleted 1 record from the Singers table')
     );
     assert.match(output, new RegExp('Virginia Watson'));
   });
@@ -1785,15 +1785,15 @@ describe('Spanner', () => {
     });
 
     // pg_dml_returning_update
-    it('should insert records using DML Returning in a Spanner PostgreSQL database', async () => {
+    it('should update records using DML Returning in a Spanner PostgreSQL database', async () => {
       const output = execSync(
         `node pg-dml-returning-update ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
-        new RegExp('Successfully updated 1 record into the Albums table')
+        new RegExp('Successfully updated 1 record into the Singers table')
       );
-      assert.match(output, new RegExp('2000000'));
+      assert.match(output, new RegExp('Virginia1 Watson1'));
     });
 
     // pg_dml_returning_delete
@@ -1803,7 +1803,7 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp('Successfully deleted 1 record into the Singers table')
+        new RegExp('Successfully deleted 1 record from the Singers table')
       );
       assert.match(output, new RegExp('Virginia Watson'));
     });
