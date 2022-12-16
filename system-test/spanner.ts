@@ -2097,14 +2097,14 @@ describe('Spanner', () => {
         });
       };
 
-      it('GOOGLE_STANDARD_SQL should get IAM Policy', async function () {
+      it('GOOGLE_STANDARD_SQL should set IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
         await setIamPolicy(DATABASE);
       });
 
-      it('POSTGRESQL should should get IAM Policy', async function () {
+      it('POSTGRESQL should should set IAM Policy', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
