@@ -1816,7 +1816,7 @@ describe('Spanner', () => {
     });
 
     describe('FineGrainedAccessControl', () => {
-      const createUserDefinedDatabaseRole = (done, database, query) => {
+      const createUserDefinedDatabaseRole = async (database, query) => {
         database.updateSchema(
           [query],
           execAfterOperationComplete(err => {
@@ -1824,22 +1824,20 @@ describe('Spanner', () => {
             database.getSchema((err, statements) => {
               assert.ifError(err);
               assert.ok(statements.includes(query));
-              done();
             });
           })
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should create a user defined role', async function (done) {
+      it('GOOGLE_STANDARD_SQL should create a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        createUserDefinedDatabaseRole(done, DATABASE, 'CREATE ROLE parent');
+        await createUserDefinedDatabaseRole(DATABASE, 'CREATE ROLE parent');
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessToRole = (
-        done,
+      const grantAccessToRole = async (
         database,
         createRoleQuery,
         grantAccessQuery
@@ -1852,18 +1850,16 @@ describe('Spanner', () => {
               assert.ifError(err);
               assert.ok(statements.includes(createRoleQuery));
               assert.ok(statements.includes(grantAccessQuery));
-              done();
             });
           })
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function (done) {
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessToRole(
-          done,
+        await grantAccessToRole(
           DATABASE,
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
@@ -1871,8 +1867,7 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const userDefinedDatabaseRoleRevoked = (
-        done,
+      const userDefinedDatabaseRoleRevoked = async (
         database,
         createRoleQuery,
         grantPermissionQuery,
@@ -1893,7 +1888,6 @@ describe('Spanner', () => {
                   database.getSchema((err, statements) => {
                     assert.ifError(err);
                     assert.ok(!statements.includes(grantPermissionQuery));
-                    done();
                   });
                 })
               );
@@ -1902,12 +1896,11 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function (done) {
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        userDefinedDatabaseRoleRevoked(
-          done,
+        await userDefinedDatabaseRoleRevoked(
           DATABASE,
           'CREATE ROLE orphan',
           'GRANT SELECT ON TABLE Singers TO ROLE orphan',
@@ -1916,8 +1909,7 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const userDefinedDatabaseRoleDropped = (
-        done,
+      const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
         dropRoleQuery
@@ -1936,7 +1928,6 @@ describe('Spanner', () => {
                   database.getSchema((err, statements) => {
                     assert.ifError(err);
                     assert.ok(!statements.includes(createRoleQuery));
-                    done();
                   });
                 })
               );
@@ -1945,12 +1936,11 @@ describe('Spanner', () => {
         );
       };
 
-      it('GOOGLE_STANDARD_SQL should drop the user defined role', async function (done) {
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', async function () {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        userDefinedDatabaseRoleDropped(
-          done,
+        await userDefinedDatabaseRoleDropped(
           DATABASE,
           'CREATE ROLE new_parent',
           'DROP ROLE new_parent'
