@@ -51,7 +51,7 @@ async function main(instanceId, databaseId, projectId) {
           params: {
             p1: 'Virginia1',
             p2: 'Watson1',
-            p3: 1
+            p3: 1,
           },
         });
 
