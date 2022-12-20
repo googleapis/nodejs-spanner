@@ -1805,7 +1805,7 @@ describe('Spanner', () => {
         output,
         new RegExp('Successfully deleted 1 record from the Singers table')
       );
-      assert.match(output, new RegExp('Virginia Watson'));
+      assert.match(output, new RegExp('Virginia1 Watson1'));
     });
   });
 });

@@ -60,7 +60,7 @@ async function main(instanceId, databaseId, projectId) {
           `Successfully inserted ${rowCount} record into the Singers table.`
         );
         rows.forEach(row => {
-          console.log(row.toJSON().FullName);
+          console.log(row.toJSON().fullname);
         });
 
         await transaction.commit();

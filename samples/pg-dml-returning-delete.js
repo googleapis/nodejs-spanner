@@ -55,7 +55,7 @@ async function main(instanceId, databaseId, projectId) {
           `Successfully deleted ${rowCount} record from the Singers table.`
         );
         rows.forEach(row => {
-          console.log(row.toJSON().FullName);
+          console.log(row.toJSON().fullname);
         });
 
         await transaction.commit();
