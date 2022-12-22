@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Update using DML returning on a Spanner PostgreSQL database..
+//  title: Update using DML returning on a Spanner PostgreSQL database.
 //  usage: node pg-dml-returning-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
