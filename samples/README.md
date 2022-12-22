@@ -36,6 +36,9 @@ and automatic, synchronous replication for high availability.
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Datatypes](#datatypes)
+  * [Delete using DML returning.](#delete-using-dml-returning.)
+  * [Insert using DML returning.](#insert-using-dml-returning.)
+  * [Update using DML returning.](#update-using-dml-returning.)
   * [DML](#dml)
   * [Enable fine grained access control](#enable-fine-grained-access-control)
   * [Get-commit-stats](#get-commit-stats)
@@ -68,6 +71,9 @@ and automatic, synchronous replication for high availability.
   * [Execute a batch of DML statements on a Spanner PostgreSQL database.](#execute-a-batch-of-dml-statements-on-a-spanner-postgresql-database.)
   * [Updates data in a table in a Spanner PostgreSQL database.](#updates-data-in-a-table-in-a-spanner-postgresql-database.)
   * [Execute a Partitioned DML on a Spanner PostgreSQL database.](#execute-a-partitioned-dml-on-a-spanner-postgresql-database.)
+  * [Delete using DML returning on a Spanner PostgreSQL database.](#delete-using-dml-returning-on-a-spanner-postgresql-database.)
+  * [Insert using DML returning on a Spanner PostgreSQL database.](#insert-using-dml-returning-on-a-spanner-postgresql-database.)
+  * [Update using DML returning on a Spanner PostgreSQL database.](#update-using-dml-returning-on-a-spanner-postgresql-database.)
   * [Execute a DML statement with parameters on a Spanner PostgreSQL database.](#execute-a-dml-statement-with-parameters-on-a-spanner-postgresql-database.)
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
@@ -477,6 +483,57 @@ __Usage:__
 
 
 `node samples/datatypes.js`
+
+
+-----
+
+
+
+
+### Delete using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-delete.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Insert using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-insert.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-insert.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-insert.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Update using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1021,6 +1078,57 @@ __Usage:__
 
 
 `node pg-dml-partitioned.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Delete using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-delete.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Insert using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-insert.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-insert.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-insert.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Update using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

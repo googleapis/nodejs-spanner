@@ -871,6 +871,42 @@ describe('Spanner', () => {
     );
   });
 
+  // dml_returning_insert
+  it('should insert records using DML Returning', async () => {
+    const output = execSync(
+      `node dml-returning-insert ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('Successfully inserted 1 record into the Singers table')
+    );
+    assert.match(output, new RegExp('Virginia Watson'));
+  });
+
+  // dml_returning_update
+  it('should update records using DML Returning', async () => {
+    const output = execSync(
+      `node dml-returning-update ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('Successfully updated 1 record into the Albums table')
+    );
+    assert.match(output, new RegExp('2000000'));
+  });
+
+  // dml_returning_delete
+  it('should delete records using DML Returning', async () => {
+    const output = execSync(
+      `node dml-returning-delete ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp('Successfully deleted 1 record from the Singers table')
+    );
+    assert.match(output, new RegExp('Virginia Watson'));
+  });
+
   // create_table_with_datatypes
   it('should create Venues example table with supported datatype columns', async () => {
     const output = execSync(
@@ -1734,6 +1770,42 @@ describe('Spanner', () => {
         `node pg-functions.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(output, new RegExp('1284352323 seconds after epoch is'));
+    });
+
+    // pg_dml_returning_insert
+    it('should insert records using DML Returning in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-returning-insert ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 1 record into the Singers table')
+      );
+      assert.match(output, new RegExp('Virginia Watson'));
+    });
+
+    // pg_dml_returning_update
+    it('should update records using DML Returning in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-returning-update ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully updated 1 record into the Singers table')
+      );
+      assert.match(output, new RegExp('Virginia1 Watson1'));
+    });
+
+    // pg_dml_returning_delete
+    it('should delete records using DML Returning in a Spanner PostgreSQL database', async () => {
+      const output = execSync(
+        `node pg-dml-returning-delete ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully deleted 1 record from the Singers table')
+      );
+      assert.match(output, new RegExp('Virginia1 Watson1'));
     });
   });
 });
