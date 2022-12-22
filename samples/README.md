@@ -73,7 +73,7 @@ and automatic, synchronous replication for high availability.
   * [Execute a Partitioned DML on a Spanner PostgreSQL database.](#execute-a-partitioned-dml-on-a-spanner-postgresql-database.)
   * [Delete using DML returning on a Spanner PostgreSQL database.](#delete-using-dml-returning-on-a-spanner-postgresql-database.)
   * [Insert using DML returning on a Spanner PostgreSQL database.](#insert-using-dml-returning-on-a-spanner-postgresql-database.)
-  * [Update using DML returning on a Spanner PostgreSQL database..](#update-using-dml-returning-on-a-spanner-postgresql-database..)
+  * [Update using DML returning on a Spanner PostgreSQL database.](#update-using-dml-returning-on-a-spanner-postgresql-database.)
   * [Execute a DML statement with parameters on a Spanner PostgreSQL database.](#execute-a-dml-statement-with-parameters-on-a-spanner-postgresql-database.)
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
@@ -1119,7 +1119,7 @@ __Usage:__
 
 
 
-### Update using DML returning on a Spanner PostgreSQL database..
+### Update using DML returning on a Spanner PostgreSQL database.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-update.js).
 
