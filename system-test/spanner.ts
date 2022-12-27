@@ -330,8 +330,17 @@ describe('Spanner', () => {
                   "StringValue"     VARCHAR,
                   "TimestampValue"  TIMESTAMPTZ,
                   "DateValue"       DATE,
-                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP,
-                  "JsonbValue"      JSONB
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
                 );
             `
         );
@@ -536,8 +545,30 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BoolArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null boolean array values', done => {
         insert({BoolArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
           done();
@@ -554,6 +585,17 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: [true, false]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
+          done();
+        });
       });
     });
 
@@ -647,8 +689,30 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty in64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({IntArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null int64 array values', done => {
         insert({IntArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, [null]);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null int64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({IntArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, [null]);
           done();
@@ -659,6 +723,19 @@ describe('Spanner', () => {
         const values = [1, 2, 3];
 
         insert({IntArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, values);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write int64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1, 2, 3];
+
+        insert({IntArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, values);
           done();
@@ -752,6 +829,17 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({FloatArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null float64 array values', done => {
         insert(
           {FloatArray: [null]},
@@ -762,6 +850,17 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write null float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({FloatArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
+          done();
+        });
       });
 
       it('GOOGLE_STANDARD_SQL should write float64 array values', done => {
@@ -776,6 +875,19 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1.2, 2.3, 3.4];
+
+        insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatArray, values);
+          done();
+        });
       });
     });
 
@@ -859,6 +971,17 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({NumericArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null numeric array values', done => {
         insert(
           {NumericArray: [null]},
@@ -869,6 +992,17 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write null numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({NumericArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
+          done();
+        });
       });
 
       it('GOOGLE_STANDARD_SQL should write numeric array values', done => {
@@ -887,6 +1021,23 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [
+          Spanner.pgNumeric('-99999999999999999999999999999.999999999'),
+          Spanner.pgNumeric('3.141592653'),
+          Spanner.pgNumeric('99999999999999999999999999999.999999999'),
+        ];
+
+        insert({NumericArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, values);
+          done();
+        });
       });
     });
 
@@ -929,6 +1080,17 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({StringArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().StringArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null string array values', done => {
         insert(
           {StringArray: [null]},
@@ -941,10 +1103,36 @@ describe('Spanner', () => {
         );
       });
 
+      it('POSTGRESQL should write null string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({StringArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().StringArray, [null]);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write string array values', done => {
         insert(
           {StringArray: ['abc', 'def']},
           Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert(
+          {StringArray: ['abc', 'def']},
+          Spanner.POSTGRESQL,
           (err, row) => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
@@ -993,6 +1181,17 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BytesArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BytesArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null bytes array values', done => {
         insert(
           {BytesArray: [null]},
@@ -1003,6 +1202,17 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write null bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BytesArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
+          done();
+        });
       });
 
       it('GOOGLE_STANDARD_SQL should write bytes array values', done => {
@@ -1017,6 +1227,19 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Buffer.from('a'), Buffer.from('b')];
+
+        insert({BytesArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BytesArray, values);
+          done();
+        });
       });
     });
 
@@ -1136,6 +1359,17 @@ describe('Spanner', () => {
         );
       });
 
+      it('POSTGRESQL should write empty timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({TimestampArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null timestamp array values', done => {
         insert(
           {TimestampArray: [null]},
@@ -1146,6 +1380,17 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write null timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({TimestampArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
+          done();
+        });
       });
 
       it('GOOGLE_STANDARD_SQL should write timestamp array values', done => {
@@ -1160,6 +1405,19 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should write timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
+
+        insert({TimestampArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().TimestampArray, values);
+          done();
+        });
       });
     });
 
@@ -1213,8 +1471,30 @@ describe('Spanner', () => {
         });
       });
 
+      it('POSTGRESQL should write empty date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({DateArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().DateArray, []);
+          done();
+        });
+      });
+
       it('GOOGLE_STANDARD_SQL should write null date array values', done => {
         insert({DateArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().DateArray, [null]);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({DateArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, [null]);
           done();
@@ -1231,6 +1511,20 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('POSTGRESQL should write date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Spanner.date(), Spanner.date('3-3-1933')];
+
+        insert({DateArray: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          const {DateArray} = row.toJSON();
+          assert.deepStrictEqual(DateArray, values);
+          done();
+        });
+      });
     });
 
     describe('jsonb', () => {
@@ -1240,27 +1534,55 @@ describe('Spanner', () => {
         }
       });
 
-      const jsonbInsert = (done, dialect, value) => {
-        insert({JsonbValue: value}, dialect, (err, row) => {
+      it('POSTGRESQL should write jsonb values', done => {
+        const value = Spanner.pgJsonb({
+          key1: 'value1',
+          key2: 'value2',
+        });
+        insert({JsonbValue: value}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().JsonbValue, value);
           done();
         });
-      };
-
-      it('POSTGRESQL should write jsonb values', done => {
-        jsonbInsert(
-          done,
-          Spanner.POSTGRESQL,
-          Spanner.pgJsonb({
-            key1: 'value1',
-            key2: 'value2',
-          })
-        );
       });
 
       it('POSTGRESQL should write null jsonb values', done => {
-        jsonbInsert(done, Spanner.POSTGRESQL, null);
+        insert({JsonbValue: null}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbValue, null);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write empty json array values', done => {
+        insert({JsonbArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbArray, []);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null json array values', done => {
+        insert({JsonbArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbArray, [null]);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write json array values', done => {
+        insert(
+          {JsonbArray: [{key1: 'value1'}, {key2: 'value2'}]},
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().JsonbArray, [
+              Spanner.pgJsonb({key1: 'value1'}),
+              Spanner.pgJsonb({key2: 'value2'}),
+            ]);
+            done();
+          }
+        );
       });
     });
 
