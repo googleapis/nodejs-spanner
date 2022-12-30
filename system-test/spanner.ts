@@ -2140,7 +2140,7 @@ describe('Spanner', () => {
     });
 
     describe('FineGrainedAccessControl', () => {
-      before(async function () {
+      before(function () {
         if (SKIP_FGAC_TESTS === 'true') {
           this.skip();
         }
