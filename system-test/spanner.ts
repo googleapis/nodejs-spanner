@@ -46,6 +46,8 @@ import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetad
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
+const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
+
 const IAM_MEMBER = process.env.IAM_MEMBER;
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
@@ -2138,6 +2140,11 @@ describe('Spanner', () => {
     });
 
     describe('FineGrainedAccessControl', () => {
+      before(function () {
+        if (SKIP_FGAC_TESTS === 'true') {
+          this.skip();
+        }
+      });
       const createUserDefinedDatabaseRole = async (database, query) => {
         database.updateSchema(
           [query],
