@@ -219,6 +219,7 @@ describe('Database', () => {
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
+    database.databaseRole = 'parent_role';
   });
 
   afterEach(() => sandbox.restore());
@@ -375,7 +376,33 @@ describe('Database', () => {
 
       const {reqOpts} = stub.lastCall.args[0];
 
-      assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
+      assert.strictEqual(reqOpts.sessionTemplate.labels, labels);
+    });
+
+    it('should accept session databaseRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions(
+        {count: 10, databaseRole: 'child_role'},
+        assert.ifError
+      );
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(reqOpts.sessionTemplate.creatorRole, 'child_role');
+    });
+
+    it('should use default databaseRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions({count: 10}, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(
+        reqOpts.sessionTemplate.creatorRole,
+        'parent_role'
+      );
     });
 
     it('should accept gaxOptions', () => {
@@ -1689,6 +1716,9 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'createSession');
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
         assert.deepStrictEqual(config.headers, database.resourceHeader_);
@@ -1703,6 +1733,9 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
         });
 
         assert.strictEqual(config.gaxOpts, undefined);
@@ -1718,12 +1751,46 @@ describe('Database', () => {
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
-        assert.deepStrictEqual(config.reqOpts.session, {labels});
+        assert.deepStrictEqual(config.reqOpts.session.labels, labels);
         assert.deepStrictEqual(options, originalOptions);
         done();
       };
 
       database.createSession({labels}, assert.ifError);
+    });
+
+    it('should send databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'child_role'};
+      const options = {a: 'b', databaseRole: databaseRole};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(databaseRole, assert.ifError);
+    });
+
+    it('should send default databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'parent_role'};
+      const options = {a: 'b'};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(databaseRole, assert.ifError);
     });
 
     describe('error', () => {
