@@ -3097,7 +3097,7 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
-    it('should use optimistic lock', async () => {
+    it('should use optimistic lock for runTransactionAsync', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
         {
