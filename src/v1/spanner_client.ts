@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,6 +122,9 @@ export class SpannerClient {
       opts?.fallback ??
       (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
+
+    // Request numeric enum values if REST transport is used.
+    opts.numericEnums = true;
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
     if (servicePath !== staticMembers.servicePath && !('scopes' in opts)) {
@@ -821,6 +824,8 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1072,6 +1077,8 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedRead
+   *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1767,6 +1774,8 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1845,6 +1854,8 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedRead
+   *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}

@@ -4551,6 +4551,71 @@
                     }
                   }
                 },
+                "DirectedReadOptions": {
+                  "oneofs": {
+                    "replicas": {
+                      "oneof": [
+                        "includeReplicas",
+                        "excludeReplicas"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "includeReplicas": {
+                      "type": "IncludeReplicas",
+                      "id": 1
+                    },
+                    "excludeReplicas": {
+                      "type": "ExcludeReplicas",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "ReplicaSelection": {
+                      "fields": {
+                        "location": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "Type",
+                          "id": 2
+                        }
+                      },
+                      "nested": {
+                        "Type": {
+                          "values": {
+                            "TYPE_UNSPECIFIED": 0,
+                            "READ_WRITE": 1,
+                            "READ_ONLY": 2
+                          }
+                        }
+                      }
+                    },
+                    "IncludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        },
+                        "autoFailover": {
+                          "type": "bool",
+                          "id": 2
+                        }
+                      }
+                    },
+                    "ExcludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        }
+                      }
+                    }
+                  }
+                },
                 "ExecuteSqlRequest": {
                   "fields": {
                     "session": {
@@ -4604,6 +4669,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedReadOptions": {
+                      "type": "DirectedReadOptions",
+                      "id": 15
                     }
                   },
                   "nested": {
@@ -4868,6 +4937,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedRead": {
+                      "type": "DirectedReadOptions",
+                      "id": 12
                     }
                   }
                 },

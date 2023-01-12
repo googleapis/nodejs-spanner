@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42908,6 +42908,1007 @@
                     return RequestOptions;
                 })();
     
+                v1.DirectedReadOptions = (function() {
+    
+                    /**
+                     * Properties of a DirectedReadOptions.
+                     * @memberof google.spanner.v1
+                     * @interface IDirectedReadOptions
+                     * @property {google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null} [includeReplicas] DirectedReadOptions includeReplicas
+                     * @property {google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null} [excludeReplicas] DirectedReadOptions excludeReplicas
+                     */
+    
+                    /**
+                     * Constructs a new DirectedReadOptions.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a DirectedReadOptions.
+                     * @implements IDirectedReadOptions
+                     * @constructor
+                     * @param {google.spanner.v1.IDirectedReadOptions=} [properties] Properties to set
+                     */
+                    function DirectedReadOptions(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * DirectedReadOptions includeReplicas.
+                     * @member {google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null|undefined} includeReplicas
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @instance
+                     */
+                    DirectedReadOptions.prototype.includeReplicas = null;
+    
+                    /**
+                     * DirectedReadOptions excludeReplicas.
+                     * @member {google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null|undefined} excludeReplicas
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @instance
+                     */
+                    DirectedReadOptions.prototype.excludeReplicas = null;
+    
+                    // OneOf field names bound to virtual getters and setters
+                    var $oneOfFields;
+    
+                    /**
+                     * DirectedReadOptions replicas.
+                     * @member {"includeReplicas"|"excludeReplicas"|undefined} replicas
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @instance
+                     */
+                    Object.defineProperty(DirectedReadOptions.prototype, "replicas", {
+                        get: $util.oneOfGetter($oneOfFields = ["includeReplicas", "excludeReplicas"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * Creates a new DirectedReadOptions instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {google.spanner.v1.IDirectedReadOptions=} [properties] Properties to set
+                     * @returns {google.spanner.v1.DirectedReadOptions} DirectedReadOptions instance
+                     */
+                    DirectedReadOptions.create = function create(properties) {
+                        return new DirectedReadOptions(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified DirectedReadOptions message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {google.spanner.v1.IDirectedReadOptions} message DirectedReadOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    DirectedReadOptions.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.includeReplicas != null && Object.hasOwnProperty.call(message, "includeReplicas"))
+                            $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas.encode(message.includeReplicas, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.excludeReplicas != null && Object.hasOwnProperty.call(message, "excludeReplicas"))
+                            $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.encode(message.excludeReplicas, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified DirectedReadOptions message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {google.spanner.v1.IDirectedReadOptions} message DirectedReadOptions message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    DirectedReadOptions.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a DirectedReadOptions message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.DirectedReadOptions} DirectedReadOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    DirectedReadOptions.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.DirectedReadOptions();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.includeReplicas = $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.excludeReplicas = $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a DirectedReadOptions message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.DirectedReadOptions} DirectedReadOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    DirectedReadOptions.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a DirectedReadOptions message.
+                     * @function verify
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    DirectedReadOptions.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        var properties = {};
+                        if (message.includeReplicas != null && message.hasOwnProperty("includeReplicas")) {
+                            properties.replicas = 1;
+                            {
+                                var error = $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify(message.includeReplicas);
+                                if (error)
+                                    return "includeReplicas." + error;
+                            }
+                        }
+                        if (message.excludeReplicas != null && message.hasOwnProperty("excludeReplicas")) {
+                            if (properties.replicas === 1)
+                                return "replicas: multiple values";
+                            properties.replicas = 1;
+                            {
+                                var error = $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify(message.excludeReplicas);
+                                if (error)
+                                    return "excludeReplicas." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a DirectedReadOptions message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.DirectedReadOptions} DirectedReadOptions
+                     */
+                    DirectedReadOptions.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.DirectedReadOptions)
+                            return object;
+                        var message = new $root.google.spanner.v1.DirectedReadOptions();
+                        if (object.includeReplicas != null) {
+                            if (typeof object.includeReplicas !== "object")
+                                throw TypeError(".google.spanner.v1.DirectedReadOptions.includeReplicas: object expected");
+                            message.includeReplicas = $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas.fromObject(object.includeReplicas);
+                        }
+                        if (object.excludeReplicas != null) {
+                            if (typeof object.excludeReplicas !== "object")
+                                throw TypeError(".google.spanner.v1.DirectedReadOptions.excludeReplicas: object expected");
+                            message.excludeReplicas = $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.fromObject(object.excludeReplicas);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a DirectedReadOptions message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {google.spanner.v1.DirectedReadOptions} message DirectedReadOptions
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    DirectedReadOptions.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (message.includeReplicas != null && message.hasOwnProperty("includeReplicas")) {
+                            object.includeReplicas = $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas.toObject(message.includeReplicas, options);
+                            if (options.oneofs)
+                                object.replicas = "includeReplicas";
+                        }
+                        if (message.excludeReplicas != null && message.hasOwnProperty("excludeReplicas")) {
+                            object.excludeReplicas = $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas.toObject(message.excludeReplicas, options);
+                            if (options.oneofs)
+                                object.replicas = "excludeReplicas";
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this DirectedReadOptions to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    DirectedReadOptions.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for DirectedReadOptions
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.DirectedReadOptions
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    DirectedReadOptions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.DirectedReadOptions";
+                    };
+    
+                    DirectedReadOptions.ReplicaSelection = (function() {
+    
+                        /**
+                         * Properties of a ReplicaSelection.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @interface IReplicaSelection
+                         * @property {string|null} [location] ReplicaSelection location
+                         * @property {google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|null} [type] ReplicaSelection type
+                         */
+    
+                        /**
+                         * Constructs a new ReplicaSelection.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @classdesc Represents a ReplicaSelection.
+                         * @implements IReplicaSelection
+                         * @constructor
+                         * @param {google.spanner.v1.DirectedReadOptions.IReplicaSelection=} [properties] Properties to set
+                         */
+                        function ReplicaSelection(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ReplicaSelection location.
+                         * @member {string} location
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @instance
+                         */
+                        ReplicaSelection.prototype.location = "";
+    
+                        /**
+                         * ReplicaSelection type.
+                         * @member {google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type} type
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @instance
+                         */
+                        ReplicaSelection.prototype.type = 0;
+    
+                        /**
+                         * Creates a new ReplicaSelection instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IReplicaSelection=} [properties] Properties to set
+                         * @returns {google.spanner.v1.DirectedReadOptions.ReplicaSelection} ReplicaSelection instance
+                         */
+                        ReplicaSelection.create = function create(properties) {
+                            return new ReplicaSelection(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ReplicaSelection message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IReplicaSelection} message ReplicaSelection message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReplicaSelection.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.location != null && Object.hasOwnProperty.call(message, "location"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.location);
+                            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ReplicaSelection message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IReplicaSelection} message ReplicaSelection message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ReplicaSelection.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.DirectedReadOptions.ReplicaSelection} ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReplicaSelection.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1: {
+                                        message.location = reader.string();
+                                        break;
+                                    }
+                                case 2: {
+                                        message.type = reader.int32();
+                                        break;
+                                    }
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ReplicaSelection message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.DirectedReadOptions.ReplicaSelection} ReplicaSelection
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ReplicaSelection.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ReplicaSelection message.
+                         * @function verify
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ReplicaSelection.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.location != null && message.hasOwnProperty("location"))
+                                if (!$util.isString(message.location))
+                                    return "location: string expected";
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                switch (message.type) {
+                                default:
+                                    return "type: enum value expected";
+                                case 0:
+                                case 1:
+                                case 2:
+                                    break;
+                                }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ReplicaSelection message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.DirectedReadOptions.ReplicaSelection} ReplicaSelection
+                         */
+                        ReplicaSelection.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection)
+                                return object;
+                            var message = new $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection();
+                            if (object.location != null)
+                                message.location = String(object.location);
+                            switch (object.type) {
+                            default:
+                                if (typeof object.type === "number") {
+                                    message.type = object.type;
+                                    break;
+                                }
+                                break;
+                            case "TYPE_UNSPECIFIED":
+                            case 0:
+                                message.type = 0;
+                                break;
+                            case "READ_WRITE":
+                            case 1:
+                                message.type = 1;
+                                break;
+                            case "READ_ONLY":
+                            case 2:
+                                message.type = 2;
+                                break;
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ReplicaSelection message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.ReplicaSelection} message ReplicaSelection
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ReplicaSelection.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.location = "";
+                                object.type = options.enums === String ? "TYPE_UNSPECIFIED" : 0;
+                            }
+                            if (message.location != null && message.hasOwnProperty("location"))
+                                object.location = message.location;
+                            if (message.type != null && message.hasOwnProperty("type"))
+                                object.type = options.enums === String ? $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type[message.type] === undefined ? message.type : $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type[message.type] : message.type;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ReplicaSelection to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ReplicaSelection.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for ReplicaSelection
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.DirectedReadOptions.ReplicaSelection
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ReplicaSelection.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.DirectedReadOptions.ReplicaSelection";
+                        };
+    
+                        /**
+                         * Type enum.
+                         * @name google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type
+                         * @enum {number}
+                         * @property {number} TYPE_UNSPECIFIED=0 TYPE_UNSPECIFIED value
+                         * @property {number} READ_WRITE=1 READ_WRITE value
+                         * @property {number} READ_ONLY=2 READ_ONLY value
+                         */
+                        ReplicaSelection.Type = (function() {
+                            var valuesById = {}, values = Object.create(valuesById);
+                            values[valuesById[0] = "TYPE_UNSPECIFIED"] = 0;
+                            values[valuesById[1] = "READ_WRITE"] = 1;
+                            values[valuesById[2] = "READ_ONLY"] = 2;
+                            return values;
+                        })();
+    
+                        return ReplicaSelection;
+                    })();
+    
+                    DirectedReadOptions.IncludeReplicas = (function() {
+    
+                        /**
+                         * Properties of an IncludeReplicas.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @interface IIncludeReplicas
+                         * @property {Array.<google.spanner.v1.DirectedReadOptions.IReplicaSelection>|null} [replicaSelections] IncludeReplicas replicaSelections
+                         * @property {boolean|null} [autoFailover] IncludeReplicas autoFailover
+                         */
+    
+                        /**
+                         * Constructs a new IncludeReplicas.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @classdesc Represents an IncludeReplicas.
+                         * @implements IIncludeReplicas
+                         * @constructor
+                         * @param {google.spanner.v1.DirectedReadOptions.IIncludeReplicas=} [properties] Properties to set
+                         */
+                        function IncludeReplicas(properties) {
+                            this.replicaSelections = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * IncludeReplicas replicaSelections.
+                         * @member {Array.<google.spanner.v1.DirectedReadOptions.IReplicaSelection>} replicaSelections
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @instance
+                         */
+                        IncludeReplicas.prototype.replicaSelections = $util.emptyArray;
+    
+                        /**
+                         * IncludeReplicas autoFailover.
+                         * @member {boolean} autoFailover
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @instance
+                         */
+                        IncludeReplicas.prototype.autoFailover = false;
+    
+                        /**
+                         * Creates a new IncludeReplicas instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IIncludeReplicas=} [properties] Properties to set
+                         * @returns {google.spanner.v1.DirectedReadOptions.IncludeReplicas} IncludeReplicas instance
+                         */
+                        IncludeReplicas.create = function create(properties) {
+                            return new IncludeReplicas(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified IncludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IIncludeReplicas} message IncludeReplicas message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        IncludeReplicas.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.replicaSelections != null && message.replicaSelections.length)
+                                for (var i = 0; i < message.replicaSelections.length; ++i)
+                                    $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.encode(message.replicaSelections[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                            if (message.autoFailover != null && Object.hasOwnProperty.call(message, "autoFailover"))
+                                writer.uint32(/* id 2, wireType 0 =*/16).bool(message.autoFailover);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified IncludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IIncludeReplicas} message IncludeReplicas message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        IncludeReplicas.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes an IncludeReplicas message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.DirectedReadOptions.IncludeReplicas} IncludeReplicas
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        IncludeReplicas.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1: {
+                                        if (!(message.replicaSelections && message.replicaSelections.length))
+                                            message.replicaSelections = [];
+                                        message.replicaSelections.push($root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.decode(reader, reader.uint32()));
+                                        break;
+                                    }
+                                case 2: {
+                                        message.autoFailover = reader.bool();
+                                        break;
+                                    }
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes an IncludeReplicas message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.DirectedReadOptions.IncludeReplicas} IncludeReplicas
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        IncludeReplicas.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies an IncludeReplicas message.
+                         * @function verify
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        IncludeReplicas.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.replicaSelections != null && message.hasOwnProperty("replicaSelections")) {
+                                if (!Array.isArray(message.replicaSelections))
+                                    return "replicaSelections: array expected";
+                                for (var i = 0; i < message.replicaSelections.length; ++i) {
+                                    var error = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify(message.replicaSelections[i]);
+                                    if (error)
+                                        return "replicaSelections." + error;
+                                }
+                            }
+                            if (message.autoFailover != null && message.hasOwnProperty("autoFailover"))
+                                if (typeof message.autoFailover !== "boolean")
+                                    return "autoFailover: boolean expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates an IncludeReplicas message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.DirectedReadOptions.IncludeReplicas} IncludeReplicas
+                         */
+                        IncludeReplicas.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas)
+                                return object;
+                            var message = new $root.google.spanner.v1.DirectedReadOptions.IncludeReplicas();
+                            if (object.replicaSelections) {
+                                if (!Array.isArray(object.replicaSelections))
+                                    throw TypeError(".google.spanner.v1.DirectedReadOptions.IncludeReplicas.replicaSelections: array expected");
+                                message.replicaSelections = [];
+                                for (var i = 0; i < object.replicaSelections.length; ++i) {
+                                    if (typeof object.replicaSelections[i] !== "object")
+                                        throw TypeError(".google.spanner.v1.DirectedReadOptions.IncludeReplicas.replicaSelections: object expected");
+                                    message.replicaSelections[i] = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.fromObject(object.replicaSelections[i]);
+                                }
+                            }
+                            if (object.autoFailover != null)
+                                message.autoFailover = Boolean(object.autoFailover);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from an IncludeReplicas message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IncludeReplicas} message IncludeReplicas
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        IncludeReplicas.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults)
+                                object.replicaSelections = [];
+                            if (options.defaults)
+                                object.autoFailover = false;
+                            if (message.replicaSelections && message.replicaSelections.length) {
+                                object.replicaSelections = [];
+                                for (var j = 0; j < message.replicaSelections.length; ++j)
+                                    object.replicaSelections[j] = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.toObject(message.replicaSelections[j], options);
+                            }
+                            if (message.autoFailover != null && message.hasOwnProperty("autoFailover"))
+                                object.autoFailover = message.autoFailover;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this IncludeReplicas to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        IncludeReplicas.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for IncludeReplicas
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.DirectedReadOptions.IncludeReplicas
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        IncludeReplicas.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.DirectedReadOptions.IncludeReplicas";
+                        };
+    
+                        return IncludeReplicas;
+                    })();
+    
+                    DirectedReadOptions.ExcludeReplicas = (function() {
+    
+                        /**
+                         * Properties of an ExcludeReplicas.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @interface IExcludeReplicas
+                         * @property {Array.<google.spanner.v1.DirectedReadOptions.IReplicaSelection>|null} [replicaSelections] ExcludeReplicas replicaSelections
+                         */
+    
+                        /**
+                         * Constructs a new ExcludeReplicas.
+                         * @memberof google.spanner.v1.DirectedReadOptions
+                         * @classdesc Represents an ExcludeReplicas.
+                         * @implements IExcludeReplicas
+                         * @constructor
+                         * @param {google.spanner.v1.DirectedReadOptions.IExcludeReplicas=} [properties] Properties to set
+                         */
+                        function ExcludeReplicas(properties) {
+                            this.replicaSelections = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ExcludeReplicas replicaSelections.
+                         * @member {Array.<google.spanner.v1.DirectedReadOptions.IReplicaSelection>} replicaSelections
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @instance
+                         */
+                        ExcludeReplicas.prototype.replicaSelections = $util.emptyArray;
+    
+                        /**
+                         * Creates a new ExcludeReplicas instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IExcludeReplicas=} [properties] Properties to set
+                         * @returns {google.spanner.v1.DirectedReadOptions.ExcludeReplicas} ExcludeReplicas instance
+                         */
+                        ExcludeReplicas.create = function create(properties) {
+                            return new ExcludeReplicas(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified ExcludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IExcludeReplicas} message ExcludeReplicas message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ExcludeReplicas.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.replicaSelections != null && message.replicaSelections.length)
+                                for (var i = 0; i < message.replicaSelections.length; ++i)
+                                    $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.encode(message.replicaSelections[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ExcludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.IExcludeReplicas} message ExcludeReplicas message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ExcludeReplicas.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes an ExcludeReplicas message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.DirectedReadOptions.ExcludeReplicas} ExcludeReplicas
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ExcludeReplicas.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1: {
+                                        if (!(message.replicaSelections && message.replicaSelections.length))
+                                            message.replicaSelections = [];
+                                        message.replicaSelections.push($root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.decode(reader, reader.uint32()));
+                                        break;
+                                    }
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes an ExcludeReplicas message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.DirectedReadOptions.ExcludeReplicas} ExcludeReplicas
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ExcludeReplicas.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies an ExcludeReplicas message.
+                         * @function verify
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ExcludeReplicas.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.replicaSelections != null && message.hasOwnProperty("replicaSelections")) {
+                                if (!Array.isArray(message.replicaSelections))
+                                    return "replicaSelections: array expected";
+                                for (var i = 0; i < message.replicaSelections.length; ++i) {
+                                    var error = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify(message.replicaSelections[i]);
+                                    if (error)
+                                        return "replicaSelections." + error;
+                                }
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates an ExcludeReplicas message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.DirectedReadOptions.ExcludeReplicas} ExcludeReplicas
+                         */
+                        ExcludeReplicas.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas)
+                                return object;
+                            var message = new $root.google.spanner.v1.DirectedReadOptions.ExcludeReplicas();
+                            if (object.replicaSelections) {
+                                if (!Array.isArray(object.replicaSelections))
+                                    throw TypeError(".google.spanner.v1.DirectedReadOptions.ExcludeReplicas.replicaSelections: array expected");
+                                message.replicaSelections = [];
+                                for (var i = 0; i < object.replicaSelections.length; ++i) {
+                                    if (typeof object.replicaSelections[i] !== "object")
+                                        throw TypeError(".google.spanner.v1.DirectedReadOptions.ExcludeReplicas.replicaSelections: object expected");
+                                    message.replicaSelections[i] = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.fromObject(object.replicaSelections[i]);
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from an ExcludeReplicas message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {google.spanner.v1.DirectedReadOptions.ExcludeReplicas} message ExcludeReplicas
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ExcludeReplicas.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults)
+                                object.replicaSelections = [];
+                            if (message.replicaSelections && message.replicaSelections.length) {
+                                object.replicaSelections = [];
+                                for (var j = 0; j < message.replicaSelections.length; ++j)
+                                    object.replicaSelections[j] = $root.google.spanner.v1.DirectedReadOptions.ReplicaSelection.toObject(message.replicaSelections[j], options);
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ExcludeReplicas to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ExcludeReplicas.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for ExcludeReplicas
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.DirectedReadOptions.ExcludeReplicas
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        ExcludeReplicas.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.DirectedReadOptions.ExcludeReplicas";
+                        };
+    
+                        return ExcludeReplicas;
+                    })();
+    
+                    return DirectedReadOptions;
+                })();
+    
                 v1.ExecuteSqlRequest = (function() {
     
                     /**
@@ -42925,6 +43926,7 @@
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
                      * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteSqlRequest requestOptions
+                     * @property {google.spanner.v1.IDirectedReadOptions|null} [directedReadOptions] ExecuteSqlRequest directedReadOptions
                      */
     
                     /**
@@ -43032,6 +44034,14 @@
                     ExecuteSqlRequest.prototype.requestOptions = null;
     
                     /**
+                     * ExecuteSqlRequest directedReadOptions.
+                     * @member {google.spanner.v1.IDirectedReadOptions|null|undefined} directedReadOptions
+                     * @memberof google.spanner.v1.ExecuteSqlRequest
+                     * @instance
+                     */
+                    ExecuteSqlRequest.prototype.directedReadOptions = null;
+    
+                    /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -43080,6 +44090,8 @@
                             $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+                        if (message.directedReadOptions != null && Object.hasOwnProperty.call(message, "directedReadOptions"))
+                            $root.google.spanner.v1.DirectedReadOptions.encode(message.directedReadOptions, writer.uint32(/* id 15, wireType 2 =*/122).fork()).ldelim();
                         return writer;
                     };
     
@@ -43177,6 +44189,10 @@
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                     break;
                                 }
+                            case 15: {
+                                    message.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -43266,6 +44282,11 @@
                             if (error)
                                 return "requestOptions." + error;
                         }
+                        if (message.directedReadOptions != null && message.hasOwnProperty("directedReadOptions")) {
+                            var error = $root.google.spanner.v1.DirectedReadOptions.verify(message.directedReadOptions);
+                            if (error)
+                                return "directedReadOptions." + error;
+                        }
                         return null;
                     };
     
@@ -43354,6 +44375,11 @@
                                 throw TypeError(".google.spanner.v1.ExecuteSqlRequest.requestOptions: object expected");
                             message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
                         }
+                        if (object.directedReadOptions != null) {
+                            if (typeof object.directedReadOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ExecuteSqlRequest.directedReadOptions: object expected");
+                            message.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.fromObject(object.directedReadOptions);
+                        }
                         return message;
                     };
     
@@ -43399,6 +44425,7 @@
                                 object.seqno = options.longs === String ? "0" : 0;
                             object.queryOptions = null;
                             object.requestOptions = null;
+                            object.directedReadOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -43429,6 +44456,8 @@
                             object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
+                        if (message.directedReadOptions != null && message.hasOwnProperty("directedReadOptions"))
+                            object.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.toObject(message.directedReadOptions, options);
                         return object;
                     };
     
@@ -46084,6 +47113,7 @@
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
+                     * @property {google.spanner.v1.IDirectedReadOptions|null} [directedRead] ReadRequest directedRead
                      */
     
                     /**
@@ -46183,6 +47213,14 @@
                     ReadRequest.prototype.requestOptions = null;
     
                     /**
+                     * ReadRequest directedRead.
+                     * @member {google.spanner.v1.IDirectedReadOptions|null|undefined} directedRead
+                     * @memberof google.spanner.v1.ReadRequest
+                     * @instance
+                     */
+                    ReadRequest.prototype.directedRead = null;
+    
+                    /**
                      * Creates a new ReadRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ReadRequest
@@ -46227,6 +47265,8 @@
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
+                        if (message.directedRead != null && Object.hasOwnProperty.call(message, "directedRead"))
+                            $root.google.spanner.v1.DirectedReadOptions.encode(message.directedRead, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
                         return writer;
                     };
     
@@ -46301,6 +47341,10 @@
                                 }
                             case 11: {
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 12: {
+                                    message.directedRead = $root.google.spanner.v1.DirectedReadOptions.decode(reader, reader.uint32());
                                     break;
                                 }
                             default:
@@ -46378,6 +47422,11 @@
                             if (error)
                                 return "requestOptions." + error;
                         }
+                        if (message.directedRead != null && message.hasOwnProperty("directedRead")) {
+                            var error = $root.google.spanner.v1.DirectedReadOptions.verify(message.directedRead);
+                            if (error)
+                                return "directedRead." + error;
+                        }
                         return null;
                     };
     
@@ -46440,6 +47489,11 @@
                                 throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
                             message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
                         }
+                        if (object.directedRead != null) {
+                            if (typeof object.directedRead !== "object")
+                                throw TypeError(".google.spanner.v1.ReadRequest.directedRead: object expected");
+                            message.directedRead = $root.google.spanner.v1.DirectedReadOptions.fromObject(object.directedRead);
+                        }
                         return message;
                     };
     
@@ -46484,6 +47538,7 @@
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
                             object.requestOptions = null;
+                            object.directedRead = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -46511,6 +47566,8 @@
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
+                        if (message.directedRead != null && message.hasOwnProperty("directedRead"))
+                            object.directedRead = $root.google.spanner.v1.DirectedReadOptions.toObject(message.directedRead, options);
                         return object;
                     };
     

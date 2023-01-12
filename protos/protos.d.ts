@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17365,6 +17365,428 @@ export namespace google {
                 }
             }
 
+            /** Properties of a DirectedReadOptions. */
+            interface IDirectedReadOptions {
+
+                /** DirectedReadOptions includeReplicas */
+                includeReplicas?: (google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null);
+
+                /** DirectedReadOptions excludeReplicas */
+                excludeReplicas?: (google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null);
+            }
+
+            /** Represents a DirectedReadOptions. */
+            class DirectedReadOptions implements IDirectedReadOptions {
+
+                /**
+                 * Constructs a new DirectedReadOptions.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IDirectedReadOptions);
+
+                /** DirectedReadOptions includeReplicas. */
+                public includeReplicas?: (google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null);
+
+                /** DirectedReadOptions excludeReplicas. */
+                public excludeReplicas?: (google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null);
+
+                /** DirectedReadOptions replicas. */
+                public replicas?: ("includeReplicas"|"excludeReplicas");
+
+                /**
+                 * Creates a new DirectedReadOptions instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns DirectedReadOptions instance
+                 */
+                public static create(properties?: google.spanner.v1.IDirectedReadOptions): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Encodes the specified DirectedReadOptions message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                 * @param message DirectedReadOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IDirectedReadOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified DirectedReadOptions message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                 * @param message DirectedReadOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IDirectedReadOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DirectedReadOptions message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns DirectedReadOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Decodes a DirectedReadOptions message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns DirectedReadOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Verifies a DirectedReadOptions message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a DirectedReadOptions message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns DirectedReadOptions
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Creates a plain object from a DirectedReadOptions message. Also converts values to other types if specified.
+                 * @param message DirectedReadOptions
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.DirectedReadOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this DirectedReadOptions to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for DirectedReadOptions
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace DirectedReadOptions {
+
+                /** Properties of a ReplicaSelection. */
+                interface IReplicaSelection {
+
+                    /** ReplicaSelection location */
+                    location?: (string|null);
+
+                    /** ReplicaSelection type */
+                    type?: (google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|keyof typeof google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|null);
+                }
+
+                /** Represents a ReplicaSelection. */
+                class ReplicaSelection implements IReplicaSelection {
+
+                    /**
+                     * Constructs a new ReplicaSelection.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IReplicaSelection);
+
+                    /** ReplicaSelection location. */
+                    public location: string;
+
+                    /** ReplicaSelection type. */
+                    public type: (google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|keyof typeof google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type);
+
+                    /**
+                     * Creates a new ReplicaSelection instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ReplicaSelection instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IReplicaSelection): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Encodes the specified ReplicaSelection message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                     * @param message ReplicaSelection message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ReplicaSelection message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                     * @param message ReplicaSelection message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ReplicaSelection message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ReplicaSelection
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Decodes a ReplicaSelection message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ReplicaSelection
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Verifies a ReplicaSelection message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ReplicaSelection message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ReplicaSelection
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Creates a plain object from a ReplicaSelection message. Also converts values to other types if specified.
+                     * @param message ReplicaSelection
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.ReplicaSelection, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ReplicaSelection to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ReplicaSelection
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace ReplicaSelection {
+
+                    /** Type enum. */
+                    enum Type {
+                        TYPE_UNSPECIFIED = 0,
+                        READ_WRITE = 1,
+                        READ_ONLY = 2
+                    }
+                }
+
+                /** Properties of an IncludeReplicas. */
+                interface IIncludeReplicas {
+
+                    /** IncludeReplicas replicaSelections */
+                    replicaSelections?: (google.spanner.v1.DirectedReadOptions.IReplicaSelection[]|null);
+
+                    /** IncludeReplicas autoFailover */
+                    autoFailover?: (boolean|null);
+                }
+
+                /** Represents an IncludeReplicas. */
+                class IncludeReplicas implements IIncludeReplicas {
+
+                    /**
+                     * Constructs a new IncludeReplicas.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IIncludeReplicas);
+
+                    /** IncludeReplicas replicaSelections. */
+                    public replicaSelections: google.spanner.v1.DirectedReadOptions.IReplicaSelection[];
+
+                    /** IncludeReplicas autoFailover. */
+                    public autoFailover: boolean;
+
+                    /**
+                     * Creates a new IncludeReplicas instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns IncludeReplicas instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IIncludeReplicas): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Encodes the specified IncludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                     * @param message IncludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IIncludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified IncludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                     * @param message IncludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IIncludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an IncludeReplicas message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns IncludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Decodes an IncludeReplicas message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns IncludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Verifies an IncludeReplicas message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an IncludeReplicas message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns IncludeReplicas
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Creates a plain object from an IncludeReplicas message. Also converts values to other types if specified.
+                     * @param message IncludeReplicas
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.IncludeReplicas, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this IncludeReplicas to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for IncludeReplicas
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of an ExcludeReplicas. */
+                interface IExcludeReplicas {
+
+                    /** ExcludeReplicas replicaSelections */
+                    replicaSelections?: (google.spanner.v1.DirectedReadOptions.IReplicaSelection[]|null);
+                }
+
+                /** Represents an ExcludeReplicas. */
+                class ExcludeReplicas implements IExcludeReplicas {
+
+                    /**
+                     * Constructs a new ExcludeReplicas.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IExcludeReplicas);
+
+                    /** ExcludeReplicas replicaSelections. */
+                    public replicaSelections: google.spanner.v1.DirectedReadOptions.IReplicaSelection[];
+
+                    /**
+                     * Creates a new ExcludeReplicas instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ExcludeReplicas instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IExcludeReplicas): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Encodes the specified ExcludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                     * @param message ExcludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IExcludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ExcludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                     * @param message ExcludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IExcludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an ExcludeReplicas message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ExcludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Decodes an ExcludeReplicas message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ExcludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Verifies an ExcludeReplicas message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an ExcludeReplicas message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ExcludeReplicas
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Creates a plain object from an ExcludeReplicas message. Also converts values to other types if specified.
+                     * @param message ExcludeReplicas
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.ExcludeReplicas, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ExcludeReplicas to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ExcludeReplicas
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+            }
+
             /** Properties of an ExecuteSqlRequest. */
             interface IExecuteSqlRequest {
 
@@ -17400,6 +17822,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest directedReadOptions */
+                directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -17443,6 +17868,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest directedReadOptions. */
+                public directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -18566,6 +18994,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest directedRead */
+                directedRead?: (google.spanner.v1.IDirectedReadOptions|null);
             }
 
             /** Represents a ReadRequest. */
@@ -18606,6 +19037,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest directedRead. */
+                public directedRead?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.

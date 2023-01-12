@@ -489,6 +489,88 @@ message RequestOptions {
   string transaction_tag = 3;
 }
 
+// The DirectedReadOptions can be used to indicate which replicas or regions
+// should be used for non-transactional reads or queries.
+//
+// Not all requests can be sent to non-leader replicas. In particular, some
+// requests such as reads within read-write transactions must be sent to a
+// designated leader replica. These requests ignores DirectedReadOptions.
+message DirectedReadOptions {
+  // The directed read replica selector.
+  // Callers must provide one or more of the following fields for replica
+  // selection:
+  //
+  //   * `location` - The location must be one of the regions within the
+  //      multi-region configuration of your database.
+  //   * `type` - The type of the replica.
+  //
+  // Some examples of using replica_selectors are:
+  //
+  //   * `location:us-east1` --> The "us-east1" replica(s) of any available type
+  //                             will be used to process the request.
+  //   * `type:READ_ONLY`    --> The "READ_ONLY" type replica(s) in nearest
+  //.                            available location will be used to process the
+  //                             request.
+  //   * `location:us-east1 type:READ_ONLY` --> The "READ_ONLY" type replica(s)
+  //                          in location "us-east1" will be used to process
+  //                          the request.
+  message ReplicaSelection {
+    // The location or region of the serving requests, e.g. "us-east1".
+    string location = 1;
+
+    // Indicates the type of replica.
+    enum Type {
+      // Not specified.
+      TYPE_UNSPECIFIED = 0;
+
+      // Read-write replicas support both reads and writes.
+      READ_WRITE = 1;
+
+      // Read-only replicas only support reads (not writes).
+      READ_ONLY = 2;
+    }
+
+    // The type of replica.
+    Type type = 2;
+  }
+
+  // An IncludeReplicas contains a repeated set of ReplicaSelection which
+  // indicates the order in which replicas should be considered.
+  message IncludeReplicas {
+    // The directed read replica selector.
+    repeated ReplicaSelection replica_selections = 1;
+
+    // If true, Spanner will route requests to healthy replica outside the list
+    // when all the replicas in the include_replicas list are unavailable or
+    // unhealthy. Default value is `false`.
+    bool auto_failover = 2;
+  }
+
+  // An ExcludeReplicas contains a repeated set of ReplicaSelection that should
+  // be excluded from serving requests.
+  message ExcludeReplicas {
+    // The directed read replica selector.
+    repeated ReplicaSelection replica_selections = 1;
+  }
+
+  // Required. Replicas indicates the order in which replicas should be
+  // considered. At most one of either include_replicas or exclude_replicas
+  // should be present in the message.
+  oneof replicas {
+    // Include_replicas indicates the order of replicas (as they appear in
+    // this list) to process the request. If all replicas are exhausted without
+    // finding a healthy replica, Spanner will wait for a replica in the list to
+    // become available, requests may fail due to `DEADLINE_EXCEEDED` errors. In
+    // particular, the request will never be sent to a region or replica which
+    // does not appear in the list.
+    IncludeReplicas include_replicas = 1;
+
+    // Exclude_replicas indicates that should be excluded from serving
+    // requests. Spanner will not route requests to the replicas in this list.
+    ExcludeReplicas exclude_replicas = 2;
+  }
+}
+
 // The request for [ExecuteSql][google.spanner.v1.Spanner.ExecuteSql] and
 // [ExecuteStreamingSql][google.spanner.v1.Spanner.ExecuteStreamingSql].
 message ExecuteSqlRequest {
@@ -643,6 +725,9 @@ message ExecuteSqlRequest {
 
   // Common options for this request.
   RequestOptions request_options = 11;
+
+  // Directed read options for this request.
+  DirectedReadOptions directed_read_options = 15;
 }
 
 // The request for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml].
@@ -949,6 +1034,10 @@ message ReadRequest {
 
   // Common options for this request.
   RequestOptions request_options = 11;
+
+  // Directed read options for this request.
+  DirectedReadOptions directed_read = 12;
+
 }
 
 // The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
