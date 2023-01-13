@@ -162,6 +162,7 @@ export interface SessionPoolOptions {
    */
   writes?: number;
   incStep?: number;
+  databaseRole?: string | null;
 }
 
 const DEFAULTS: SessionPoolOptions = {
@@ -175,6 +176,7 @@ const DEFAULTS: SessionPoolOptions = {
   maxIdle: 1,
   min: 25,
   incStep: 25,
+  databaseRole: null,
 };
 
 /**
@@ -464,6 +466,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
     this.options.min = Math.min(this.options.min!, this.options.max!);
+    this.options.databaseRole = this.options.databaseRole
+      ? this.options.databaseRole
+      : database.databaseRole;
 
     this._inventory = {
       sessions: [],
@@ -719,6 +724,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   async _createSessions(amount: number): Promise<void> {
     const labels = this.options.labels!;
+    const databaseRole = this.options.databaseRole!;
 
     if (amount <= 0) {
       return;
@@ -733,7 +739,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       try {
         [sessions] = await this.database.batchCreateSessions({
           count: amount,
-          labels,
+          labels: labels,
+          databaseRole: databaseRole,
         });
 
         amount -= sessions.length;

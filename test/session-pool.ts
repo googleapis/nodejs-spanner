@@ -56,7 +56,11 @@ describe('SessionPool', () => {
   let SessionPool: typeof sp.SessionPool;
   let inventory;
 
-  const DATABASE = {batchCreateSessions: noop} as unknown as Database;
+  const DATABASE = {
+    batchCreateSessions: noop,
+    databaseRole: 'parent_role',
+  } as unknown as Database;
+
   const sandbox = sinon.createSandbox();
   const shouldNotBeCalled = sandbox.stub().throws('Should not be called.');
 
@@ -214,6 +218,16 @@ describe('SessionPool', () => {
       it('should not override user options', () => {
         sessionPool = new SessionPool(DATABASE, {acquireTimeout: 0});
         assert.strictEqual(sessionPool.options.acquireTimeout, 0);
+      });
+
+      it('should override user options for databaseRole', () => {
+        sessionPool = new SessionPool(DATABASE, {databaseRole: 'child_role'});
+        assert.strictEqual(sessionPool.options.databaseRole, 'child_role');
+      });
+
+      it('should use default value of Database for databaseRole', () => {
+        sessionPool = new SessionPool(DATABASE);
+        assert.strictEqual(sessionPool.options.databaseRole, 'parent_role');
       });
 
       describe('min and max', () => {
@@ -751,6 +765,14 @@ describe('SessionPool', () => {
       await sessionPool._createSessions(OPTIONS);
       const [options] = stub.lastCall.args;
       assert.strictEqual(options.labels, labels);
+    });
+
+    it('should pass the session database role', async () => {
+      const databaseRole = 'child_role';
+      sessionPool.options.databaseRole = databaseRole;
+      await sessionPool._createSessions(OPTIONS);
+      const [options] = stub.lastCall.args;
+      assert.strictEqual(options.databaseRole, databaseRole);
     });
 
     it('should make multiple requests if needed', async () => {
