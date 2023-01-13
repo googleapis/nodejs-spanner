@@ -39,6 +39,7 @@ import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Database} from '.';
+import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -2277,6 +2278,20 @@ export class Transaction extends Dml {
    */
   useInRunner(): void {
     this._useInRunner = true;
+  }
+
+  /**
+   * Use optimistic concurrency control for the transaction.
+   *
+   * In this concurrency mode, operations during the execution phase, i.e.,
+   * reads and queries, are performed without acquiring locks, and transactional
+   * consistency is ensured by running a validation process in the commit phase
+   * (when any needed locks are acquired). The validation process succeeds only
+   * if there are no conflicting committed transactions (that committed
+   * mutations to the read data at a commit timestamp after the read timestamp).
+   */
+  useOptimisticLock(): void {
+    this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
 }
 
