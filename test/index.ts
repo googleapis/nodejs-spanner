@@ -289,6 +289,32 @@ describe('Spanner', () => {
       });
     });
 
+    it('should set directedReadOptions passed in constructor', () => {
+      const fakeDirectedReadOptions = {
+        includeReplicas: {
+          replicaSelections: ['us-west1'],
+          autoFailover: true,
+        },
+      };
+      const options = {
+        projectId: 'project-id',
+        directedReadOptions: fakeDirectedReadOptions,
+      };
+      console.log('#######');
+      console.log(options);
+      // const spanner = new Spanner(options);
+      // const spanner2 = new Spanner(options);
+
+      const expectedOptions = extend({}, EXPECTED_OPTIONS, {
+        directedReadOptions: fakeDirectedReadOptions,
+      });
+
+      assert.deepStrictEqual(
+        getFake(spanner.auth).calledWith_[0],
+        expectedOptions
+      );
+    });
+
     describe('SPANNER_EMULATOR_HOST', () => {
       let currentEmulator: string | undefined;
 

@@ -35,8 +35,14 @@ import {grpc} from 'google-gax';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
-
-  const PARENT = {formattedName_: 'formatted-database-name'};
+  const CLIENT: {directedReadOptions: {} | null} = {
+    directedReadOptions: null,
+  };
+  const INSTANCE = {parent: CLIENT};
+  const PARENT = {
+    formattedName_: 'formatted-database-name',
+    parent: INSTANCE,
+  };
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
@@ -234,6 +240,9 @@ describe('Transaction', () => {
 
       beforeEach(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+        SESSION.parent.parent.parent = {
+          directedReadOptions: null,
+        };
       });
 
       it('should send the correct request', () => {
@@ -299,12 +308,114 @@ describe('Transaction', () => {
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
+          directedReadOptions: undefined,
         };
 
         sandbox
           .stub(Snapshot, 'encodeKeySet')
           .withArgs(fakeRequest)
           .returns(fakeKeySet);
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should accept directedReadOptions', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptions = {
+          includeReplicas: {
+            replicaSelections: ['us-east1'],
+            autoFailover: true,
+          },
+        };
+        const fakeRequest = {
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptions = {
+          includeReplicas: {
+            replicaSelections: ['us-west1'],
+            autoFailover: true,
+          },
+        };
+
+        SESSION.parent.parent.parent = {
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set for client when passed', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptionsForClient = {
+          includeReplicas: {
+            replicaSelections: ['us-west1'],
+            autoFailover: true,
+          },
+        };
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: ['us-east1'],
+            autoFailover: true,
+          },
+        };
+        const fakeRequest = {
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        SESSION.parent.parent.parent = {
+          directedReadOptions: fakeDirectedReadOptionsForClient,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
 
         snapshot.id = id;
         snapshot.createReadStream(TABLE, fakeRequest);
@@ -514,6 +625,9 @@ describe('Transaction', () => {
 
       beforeEach(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+        SESSION.parent.parent.parent = {
+          directedReadOptions: null,
+        };
       });
 
       it('should send the correct request', () => {
@@ -585,12 +699,123 @@ describe('Transaction', () => {
           seqno: 1,
           queryOptions: {},
           resumeToken: undefined,
+          directedReadOptions: undefined,
         };
 
         sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
           params: fakeParams,
           paramTypes: fakeParamTypes,
         });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should accept directedReadOptions', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptions = {
+          includeReplicas: {
+            replicaSelections: ['us-east1'],
+            autoFailover: true,
+          },
+        };
+        const fakeQuery = Object.assign({}, QUERY, {
+          directedReadOptions: fakeDirectedReadOptions,
+        });
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: {},
+          paramTypes: {},
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptions = {
+          includeReplicas: {
+            replicaSelections: ['us-west1'],
+            autoFailover: true,
+          },
+        };
+
+        SESSION.parent.parent.parent = {
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: {},
+          paramTypes: {},
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.runStream(QUERY);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set for client when passed', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptionsForClient = {
+          includeReplicas: {
+            replicaSelections: ['us-west1'],
+            autoFailover: true,
+          },
+        };
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: ['us-east1'],
+            autoFailover: true,
+          },
+        };
+        const fakeQuery = Object.assign({}, QUERY, {
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        });
+
+        SESSION.parent.parent.parent = {
+          directedReadOptions: fakeDirectedReadOptionsForClient,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: {},
+          paramTypes: {},
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
 
         snapshot.id = id;
         snapshot.runStream(fakeQuery);

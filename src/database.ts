@@ -292,7 +292,7 @@ export interface RestoreOptions {
  * ```
  */
 class Database extends common.GrpcServiceObject {
-  private instance: Instance;
+  instance: Instance;
   formattedName_: string;
   pool_: SessionPoolInterface;
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;

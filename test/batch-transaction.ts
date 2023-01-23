@@ -57,8 +57,11 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const CLIENT = {directedReadOptions: null};
+const INSTANCE = {client: CLIENT};
 const DATABASE = {
   formattedName_: 'database',
+  instance: INSTANCE,
 };
 
 class FakeTransaction {

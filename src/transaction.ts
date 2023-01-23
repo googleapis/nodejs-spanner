@@ -79,6 +79,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  directedReadOptions?: spannerClient.spanner.v1.DirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -99,6 +100,7 @@ export interface ReadRequest extends RequestOptions {
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  directedReadOptions?: spannerClient.spanner.v1.DirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -106,7 +108,6 @@ export interface BatchUpdateError extends grpc.ServiceError {
 }
 
 export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
-
 export type BatchUpdateResponse = [
   number[],
   spannerClient.spanner.v1.ExecuteBatchDmlResponse
@@ -567,6 +568,14 @@ export class Snapshot extends EventEmitter {
       request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
+    let directedReadOptions = request.directedReadOptions;
+    if (
+      !directedReadOptions &&
+      this.session.parent.parent.parent.directedReadOptions
+    ) {
+      directedReadOptions =
+        this.session.parent.parent.parent.directedReadOptions;
+    }
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
@@ -585,6 +594,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.directedReadOptions;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -595,6 +605,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
@@ -1043,6 +1054,14 @@ export class Snapshot extends EventEmitter {
     const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
       query;
     let reqOpts;
+    let directedReadOptions = query.directedReadOptions;
+    if (
+      !directedReadOptions &&
+      this.session.parent.parent.parent.directedReadOptions
+    ) {
+      directedReadOptions =
+        this.session.parent.parent.parent.directedReadOptions;
+    }
 
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
@@ -1061,6 +1080,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.directedReadOptions;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1070,6 +1090,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         params,
         paramTypes,

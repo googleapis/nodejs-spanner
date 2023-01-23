@@ -176,11 +176,13 @@ describe('Database', () => {
   // tslint:disable-next-line variable-name
   let DatabaseCached: typeof db.Database;
 
+  const CLIENT = {directedReadOptions: null};
   const INSTANCE = {
     request: util.noop,
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
+    client: CLIENT,
   } as {} as Instance;
 
   const NAME = 'table-name';

@@ -111,6 +111,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   servicePath?: string;
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
+  directedReadOptions?: google.spanner.v1.DirectedReadOptions | null;
 }
 export interface RequestConfig {
   client: string;
@@ -210,6 +211,7 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
+  directedReadOptions: google.spanner.v1.DirectedReadOptions | null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -258,6 +260,12 @@ class Spanner extends GrpcService {
   }
 
   constructor(options?: SpannerOptions) {
+    let directedReadOptions: google.spanner.v1.DirectedReadOptions | null =
+      null;
+    if (options && options.directedReadOptions) {
+      directedReadOptions = options?.directedReadOptions;
+      delete options?.directedReadOptions;
+    }
     const scopes: Array<{}> = [];
     const clientClasses = [
       v1.DatabaseAdminClient,
@@ -320,6 +328,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+    this.directedReadOptions = directedReadOptions;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
@@ -1505,6 +1514,12 @@ class Spanner extends GrpcService {
       });
     });
     return stream;
+  }
+
+  setDirectedReadOptions(
+    directedReadOptions: google.spanner.v1.DirectedReadOptions | null
+  ) {
+    this.directedReadOptions = directedReadOptions;
   }
 
   static date(dateString?: string);
