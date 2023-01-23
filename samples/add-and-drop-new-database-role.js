@@ -23,7 +23,7 @@ function main(
   databaseId = 'my-database',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_add_and_drop_new_database]
+  // [START spanner_add_and_drop_database_role]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -79,7 +79,7 @@ function main(
     }
   }
   addAndDropNewDatabaseRole();
-  // [END spanner_add_and_drop_new_database]
+  // [END spanner_add_and_drop_database_role]
 }
 
 process.on('unhandledRejection', err => {
