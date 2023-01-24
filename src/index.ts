@@ -111,6 +111,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   servicePath?: string;
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
+  routeToLeaderEnabled?: boolean;
 }
 export interface RequestConfig {
   client: string;
@@ -210,6 +211,7 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
+  private routeToLeaderEnabled: boolean = true;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -255,6 +257,13 @@ class Spanner extends GrpcService {
       return {endpoint: endpointWithPort};
     }
     return undefined;
+  }
+
+  /**
+   * Gets the Route to leader flag.
+   */
+  get routeToLeader(): boolean {
+    return this.routeToLeaderEnabled;
   }
 
   constructor(options?: SpannerOptions) {
@@ -310,6 +319,11 @@ class Spanner extends GrpcService {
       packageJson: require('../../package.json'),
     } as {} as GrpcServiceConfig;
     super(config, options);
+
+    if(options.routeToLeaderEnabled != undefined && !options.routeToLeaderEnabled) {
+      this.routeToLeaderEnabled = false;
+    }
+    
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();

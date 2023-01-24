@@ -85,7 +85,9 @@ import {
   RequestCallback,
   ResourceCallback,
   Schema,
+  LEADER_AWARE_ROUTING_HEADER
 } from './common';
+import {Spanner} from '.';
 import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
@@ -523,13 +525,17 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
+    const leaderAwareRoutingHeader = {
+      [LEADER_AWARE_ROUTING_HEADER]: (this.instance.parent as Spanner).routeToLeader,
+    };
+
     this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
       {
         client: 'SpannerClient',
         method: 'batchCreateSessions',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
       },
       (err, resp) => {
         if (err) {
@@ -791,13 +797,17 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
+    const leaderAwareRoutingHeader = {
+      [LEADER_AWARE_ROUTING_HEADER]: (this.instance.parent as Spanner).routeToLeader,
+    };
+
     this.request<google.spanner.v1.ISession>(
       {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
       },
       (err, resp) => {
         if (err) {
