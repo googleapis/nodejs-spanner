@@ -328,6 +328,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+    Spanner._verifyDirectedReadOptions(directedReadOptions);
     this.directedReadOptions = directedReadOptions;
   }
 
@@ -1519,6 +1520,7 @@ class Spanner extends GrpcService {
   setDirectedReadOptions(
     directedReadOptions: google.spanner.v1.DirectedReadOptions | null
   ) {
+    Spanner._verifyDirectedReadOptions(directedReadOptions);
     this.directedReadOptions = directedReadOptions;
   }
 
@@ -1712,6 +1714,33 @@ class Spanner extends GrpcService {
     }
     return codec.Struct.fromJSON(value);
   }
+
+  static _verifyDirectedReadOptions(
+    directedReadOptions: DirectedReadOptions | null | undefined
+  ) {
+    if (directedReadOptions) {
+      if (
+        (directedReadOptions.includeReplicas &&
+          directedReadOptions.includeReplicas.replicaSelections &&
+          directedReadOptions.includeReplicas.replicaSelections.length > 10) ||
+        (directedReadOptions.excludeReplicas &&
+          directedReadOptions.excludeReplicas.replicaSelections &&
+          directedReadOptions.excludeReplicas.replicaSelections.length > 10)
+      ) {
+        throw new GoogleError(
+          'Maximum length of replica section allowed is 10'
+        );
+      }
+      if (
+        'includeReplicas' in directedReadOptions &&
+        'excludeReplicas' in directedReadOptions
+      ) {
+        throw new GoogleError(
+          'Only one of includeReplicas or excludeReplicas can be set'
+        );
+      }
+    }
+  }
 }
 
 /*! Developer Documentation
@@ -1881,3 +1910,5 @@ import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig
 export {v1, protos};
 export default {Spanner};
 export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export import DirectedReadOptions = protos.google.spanner.v1.DirectedReadOptions;
+export import TransactionType = google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type;

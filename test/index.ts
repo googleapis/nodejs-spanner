@@ -17,7 +17,7 @@
 /* eslint-disable prefer-rest-params */
 
 import * as assert from 'assert';
-import {before, beforeEach, afterEach, describe, it} from 'mocha';
+import {afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as extend from 'extend';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
@@ -29,13 +29,18 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
-import {Duplex} from 'stream';
-import {CreateInstanceRequest, CreateInstanceConfigRequest} from '../src/index';
 import {
   GetInstanceConfigOptions,
   GetInstanceConfigsOptions,
   GetInstancesOptions,
 } from '../src';
+import {Duplex} from 'stream';
+import {
+  CreateInstanceConfigRequest,
+  CreateInstanceRequest,
+  DirectedReadOptions,
+  TransactionType,
+} from '../src/index';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
@@ -119,9 +124,11 @@ const fakeCodec: any = {
 class FakeGrpcService {
   calledWith_: IArguments;
   projectId: string;
+  directedReadOptions?: DirectedReadOptions;
   constructor() {
     this.calledWith_ = arguments;
     this.projectId = arguments[1].projectId;
+    this.directedReadOptions = arguments[1].directedReadOptions;
   }
 }
 
@@ -290,28 +297,31 @@ describe('Spanner', () => {
     });
 
     it('should set directedReadOptions passed in constructor', () => {
-      const fakeDirectedReadOptions = {
+      const fakeDirectedReadOptions = new DirectedReadOptions({
         includeReplicas: {
-          replicaSelections: ['us-west1'],
+          replicaSelections: [
+            {
+              location: 'us-west1',
+              type: TransactionType.READ_ONLY,
+            },
+          ],
           autoFailover: true,
         },
-      };
+      });
+
       const options = {
         projectId: 'project-id',
         directedReadOptions: fakeDirectedReadOptions,
       };
-      console.log('#######');
-      console.log(options);
-      // const spanner = new Spanner(options);
-      // const spanner2 = new Spanner(options);
-
-      const expectedOptions = extend({}, EXPECTED_OPTIONS, {
-        directedReadOptions: fakeDirectedReadOptions,
-      });
+      const spanner = new Spanner(options);
 
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
-        expectedOptions
+        EXPECTED_OPTIONS
+      );
+      assert.deepStrictEqual(
+        spanner.directedReadOptions,
+        fakeDirectedReadOptions
       );
     });
 

@@ -31,7 +31,9 @@ import {
   ExecuteSqlRequest,
   ReadRequest,
 } from '../src/transaction';
-import {grpc} from 'google-gax';
+import {GoogleError, grpc} from 'google-gax';
+import {DirectedReadOptions, TransactionType} from '../src';
+import {error} from 'is';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -56,6 +58,18 @@ describe('Transaction', () => {
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
+
+  const fakeDirectedReadOptions = new DirectedReadOptions({
+    includeReplicas: {
+      replicaSelections: [
+        {
+          location: 'us-west1',
+          type: TransactionType.READ_ONLY,
+        },
+      ],
+      autoFailover: true,
+    },
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
@@ -326,12 +340,6 @@ describe('Transaction', () => {
 
       it('should accept directedReadOptions', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptions = {
-          includeReplicas: {
-            replicaSelections: ['us-east1'],
-            autoFailover: true,
-          },
-        };
         const fakeRequest = {
           directedReadOptions: fakeDirectedReadOptions,
         };
@@ -356,13 +364,6 @@ describe('Transaction', () => {
 
       it('should accept directedReadOptions set for client', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptions = {
-          includeReplicas: {
-            replicaSelections: ['us-west1'],
-            autoFailover: true,
-          },
-        };
-
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
         };
@@ -387,24 +388,21 @@ describe('Transaction', () => {
 
       it('should override directedReadOptions set for client when passed', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptionsForClient = {
+        const fakeDirectedReadOptionsForRequest = new DirectedReadOptions({
           includeReplicas: {
-            replicaSelections: ['us-west1'],
-            autoFailover: true,
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
           },
-        };
-        const fakeDirectedReadOptionsForRequest = {
-          includeReplicas: {
-            replicaSelections: ['us-east1'],
-            autoFailover: true,
-          },
-        };
+        });
         const fakeRequest = {
           directedReadOptions: fakeDirectedReadOptionsForRequest,
         };
 
         SESSION.parent.parent.parent = {
-          directedReadOptions: fakeDirectedReadOptionsForClient,
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         const expectedRequest = {
@@ -717,12 +715,6 @@ describe('Transaction', () => {
 
       it('should accept directedReadOptions', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptions = {
-          includeReplicas: {
-            replicaSelections: ['us-east1'],
-            autoFailover: true,
-          },
-        };
         const fakeQuery = Object.assign({}, QUERY, {
           directedReadOptions: fakeDirectedReadOptions,
         });
@@ -750,13 +742,6 @@ describe('Transaction', () => {
 
       it('should accept directedReadOptions set for client', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptions = {
-          includeReplicas: {
-            replicaSelections: ['us-west1'],
-            autoFailover: true,
-          },
-        };
-
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
         };
@@ -784,24 +769,21 @@ describe('Transaction', () => {
 
       it('should override directedReadOptions set for client when passed', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptionsForClient = {
+        const fakeDirectedReadOptionsForRequest = new DirectedReadOptions({
           includeReplicas: {
-            replicaSelections: ['us-west1'],
-            autoFailover: true,
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
           },
-        };
-        const fakeDirectedReadOptionsForRequest = {
-          includeReplicas: {
-            replicaSelections: ['us-east1'],
-            autoFailover: true,
-          },
-        };
+        });
         const fakeQuery = Object.assign({}, QUERY, {
           directedReadOptions: fakeDirectedReadOptionsForRequest,
         });
 
         SESSION.parent.parent.parent = {
-          directedReadOptions: fakeDirectedReadOptionsForClient,
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         const expectedRequest = {
@@ -1287,6 +1269,16 @@ describe('Transaction', () => {
 
       it('should inherit from Dml', () => {
         assert(transaction instanceof Dml);
+      });
+
+      it('should throw am error when directedReadOptions are set', () => {
+        const fakeQuery = {
+          sql: 'SELECT 1',
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+        assert.throws(() => {
+          transaction.runUpdate(fakeQuery);
+        }, new GoogleError("DirectedReadOptions can't be set for readWrite transactions or partitioned dml requests"));
       });
     });
 
@@ -2260,6 +2252,16 @@ describe('Transaction', () => {
         superCallback(fakeErr, fakeRowCount);
 
         assert.strictEqual(callback.callCount, 1);
+      });
+
+      it('should throw am error when directedReadOptions are set', () => {
+        const fakeQuery = {
+          sql: 'SELECT 1',
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+        assert.throws(() => {
+          pdml.runUpdate(fakeQuery);
+        }, new GoogleError("DirectedReadOptions can't be set for readWrite transactions or partitioned dml requests"));
       });
     });
   });

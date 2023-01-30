@@ -38,7 +38,7 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database} from '.';
+import {Database, DirectedReadOptions, Spanner} from '.';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -79,7 +79,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
-  directedReadOptions?: spannerClient.spanner.v1.DirectedReadOptions;
+  directedReadOptions?: DirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -100,7 +100,7 @@ export interface ReadRequest extends RequestOptions {
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
-  directedReadOptions?: spannerClient.spanner.v1.DirectedReadOptions;
+  directedReadOptions?: DirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -568,14 +568,9 @@ export class Snapshot extends EventEmitter {
       request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
-    let directedReadOptions = request.directedReadOptions;
-    if (
-      !directedReadOptions &&
-      this.session.parent.parent.parent.directedReadOptions
-    ) {
-      directedReadOptions =
-        this.session.parent.parent.parent.directedReadOptions;
-    }
+    const directedReadOptions = this._getDirectedReadOptions(
+      request.directedReadOptions
+    );
 
     if (this.id) {
       transaction.id = this.id as Uint8Array;
@@ -1054,14 +1049,9 @@ export class Snapshot extends EventEmitter {
     const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
       query;
     let reqOpts;
-    let directedReadOptions = query.directedReadOptions;
-    if (
-      !directedReadOptions &&
-      this.session.parent.parent.parent.directedReadOptions
-    ) {
-      directedReadOptions =
-        this.session.parent.parent.parent.directedReadOptions;
-    }
+    const directedReadOptions = this._getDirectedReadOptions(
+      query.directedReadOptions
+    );
 
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
@@ -1274,6 +1264,27 @@ export class Snapshot extends EventEmitter {
     }
 
     return {params, paramTypes};
+  }
+
+  protected _getDirectedReadOptions(
+    directedReadOptions: DirectedReadOptions | null | undefined
+  ) {
+    if (
+      directedReadOptions &&
+      (this._options.readWrite || this._options.partitionedDml)
+    ) {
+      throw new GoogleError(
+        "DirectedReadOptions can't be set for readWrite transactions or partitioned dml requests"
+      );
+    }
+    if (
+      !directedReadOptions &&
+      this.session.parent.parent.parent.directedReadOptions
+    ) {
+      return this.session.parent.parent.parent.directedReadOptions;
+    }
+    Spanner._verifyDirectedReadOptions(directedReadOptions);
+    return directedReadOptions;
   }
 
   /**
