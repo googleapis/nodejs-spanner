@@ -259,7 +259,6 @@ export class Session extends common.GrpcServiceObject {
     };
     this.request = database.request;
     this.requestStream = database.requestStream;
-    this.database = database;
 
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);

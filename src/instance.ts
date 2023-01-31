@@ -164,7 +164,6 @@ class Instance extends common.GrpcServiceObject {
   databases_: Map<string, Database>;
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
-  client: Spanner;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -240,7 +239,6 @@ class Instance extends common.GrpcServiceObject {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
-    this.client = spanner;
   }
 
   /**

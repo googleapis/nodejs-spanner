@@ -1728,7 +1728,7 @@ class Spanner extends GrpcService {
           directedReadOptions.excludeReplicas.replicaSelections.length > 10)
       ) {
         throw new GoogleError(
-          'Maximum length of replica section allowed is 10'
+          'Maximum length of replica selection allowed is 10'
         );
       }
       if (

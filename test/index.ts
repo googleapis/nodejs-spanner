@@ -26,7 +26,7 @@ import {util} from '@google-cloud/common';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {replaceProjectIdToken} from '@google-cloud/projectify';
 import * as pfy from '@google-cloud/promisify';
-import {grpc} from 'google-gax';
+import {GoogleError, grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
 import {
@@ -2095,6 +2095,46 @@ describe('Spanner', () => {
           done();
         })
         .emit('reading');
+    });
+  });
+
+  describe('verifyDirectedReadOptions', () => {
+    it('should throw error when directedReadOptions contains more than 10 replicaSelections', done => {
+      const fakeDirectedReadOptions = new DirectedReadOptions({
+        includeReplicas: {
+          replicaSelections: [
+            {location: 'us-west1'},
+            {location: 'us-west2'},
+            {location: 'us-west3'},
+            {location: 'us-west4'},
+            {location: 'us-west5'},
+            {location: 'us-west6'},
+            {location: 'us-west7'},
+            {location: 'us-west8'},
+            {location: 'us-west9'},
+            {location: 'us-west10'},
+            {location: 'us-west11'},
+          ],
+        },
+      });
+      assert.throws(() => {
+        Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
+      }, new GoogleError('Maximum length of replica selection allowed is 10'));
+    });
+
+    it('should throw error when both include replicas and exclude replicas are set', done => {
+      const fakeDirectedReadOptions = new DirectedReadOptions({
+        includeReplicas: {
+          replicaSelections: [{location: 'us-west1'}],
+          autoFailover: true,
+        },
+        excludeReplicas: {
+          replicaSelections: [{location: 'us-east1'}],
+        },
+      });
+      assert.throws(() => {
+        Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
+      }, new GoogleError('Only one of includeReplicas or excludeReplicas can be set'));
     });
   });
 });
