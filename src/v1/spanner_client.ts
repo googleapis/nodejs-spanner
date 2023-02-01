@@ -824,6 +824,11 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.serverlessAnalyticsEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via offline access. If the field is set to `true`
+   *   but the request does not set `partition_token`, the API will return an
+   *   `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1075,6 +1080,11 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.serverlessAnalyticsEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via offline access. If the field is set to `true`
+   *   but the request does not set `partition_token`, the API will return an
+   *   `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1770,6 +1780,11 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.serverlessAnalyticsEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via offline access. If the field is set to `true`
+   *   but the request does not set `partition_token`, the API will return an
+   *   `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1848,6 +1863,11 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.serverlessAnalyticsEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via offline access. If the field is set to `true`
+   *   but the request does not set `partition_token`, the API will return an
+   *   `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
