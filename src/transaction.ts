@@ -33,7 +33,11 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {google as spannerClient} from '../protos/protos';
-import {NormalCallback, CLOUD_RESOURCE_HEADER, LEADER_AWARE_ROUTING_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
@@ -371,9 +375,20 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader && (this._options.readWrite != undefined || this._options.partitionedDml != undefined)
-    };
+    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
+    let headers;
+    if (
+      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request(
       {
@@ -381,7 +396,7 @@ export class Snapshot extends EventEmitter {
         method: 'beginTransaction',
         reqOpts,
         gaxOpts,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -607,9 +622,20 @@ export class Snapshot extends EventEmitter {
       }
     );
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader && (this._options.readWrite != undefined || this._options.partitionedDml != undefined)
-    };
+    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
+    let headers;
+    if (
+      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (this.id && transaction.begin) {
@@ -621,7 +647,7 @@ export class Snapshot extends EventEmitter {
         method: 'streamingRead',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       });
     };
 
@@ -1086,9 +1112,20 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader && (this._options.readWrite != undefined || this._options.partitionedDml != undefined)
-    };
+    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
+    let headers;
+    if (
+      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
@@ -1106,7 +1143,7 @@ export class Snapshot extends EventEmitter {
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       });
     };
 
@@ -1633,9 +1670,16 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request(
       {
@@ -1643,7 +1687,7 @@ export class Transaction extends Dml {
         method: 'executeBatchDml',
         reqOpts,
         gaxOpts,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -1806,9 +1850,16 @@ export class Transaction extends Dml {
       this.requestOptions
     );
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader 
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request(
       {
@@ -1816,7 +1867,7 @@ export class Transaction extends Dml {
         method: 'commit',
         reqOpts,
         gaxOpts: gaxOpts,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
@@ -2145,9 +2196,16 @@ export class Transaction extends Dml {
       transactionId,
     };
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.session.parent.parent.parent as Spanner).routeToLeader 
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request(
       {
@@ -2155,7 +2213,7 @@ export class Transaction extends Dml {
         method: 'rollback',
         reqOpts,
         gaxOpts,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (err: null | ServiceError) => {
         this.end();

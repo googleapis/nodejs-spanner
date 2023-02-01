@@ -24,7 +24,10 @@ import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import {
   BatchUpdateOptions,
@@ -36,13 +39,25 @@ import {grpc} from 'google-gax';
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
-  const PARENT = {formattedName_: 'formatted-database-name'};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+  };
+
+  const INSTANCE = {
+    parent: SPANNER,
+  };
+
+  const DATABASE = {
+    formattedName_: 'formatted-database-name',
+    parent: INSTANCE,
+  };
+
   const SESSION = {
-    parent: PARENT,
+    parent: DATABASE,
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
@@ -1209,7 +1224,13 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
         assert.strictEqual(reqOpts.seqno, 1);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should encode sql string statements', () => {
@@ -1339,7 +1360,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {
@@ -1380,7 +1407,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
     });
 
@@ -1398,7 +1431,13 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions as CallOptions', done => {
@@ -1767,7 +1806,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {

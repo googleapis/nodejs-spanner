@@ -57,8 +57,17 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const SPANNER = {
+  routeToLeaderEnabled: true,
+};
+
+const INSTANCE = {
+  parent: SPANNER,
+};
+
 const DATABASE = {
   formattedName_: 'database',
+  parent: INSTANCE,
 };
 
 class FakeTransaction {

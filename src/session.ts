@@ -36,7 +36,11 @@ import {
   CreateSessionOptions,
 } from './database';
 import {ServiceObjectConfig} from '@google-cloud/common';
-import {NormalCallback, CLOUD_RESOURCE_HEADER, LEADER_AWARE_ROUTING_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
@@ -380,9 +384,16 @@ export class Session extends common.GrpcServiceObject {
       name: this.formattedName_,
     };
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.parent.parent.parent as Spanner).routeToLeader
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     return this.request(
       {
@@ -390,7 +401,7 @@ export class Session extends common.GrpcServiceObject {
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (err, resp) => {
         if (resp) {

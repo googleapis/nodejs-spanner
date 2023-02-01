@@ -85,7 +85,7 @@ import {
   RequestCallback,
   ResourceCallback,
   Schema,
-  LEADER_AWARE_ROUTING_HEADER
+  LEADER_AWARE_ROUTING_HEADER,
 } from './common';
 import {Spanner} from '.';
 import {Duplex, Readable, Transform} from 'stream';
@@ -525,9 +525,16 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.instance.parent as Spanner).routeToLeader,
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
       {
@@ -535,7 +542,7 @@ class Database extends common.GrpcServiceObject {
         method: 'batchCreateSessions',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
@@ -797,9 +804,16 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    const leaderAwareRoutingHeader = {
-      [LEADER_AWARE_ROUTING_HEADER]: (this.instance.parent as Spanner).routeToLeader,
-    };
+    // Adding Leader aware routing header if route to leader is enabled
+    let headers;
+    if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
+      headers = Object.assign(
+        {[LEADER_AWARE_ROUTING_HEADER]: true},
+        this.resourceHeader_
+      );
+    } else {
+      headers = this.resourceHeader_;
+    }
 
     this.request<google.spanner.v1.ISession>(
       {
@@ -807,7 +821,7 @@ class Database extends common.GrpcServiceObject {
         method: 'createSession',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: Object.assign(leaderAwareRoutingHeader, this.resourceHeader_),
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
