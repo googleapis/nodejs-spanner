@@ -600,7 +600,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
-        directedReadOptions: directedReadOptions,
+        directedRead: directedReadOptions,
         transaction,
         table,
         keySet,

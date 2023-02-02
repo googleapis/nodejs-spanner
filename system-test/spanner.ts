@@ -30,6 +30,8 @@ import {
   Instance,
   InstanceConfig,
   Session,
+  DirectedReadOptions,
+  TransactionType,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -6268,6 +6270,19 @@ describe('Spanner', () => {
     });
 
     describe('snapshots', () => {
+      const directedReadOptions = {
+        directedReadOptions: new DirectedReadOptions({
+          includeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-west1',
+              },
+            ],
+            autoFailover: true,
+          },
+        }),
+      };
+
       const readOnlyTransaction = (done, database, records) => {
         const options = {
           strong: true,
@@ -6659,6 +6674,68 @@ describe('Spanner', () => {
           PG_DATABASE,
           postgreSqlTable,
           postgreSqlRecords
+        );
+      });
+
+      const directedReadOptionsExecuteStreamingSql = (done, database) => {
+        database.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.run(
+            {
+              sql: `SELECT * FROM ${TABLE_NAME}`,
+              directedReadOptions: directedReadOptions,
+            },
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, 5);
+              transaction!.end();
+              done();
+            }
+          );
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept directed read options in executeStreamingSql rpc', done => {
+        directedReadOptionsExecuteStreamingSql(done, DATABASE);
+      });
+
+      const directedReadOptionsStreamingRead = (
+        done,
+        database,
+        table,
+        records
+      ) => {
+        database.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+
+          const query = {
+            ranges: [
+              {
+                startClosed: 'k0',
+                endClosed: 'k4',
+              },
+            ],
+            columns: ['Key'],
+            directedReadOptions: directedReadOptions,
+          } as {} as ReadRequest;
+
+          transaction!.read(table.name, query, (err, rows) => {
+            assert.ifError(err);
+            assert.strictEqual(rows!.length, records.length);
+
+            transaction!.end();
+            done();
+          });
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL accept directed read options in streamingRead rpc', done => {
+        directedReadOptionsStreamingRead(
+          done,
+          DATABASE,
+          googleSqlTable,
+          googleSqlRecords
         );
       });
     });
