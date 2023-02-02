@@ -18995,8 +18995,8 @@ export namespace google {
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
-                /** ReadRequest directedRead */
-                directedRead?: (google.spanner.v1.IDirectedReadOptions|null);
+                /** ReadRequest directedReadOptions */
+                directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
             }
 
             /** Represents a ReadRequest. */
@@ -19038,8 +19038,8 @@ export namespace google {
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
-                /** ReadRequest directedRead. */
-                public directedRead?: (google.spanner.v1.IDirectedReadOptions|null);
+                /** ReadRequest directedReadOptions. */
+                public directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.

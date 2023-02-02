@@ -4938,9 +4938,9 @@
                       "type": "RequestOptions",
                       "id": 11
                     },
-                    "directedRead": {
+                    "directedReadOptions": {
                       "type": "DirectedReadOptions",
-                      "id": 12
+                      "id": 14
                     }
                   }
                 },

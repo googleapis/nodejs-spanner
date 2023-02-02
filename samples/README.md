@@ -36,6 +36,7 @@ and automatic, synchronous replication for high availability.
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Datatypes](#datatypes)
+  * [Copies a source backup](#copies-a-source-backup)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
   * [Update using DML returning.](#update-using-dml-returning.)
@@ -483,6 +484,23 @@ __Usage:__
 
 
 `node samples/datatypes.js`
+
+
+-----
+
+
+
+
+### Copies a source backup
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/master/samples/directed-reads.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/directed-reads.js,samples/README.md)
+
+__Usage:__
+
+
+`node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>`
 
 
 -----

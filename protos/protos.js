@@ -47113,7 +47113,7 @@
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
-                     * @property {google.spanner.v1.IDirectedReadOptions|null} [directedRead] ReadRequest directedRead
+                     * @property {google.spanner.v1.IDirectedReadOptions|null} [directedReadOptions] ReadRequest directedReadOptions
                      */
     
                     /**
@@ -47213,12 +47213,12 @@
                     ReadRequest.prototype.requestOptions = null;
     
                     /**
-                     * ReadRequest directedRead.
-                     * @member {google.spanner.v1.IDirectedReadOptions|null|undefined} directedRead
+                     * ReadRequest directedReadOptions.
+                     * @member {google.spanner.v1.IDirectedReadOptions|null|undefined} directedReadOptions
                      * @memberof google.spanner.v1.ReadRequest
                      * @instance
                      */
-                    ReadRequest.prototype.directedRead = null;
+                    ReadRequest.prototype.directedReadOptions = null;
     
                     /**
                      * Creates a new ReadRequest instance using the specified properties.
@@ -47265,8 +47265,8 @@
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
-                        if (message.directedRead != null && Object.hasOwnProperty.call(message, "directedRead"))
-                            $root.google.spanner.v1.DirectedReadOptions.encode(message.directedRead, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
+                        if (message.directedReadOptions != null && Object.hasOwnProperty.call(message, "directedReadOptions"))
+                            $root.google.spanner.v1.DirectedReadOptions.encode(message.directedReadOptions, writer.uint32(/* id 14, wireType 2 =*/114).fork()).ldelim();
                         return writer;
                     };
     
@@ -47343,8 +47343,8 @@
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                     break;
                                 }
-                            case 12: {
-                                    message.directedRead = $root.google.spanner.v1.DirectedReadOptions.decode(reader, reader.uint32());
+                            case 14: {
+                                    message.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.decode(reader, reader.uint32());
                                     break;
                                 }
                             default:
@@ -47422,10 +47422,10 @@
                             if (error)
                                 return "requestOptions." + error;
                         }
-                        if (message.directedRead != null && message.hasOwnProperty("directedRead")) {
-                            var error = $root.google.spanner.v1.DirectedReadOptions.verify(message.directedRead);
+                        if (message.directedReadOptions != null && message.hasOwnProperty("directedReadOptions")) {
+                            var error = $root.google.spanner.v1.DirectedReadOptions.verify(message.directedReadOptions);
                             if (error)
-                                return "directedRead." + error;
+                                return "directedReadOptions." + error;
                         }
                         return null;
                     };
@@ -47489,10 +47489,10 @@
                                 throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
                             message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
                         }
-                        if (object.directedRead != null) {
-                            if (typeof object.directedRead !== "object")
-                                throw TypeError(".google.spanner.v1.ReadRequest.directedRead: object expected");
-                            message.directedRead = $root.google.spanner.v1.DirectedReadOptions.fromObject(object.directedRead);
+                        if (object.directedReadOptions != null) {
+                            if (typeof object.directedReadOptions !== "object")
+                                throw TypeError(".google.spanner.v1.ReadRequest.directedReadOptions: object expected");
+                            message.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.fromObject(object.directedReadOptions);
                         }
                         return message;
                     };
@@ -47538,7 +47538,7 @@
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
                             object.requestOptions = null;
-                            object.directedRead = null;
+                            object.directedReadOptions = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -47566,8 +47566,8 @@
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
-                        if (message.directedRead != null && message.hasOwnProperty("directedRead"))
-                            object.directedRead = $root.google.spanner.v1.DirectedReadOptions.toObject(message.directedRead, options);
+                        if (message.directedReadOptions != null && message.hasOwnProperty("directedReadOptions"))
+                            object.directedReadOptions = $root.google.spanner.v1.DirectedReadOptions.toObject(message.directedReadOptions, options);
                         return object;
                     };
     

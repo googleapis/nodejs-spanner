@@ -1036,7 +1036,7 @@ message ReadRequest {
   RequestOptions request_options = 11;
 
   // Directed read options for this request.
-  DirectedReadOptions directed_read = 12;
+  DirectedReadOptions directed_read_options = 14;
 
 }
 

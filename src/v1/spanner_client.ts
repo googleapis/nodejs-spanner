@@ -1077,7 +1077,7 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
-   * @param {google.spanner.v1.DirectedReadOptions} request.directedRead
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
@@ -1854,7 +1854,7 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
-   * @param {google.spanner.v1.DirectedReadOptions} request.directedRead
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
