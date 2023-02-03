@@ -182,7 +182,7 @@ describe('Database', () => {
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
-    client: CLIENT,
+    parent: CLIENT,
   } as {} as Instance;
 
   const NAME = 'table-name';

@@ -2120,7 +2120,8 @@ describe('Spanner', () => {
       };
       assert.throws(() => {
         Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
-      }, new GoogleError('Maximum length of replica selection allowed is 10'));
+      }, new RegExp('Maximum length of replica selection allowed is 10'));
+      done();
     });
 
     it('should throw error when both include replicas and exclude replicas are set', done => {
@@ -2133,10 +2134,10 @@ describe('Spanner', () => {
           replicaSelections: [{location: 'us-east1'}],
         },
       };
-      Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
-      // assert.throws(() => {
-      //   Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
-      // }, new GoogleError('Only one of includeReplicas or excludeReplicas can be set'));
+      assert.throws(() => {
+        Spanner._verifyDirectedReadOptions(fakeDirectedReadOptions);
+      }, new RegExp('Only one of includeReplicas or excludeReplicas can be set'));
+      done();
     });
   });
 });

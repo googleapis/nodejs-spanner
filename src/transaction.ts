@@ -109,6 +109,7 @@ export interface BatchUpdateError extends grpc.ServiceError {
 }
 
 export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
+
 export type BatchUpdateResponse = [
   number[],
   spannerClient.spanner.v1.ExecuteBatchDmlResponse

@@ -58,7 +58,6 @@ function main(
   // Instantiates a client with directedReadOptions
   const spanner = new Spanner({
     projectId: projectId,
-    //apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
     directedReadOptions: directedReadOptionsForClient,
   });
 
@@ -77,14 +76,14 @@ function main(
       },
     };
 
-    //
     await database.getSnapshot(async (err, transaction) => {
       if (err) {
         console.error(err);
         return;
       }
       try {
-        // Read rows while passing directedReadOptions directly to the query
+        // Read rows while passing directedReadOptions directly to the query.
+        // These will override the options passed at Client level.
         const [rows] = await transaction.run({
           sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums',
           directedReadOptions: directedReadOptionsForRequest,
