@@ -414,6 +414,15 @@ export class Snapshot extends EventEmitter {
    *     rows whose first key columns exactly match.
    */
   /**
+   * Object for Directed Read Options.
+   *
+   * @typedef {object} IDirectedReadOptions
+   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
+   *     ReplicaSelection which indicates the order in which replicas should be considered.
+   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
+   *     ReplicaSelection that should be excluded from serving requests.
+   */
+  /**
    * Read request options. This includes all standard ReadRequest options as
    * well as several convenience properties.
    *
@@ -445,6 +454,8 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
+   * @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -941,6 +952,15 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
+   * Object for Directed Read Options.
+   *
+   * @typedef {object} IDirectedReadOptions
+   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
+   *     ReplicaSelection which indicates the order in which replicas should be considered.
+   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
+   *     ReplicaSelection that should be excluded from serving requests.
+   */
+  /**
    * ExecuteSql request options. This includes all standard ExecuteSqlRequest
    * options as well as several convenience properties.
    *
@@ -977,6 +997,8 @@ export class Snapshot extends EventEmitter {
    *     that it is not ready for any more data. Increase this value if you
    *     experience 'Stream is still not ready to receive data' errors as a
    *     result of a slow writer in your receiving stream.
+   * @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL

@@ -1517,6 +1517,25 @@ class Spanner extends GrpcService {
     return stream;
   }
 
+  /**
+   * Object for Directed Read Options.
+   *
+   * @typedef {object} IDirectedReadOptions
+   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
+   *     ReplicaSelection which indicates the order in which replicas should be considered.
+   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
+   *     ReplicaSelection that should be excluded from serving requests.
+   */
+  /**
+   * Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
+   * Indicates which replicas or regions should be used for non-transactional reads or queries.
+   *
+   * @throws {GoogleError} If both includeReplicas and excludeReplicas are set
+   * @throws {GoogleError} If more than 10 includeReplicas and excludeReplicas are provided
+   *
+   * @param {IDirectedReadOptions | null} directedReadOptions Indicates which replicas or regions
+   *     should be used for non-transactional reads or queries.
+   */
   setDirectedReadOptions(
     directedReadOptions: google.spanner.v1.IDirectedReadOptions | null
   ) {
