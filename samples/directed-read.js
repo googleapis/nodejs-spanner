@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Runs a read request with directed read options
+//  title: Runs an execute sql request with directed read options
 //  usage: node directed-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
