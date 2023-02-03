@@ -111,7 +111,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   servicePath?: string;
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
-  directedReadOptions?: google.spanner.v1.DirectedReadOptions | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
 }
 export interface RequestConfig {
   client: string;
@@ -211,7 +211,7 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
-  directedReadOptions: google.spanner.v1.DirectedReadOptions | null;
+  directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -260,7 +260,7 @@ class Spanner extends GrpcService {
   }
 
   constructor(options?: SpannerOptions) {
-    let directedReadOptions: google.spanner.v1.DirectedReadOptions | null =
+    let directedReadOptions: google.spanner.v1.IDirectedReadOptions | null =
       null;
     if (options && options.directedReadOptions) {
       directedReadOptions = options?.directedReadOptions;
@@ -1518,7 +1518,7 @@ class Spanner extends GrpcService {
   }
 
   setDirectedReadOptions(
-    directedReadOptions: google.spanner.v1.DirectedReadOptions | null
+    directedReadOptions: google.spanner.v1.IDirectedReadOptions | null
   ) {
     Spanner._verifyDirectedReadOptions(directedReadOptions);
     this.directedReadOptions = directedReadOptions;
@@ -1716,7 +1716,10 @@ class Spanner extends GrpcService {
   }
 
   static _verifyDirectedReadOptions(
-    directedReadOptions: DirectedReadOptions | null | undefined
+    directedReadOptions:
+      | google.spanner.v1.IDirectedReadOptions
+      | null
+      | undefined
   ) {
     if (directedReadOptions) {
       if (
@@ -1740,6 +1743,7 @@ class Spanner extends GrpcService {
         );
       }
     }
+    return;
   }
 }
 
@@ -1910,5 +1914,4 @@ import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig
 export {v1, protos};
 export default {Spanner};
 export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
-export import DirectedReadOptions = protos.google.spanner.v1.DirectedReadOptions;
 export import TransactionType = google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type;

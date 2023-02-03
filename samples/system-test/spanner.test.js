@@ -601,7 +601,7 @@ describe('Spanner', () => {
     assert.match(output, /Successfully received \d from executed partitions\./);
   });
 
-  // read_only_transactioni
+  // read_only_transaction
   it('should read an example table using transactions', async () => {
     const output = execSync(
       `${transactionCmd} readOnly ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
@@ -653,6 +653,24 @@ describe('Spanner', () => {
     );
     assert.match(output, /Successfully received \d from executed partition\./);
     await transaction.close();
+  });
+
+  // directed_read_transaction
+  it('should run read-transaction with directed read options set', async () => {
+    const output = execSync(
+      `node directed-read.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    console.log(output);
+    assert.match(
+      output,
+      new RegExp('SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace')
+    );
+    assert.match(
+      output,
+      new RegExp(
+        'Successfully executed read-only transaction with directedReadOptions'
+      )
+    );
   });
 
   // add_timestamp_column

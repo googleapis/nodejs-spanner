@@ -30,8 +30,6 @@ import {
   Instance,
   InstanceConfig,
   Session,
-  DirectedReadOptions,
-  TransactionType,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -6271,7 +6269,7 @@ describe('Spanner', () => {
 
     describe('snapshots', () => {
       const directedReadOptions = {
-        directedReadOptions: new DirectedReadOptions({
+        directedReadOptions: {
           includeReplicas: {
             replicaSelections: [
               {
@@ -6280,7 +6278,7 @@ describe('Spanner', () => {
             ],
             autoFailover: true,
           },
-        }),
+        },
       };
 
       const readOnlyTransaction = (done, database, records) => {

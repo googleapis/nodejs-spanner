@@ -38,7 +38,8 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database, DirectedReadOptions, Spanner} from '.';
+import IDirectedReadOptions = google.spanner.v1.IDirectedReadOptions;
+import {Database, Spanner} from '.';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -79,7 +80,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
-  directedReadOptions?: DirectedReadOptions;
+  directedReadOptions?: IDirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -100,7 +101,7 @@ export interface ReadRequest extends RequestOptions {
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
-  directedReadOptions?: DirectedReadOptions;
+  directedReadOptions?: IDirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -600,7 +601,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
-        directedRead: directedReadOptions,
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
@@ -1267,7 +1268,7 @@ export class Snapshot extends EventEmitter {
   }
 
   protected _getDirectedReadOptions(
-    directedReadOptions: DirectedReadOptions | null | undefined
+    directedReadOptions: IDirectedReadOptions | null | undefined
   ) {
     if (
       directedReadOptions &&

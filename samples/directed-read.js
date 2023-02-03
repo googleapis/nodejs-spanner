@@ -13,8 +13,8 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Copies a source backup
-//  usage: node spannerCopyBackup <INSTANCE_ID> <COPY_BACKUP_ID> <SOURCE_BACKUP_ID> <PROJECT_ID>
+//  title: Runs a read request with directed read options
+//  usage: node directed-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
@@ -25,10 +25,7 @@ function main(
 ) {
   // [START spanner_directed_read]
   // Imports the Google Cloud Spanner client library
-  const {
-    Spanner,
-    DirectedReadOptions,
-  } = require('@google-cloud/spanner');
+  const {Spanner, TransactionType} = require('@google-cloud/spanner');
 
   // Only one of excludeReplicas or includeReplicas can be set
   // Each accepts a list of replicaSelections which contains location and type
@@ -48,78 +45,73 @@ function main(
   //  Spanner will not route requests to a replica outside the
   //  includeReplicas list when all the specified replicas are unavailable
   //  or unhealthy. The default value is `false`
-  // const directedReadOptionsForClient = DirectedReadOptions({
-  //   excludeReplicas: {
-  //     replicaSelections: [
-  //       {
-  //         location: 'us-east4',
-  //       },
-  //     ],
-  //   },
-  // });
-  //console.log(directedReadOptionsForClient);
+  const directedReadOptionsForClient = {
+    excludeReplicas: {
+      replicaSelections: [
+        {
+          location: 'us-east4',
+        },
+      ],
+    },
+  };
 
   // Instantiates a client with directedReadOptions
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
-    // directedReadOptions: directedReadOptionsForClient,
+    //apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
+    directedReadOptions: directedReadOptionsForClient,
   });
-  console.log(spanner.directedReadOptions);
 
   async function spannerDirectedReads() {
     // Gets a reference to a Cloud Spanner instance and backup
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
-    const metadata = await database.getMetadata();
-    console.log(metadata);
-    // const directedReadOptionsForRequest = new DirectedReadOptions({
-    //   includeReplicas: {
-    //     replicaSelections: [
-    //       {
-    //         type: TransactionType.READ_ONLY,
-    //       },
-    //     ],
-    //     autoFailover: true,
-    //   },
-    // });
+    const directedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            type: TransactionType.READ_ONLY,
+          },
+        ],
+        autoFailover: true,
+      },
+    };
+
     //
-    // //
-    // await database.getSnapshot(async (err, transaction) => {
-    //   if (err) {
-    //     console.error(err);
-    //     return;
-    //   }
-    //   try {
-    //     // Read rows while passing directedReadOptions directly to the query
-    //     const [rows] = await transaction.run({
-    //       sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums',
-    //       directedReadOptions: directedReadOptionsForRequest,
-    //     });
-    //     rows.forEach(row => {
-    //       const json = row.toJSON();
-    //       console.log(
-    //         `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
-    //       );
-    //     });
-    //     console.log(
-    //       'Successfully executed read-only transaction with directedReadOptions'
-    //     );
-    //   } catch (err) {
-    //     console.error('ERROR:', err);
-    //   } finally {
-    //     transaction.end();
-    //     // Close the database when finished.
-    //     await database.close();
-    //   }
-    // });
+    await database.getSnapshot(async (err, transaction) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      try {
+        // Read rows while passing directedReadOptions directly to the query
+        const [rows] = await transaction.run({
+          sql: 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums',
+          directedReadOptions: directedReadOptionsForRequest,
+        });
+        rows.forEach(row => {
+          const json = row.toJSON();
+          console.log(
+            `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+          );
+        });
+        console.log(
+          'Successfully executed read-only transaction with directedReadOptions'
+        );
+      } catch (err) {
+        console.error('ERROR:', err);
+      } finally {
+        transaction.end();
+        // Close the database when finished.
+        await database.close();
+      }
+    });
   }
   spannerDirectedReads();
   // [END spanner_directed_read]
 }
-// process.on('unhandledRejection', err => {
-//   console.error(err.message);
-//   process.exitCode = 1;
-// });
-// main(...process.argv.slice(2));
-main('surbhi-testing', 'test-db', 'span-cloud-testing')
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

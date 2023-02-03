@@ -32,7 +32,7 @@ import {
   ReadRequest,
 } from '../src/transaction';
 import {GoogleError, grpc} from 'google-gax';
-import {DirectedReadOptions, TransactionType} from '../src';
+import {TransactionType} from '../src';
 import {error} from 'is';
 
 describe('Transaction', () => {
@@ -59,7 +59,7 @@ describe('Transaction', () => {
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
 
-  const fakeDirectedReadOptions = new DirectedReadOptions({
+  const fakeDirectedReadOptions = {
     includeReplicas: {
       replicaSelections: [
         {
@@ -69,7 +69,7 @@ describe('Transaction', () => {
       ],
       autoFailover: true,
     },
-  });
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
@@ -388,7 +388,7 @@ describe('Transaction', () => {
 
       it('should override directedReadOptions set for client when passed', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptionsForRequest = new DirectedReadOptions({
+        const fakeDirectedReadOptionsForRequest = {
           includeReplicas: {
             replicaSelections: [
               {
@@ -396,7 +396,7 @@ describe('Transaction', () => {
               },
             ],
           },
-        });
+        };
         const fakeRequest = {
           directedReadOptions: fakeDirectedReadOptionsForRequest,
         };
@@ -769,7 +769,7 @@ describe('Transaction', () => {
 
       it('should override directedReadOptions set for client when passed', () => {
         const id = 'transaction-id-123';
-        const fakeDirectedReadOptionsForRequest = new DirectedReadOptions({
+        const fakeDirectedReadOptionsForRequest = {
           includeReplicas: {
             replicaSelections: [
               {
@@ -777,7 +777,7 @@ describe('Transaction', () => {
               },
             ],
           },
-        });
+        };
         const fakeQuery = Object.assign({}, QUERY, {
           directedReadOptions: fakeDirectedReadOptionsForRequest,
         });
