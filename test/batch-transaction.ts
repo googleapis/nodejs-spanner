@@ -132,12 +132,14 @@ describe('BatchTransaction', () => {
       gaxOptions: GAX_OPTS,
       params: {},
       types: {},
+      serverlessAnalyticsEnabled: true,
     };
 
     it('should make the correct request', () => {
       const fakeParams = {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
+        serverlessAnalyticsEnabled: true,
       };
 
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
@@ -283,6 +285,7 @@ describe('BatchTransaction', () => {
       keys: ['a', 'b'],
       ranges: [{}, {}],
       gaxOptions: GAX_OPTS,
+      serverlessAnalyticsEnabled: true,
     };
 
     it('should make the correct request', () => {
@@ -290,6 +293,7 @@ describe('BatchTransaction', () => {
       const expectedQuery = {
         table: QUERY.table,
         keySet: fakeKeySet,
+        serverlessAnalyticsEnabled: true,
       };
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
@@ -322,6 +326,30 @@ describe('BatchTransaction', () => {
 
     it('should make query requests for non-read partitions', () => {
       const partition = {sql: 'SELECT * FROM Singers'};
+      const stub = sandbox.stub(batchTransaction, 'run');
+
+      batchTransaction.execute(partition, assert.ifError);
+
+      const query = stub.lastCall.args[0];
+      assert.strictEqual(query, partition);
+    });
+
+    it('should make read requests for read partitions with data boost enabled', () => {
+      const partition = {table: 'abc', serverlessAnalyticsEnabled: true};
+      const stub = sandbox.stub(batchTransaction, 'read');
+
+      batchTransaction.execute(partition, assert.ifError);
+
+      const [table, options] = stub.lastCall.args;
+      assert.strictEqual(table, partition.table);
+      assert.strictEqual(options, partition);
+    });
+
+    it('should make query requests for non-read partitions with data boost enabled', () => {
+      const partition = {
+        sql: 'SELECT * FROM Singers',
+        serverlessAnalyticsEnabled: true,
+      };
       const stub = sandbox.stub(batchTransaction, 'run');
 
       batchTransaction.execute(partition, assert.ifError);

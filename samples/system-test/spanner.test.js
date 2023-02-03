@@ -43,6 +43,8 @@ const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
 const backupsCmd = 'node backups.js';
 const instanceCmd = 'node instance.js';
+const databoostQueryPartitionsCommand =
+  'node databoost-enabled-querypartitions.js';
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -1806,6 +1808,24 @@ describe('Spanner', () => {
         new RegExp('Successfully deleted 1 record from the Singers table')
       );
       assert.match(output, new RegExp('Virginia1 Watson1'));
+    });
+
+    // Data boost enabled for Query partitions command
+    it('should use Data boost enabled for Query partition command', async () => {
+      const output = execSync(
+        `${databoostQueryPartitionsCommand} ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        /Successfully created \d query partitions using data boost enabled true\./
+      );
+
+      assert.match(output, /DataboostEnabled is true\./);
+
+      assert.match(
+        output,
+        /Successfully received \d from executed partitions\./
+      );
     });
   });
 });
