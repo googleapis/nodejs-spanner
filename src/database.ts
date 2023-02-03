@@ -2841,6 +2841,9 @@ class Database extends common.GrpcServiceObject {
         runFn!(err as grpc.ServiceError);
         return;
       }
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
+      }
 
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
@@ -2952,6 +2955,9 @@ class Database extends common.GrpcServiceObject {
           transaction.requestOptions || {},
           options.requestOptions
         );
+        if (options.optimisticLock) {
+          transaction.useOptimisticLock();
+        }
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,

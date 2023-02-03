@@ -1579,6 +1579,26 @@ describe('Transaction', () => {
         };
         transaction.begin(assert.ifError);
       });
+
+      it('should set optimistic lock', () => {
+        const rw = {
+          readLockMode:
+            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .OPTIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.useOptimisticLock();
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+      });
     });
 
     describe('commit', () => {

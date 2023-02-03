@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "6.6.0",
+  "version": "6.7.1",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -109,7 +109,7 @@
     "ncp": "^2.0.0",
     "p-limit": "^3.0.1",
     "proxyquire": "^2.0.1",
-    "sinon": "^14.0.0",
+    "sinon": "^15.0.0",
     "stats-lite": "^2.1.1",
     "time-span": "^4.0.0",
     "tmp": "^0.2.0",

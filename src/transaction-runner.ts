@@ -44,6 +44,7 @@ const RetryInfo = Root.fromJSON(jsonProtos).lookup('google.rpc.RetryInfo');
 export interface RunTransactionOptions {
   timeout?: number;
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
+  optimisticLock?: boolean;
 }
 
 /**
@@ -195,6 +196,9 @@ export abstract class Runner<T> {
     const transaction = this.session.transaction(
       (this.session.parent as Database).queryOptions_
     );
+    if (this.options.optimisticLock) {
+      transaction.useOptimisticLock();
+    }
     if (this.attempts > 0) {
       await transaction.begin();
     }

@@ -411,7 +411,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'STRUCT':
       fields = type.structType!.fields!.map(({name, type}, index) => {
         const value = decode(
-          decoded[name!] || decoded[index],
+          (!Array.isArray(decoded) && decoded[name!]) || decoded[index],
           type as spannerClient.spanner.v1.Type
         );
         return {name, value};
