@@ -2091,6 +2091,7 @@ describe('Spanner with mock server', () => {
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
+        console.log("At lin 2094, pool size is " + pool.size);
         assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
@@ -2107,6 +2108,7 @@ describe('Spanner with mock server', () => {
             transaction!.commit(err => {
               assert.ifError(err);
               db.getSessions((err, sessions) => {
+                console.log("At lin 2111, sessions length is " + sessions!.length;
                 assert.ifError(err);
                 assert.strictEqual(sessions!.length, 2);
                 db.close(done);
