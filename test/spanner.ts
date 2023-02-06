@@ -2108,7 +2108,7 @@ describe('Spanner with mock server', () => {
             transaction!.commit(err => {
               assert.ifError(err);
               db.getSessions((err, sessions) => {
-                console.log("At lin 2111, sessions length is " + sessions!.length;
+                console.log("At lin 2111, sessions length is " + sessions!.length);
                 assert.ifError(err);
                 assert.strictEqual(sessions!.length, 2);
                 db.close(done);
