@@ -232,6 +232,24 @@ export class PGNumeric {
 }
 
 /**
+ * @typedef PGJsonb
+ * @see Spanner.pgJsonb
+ */
+export class PGJsonb {
+  value: object;
+  constructor(pgValue: object | string) {
+    if (typeof pgValue === 'string') {
+      pgValue = JSON.parse(pgValue) as object;
+    }
+    this.value = pgValue;
+  }
+
+  toString(): string {
+    return JSON.stringify(this.value);
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -370,6 +388,14 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       break;
     case spannerClient.spanner.v1.TypeCode.JSON:
     case 'JSON':
+      if (
+        type.typeAnnotation ===
+          spannerClient.spanner.v1.TypeAnnotationCode.PG_JSONB ||
+        type.typeAnnotation === 'PG_JSONB'
+      ) {
+        decoded = new PGJsonb(decoded);
+        break;
+      }
       decoded = JSON.parse(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.ARRAY:
@@ -385,7 +411,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'STRUCT':
       fields = type.structType!.fields!.map(({name, type}, index) => {
         const value = decode(
-          decoded[name!] || decoded[index],
+          (!Array.isArray(decoded) && decoded[name!]) || decoded[index],
           type as spannerClient.spanner.v1.Type
         );
         return {name, value};
@@ -454,6 +480,10 @@ function encodeValue(value: Value): Value {
     return value.map(encodeValue);
   }
 
+  if (value instanceof PGJsonb) {
+    return value.toString();
+  }
+
   if (is.object(value)) {
     return JSON.stringify(value);
   }
@@ -481,6 +511,7 @@ const TypeCode: {
   string: 'STRING',
   bytes: 'BYTES',
   json: 'JSON',
+  jsonb: 'JSON',
   array: 'ARRAY',
   struct: 'STRUCT',
 };
@@ -556,6 +587,10 @@ function getType(value: Value): Type {
 
   if (value instanceof PGNumeric) {
     return {type: 'pgNumeric'};
+  }
+
+  if (value instanceof PGJsonb) {
+    return {type: 'pgJsonb'};
   }
 
   if (is.boolean(value)) {
@@ -699,6 +734,8 @@ function createTypeObject(
   if (friendlyType.type === 'pgNumeric') {
     type.typeAnnotation =
       spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC;
+  } else if (friendlyType.type === 'jsonb') {
+    type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_JSONB;
   }
   return type;
 }
@@ -713,6 +750,7 @@ export const codec = {
   Int,
   Numeric,
   PGNumeric,
+  PGJsonb,
   convertFieldsToJson,
   decode,
   encode,

@@ -70,6 +70,7 @@ function main(
         FirstName   varchar(1024),
         LastName    varchar(1024),
         SingerInfo  bytea,
+        FullName    character varying(2048) GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED,
         PRIMARY KEY (SingerId)
         );
         CREATE TABLE Albums 

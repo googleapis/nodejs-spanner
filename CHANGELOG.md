@@ -4,6 +4,70 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.7.1](https://github.com/googleapis/nodejs-spanner/compare/v6.7.0...v6.7.1) (2023-01-23)
+
+
+### Bug Fixes
+
+* Change of tag for fgac ([#1780](https://github.com/googleapis/nodejs-spanner/issues/1780)) ([d75b6dd](https://github.com/googleapis/nodejs-spanner/commit/d75b6dd79ffc2442cbd7a14f1ea952edc6678a64))
+* **codec:** Use index to determine array struct member value ([#1775](https://github.com/googleapis/nodejs-spanner/issues/1775)) ([fc2b695](https://github.com/googleapis/nodejs-spanner/commit/fc2b695d9ea6b65df856b4b081a75165009413ee)), closes [#1774](https://github.com/googleapis/nodejs-spanner/issues/1774)
+
+## [6.7.0](https://github.com/googleapis/nodejs-spanner/compare/v6.6.0...v6.7.0) (2023-01-17)
+
+
+### Features
+
+* Added SuggestConversationSummary RPC ([#1744](https://github.com/googleapis/nodejs-spanner/issues/1744)) ([14346f3](https://github.com/googleapis/nodejs-spanner/commit/14346f3cf8ed0cb0a93c255dc520dc62887c0e1a))
+
+## [6.6.0](https://github.com/googleapis/nodejs-spanner/compare/v6.5.0...v6.6.0) (2022-12-16)
+
+
+### Features
+
+* Export data types in index.ts ([#1726](https://github.com/googleapis/nodejs-spanner/issues/1726)) ([844f57f](https://github.com/googleapis/nodejs-spanner/commit/844f57fa5e79e5e5a5ede80df5e117004427f201)), closes [#1720](https://github.com/googleapis/nodejs-spanner/issues/1720)
+* Fgac support and samples ([#1751](https://github.com/googleapis/nodejs-spanner/issues/1751)) ([0a394df](https://github.com/googleapis/nodejs-spanner/commit/0a394df9bfa193d79edc4c3a3d26238f361c0d45))
+
+
+### Bug Fixes
+
+* Add sleep after admin request intensive tests ([#1758](https://github.com/googleapis/nodejs-spanner/issues/1758)) ([7643ceb](https://github.com/googleapis/nodejs-spanner/commit/7643ceb7cde9f420539877b86fdb0d38b254348d))
+
+## [6.5.0](https://github.com/googleapis/nodejs-spanner/compare/v6.4.0...v6.5.0) (2022-11-30)
+
+
+### Features
+
+* Inline BeginTransaction with first statement ([#1692](https://github.com/googleapis/nodejs-spanner/issues/1692)) ([d1b95d2](https://github.com/googleapis/nodejs-spanner/commit/d1b95d21e2c8cb0eff88351265cad248870bb3ea))
+
+
+### Bug Fixes
+
+* Cleanup different types of session pools ([#1739](https://github.com/googleapis/nodejs-spanner/issues/1739)) ([6f55187](https://github.com/googleapis/nodejs-spanner/commit/6f551877ea0d4b67e3c734377bdadd5d570cf839))
+* **deps:** Use google-gax v3.5.2 ([#1732](https://github.com/googleapis/nodejs-spanner/issues/1732)) ([8341b1f](https://github.com/googleapis/nodejs-spanner/commit/8341b1fa5dfcf0b286892efb8b57c7ad694cdbb8))
+
+## [6.4.0](https://github.com/googleapis/nodejs-spanner/compare/v6.3.0...v6.4.0) (2022-10-27)
+
+
+### Features
+
+* Adding support and samples for Jsonb data type in spangres ([#1729](https://github.com/googleapis/nodejs-spanner/issues/1729)) ([f050354](https://github.com/googleapis/nodejs-spanner/commit/f0503547012ab0ac8a04524ecf7bc92807f35379))
+* Update result_set.proto to return undeclared parameters in ExecuteSql API ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+* Update transaction.proto to include different lock modes ([#1723](https://github.com/googleapis/nodejs-spanner/issues/1723)) ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+
+## [6.3.0](https://github.com/googleapis/nodejs-spanner/compare/v6.2.0...v6.3.0) (2022-10-03)
+
+
+### Features
+
+* Support customer managed instance configurations ([#1611](https://github.com/googleapis/nodejs-spanner/issues/1611)) ([bbe8f69](https://github.com/googleapis/nodejs-spanner/commit/bbe8f697e8838e358973cd4a5f2db9e2d4df5349))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v3 ([#1676](https://github.com/googleapis/nodejs-spanner/issues/1676)) ([3f20ec4](https://github.com/googleapis/nodejs-spanner/commit/3f20ec47bbf89e1f72546a8ebf41a8b4ba93832f))
+* Do not import the whole google-gax from proto JS ([#1553](https://github.com/googleapis/nodejs-spanner/issues/1553)) ([#1700](https://github.com/googleapis/nodejs-spanner/issues/1700)) ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+* use google-gax v3.3.0 ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+
 ## [6.2.0](https://github.com/googleapis/nodejs-spanner/compare/v6.1.4...v6.2.0) (2022-09-16)
 
 

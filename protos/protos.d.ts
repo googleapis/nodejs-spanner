@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14846,6 +14846,9 @@ export namespace google {
 
                 /** ResultSetMetadata transaction */
                 transaction?: (google.spanner.v1.ITransaction|null);
+
+                /** ResultSetMetadata undeclaredParameters */
+                undeclaredParameters?: (google.spanner.v1.IStructType|null);
             }
 
             /** Represents a ResultSetMetadata. */
@@ -14862,6 +14865,9 @@ export namespace google {
 
                 /** ResultSetMetadata transaction. */
                 public transaction?: (google.spanner.v1.ITransaction|null);
+
+                /** ResultSetMetadata undeclaredParameters. */
+                public undeclaredParameters?: (google.spanner.v1.IStructType|null);
 
                 /**
                  * Creates a new ResultSetMetadata instance using the specified properties.
@@ -15175,6 +15181,9 @@ export namespace google {
 
                 /** Properties of a ReadWrite. */
                 interface IReadWrite {
+
+                    /** ReadWrite readLockMode */
+                    readLockMode?: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null);
                 }
 
                 /** Represents a ReadWrite. */
@@ -15185,6 +15194,9 @@ export namespace google {
                      * @param [properties] Properties to set
                      */
                     constructor(properties?: google.spanner.v1.TransactionOptions.IReadWrite);
+
+                    /** ReadWrite readLockMode. */
+                    public readLockMode: (google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|keyof typeof google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode);
 
                     /**
                      * Creates a new ReadWrite instance using the specified properties.
@@ -15262,6 +15274,16 @@ export namespace google {
                      * @returns The default type url
                      */
                     public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace ReadWrite {
+
+                    /** ReadLockMode enum. */
+                    enum ReadLockMode {
+                        READ_LOCK_MODE_UNSPECIFIED = 0,
+                        PESSIMISTIC = 1,
+                        OPTIMISTIC = 2
+                    }
                 }
 
                 /** Properties of a PartitionedDml. */

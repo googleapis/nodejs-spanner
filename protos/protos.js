@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36999,6 +36999,7 @@
                      * @interface IResultSetMetadata
                      * @property {google.spanner.v1.IStructType|null} [rowType] ResultSetMetadata rowType
                      * @property {google.spanner.v1.ITransaction|null} [transaction] ResultSetMetadata transaction
+                     * @property {google.spanner.v1.IStructType|null} [undeclaredParameters] ResultSetMetadata undeclaredParameters
                      */
     
                     /**
@@ -37033,6 +37034,14 @@
                     ResultSetMetadata.prototype.transaction = null;
     
                     /**
+                     * ResultSetMetadata undeclaredParameters.
+                     * @member {google.spanner.v1.IStructType|null|undefined} undeclaredParameters
+                     * @memberof google.spanner.v1.ResultSetMetadata
+                     * @instance
+                     */
+                    ResultSetMetadata.prototype.undeclaredParameters = null;
+    
+                    /**
                      * Creates a new ResultSetMetadata instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ResultSetMetadata
@@ -37060,6 +37069,8 @@
                             $root.google.spanner.v1.StructType.encode(message.rowType, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         if (message.transaction != null && Object.hasOwnProperty.call(message, "transaction"))
                             $root.google.spanner.v1.Transaction.encode(message.transaction, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.undeclaredParameters != null && Object.hasOwnProperty.call(message, "undeclaredParameters"))
+                            $root.google.spanner.v1.StructType.encode(message.undeclaredParameters, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         return writer;
                     };
     
@@ -37100,6 +37111,10 @@
                                 }
                             case 2: {
                                     message.transaction = $root.google.spanner.v1.Transaction.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.undeclaredParameters = $root.google.spanner.v1.StructType.decode(reader, reader.uint32());
                                     break;
                                 }
                             default:
@@ -37147,6 +37162,11 @@
                             if (error)
                                 return "transaction." + error;
                         }
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters")) {
+                            var error = $root.google.spanner.v1.StructType.verify(message.undeclaredParameters);
+                            if (error)
+                                return "undeclaredParameters." + error;
+                        }
                         return null;
                     };
     
@@ -37172,6 +37192,11 @@
                                 throw TypeError(".google.spanner.v1.ResultSetMetadata.transaction: object expected");
                             message.transaction = $root.google.spanner.v1.Transaction.fromObject(object.transaction);
                         }
+                        if (object.undeclaredParameters != null) {
+                            if (typeof object.undeclaredParameters !== "object")
+                                throw TypeError(".google.spanner.v1.ResultSetMetadata.undeclaredParameters: object expected");
+                            message.undeclaredParameters = $root.google.spanner.v1.StructType.fromObject(object.undeclaredParameters);
+                        }
                         return message;
                     };
     
@@ -37191,11 +37216,14 @@
                         if (options.defaults) {
                             object.rowType = null;
                             object.transaction = null;
+                            object.undeclaredParameters = null;
                         }
                         if (message.rowType != null && message.hasOwnProperty("rowType"))
                             object.rowType = $root.google.spanner.v1.StructType.toObject(message.rowType, options);
                         if (message.transaction != null && message.hasOwnProperty("transaction"))
                             object.transaction = $root.google.spanner.v1.Transaction.toObject(message.transaction, options);
+                        if (message.undeclaredParameters != null && message.hasOwnProperty("undeclaredParameters"))
+                            object.undeclaredParameters = $root.google.spanner.v1.StructType.toObject(message.undeclaredParameters, options);
                         return object;
                     };
     
@@ -37856,6 +37884,7 @@
                          * Properties of a ReadWrite.
                          * @memberof google.spanner.v1.TransactionOptions
                          * @interface IReadWrite
+                         * @property {google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode|null} [readLockMode] ReadWrite readLockMode
                          */
     
                         /**
@@ -37872,6 +37901,14 @@
                                     if (properties[keys[i]] != null)
                                         this[keys[i]] = properties[keys[i]];
                         }
+    
+                        /**
+                         * ReadWrite readLockMode.
+                         * @member {google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode} readLockMode
+                         * @memberof google.spanner.v1.TransactionOptions.ReadWrite
+                         * @instance
+                         */
+                        ReadWrite.prototype.readLockMode = 0;
     
                         /**
                          * Creates a new ReadWrite instance using the specified properties.
@@ -37897,6 +37934,8 @@
                         ReadWrite.encode = function encode(message, writer) {
                             if (!writer)
                                 writer = $Writer.create();
+                            if (message.readLockMode != null && Object.hasOwnProperty.call(message, "readLockMode"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.readLockMode);
                             return writer;
                         };
     
@@ -37931,6 +37970,10 @@
                             while (reader.pos < end) {
                                 var tag = reader.uint32();
                                 switch (tag >>> 3) {
+                                case 1: {
+                                        message.readLockMode = reader.int32();
+                                        break;
+                                    }
                                 default:
                                     reader.skipType(tag & 7);
                                     break;
@@ -37966,6 +38009,15 @@
                         ReadWrite.verify = function verify(message) {
                             if (typeof message !== "object" || message === null)
                                 return "object expected";
+                            if (message.readLockMode != null && message.hasOwnProperty("readLockMode"))
+                                switch (message.readLockMode) {
+                                default:
+                                    return "readLockMode: enum value expected";
+                                case 0:
+                                case 1:
+                                case 2:
+                                    break;
+                                }
                             return null;
                         };
     
@@ -37980,7 +38032,28 @@
                         ReadWrite.fromObject = function fromObject(object) {
                             if (object instanceof $root.google.spanner.v1.TransactionOptions.ReadWrite)
                                 return object;
-                            return new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                            var message = new $root.google.spanner.v1.TransactionOptions.ReadWrite();
+                            switch (object.readLockMode) {
+                            default:
+                                if (typeof object.readLockMode === "number") {
+                                    message.readLockMode = object.readLockMode;
+                                    break;
+                                }
+                                break;
+                            case "READ_LOCK_MODE_UNSPECIFIED":
+                            case 0:
+                                message.readLockMode = 0;
+                                break;
+                            case "PESSIMISTIC":
+                            case 1:
+                                message.readLockMode = 1;
+                                break;
+                            case "OPTIMISTIC":
+                            case 2:
+                                message.readLockMode = 2;
+                                break;
+                            }
+                            return message;
                         };
     
                         /**
@@ -37992,8 +38065,15 @@
                          * @param {$protobuf.IConversionOptions} [options] Conversion options
                          * @returns {Object.<string,*>} Plain object
                          */
-                        ReadWrite.toObject = function toObject() {
-                            return {};
+                        ReadWrite.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults)
+                                object.readLockMode = options.enums === String ? "READ_LOCK_MODE_UNSPECIFIED" : 0;
+                            if (message.readLockMode != null && message.hasOwnProperty("readLockMode"))
+                                object.readLockMode = options.enums === String ? $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] === undefined ? message.readLockMode : $root.google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode[message.readLockMode] : message.readLockMode;
+                            return object;
                         };
     
                         /**
@@ -38021,6 +38101,22 @@
                             }
                             return typeUrlPrefix + "/google.spanner.v1.TransactionOptions.ReadWrite";
                         };
+    
+                        /**
+                         * ReadLockMode enum.
+                         * @name google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+                         * @enum {number}
+                         * @property {number} READ_LOCK_MODE_UNSPECIFIED=0 READ_LOCK_MODE_UNSPECIFIED value
+                         * @property {number} PESSIMISTIC=1 PESSIMISTIC value
+                         * @property {number} OPTIMISTIC=2 OPTIMISTIC value
+                         */
+                        ReadWrite.ReadLockMode = (function() {
+                            var valuesById = {}, values = Object.create(valuesById);
+                            values[valuesById[0] = "READ_LOCK_MODE_UNSPECIFIED"] = 0;
+                            values[valuesById[1] = "PESSIMISTIC"] = 1;
+                            values[valuesById[2] = "OPTIMISTIC"] = 2;
+                            return values;
+                        })();
     
                         return ReadWrite;
                     })();

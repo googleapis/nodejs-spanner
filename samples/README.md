@@ -14,6 +14,7 @@ and automatic, synchronous replication for high availability.
 
 * [Before you begin](#before-you-begin)
 * [Samples](#samples)
+  * [Add and drop new database role](#add-and-drop-new-database-role)
   * [Backups-cancel](#backups-cancel)
   * [Copies a source backup](#copies-a-source-backup)
   * [Backups-create-with-encryption-key](#backups-create-with-encryption-key)
@@ -35,8 +36,13 @@ and automatic, synchronous replication for high availability.
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Datatypes](#datatypes)
+  * [Delete using DML returning.](#delete-using-dml-returning.)
+  * [Insert using DML returning.](#insert-using-dml-returning.)
+  * [Update using DML returning.](#update-using-dml-returning.)
   * [DML](#dml)
+  * [Enable fine grained access control](#enable-fine-grained-access-control)
   * [Get-commit-stats](#get-commit-stats)
+  * [List database roles](#list-database-roles)
   * [Gets the instance config metadata for the configuration nam6](#gets-the-instance-config-metadata-for-the-configuration-nam6)
   * [Creates a new value-storing index](#creates-a-new-value-storing-index)
   * [Creates a new index](#creates-a-new-index)
@@ -65,16 +71,23 @@ and automatic, synchronous replication for high availability.
   * [Execute a batch of DML statements on a Spanner PostgreSQL database.](#execute-a-batch-of-dml-statements-on-a-spanner-postgresql-database.)
   * [Updates data in a table in a Spanner PostgreSQL database.](#updates-data-in-a-table-in-a-spanner-postgresql-database.)
   * [Execute a Partitioned DML on a Spanner PostgreSQL database.](#execute-a-partitioned-dml-on-a-spanner-postgresql-database.)
+  * [Delete using DML returning on a Spanner PostgreSQL database.](#delete-using-dml-returning-on-a-spanner-postgresql-database.)
+  * [Insert using DML returning on a Spanner PostgreSQL database.](#insert-using-dml-returning-on-a-spanner-postgresql-database.)
+  * [Update using DML returning on a Spanner PostgreSQL database.](#update-using-dml-returning-on-a-spanner-postgresql-database.)
   * [Execute a DML statement with parameters on a Spanner PostgreSQL database.](#execute-a-dml-statement-with-parameters-on-a-spanner-postgresql-database.)
   * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a new storing index in a Spanner PostgreSQL database.](#creates-a-new-storing-index-in-a-spanner-postgresql-database.)
   * [Created interleaved table hierarchy using PostgreSQL dialect.](#created-interleaved-table-hierarchy-using-postgresql-dialect.)
+  * [Showcase how add a jsonb column in a PostgreSQL table.](#showcase-how-add-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how query data to a jsonb column in a PostgreSQL table.](#showcase-how-query-data-to-a-jsonb-column-in-a-postgresql-table.)
+  * [Showcase how update data to a jsonb column in a PostgreSQL table.](#showcase-how-update-data-to-a-jsonb-column-in-a-postgresql-table.)
   * [Showcase how to work with the PostgreSQL NUMERIC/DECIMAL data type on a Spanner PostgreSQL database.](#showcase-how-to-work-with-the-postgresql-numeric/decimal-data-type-on-a-spanner-postgresql-database.)
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
   * [Execute a query with parameters on a Spanner PostgreSQL database.](#execute-a-query-with-parameters-on-a-spanner-postgresql-database.)
   * [Query the information schema metadata in a Spanner PostgreSQL database.](#query-the-information-schema-metadata-in-a-spanner-postgresql-database.)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
+  * [Read data with database role](#read-data-with-database-role)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
   * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
@@ -100,6 +113,23 @@ Before running the samples, make sure you've followed the steps outlined in
 `cd ..`
 
 ## Samples
+
+
+
+### Add and drop new database role
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/add-and-drop-new-database-role.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/add-and-drop-new-database-role.js,samples/README.md)
+
+__Usage:__
+
+
+`node add-and-drop-new-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
 
 
 
@@ -460,6 +490,57 @@ __Usage:__
 
 
 
+### Delete using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-delete.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Insert using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-insert.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-insert.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-insert.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Update using DML returning.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml-returning-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/dml-returning-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node dml-returning-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### DML
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/dml.js).
@@ -477,6 +558,23 @@ __Usage:__
 
 
 
+### Enable fine grained access control
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/enable-fine-grained-access.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/enable-fine-grained-access.js,samples/README.md)
+
+__Usage:__
+
+
+`node enable-fine-grained-access.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Get-commit-stats
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-commit-stats.js).
@@ -487,6 +585,23 @@ __Usage:__
 
 
 `node samples/get-commit-stats.js`
+
+
+-----
+
+
+
+
+### List database roles
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/get-database-roles.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/get-database-roles.js,samples/README.md)
+
+__Usage:__
+
+
+`node get-database-roles.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -970,6 +1085,57 @@ __Usage:__
 
 
 
+### Delete using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-delete.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-delete.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-delete.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Insert using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-insert.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-insert.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-insert.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Update using DML returning on a Spanner PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-returning-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-dml-returning-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-dml-returning-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Execute a DML statement with parameters on a Spanner PostgreSQL database.
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-dml-with-parameter.js).
@@ -1031,6 +1197,57 @@ __Usage:__
 
 
 `node pg-interleaving.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how add a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how query data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-query-parameter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-query-parameter.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-query-parameter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Showcase how update data to a jsonb column in a PostgreSQL table.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-jsonb-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-jsonb-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-jsonb-update-data.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1133,6 +1350,23 @@ __Usage:__
 
 
 `node samples/quickstart.js`
+
+
+-----
+
+
+
+
+### Read data with database role
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-data-with-database-role.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-data-with-database-role.js,samples/README.md)
+
+__Usage:__
+
+
+`node read-data-with-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

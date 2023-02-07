@@ -568,6 +568,36 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it('should decode JSONB', () => {
+      const value = '{"result":true, "count":42}';
+      const expected = JSON.parse(value);
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_JSONB,
+      });
+
+      assert.deepStrictEqual(decoded.value, expected);
+    });
+
+    it('should decode JSONB object to string', () => {
+      const value =
+        '{"boolKey":true,"numberKey":3.14,"stringKey":"test","objectKey":{"innerKey":"inner-value"}}';
+      const expected = JSON.stringify({
+        boolKey: true,
+        numberKey: 3.14,
+        stringKey: 'test',
+        objectKey: {innerKey: 'inner-value'},
+      });
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.JSON,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_JSONB,
+      });
+
+      assert.deepStrictEqual(decoded.toString(), expected);
+    });
+
     it('should decode TIMESTAMP', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
@@ -601,15 +631,22 @@ describe('codec', () => {
       assert(decoded[0] instanceof codec.Int);
     });
 
-    it('should decode STRUCT and inner members', () => {
+    it('should decode object STRUCT value and inner members', () => {
       const value = {
-        fieldName: '1',
+        keys: 1,
+        fieldName: '2',
       };
 
       const decoded = codec.decode(value, {
         code: google.spanner.v1.TypeCode.STRUCT,
         structType: {
           fields: [
+            {
+              name: 'keys',
+              type: {
+                code: google.spanner.v1.TypeCode.JSON,
+              },
+            },
             {
               name: 'fieldName',
               type: {
@@ -620,10 +657,54 @@ describe('codec', () => {
         },
       });
 
-      const expectedStruct = new codec.Struct({
-        name: 'fieldName',
-        value: new codec.Int(value.fieldName),
+      const expectedStruct = new codec.Struct(
+        {
+          name: 'keys',
+          value: value.keys,
+        },
+        {
+          name: 'fieldName',
+          value: new codec.Int(value.fieldName),
+        }
+      );
+
+      assert(decoded instanceof codec.Struct);
+      assert.deepStrictEqual(decoded, expectedStruct);
+    });
+
+    it('should decode array STRUCT value and inner members', () => {
+      const value = ['1', '2'];
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.STRUCT,
+        structType: {
+          fields: [
+            {
+              name: 'keys',
+              type: {
+                code: google.spanner.v1.TypeCode.JSON,
+              },
+            },
+            {
+              name: 'fieldName',
+              type: {
+                code: google.spanner.v1.TypeCode.INT64,
+              },
+            },
+          ],
+        },
       });
+
+      const expectedStruct = new codec.Struct(
+        {
+          name: 'keys',
+          value: JSON.parse(value[0]),
+        },
+        {
+          name: 'fieldName',
+          value: new codec.Int(value[1]),
+        }
+      );
 
       assert(decoded instanceof codec.Struct);
       assert.deepStrictEqual(decoded, expectedStruct);

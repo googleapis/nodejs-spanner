@@ -30,6 +30,7 @@ import {
   Int,
   Numeric,
   PGNumeric,
+  PGJsonb,
   SpannerDate,
   Struct,
 } from './codec';
@@ -1656,6 +1657,26 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner pgJsonb object.
+   *
+   * @param {object|string} value The pgJsonb value as a string or object.
+   * @returns {PGJsonb}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const pgJsonb1 = Spanner.pgJsonb({rating: 6});
+   * const pgJsonb2 = Spanner.pgJsonb(`[
+   *         {
+   *           "name": null,
+   *           "open": true
+   *         }]`)
+   * ```
+   */
+  static pgJsonb(value): PGJsonb {
+    return new codec.PGJsonb(value);
+  }
+  /**
    * Helper function to get a Cloud Spanner Struct object.
    *
    * @param {object} value The struct as a JSON object.
@@ -1692,6 +1713,7 @@ promisifyAll(Spanner, {
     'int',
     'numeric',
     'pgNumeric',
+    'pgJsonb',
     'operation',
     'timestamp',
   ],
@@ -1843,3 +1865,4 @@ import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};
+export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

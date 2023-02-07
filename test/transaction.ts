@@ -1362,6 +1362,26 @@ describe('Transaction', () => {
         };
         transaction.begin(assert.ifError);
       });
+
+      it('should set optimistic lock', () => {
+        const rw = {
+          readLockMode:
+            google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode
+              .OPTIMISTIC,
+        };
+        transaction = new Transaction(SESSION);
+        transaction.useOptimisticLock();
+        const stub = sandbox.stub(transaction, 'request');
+        transaction.begin();
+
+        const expectedOptions = {readWrite: rw};
+        const {client, method, reqOpts, headers} = stub.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'beginTransaction');
+        assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+      });
     });
 
     describe('commit', () => {
@@ -1949,7 +1969,7 @@ describe('Transaction', () => {
         });
       });
 
-      it('should not set transaction tag if `singleUse`', () => {
+      it('should set transaction tag if `begin`', () => {
         const TABLE = 'my-table-123';
         const transactionTag = 'bar';
         transaction.requestOptions = {transactionTag};
@@ -1958,7 +1978,9 @@ describe('Transaction', () => {
 
         const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
 
-        assert.deepStrictEqual(reqOpts.requestOptions, {});
+        assert.deepStrictEqual(reqOpts.requestOptions, {
+          transactionTag,
+        });
       });
     });
   });
