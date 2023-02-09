@@ -2709,7 +2709,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getSession(false, (err, session) => {
+    this.pool_.getSession(false, (err, session, transaction) => {
       if (err) {
         proxyStream.destroy(err);
         return;

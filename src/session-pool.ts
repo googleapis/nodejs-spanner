@@ -34,7 +34,13 @@ export interface SessionPoolCloseCallback {
 }
 
 /** @deprecated. Use GetSessionCallback instead. */
-export type GetReadSessionCallback = NormalCallback<Session>;
+export type GetReadSessionCallback = {
+  (
+    err: Error | null,
+    session?: Session | null,
+    transaction?: Snapshot | null
+  ): void;
+};
 
 /** @deprecated. Use GetSessionCallback instead. */
 export interface GetWriteSessionCallback {
