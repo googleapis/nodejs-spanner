@@ -33,6 +33,7 @@ import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import {google} from '../protos/protos';
+import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 
@@ -452,6 +453,59 @@ describe('Database', () => {
         assert.deepStrictEqual(sessions, fakeSessions);
         assert.strictEqual(resp, response);
         done();
+      });
+    });
+  });
+
+  describe('setMetadata', () => {
+    const METADATA = {
+      needsToBeSnakeCased: true,
+    } as inst.IDatabase;
+    const ORIGINAL_METADATA = extend({}, METADATA);
+
+    it('should make and return the request', () => {
+      const requestReturnValue = {};
+
+      function callback() {}
+
+      database.request = (config, callback_) => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'updateDatabase');
+
+        const expectedReqOpts = extend({}, METADATA, {
+          name: database.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.reqOpts.database, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts.updateMask, {
+          paths: ['needs_to_be_snake_cased'],
+        });
+
+        assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+
+        assert.strictEqual(callback_, callback);
+
+        return requestReturnValue;
+      };
+
+      const returnValue = database.setMetadata(METADATA, callback);
+      assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      database.setMetadata(METADATA, gaxOptions, assert.ifError);
+    });
+
+    it('should not require a callback', () => {
+      assert.doesNotThrow(() => {
+        database.setMetadata(METADATA);
       });
     });
   });

@@ -1973,6 +1973,10 @@ describe('Spanner', () => {
       instance.getDatabases((err, databases) => {
         assert.ifError(err);
         assert(databases!.length > 0);
+        // check if enableDropProtection is populated for databases.
+        databases!.map(db => {
+          assert.notStrictEqual(db.metadata.enableDropProtection, null);
+        });
         done();
       });
     });
@@ -2014,6 +2018,39 @@ describe('Spanner', () => {
         assert.strictEqual(exists, false);
         done();
       });
+    });
+
+    it('enable_drop_protection should be disabled by default', async () => {
+      if (!IS_EMULATOR_ENABLED) {
+        const [databaseMetadata] = await DATABASE.getMetadata();
+        assert.strictEqual(databaseMetadata!.enableDropProtection, false);
+      }
+    })
+
+    it('enable_drop_protection on database', async () => {
+      if (!IS_EMULATOR_ENABLED) {
+        const [operation1] = await DATABASE.setMetadata({
+          enableDropProtection: true
+        });
+        await operation1.promise();
+        const [databaseMetadata1] = await DATABASE.getMetadata();
+        assert.strictEqual(databaseMetadata1!.enableDropProtection, true);
+        try {
+          await DATABASE.delete();
+          assert.ok(false);
+        } catch(err) {}
+        try {
+          await instance.delete();
+          assert.ok(false);
+        } catch(err) {}
+        // Disabling drop protection on database (for cleanup tasks later).
+        const [operation2] = await DATABASE.setMetadata({
+          enableDropProtection: false
+        });
+        await operation2.promise();
+        const [databaseMetadata2] = await DATABASE.getMetadata();
+        assert.strictEqual(databaseMetadata2!.enableDropProtection, false);
+      }
     });
 
     const createTable = (done, database, dialect, createTableStatement) => {

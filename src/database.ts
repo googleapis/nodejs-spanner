@@ -94,10 +94,18 @@ import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
+import IDatabase = google.spanner.admin.database.v1.IDatabase;
+import snakeCase = require('lodash.snakecase');
+
+export type SetDatabaseMetadataCallback = ResourceCallback<
+    GaxOperation,
+    IOperation
+>;
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
 >;
+export type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 export type GetDatabaseRolesResponse = PagedResponse<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -420,6 +428,49 @@ class Database extends common.GrpcServiceObject {
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
+    );
+  }
+
+  setMetadata(
+      metadata: IDatabase,
+      gaxOptions?: CallOptions
+  ): Promise<SetDatabaseMetadataResponse>;
+  setMetadata(metadata: IDatabase, callback: SetDatabaseMetadataCallback): void;
+  setMetadata(
+      metadata: IDatabase,
+      gaxOptions: CallOptions,
+      callback: SetDatabaseMetadataCallback
+  ): void;
+  setMetadata(
+      metadata: IDatabase,
+      optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
+      cb?: SetDatabaseMetadataCallback
+  ): void | Promise<SetDatabaseMetadataResponse> {
+    const gaxOpts =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    const reqOpts = {
+      database: extend(
+          {
+            name: this.formattedName_,
+          },
+          metadata
+      ),
+      updateMask: {
+        paths: Object.keys(metadata).map(snakeCase),
+      },
+    };
+    return this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'updateDatabase',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        callback!
     );
   }
 
@@ -3310,6 +3361,7 @@ callbackifyAll(Database, {
     'runTransaction',
     'runTransactionAsync',
     'session',
+    'setMetadata',
     'table',
     'updateSchema',
   ],
