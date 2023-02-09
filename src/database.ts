@@ -431,6 +431,55 @@ class Database extends common.GrpcServiceObject {
     );
   }
 
+  /**
+   * Update the metadata for this database. Note that this method follows PATCH
+   * semantics, so previously-configured settings will persist.
+   *
+   * Wrapper around {@link v1.DatabaseAdminClient#updateDatabase}.
+   *
+   * @see {@link v1.DatabaseAdminClient#updateDatabase}
+   * @see [UpdateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabase)
+   *
+   * @param {object} metadata The metadata you wish to set.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {SetDatabaseMetadataCallback} [callback] Callback function.
+   * @returns {Promise<SetDatabaseMetadataResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * const metadata = {
+   *   enableDropProtection: true
+   * };
+   *
+   * database.setMetadata(metadata, function(err, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Metadata updated successfully.
+   *     });
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.setMetadata(metadata).then(function(data) {
+   *   const operation = data[0];
+   *   const apiResponse = data[1];
+   * });
+   * ```
+   */
   setMetadata(
       metadata: IDatabase,
       gaxOptions?: CallOptions
