@@ -6661,6 +6661,33 @@ describe('Spanner', () => {
           postgreSqlRecords
         );
       });
+
+      it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingsql', done => {
+        const query = {
+          sql: 'SELECT * FROM TxnTable',
+          serverlessAnalyticsEnabled: true,
+        } as {} as ExecuteSqlRequest;
+
+        DATABASE.run(query, err => {
+          assert.match(err!.details, /INVALID_ARGUMENT\./);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingread', done => {
+        const query = {
+          sql: 'SELECT * FROM TxnTable',
+          serverlessAnalyticsEnabled: true,
+        } as {} as ReadRequest;
+
+        DATABASE.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+          transaction!.read(googleSqlTable.name, query, err => {
+            assert.match(err!.details, /INVALID_ARGUMENT\./);
+            done();
+          });
+        });
+      });
     });
 
     describe('dml', () => {
@@ -8231,6 +8258,100 @@ describe('Spanner', () => {
           this.skip();
         }
         deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+      });
+    });
+
+    describe('batch transactions', () => {
+      
+      before(done => {
+        DATABASE.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.runUpdate(
+            {
+              sql:
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' (Key, StringValue) VALUES(@key, @str)',
+              params: {
+                key: 'k999',
+                str: 'abc',
+              },
+            },
+            err => {
+              assert.ifError(err);
+              transaction!.commit(done);
+            }
+          );
+        });
+      });
+
+      after(done => {
+        DATABASE.runTransaction((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.runUpdate(
+            {
+              sql: 'DELETE FROM ' + TABLE_NAME + ' t WHERE t.KEY = k999',
+            },
+            err => {
+              assert.ifError(err);
+              transaction!.commit(done);
+            }
+          );
+        });
+      });
+
+      // execute_partition
+      it('should create and execute a query partition', async () => {
+        const [transaction] = await DATABASE.createBatchTransaction();
+
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME,
+        };
+
+        let row_count = 0;
+        await transaction.createQueryPartitions(
+          selectQuery,
+          (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction.execute(partition, results => {
+                const rows = results[0].map(row => row.toJSON());
+                row_count += rows.length;
+              });
+            });
+          }
+        );
+
+        assert.deepStrictEqual(row_count, 1);
+        await transaction.close();
+      });
+
+      it('should create and execute a read partition', async () => {
+        const [transaction] = await DATABASE.createBatchTransaction();
+
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          serverlessAnalyticsEnabled: true,
+        };
+
+        let row_count = 0;
+        await transaction.createReadPartitions(QUERY, (err, partitions) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(partitions.length, 1);
+          partitions.forEach(partition => {
+            transaction.execute(partition, results => {
+              const rows = results[0].map(row => row.toJSON());
+              row_count += rows.length;
+            });
+          });
+        });
+
+        assert.deepStrictEqual(row_count, 1);
+        await transaction.close();
       });
     });
   });
