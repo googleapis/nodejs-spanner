@@ -8262,7 +8262,6 @@ describe('Spanner', () => {
     });
 
     describe('batch transactions', () => {
-      
       before(done => {
         DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
