@@ -8273,25 +8273,9 @@ describe('Spanner', () => {
                 TABLE_NAME +
                 ' (Key, StringValue) VALUES(@key, @str)',
               params: {
-                key: 'k999',
+                key: 'k998',
                 str: 'abc',
               },
-            },
-            err => {
-              assert.ifError(err);
-              transaction!.commit(done);
-            }
-          );
-        });
-      });
-
-      after(done => {
-        DATABASE.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.runUpdate(
-            {
-              sql: 'DELETE FROM ' + TABLE_NAME + ' t WHERE t.KEY = k999',
             },
             err => {
               assert.ifError(err);
@@ -8305,36 +8289,36 @@ describe('Spanner', () => {
       it('should create and execute a query partition', async () => {
         const [transaction] = await DATABASE.createBatchTransaction();
 
+        const key = 'k998';
         const selectQuery = {
-          sql: 'SELECT * FROM ' + TABLE_NAME,
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
+          params: {key},
         };
 
         let row_count = 0;
-        await transaction.createQueryPartitions(
-          selectQuery,
-          (err, partitions) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(partitions.length, 1);
-            partitions.forEach(partition => {
-              transaction.execute(partition, results => {
-                const rows = results[0].map(row => row.toJSON());
-                row_count += rows.length;
-              });
+        transaction.createQueryPartitions(selectQuery, (err, partitions) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(partitions.length, 1);
+          partitions.forEach(partition => {
+            transaction.execute(partition, results => {
+              console.log(results[0]);
+              const rows = results[0].map(row => row.toJSON());
+              row_count += rows.length;
             });
-          }
-        );
-
-        assert.deepStrictEqual(row_count, 1);
-        await transaction.close();
+          });
+          assert.deepStrictEqual(row_count, 1);
+          transaction.close();
+        });
       });
 
       it('should create and execute a read partition', async () => {
         const [transaction] = await DATABASE.createBatchTransaction();
-
+        const key = 'k998';
         const QUERY = {
           table: googleSqlTable.name,
           // Set databoostenabled to true for enabling serveless analytics.
           serverlessAnalyticsEnabled: true,
+          keys: [key],
         };
 
         let row_count = 0;
@@ -8347,10 +8331,9 @@ describe('Spanner', () => {
               row_count += rows.length;
             });
           });
+          assert.deepStrictEqual(row_count, 1);
+          transaction.close();
         });
-
-        assert.deepStrictEqual(row_count, 1);
-        await transaction.close();
       });
     });
   });
