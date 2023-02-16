@@ -8285,10 +8285,7 @@ describe('Spanner', () => {
         });
       });
 
-      // execute_partition
-      it('should create and execute a query partition', async () => {
-        const [transaction] = await DATABASE.createBatchTransaction();
-
+      it('should create and execute a query partition', done => {
         const key = 'k998';
         const selectQuery = {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
@@ -8296,23 +8293,25 @@ describe('Spanner', () => {
         };
 
         let row_count = 0;
-        transaction.createQueryPartitions(selectQuery, (err, partitions) => {
+        DATABASE.createBatchTransaction((err, transaction) => {
           assert.ifError(err);
-          assert.deepStrictEqual(partitions.length, 1);
-          partitions.forEach(partition => {
-            transaction.execute(partition, results => {
-              console.log(results[0]);
-              const rows = results[0].map(row => row.toJSON());
-              row_count += rows.length;
+          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, results => {
+                const rows = results[0].map(row => row.toJSON());
+                row_count += rows.length;
+              });
             });
+            assert.deepStrictEqual(row_count, 1);
+            transaction!.close();
+            done();
           });
-          assert.deepStrictEqual(row_count, 1);
-          transaction.close();
         });
       });
 
-      it('should create and execute a read partition', async () => {
-        const [transaction] = await DATABASE.createBatchTransaction();
+      it('should create and execute a read partition', done => {
         const key = 'k998';
         const QUERY = {
           table: googleSqlTable.name,
@@ -8322,17 +8321,20 @@ describe('Spanner', () => {
         };
 
         let row_count = 0;
-        await transaction.createReadPartitions(QUERY, (err, partitions) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(partitions.length, 1);
-          partitions.forEach(partition => {
-            transaction.execute(partition, results => {
-              const rows = results[0].map(row => row.toJSON());
-              row_count += rows.length;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          transaction!.createReadPartitions(QUERY, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, results => {
+                const rows = results[0].map(row => row.toJSON());
+                row_count += rows.length;
+              });
             });
+            assert.deepStrictEqual(row_count, 1);
+            transaction!.close();
+            done();
           });
-          assert.deepStrictEqual(row_count, 1);
-          transaction.close();
         });
       });
     });
