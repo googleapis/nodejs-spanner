@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.7.2](https://github.com/googleapis/nodejs-spanner/compare/v6.7.1...v6.7.2) (2023-02-17)
+
+
+### Bug Fixes
+
+* Tests emit empty metadata before emitting unspecified error ([14ef031](https://github.com/googleapis/nodejs-spanner/commit/14ef0318db756e7debad8599b1e274b8877291e1))
+
 ## [6.7.1](https://github.com/googleapis/nodejs-spanner/compare/v6.7.0...v6.7.1) (2023-01-23)
 
 
