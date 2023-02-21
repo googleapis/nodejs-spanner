@@ -1972,6 +1972,27 @@ describe('Transaction', () => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
       });
 
+      it('should send the correct options', done => {
+        const QUERY: ExecuteSqlRequest = {
+          sql: 'SELET * FROM `MyTable`',
+        };
+
+        transaction.requestStream = config => {
+          assert.strictEqual(config.client, 'SpannerClient');
+          assert.strictEqual(config.method, 'executeStreamingSql');
+          assert.deepStrictEqual(
+            config.headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.resourceHeader_
+            )
+          );
+          done();
+        };
+
+        transaction.runStream(QUERY);
+      });
+
       it('should set transaction tag when not `singleUse`', done => {
         const QUERY: ExecuteSqlRequest = {
           sql: 'SELET * FROM `MyTable`',
@@ -1997,6 +2018,23 @@ describe('Transaction', () => {
     describe('createReadStream', () => {
       before(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should send the correct options', () => {
+        const TABLE = 'my-table-123';
+        transaction.createReadStream(TABLE);
+
+        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'streamingRead');
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should set transaction tag if not `singleUse`', () => {
@@ -2056,9 +2094,16 @@ describe('Transaction', () => {
         pdml.begin();
 
         const expectedOptions = {partitionedDml: {}};
-        const {reqOpts} = stub.lastCall.args[0];
+        const {reqOpts, headers} = stub.lastCall.args[0];
 
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            pdml.resourceHeader_
+          )
+        );
       });
     });
 

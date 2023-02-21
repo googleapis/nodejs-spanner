@@ -525,7 +525,6 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(
@@ -804,7 +803,6 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(

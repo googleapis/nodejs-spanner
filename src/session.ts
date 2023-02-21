@@ -384,7 +384,6 @@ export class Session extends common.GrpcServiceObject {
       name: this.formattedName_,
     };
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(

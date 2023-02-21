@@ -137,7 +137,6 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.gaxOptions;
     delete reqOpts.types;
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = {[LEADER_AWARE_ROUTING_HEADER]: true};
@@ -236,7 +235,6 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.keys;
     delete reqOpts.ranges;
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = {[LEADER_AWARE_ROUTING_HEADER]: true};

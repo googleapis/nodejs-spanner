@@ -311,6 +311,27 @@ describe('Session', () => {
       assert.strictEqual(returnValue, requestReturnValue);
     });
 
+    it('should correctly call and return the request with Leader Aware Routing disabled.', () => {
+      const requestReturnValue = {};
+
+      function callback() {}
+
+      session.parent.parent.parent.routeToLeaderEnabled = false;
+      session.request = config => {
+        assert.strictEqual(config.client, 'SpannerClient');
+        assert.strictEqual(config.method, 'getSession');
+        assert.deepStrictEqual(config.reqOpts, {
+          name: session.formattedName_,
+        });
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, session.resourceHeader_);
+        return requestReturnValue;
+      };
+
+      const returnValue = session.getMetadata(callback);
+      assert.strictEqual(returnValue, requestReturnValue);
+    });
+
     it('should accept and pass gaxOptions to request', done => {
       const gaxOptions = {};
       session.request = config => {

@@ -106,6 +106,11 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
 
+/**
+ * Session pool configuration options.
+ * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
+ * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
+ */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
   servicePath?: string;

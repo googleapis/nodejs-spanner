@@ -375,7 +375,6 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
-    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
     let headers;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
@@ -622,7 +621,6 @@ export class Snapshot extends EventEmitter {
       }
     );
 
-    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
     let headers;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
@@ -1112,7 +1110,6 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    // Adding Leader aware routing header if route to leader is enabled and Transaction is ReadWrite or Partitioned DML
     let headers;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
@@ -1670,7 +1667,6 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(
@@ -1850,7 +1846,6 @@ export class Transaction extends Dml {
       this.requestOptions
     );
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(
@@ -2196,7 +2191,6 @@ export class Transaction extends Dml {
       transactionId,
     };
 
-    // Adding Leader aware routing header if route to leader is enabled
     let headers;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
       headers = Object.assign(
