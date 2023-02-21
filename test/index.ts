@@ -277,7 +277,6 @@ describe('Spanner', () => {
     });
 
     it('should optionally accept routeToLeaderEnabled', () => {
-      const SERVICE_PATH = 'abc.def.ghi';
       const spanner = new Spanner({routeToLeaderEnabled: false});
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
     });
