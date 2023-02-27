@@ -616,6 +616,7 @@ export class MockSpanner {
               call.write(MockSpanner.toPartialResultSet(res.updateCount));
               break;
             case StatementResultType.ERROR:
+              call.sendMetadata(new Metadata());
               call.emit('error', res.error);
               break;
             default:
@@ -633,6 +634,7 @@ export class MockSpanner {
         call.end();
       })
       .catch(err => {
+        call.sendMetadata(new Metadata());
         call.emit('error', err);
         call.end();
       });

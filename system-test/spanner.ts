@@ -3796,10 +3796,11 @@ describe('Spanner', () => {
       const GOOGLE_SQL_EXPECTED_ROW = extend(true, {}, GOOGLE_SQL_INSERT_ROW);
       const POSTGRESQL_EXPECTED_ROW = extend(true, {}, POSTGRESQL_INSERT_ROW);
 
-      before(() => {
-        return googleSqlTable.insert(GOOGLE_SQL_INSERT_ROW).then(() => {
-          postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
-        });
+      before(async () => {
+        await googleSqlTable.insert(GOOGLE_SQL_INSERT_ROW);
+        if (!IS_EMULATOR_ENABLED) {
+          await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
+        }
       });
 
       const queryCallbackMode = (done, database, query, EXPECTED_ROW) => {

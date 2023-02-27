@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.7.2](https://github.com/googleapis/nodejs-spanner/compare/v6.7.1...v6.7.2) (2023-02-17)
+
+
+### Bug Fixes
+
+* Tests emit empty metadata before emitting unspecified error ([14ef031](https://github.com/googleapis/nodejs-spanner/commit/14ef0318db756e7debad8599b1e274b8877291e1))
+
+## [6.7.1](https://github.com/googleapis/nodejs-spanner/compare/v6.7.0...v6.7.1) (2023-01-23)
+
+
+### Bug Fixes
+
+* Change of tag for fgac ([#1780](https://github.com/googleapis/nodejs-spanner/issues/1780)) ([d75b6dd](https://github.com/googleapis/nodejs-spanner/commit/d75b6dd79ffc2442cbd7a14f1ea952edc6678a64))
+* **codec:** Use index to determine array struct member value ([#1775](https://github.com/googleapis/nodejs-spanner/issues/1775)) ([fc2b695](https://github.com/googleapis/nodejs-spanner/commit/fc2b695d9ea6b65df856b4b081a75165009413ee)), closes [#1774](https://github.com/googleapis/nodejs-spanner/issues/1774)
+
 ## [6.7.0](https://github.com/googleapis/nodejs-spanner/compare/v6.6.0...v6.7.0) (2023-01-17)
 
 
