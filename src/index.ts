@@ -318,10 +318,7 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
-    if (
-      options.routeToLeaderEnabled !== undefined &&
-      !options.routeToLeaderEnabled
-    ) {
+    if (options.routeToLeaderEnabled === false) {
       this.routeToLeaderEnabled = false;
     }
 
