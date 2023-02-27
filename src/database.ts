@@ -101,7 +101,6 @@ export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
 >;
-export type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 export type GetDatabaseRolesResponse = PagedResponse<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -110,6 +109,7 @@ type SetDatabaseMetadataCallback = ResourceCallback<
     GaxOperation,
     IOperation
 >;
+type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
 type CreateBatchTransactionCallback = ResourceCallback<
