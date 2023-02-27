@@ -85,7 +85,7 @@ import {
   RequestCallback,
   ResourceCallback,
   Schema,
-  LEADER_AWARE_ROUTING_HEADER,
+  addLeaderAwareRoutingHeader,
 } from './common';
 import {Spanner} from '.';
 import {Duplex, Readable, Transform} from 'stream';
@@ -525,14 +525,9 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
-    let headers;
+    const headers = this.resourceHeader_;
     if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
@@ -803,14 +798,9 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
-    let headers;
+    const headers = this.resourceHeader_;
     if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request<google.spanner.v1.ISession>(

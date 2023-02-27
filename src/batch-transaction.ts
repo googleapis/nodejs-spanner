@@ -23,7 +23,7 @@ import {google} from '../protos/protos';
 import {Session, Database} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
-  LEADER_AWARE_ROUTING_HEADER,
+  addLeaderAwareRoutingHeader,
 } from '../src/common';
 import {Spanner} from '.';
 
@@ -137,9 +137,9 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.gaxOptions;
     delete reqOpts.types;
 
-    let headers;
+    const headers: {[k: string]: string} = {};
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
-      headers = {[LEADER_AWARE_ROUTING_HEADER]: true};
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.createPartitions_(
@@ -235,9 +235,9 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.keys;
     delete reqOpts.ranges;
 
-    let headers;
+    const headers: {[k: string]: string} = {};
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
-      headers = {[LEADER_AWARE_ROUTING_HEADER]: true};
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.createPartitions_(

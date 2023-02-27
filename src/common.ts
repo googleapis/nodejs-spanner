@@ -80,3 +80,11 @@ export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
  * HTTP header to route the requests at Leader
  */
 export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
+
+/**
+ * Add Leader aware routing header to existing header list.
+ * @param headers Existing header list.
+ */
+export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
+  headers[LEADER_AWARE_ROUTING_HEADER] = 'true';
+}

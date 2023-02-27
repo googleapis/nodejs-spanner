@@ -36,7 +36,7 @@ import {google as spannerClient} from '../protos/protos';
 import {
   NormalCallback,
   CLOUD_RESOURCE_HEADER,
-  LEADER_AWARE_ROUTING_HEADER,
+  addLeaderAwareRoutingHeader,
 } from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
@@ -375,18 +375,13 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
-    let headers;
+    const headers = this.resourceHeader_;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request(
@@ -621,18 +616,13 @@ export class Snapshot extends EventEmitter {
       }
     );
 
-    let headers;
+    const headers = this.resourceHeader_;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
@@ -1110,18 +1100,13 @@ export class Snapshot extends EventEmitter {
       });
     };
 
-    let headers;
+    const headers = this.resourceHeader_;
     if (
       (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
@@ -1667,14 +1652,9 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
-    let headers;
+    const headers = this.resourceHeader_;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request(
@@ -1846,14 +1826,9 @@ export class Transaction extends Dml {
       this.requestOptions
     );
 
-    let headers;
+    const headers = this.resourceHeader_;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request(
@@ -2191,14 +2166,9 @@ export class Transaction extends Dml {
       transactionId,
     };
 
-    let headers;
+    const headers = this.resourceHeader_;
     if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
-      headers = Object.assign(
-        {[LEADER_AWARE_ROUTING_HEADER]: true},
-        this.resourceHeader_
-      );
-    } else {
-      headers = this.resourceHeader_;
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request(
