@@ -97,10 +97,6 @@ import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
 
-export type SetDatabaseMetadataCallback = ResourceCallback<
-    GaxOperation,
-    IOperation
->;
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -109,6 +105,10 @@ export type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 export type GetDatabaseRolesResponse = PagedResponse<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
+>;
+type SetDatabaseMetadataCallback = ResourceCallback<
+    GaxOperation,
+    IOperation
 >;
 type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
@@ -430,7 +430,17 @@ class Database extends common.GrpcServiceObject {
       Database.getEnvironmentQueryOptions()
     );
   }
-
+  /**
+   * @typedef {array} SetDatabaseMetadataResponse
+   * @property {object} 0 The {@link Database} metadata.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback SetDatabaseMetadataCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} metadata The {@link Database} metadata.
+   * @param {object} apiResponse The full API response.
+   */
   /**
    * Update the metadata for this database. Note that this method follows PATCH
    * semantics, so previously-configured settings will persist.
