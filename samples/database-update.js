@@ -19,19 +19,19 @@
 'use strict';
 
 function main(
-    instanceId = 'my-instance',
-    databaseId = 'my-database',
-    projectId = 'my-project-id'
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
 ) {
   // [START spanner_update_database]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
-      // const instanceId = 'my-instance';
-      // const databaseId = 'my-database';
-      // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const projectId = 'my-project-id';
 
-      // Imports the Google Cloud Spanner client library
+  // Imports the Google Cloud Spanner client library
   const {Spanner} = require('@google-cloud/spanner');
 
   // Instantiates a client
@@ -47,15 +47,15 @@ function main(
     try {
       console.log(`Updating database ${database.id}.`);
       const [operation] = await database.setMetadata({
-        enableDropProtection: true
+        enableDropProtection: true,
       });
       console.log(
-          `Waiting for update operation for ${database.id} to complete...`
+        `Waiting for update operation for ${database.id} to complete...`
       );
       await operation.promise();
       console.log(`Updated database ${database.id}.`);
     } catch (err) {
-      console.log("ERROR:", err);
+      console.log(`ERROR:`, err);
     } finally {
       // Close the database when finished.
       database.close();
