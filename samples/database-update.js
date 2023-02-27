@@ -23,7 +23,7 @@ function main(
     databaseId = 'my-database',
     projectId = 'my-project-id'
 ) {
-  // [START spanner_drop_database_protection]
+  // [START spanner_update_database]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
@@ -45,15 +45,15 @@ function main(
     const database = instance.database(databaseId);
 
     try {
-      console.log(`Updating database ${database.formattedName_}.`);
+      console.log(`Updating database ${database.id}.`);
       const [operation] = await database.setMetadata({
         enableDropProtection: true
       });
       console.log(
-          `Waiting for update operation for ${database.formattedName_} to complete...`
+          `Waiting for update operation for ${database.id} to complete...`
       );
       await operation.promise();
-      console.log(`Updated database ${database.formattedName_}.`);
+      console.log(`Updated database ${database.id}.`);
     } catch (err) {
       console.log("ERROR:", err);
     } finally {
@@ -62,7 +62,7 @@ function main(
     }
   }
   updateDatabase();
-  // [END spanner_drop_database_protection]
+  // [END spanner_update_database]
 }
 
 process.on('unhandledRejection', err => {
