@@ -17400,6 +17400,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest dataBoostEnabled */
+                dataBoostEnabled?: (boolean|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -17443,6 +17446,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest dataBoostEnabled. */
+                public dataBoostEnabled: boolean;
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -18566,6 +18572,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest dataBoostEnabled */
+                dataBoostEnabled?: (boolean|null);
             }
 
             /** Represents a ReadRequest. */
@@ -18606,6 +18615,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest dataBoostEnabled. */
+                public dataBoostEnabled: boolean;
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
