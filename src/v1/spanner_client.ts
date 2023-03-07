@@ -409,7 +409,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.Session | Session}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -501,7 +501,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [BatchCreateSessionsResponse]{@link google.spanner.v1.BatchCreateSessionsResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.BatchCreateSessionsResponse | BatchCreateSessionsResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -586,7 +586,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Session]{@link google.spanner.v1.Session}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.Session | Session}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -669,7 +669,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -824,10 +824,16 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.ResultSet | ResultSet}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -942,7 +948,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ExecuteBatchDmlResponse]{@link google.spanner.v1.ExecuteBatchDmlResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.ExecuteBatchDmlResponse | ExecuteBatchDmlResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1075,10 +1081,16 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [ResultSet]{@link google.spanner.v1.ResultSet}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.ResultSet | ResultSet}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1170,7 +1182,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Transaction]{@link google.spanner.v1.Transaction}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.Transaction | Transaction}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1286,7 +1298,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [CommitResponse]{@link google.spanner.v1.CommitResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.CommitResponse | CommitResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1376,7 +1388,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1505,7 +1517,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.PartitionResponse | PartitionResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1620,7 +1632,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [PartitionResponse]{@link google.spanner.v1.PartitionResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.v1.PartitionResponse | PartitionResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1770,10 +1782,16 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
+   *   An object stream which emits {@link google.spanner.v1.PartialResultSet | PartialResultSet} on 'data' event.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
    *   for more details and examples.
@@ -1848,10 +1866,16 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits [PartialResultSet]{@link google.spanner.v1.PartialResultSet} on 'data' event.
+   *   An object stream which emits {@link google.spanner.v1.PartialResultSet | PartialResultSet} on 'data' event.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
    *   for more details and examples.
@@ -1900,7 +1924,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Session]{@link google.spanner.v1.Session}.
+   *   The first element of the array is Array of {@link google.spanner.v1.Session | Session}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -2004,7 +2028,7 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [Session]{@link google.spanner.v1.Session} on 'data' event.
+   *   An object stream which emits an object representing {@link google.spanner.v1.Session | Session} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listSessionsAsync()`
@@ -2066,7 +2090,7 @@ export class SpannerClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Session]{@link google.spanner.v1.Session}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.spanner.v1.Session | Session}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
