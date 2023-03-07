@@ -4604,10 +4604,6 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
-                    },
-                    "serverlessAnalyticsEnabled": {
-                      "type": "bool",
-                      "id": 14
                     }
                   },
                   "nested": {
@@ -4872,10 +4868,6 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
-                    },
-                    "serverlessAnalyticsEnabled": {
-                      "type": "bool",
-                      "id": 13
                     }
                   }
                 },
