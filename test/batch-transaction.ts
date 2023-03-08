@@ -90,7 +90,7 @@ class FakeTransaction {
   _getSpanner(): Spanner {
     return SPANNER as Spanner;
   }
-  
+
   run() {}
   read() {}
 }
