@@ -385,7 +385,7 @@ export class Session extends common.GrpcServiceObject {
     };
 
     const headers = this.resourceHeader_;
-    if ((this.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
     return this.request(
@@ -521,6 +521,17 @@ export class Session extends common.GrpcServiceObject {
     }
     const sessionName = name.split('/').pop();
     return databaseName + '/sessions/' + sessionName;
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.parent.parent.parent as Spanner;
   }
 }
 

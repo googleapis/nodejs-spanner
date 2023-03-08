@@ -20,12 +20,11 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../protos/protos';
-import {Session, Database} from '.';
+import {Session, Database, Spanner} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
 } from '../src/common';
-import {Spanner} from '.';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -138,7 +137,7 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.types;
 
     const headers: {[k: string]: string} = {};
-    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
@@ -236,7 +235,7 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.ranges;
 
     const headers: {[k: string]: string} = {};
-    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 

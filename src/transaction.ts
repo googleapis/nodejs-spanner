@@ -42,9 +42,8 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database} from '.';
+import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
-import {Spanner} from '.';
 
 export type Rows = Array<Row | Json>;
 const RETRY_INFO_TYPE = 'type.googleapis.com/google.rpc.retryinfo';
@@ -377,7 +376,7 @@ export class Snapshot extends EventEmitter {
 
     const headers = this.resourceHeader_;
     if (
-      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
@@ -618,7 +617,7 @@ export class Snapshot extends EventEmitter {
 
     const headers = this.resourceHeader_;
     if (
-      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
@@ -1102,7 +1101,7 @@ export class Snapshot extends EventEmitter {
 
     const headers = this.resourceHeader_;
     if (
-      (this.session.parent.parent.parent as Spanner).routeToLeaderEnabled &&
+      this._getSpanner().routeToLeaderEnabled &&
       (this._options.readWrite !== undefined ||
         this._options.partitionedDml !== undefined)
     ) {
@@ -1331,6 +1330,17 @@ export class Snapshot extends EventEmitter {
           .on('data', chunk => this._idWaiter.emit('data', chunk))
           .once('end', () => this._idWaiter.emit('end'))
       );
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  protected _getSpanner(): Spanner {
+    return this.session.parent.parent.parent as Spanner;
   }
 }
 
@@ -1653,7 +1663,7 @@ export class Transaction extends Dml {
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
     const headers = this.resourceHeader_;
-    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
@@ -1827,7 +1837,7 @@ export class Transaction extends Dml {
     );
 
     const headers = this.resourceHeader_;
-    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
@@ -2167,7 +2177,7 @@ export class Transaction extends Dml {
     };
 
     const headers = this.resourceHeader_;
-    if ((this.session.parent.parent.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 

@@ -1492,13 +1492,13 @@ describe('Spanner with mock server', () => {
 
     describe('LeaderAwareRouting', () => {
       let spannerWithLARDisabled: Spanner;
-      let instanceWithEnvVar: Instance;
+      let instanceWithLARDisabled: Instance;
 
       function newTestDatabaseWithLARDisabled(
         options?: SessionPoolOptions,
         queryOptions?: IQueryOptions
       ): Database {
-        return instanceWithEnvVar.database(
+        return instanceWithLARDisabled.database(
           `database-${dbCounter++}`,
           options,
           queryOptions
@@ -1513,7 +1513,7 @@ describe('Spanner with mock server', () => {
           routeToLeaderEnabled: false,
         });
         // Gets a reference to a Cloud Spanner instance and database
-        instanceWithEnvVar = spannerWithLARDisabled.instance('instance');
+        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
       });
 
       it('should execute with leader aware routing enabled in a read/write transaction', async () => {
@@ -1525,14 +1525,17 @@ describe('Spanner with mock server', () => {
           return await tx.commit();
         });
         await database.close();
+        let metadataCountWithLAREnabled = 0;
         spannerMock.getMetadata().forEach(metadata => {
           if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+            metadataCountWithLAREnabled++;
             assert.strictEqual(
               metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
               'true'
             );
           }
         });
+        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
       });
 
       it('should execute with leader aware routing disabled in a read/write transaction', async () => {

@@ -87,10 +87,9 @@ import {
   Schema,
   addLeaderAwareRoutingHeader,
 } from './common';
-import {Spanner} from '.';
 import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
@@ -526,7 +525,7 @@ class Database extends common.GrpcServiceObject {
     };
 
     const headers = this.resourceHeader_;
-    if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
@@ -799,7 +798,7 @@ class Database extends common.GrpcServiceObject {
       options.databaseRole || this.databaseRole || null;
 
     const headers = this.resourceHeader_;
-    if ((this.instance.parent as Spanner).routeToLeaderEnabled) {
+    if (this._getSpanner().routeToLeaderEnabled) {
       addLeaderAwareRoutingHeader(headers);
     }
 
@@ -3272,6 +3271,17 @@ class Database extends common.GrpcServiceObject {
     }
     const databaseName = name.split('/').pop();
     return instanceName + '/databases/' + databaseName;
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.instance.parent as Spanner;
   }
 }
 
