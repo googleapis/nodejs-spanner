@@ -24,7 +24,7 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import {Session, Database} from '../src';
+import {Session, Database, Spanner} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
 import {
@@ -86,6 +86,11 @@ class FakeTransaction {
   static encodeParams(): object {
     return {};
   }
+
+  _getSpanner(): Spanner {
+    return SPANNER as Spanner;
+  }
+  
   run() {}
   read() {}
 }
