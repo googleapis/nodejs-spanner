@@ -8264,29 +8264,34 @@ describe('Spanner', () => {
 
     describe('batch transactions', () => {
       before(done => {
-        DATABASE.runTransaction((err, transaction) => {
-          assert.ifError(err);
+        if (!IS_EMULATOR_ENABLED) {
+          DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
 
-          transaction!.runUpdate(
-            {
-              sql:
-                'INSERT INTO ' +
-                TABLE_NAME +
-                ' (Key, StringValue) VALUES(@key, @str)',
-              params: {
-                key: 'k998',
-                str: 'abc',
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k998',
+                  str: 'abc',
+                },
               },
-            },
-            err => {
-              assert.ifError(err);
-              transaction!.commit(done);
-            }
-          );
-        });
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        }
       });
 
-      it('should create and execute a query partition', done => {
+      it('should create and execute a query partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const key = 'k998';
         const selectQuery = {
           sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
@@ -8312,7 +8317,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('should create and execute a read partition', done => {
+      it('should create and execute a read partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const key = 'k998';
         const QUERY = {
           table: googleSqlTable.name,
