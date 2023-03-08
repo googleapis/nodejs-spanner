@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.8.0](https://github.com/googleapis/nodejs-spanner/compare/v6.7.2...v6.8.0) (2023-03-08)
+
+
+### Features
+
+* Adding new fields for Serverless analytics ([#1816](https://github.com/googleapis/nodejs-spanner/issues/1816)) ([2a6ca6f](https://github.com/googleapis/nodejs-spanner/commit/2a6ca6f09215752f9451d625ac02837e9d70b66a))
+
 ## [6.7.2](https://github.com/googleapis/nodejs-spanner/compare/v6.7.1...v6.7.2) (2023-02-17)
 
 
