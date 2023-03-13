@@ -526,8 +526,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.get_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_GetDatabase_async
    */
   getDatabase(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseRequest,
@@ -621,8 +619,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.drop_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_DropDatabase_async
    */
   dropDatabase(
     request?: protos.google.spanner.admin.database.v1.IDropDatabaseRequest,
@@ -716,8 +712,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.get_database_ddl.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_GetDatabaseDdl_async
    */
   getDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest,
@@ -831,8 +825,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.set_iam_policy.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_SetIamPolicy_async
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -925,8 +917,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.get_iam_policy.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_GetIamPolicy_async
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1023,8 +1013,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.test_iam_permissions.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_TestIamPermissions_async
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1108,8 +1096,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.get_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_GetBackup_async
    */
   getBackup(
     request?: protos.google.spanner.admin.database.v1.IGetBackupRequest,
@@ -1208,8 +1194,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.update_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateBackup_async
    */
   updateBackup(
     request?: protos.google.spanner.admin.database.v1.IUpdateBackupRequest,
@@ -1301,8 +1285,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.delete_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_DeleteBackup_async
    */
   deleteBackup(
     request?: protos.google.spanner.admin.database.v1.IDeleteBackupRequest,
@@ -1420,8 +1402,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.create_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CreateDatabase_async
    */
   createDatabase(
     request?: protos.google.spanner.admin.database.v1.ICreateDatabaseRequest,
@@ -1516,8 +1496,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.create_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CreateDatabase_async
    */
   async checkCreateDatabaseProgress(
     name: string
@@ -1586,8 +1564,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.update_database_ddl.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabaseDdl_async
    */
   updateDatabaseDdl(
     request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlRequest,
@@ -1682,8 +1658,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.update_database_ddl.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabaseDdl_async
    */
   async checkUpdateDatabaseDdlProgress(
     name: string
@@ -1752,8 +1726,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.create_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CreateBackup_async
    */
   createBackup(
     request?: protos.google.spanner.admin.database.v1.ICreateBackupRequest,
@@ -1848,8 +1820,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.create_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CreateBackup_async
    */
   async checkCreateBackupProgress(
     name: string
@@ -1925,8 +1895,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CopyBackup_async
    */
   copyBackup(
     request?: protos.google.spanner.admin.database.v1.ICopyBackupRequest,
@@ -2021,8 +1989,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.copy_backup.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_CopyBackup_async
    */
   async checkCopyBackupProgress(
     name: string
@@ -2098,8 +2064,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.restore_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_RestoreDatabase_async
    */
   restoreDatabase(
     request?: protos.google.spanner.admin.database.v1.IRestoreDatabaseRequest,
@@ -2194,8 +2158,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.restore_database.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_RestoreDatabase_async
    */
   async checkRestoreDatabaseProgress(
     name: string
@@ -2397,8 +2359,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.list_databases.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_ListDatabases_async
    */
   listDatabasesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabasesRequest,
@@ -2711,8 +2671,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.list_backups.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_ListBackups_async
    */
   listBackupsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupsRequest,
@@ -3055,8 +3013,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.list_database_operations.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_ListDatabaseOperations_async
    */
   listDatabaseOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest,
@@ -3469,8 +3425,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.list_backup_operations.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_ListBackupOperations_async
    */
   listBackupOperationsAsync(
     request?: protos.google.spanner.admin.database.v1.IListBackupOperationsRequest,
@@ -3673,8 +3627,6 @@ export class DatabaseAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
-   * @example <caption>include:samples/generated/v1/database_admin.list_database_roles.js</caption>
-   * region_tag:spanner_v1_generated_DatabaseAdmin_ListDatabaseRoles_async
    */
   listDatabaseRolesAsync(
     request?: protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest,
