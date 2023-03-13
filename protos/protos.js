@@ -42925,7 +42925,6 @@
                      * @property {number|Long|null} [seqno] ExecuteSqlRequest seqno
                      * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions|null} [queryOptions] ExecuteSqlRequest queryOptions
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ExecuteSqlRequest requestOptions
-                     * @property {boolean|null} [dataBoostEnabled] ExecuteSqlRequest dataBoostEnabled
                      */
     
                     /**
@@ -43033,14 +43032,6 @@
                     ExecuteSqlRequest.prototype.requestOptions = null;
     
                     /**
-                     * ExecuteSqlRequest dataBoostEnabled.
-                     * @member {boolean} dataBoostEnabled
-                     * @memberof google.spanner.v1.ExecuteSqlRequest
-                     * @instance
-                     */
-                    ExecuteSqlRequest.prototype.dataBoostEnabled = false;
-    
-                    /**
                      * Creates a new ExecuteSqlRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ExecuteSqlRequest
@@ -43089,8 +43080,6 @@
                             $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.encode(message.queryOptions, writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
-                        if (message.dataBoostEnabled != null && Object.hasOwnProperty.call(message, "dataBoostEnabled"))
-                            writer.uint32(/* id 15, wireType 0 =*/120).bool(message.dataBoostEnabled);
                         return writer;
                     };
     
@@ -43188,10 +43177,6 @@
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                     break;
                                 }
-                            case 15: {
-                                    message.dataBoostEnabled = reader.bool();
-                                    break;
-                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -43281,9 +43266,6 @@
                             if (error)
                                 return "requestOptions." + error;
                         }
-                        if (message.dataBoostEnabled != null && message.hasOwnProperty("dataBoostEnabled"))
-                            if (typeof message.dataBoostEnabled !== "boolean")
-                                return "dataBoostEnabled: boolean expected";
                         return null;
                     };
     
@@ -43372,8 +43354,6 @@
                                 throw TypeError(".google.spanner.v1.ExecuteSqlRequest.requestOptions: object expected");
                             message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
                         }
-                        if (object.dataBoostEnabled != null)
-                            message.dataBoostEnabled = Boolean(object.dataBoostEnabled);
                         return message;
                     };
     
@@ -43419,7 +43399,6 @@
                                 object.seqno = options.longs === String ? "0" : 0;
                             object.queryOptions = null;
                             object.requestOptions = null;
-                            object.dataBoostEnabled = false;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -43450,8 +43429,6 @@
                             object.queryOptions = $root.google.spanner.v1.ExecuteSqlRequest.QueryOptions.toObject(message.queryOptions, options);
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
-                        if (message.dataBoostEnabled != null && message.hasOwnProperty("dataBoostEnabled"))
-                            object.dataBoostEnabled = message.dataBoostEnabled;
                         return object;
                     };
     
@@ -46107,7 +46084,6 @@
                      * @property {Uint8Array|null} [resumeToken] ReadRequest resumeToken
                      * @property {Uint8Array|null} [partitionToken] ReadRequest partitionToken
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] ReadRequest requestOptions
-                     * @property {boolean|null} [dataBoostEnabled] ReadRequest dataBoostEnabled
                      */
     
                     /**
@@ -46207,14 +46183,6 @@
                     ReadRequest.prototype.requestOptions = null;
     
                     /**
-                     * ReadRequest dataBoostEnabled.
-                     * @member {boolean} dataBoostEnabled
-                     * @memberof google.spanner.v1.ReadRequest
-                     * @instance
-                     */
-                    ReadRequest.prototype.dataBoostEnabled = false;
-    
-                    /**
                      * Creates a new ReadRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.ReadRequest
@@ -46259,8 +46227,6 @@
                             writer.uint32(/* id 10, wireType 2 =*/82).bytes(message.partitionToken);
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
-                        if (message.dataBoostEnabled != null && Object.hasOwnProperty.call(message, "dataBoostEnabled"))
-                            writer.uint32(/* id 16, wireType 0 =*/128).bool(message.dataBoostEnabled);
                         return writer;
                     };
     
@@ -46335,10 +46301,6 @@
                                 }
                             case 11: {
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
-                                    break;
-                                }
-                            case 16: {
-                                    message.dataBoostEnabled = reader.bool();
                                     break;
                                 }
                             default:
@@ -46416,9 +46378,6 @@
                             if (error)
                                 return "requestOptions." + error;
                         }
-                        if (message.dataBoostEnabled != null && message.hasOwnProperty("dataBoostEnabled"))
-                            if (typeof message.dataBoostEnabled !== "boolean")
-                                return "dataBoostEnabled: boolean expected";
                         return null;
                     };
     
@@ -46481,8 +46440,6 @@
                                 throw TypeError(".google.spanner.v1.ReadRequest.requestOptions: object expected");
                             message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
                         }
-                        if (object.dataBoostEnabled != null)
-                            message.dataBoostEnabled = Boolean(object.dataBoostEnabled);
                         return message;
                     };
     
@@ -46527,7 +46484,6 @@
                                     object.partitionToken = $util.newBuffer(object.partitionToken);
                             }
                             object.requestOptions = null;
-                            object.dataBoostEnabled = false;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -46555,8 +46511,6 @@
                             object.partitionToken = options.bytes === String ? $util.base64.encode(message.partitionToken, 0, message.partitionToken.length) : options.bytes === Array ? Array.prototype.slice.call(message.partitionToken) : message.partitionToken;
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
-                        if (message.dataBoostEnabled != null && message.hasOwnProperty("dataBoostEnabled"))
-                            object.dataBoostEnabled = message.dataBoostEnabled;
                         return object;
                     };
     
