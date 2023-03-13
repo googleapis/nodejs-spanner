@@ -8308,9 +8308,9 @@ describe('Spanner', () => {
               transaction!.execute(partition, results => {
                 const rows = results[0].map(row => row.toJSON());
                 row_count += rows.length;
+                assert.deepStrictEqual(row_count, 1);
               });
             });
-            assert.deepStrictEqual(row_count, 1);
             transaction!.close();
             done();
           });
@@ -8327,20 +8327,22 @@ describe('Spanner', () => {
           // Set databoostenabled to true for enabling serveless analytics.
           serverlessAnalyticsEnabled: true,
           keys: [key],
+          columns: ['Key'],
         };
 
-        let row_count = 0;
+        let read_row_count = 0;
         DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
           transaction!.createReadPartitions(QUERY, (err, partitions) => {
             assert.ifError(err);
             assert.deepStrictEqual(partitions.length, 1);
             partitions.forEach(partition => {
               transaction!.execute(partition, results => {
-                const rows = results[0].map(row => row.toJSON());
-                row_count += rows.length;
+                const rows = results[0]?.map(row => row.toJSON());
+                read_row_count += rows.length;
+                assert.deepStrictEqual(read_row_count, 1);
               });
             });
-            assert.deepStrictEqual(row_count, 1);
             transaction!.close();
             done();
           });
