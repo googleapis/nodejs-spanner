@@ -559,6 +559,8 @@ function isRetryableInternalError(err: grpc.ServiceError): boolean {
     (err.message.includes(
       'Received unexpected EOS on DATA frame from server'
     ) ||
-      err.message.includes('Received RST_STREAM'))
+      err.message.includes('RST_STREAM') ||
+      err.message.includes('HTTP/2 error code: INTERNAL_ERROR') ||
+      err.message.includes('Connection closed with unknown cause'))
   );
 }

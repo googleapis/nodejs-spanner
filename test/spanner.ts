@@ -2937,6 +2937,34 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    it('should retry on internal error', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          transaction.begin();
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            if (!attempts) {
+              spannerMock.setExecutionTime(
+                spannerMock.commit,
+                SimulatedExecutionTime.ofError({
+                  code: grpc.status.INTERNAL,
+                  message: 'Received RST_STREAM',
+                } as MockError)
+              );
+            }
+            attempts++;
+            return transaction.commit().then(() => updateCount);
+          });
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.strictEqual(attempts, 2);
+
+      await database.close();
+    });
+
     describe('batch-readonly-transaction', () => {
       it('should use session from pool', async () => {
         const database = newTestDatabase({min: 0, incStep: 1});
