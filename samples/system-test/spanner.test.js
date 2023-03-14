@@ -43,6 +43,12 @@ const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node datatypes.js';
 const backupsCmd = 'node backups.js';
 const instanceCmd = 'node instance.js';
+const createTableWithForeignKeyDeleteCascadeCommand =
+  'node table-create-with-foreign-key-delete-cascade.js';
+const alterTableWithForeignKeyDeleteCascadeCommand =
+  'node table-alter-with-foreign-key-delete-cascade.js';
+const dropForeignKeyConstraintDeleteCascaseCommand =
+  'node table-drop-foreign-key-constraint-delete-cascade.js';
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -1346,6 +1352,48 @@ describe('Spanner', () => {
     );
     assert.include(output, 'Version retention period: 1d');
     assert.include(output, 'Earliest version time:');
+  });
+
+  it('should create a table with foreign key delete cascade', async () => {
+    const output = execSync(
+      `${createTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
+    );
+  });
+
+  it('should alter a table with foreign key delete cascade', async () => {
+    const output = execSync(
+      `${alterTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      'Altered ShoppingCarts table with FKShoppingCartsCustomerName'
+    );
+  });
+
+  it('should drop a foreign key constraint delete cascade', async () => {
+    const output = execSync(
+      `${dropForeignKeyConstraintDeleteCascaseCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
+    );
   });
 
   describe('leader options', () => {
