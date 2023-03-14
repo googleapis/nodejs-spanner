@@ -2440,6 +2440,202 @@ describe('Spanner', () => {
         await setIamPolicy(PG_DATABASE);
       });
     });
+
+    describe('ForeignKeyDeleteCascadeAction', () => {
+      const fkadc_database_id = generateName('fkadc');
+      const fkadc_database_pg_id = generateName('fkadc-pg');
+      const fkadc_database = instance.database(fkadc_database_id);
+      const fkadc_database_pg = instance.database(fkadc_database_pg_id);
+
+      const fkadc_schema = [
+        `CREATE TABLE Customers (
+            CustomerId INT64,
+            CustomerName STRING(62) NOT NULL
+            ) PRIMARY KEY (CustomerId)`,
+        `CREATE TABLE ShoppingCarts (
+            CartId INT64 NOT NULL,
+            CustomerId INT64 NOT NULL,
+            CustomerName STRING(62) NOT NULL,
+            CONSTRAINT FKShoppingCartsCustomerId FOREIGN KEY (CustomerId)
+            REFERENCES Customers (CustomerId) ON DELETE CASCADE,    
+          ) PRIMARY KEY (CartId)`,
+      ];
+      const fkadc_pg_schema = [
+        `CREATE TABLE Customers (
+            CustomerId BIGINT,
+            CustomerName VARCHAR(62) NOT NULL,
+            PRIMARY KEY (CustomerId)
+         ) `,
+        `CREATE TABLE ShoppingCarts (
+            CartId BIGINT,
+            CustomerId BIGINT NOT NULL,
+            CustomerName VARCHAR(62) NOT NULL,
+            CONSTRAINT "FKShoppingCartsCustomerId" FOREIGN KEY (CustomerId)
+            REFERENCES Customers (CustomerId) ON DELETE CASCADE,
+            PRIMARY KEY (CartId)
+          )`,
+      ];
+
+      const createDatabaseWithFKADC = async (
+        dialect,
+        database_id,
+        database_schema
+      ) => {
+        const [database, operation] = await instance.createDatabase(
+          database_id,
+          {databaseDialect: dialect}
+        );
+        await operation.promise();
+
+        const [operationUpdateDDL] = await database.updateSchema(
+          database_schema
+        );
+        await operationUpdateDDL.promise();
+
+        const [schema] = await database.getSchema();
+        assert.strictEqual(
+          schema.filter(x => x.includes('FKShoppingCartsCustomerId')).length,
+          1
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should create a database with foreign key delete cascade action', async () => {
+        await createDatabaseWithFKADC(
+          Spanner.GOOGLE_STANDARD_SQL,
+          fkadc_database_id,
+          fkadc_schema
+        );
+      });
+
+      it('POSTGRESQL should create a database with foreign key delete cascade action', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createDatabaseWithFKADC(
+          Spanner.POSTGRESQL,
+          fkadc_database_pg_id,
+          fkadc_pg_schema
+        );
+      });
+
+      const alterDatabaseWithFKADC = async (dialect, database) => {
+        const constraint_name =
+          dialect === Spanner.POSTGRESQL
+            ? '"FKShoppingCartsCustomerName"'
+            : 'FKShoppingCartsCustomerName';
+
+        const ddl_statements_add_constraints = [
+          `ALTER TABLE ShoppingCarts ADD CONSTRAINT ${constraint_name} FOREIGN KEY (CustomerName) REFERENCES Customers(CustomerName) ON DELETE CASCADE`,
+        ];
+        const [operationAddConstraint] = await database.updateSchema(
+          ddl_statements_add_constraints
+        );
+        await operationAddConstraint.promise();
+        const [schema] = await database.getSchema();
+        assert.strictEqual(
+          schema.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
+          1
+        );
+
+        const ddl_statements_drop_constraints = [
+          'ALTER TABLE ShoppingCarts DROP CONSTRAINT FKShoppingCartsCustomerName',
+        ];
+        const [operationDropConstraint] = await database.updateSchema(
+          ddl_statements_drop_constraints
+        );
+        await operationDropConstraint.promise();
+        const [schema1] = await database.getSchema();
+        assert.strictEqual(
+          schema1.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
+          0
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should alter a database with foreign key delete cascade action', async () => {
+        await alterDatabaseWithFKADC(
+          Spanner.GOOGLE_STANDARD_SQL,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should alter a database with foreign key delete cascade action', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await alterDatabaseWithFKADC(Spanner.POSTGRESQL, fkadc_database_pg);
+      });
+
+      const insertAndDeleteRowWithFKADC = async database => {
+        const customersTable = database.table('Customers');
+        await customersTable.insert({
+          CustomerId: 1,
+          CustomerName: 'Marc',
+        });
+
+        const cartsTable = database.table('ShoppingCarts');
+        await cartsTable.insert({
+          CartId: 1,
+          CustomerId: 1,
+          CustomerName: 'Marc',
+        });
+
+        const [rows] = await cartsTable.read({
+          columns: ['CartId', 'CustomerId'],
+        });
+        assert.strictEqual(rows.length, 1);
+
+        await customersTable.deleteRows([1]);
+        const [rows1] = await cartsTable.read({
+          columns: ['CartId', 'CustomerId'],
+        });
+        assert.strictEqual(rows1.length, 0);
+      };
+
+      it('GOOGLE_STANDARD_SQL should insert a row and then delete with all references', async () => {
+        await insertAndDeleteRowWithFKADC(fkadc_database);
+      });
+
+      it('POSTGRESQL should insert a row and then delete with all references', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await insertAndDeleteRowWithFKADC(fkadc_database_pg);
+      });
+
+      const insertRowErrorWithFKADC = async database => {
+        const cartsTable = database.table('ShoppingCarts');
+        await cartsTable.insert({
+          CartId: 2,
+          CustomerId: 2,
+          CustomerName: 'Jack',
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert a row without reference', async () => {
+        try {
+          await insertRowErrorWithFKADC(fkadc_database);
+        } catch (err) {
+          assert.match(
+            (err as grpc.ServiceError).message,
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `ShoppingCarts`\./
+          );
+        }
+      });
+
+      it('POSTGRESQL should throw error when insert a row without reference', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        try {
+          await insertRowErrorWithFKADC(fkadc_database_pg);
+        } catch (err) {
+          assert.match(
+            (err as grpc.ServiceError).message,
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `shoppingcarts`\./
+          );
+        }
+      });
+    });
   });
 
   describe('Backups', () => {
