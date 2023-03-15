@@ -176,25 +176,12 @@ export abstract class Runner<T> {
     );
   }
 
-  /** Returns whether the given error is a retryable internal error */
-  isRetryableInternalError(err: grpc.ServiceError): boolean {
-    return (
-      err.code === grpc.status.INTERNAL &&
-      (err.message.includes(
-        'Received unexpected EOS on DATA frame from server'
-      ) ||
-        err.message.includes('RST_STREAM') ||
-        err.message.includes('HTTP/2 error code: INTERNAL_ERROR') ||
-        err.message.includes('Connection closed with unknown cause'))
-    );
-  }
-
   /** Returns whether the given error should cause a transaction retry. */
   shouldRetry(err: grpc.ServiceError): boolean {
     return (
       RETRYABLE.includes(err.code!) ||
       isSessionNotFoundError(err) ||
-      this.isRetryableInternalError(err)
+      isRetryableInternalError(err)
     );
   }
   /**
@@ -253,7 +240,7 @@ export abstract class Runner<T> {
       // responsible for retrying the transaction on a different session.
       if (
         !RETRYABLE.includes(lastError.code!) &&
-        !this.isRetryableInternalError(lastError)
+        !isRetryableInternalError(lastError)
       ) {
         throw lastError;
       }
@@ -387,4 +374,21 @@ export class AsyncTransactionRunner<T> extends Runner<T> {
   protected _run(transaction: Transaction): Promise<T> {
     return this.runFn(transaction);
   }
+}
+
+/**
+ * Checks whether the given error is a retryable internal error.
+ * @param error the error to check
+ * @return true if the error is a retryable internal error, and otherwise false.
+ */
+export function isRetryableInternalError(err: grpc.ServiceError): boolean {
+  return (
+    err.code === grpc.status.INTERNAL &&
+    (err.message.includes(
+      'Received unexpected EOS on DATA frame from server'
+    ) ||
+      err.message.includes('RST_STREAM') ||
+      err.message.includes('HTTP/2 error code: INTERNAL_ERROR') ||
+      err.message.includes('Connection closed with unknown cause'))
+  );
 }

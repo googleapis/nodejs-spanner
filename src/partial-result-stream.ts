@@ -23,6 +23,7 @@ import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
 import {grpc} from 'google-gax';
+import {isRetryableInternalError} from './transaction-runner';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
@@ -551,16 +552,4 @@ export function partialResultStream(
 
 function _hasResumeToken(chunk: google.spanner.v1.PartialResultSet): boolean {
   return is.defined(chunk.resumeToken) && chunk.resumeToken.length > 0;
-}
-
-function isRetryableInternalError(err: grpc.ServiceError): boolean {
-  return (
-    err.code === grpc.status.INTERNAL &&
-    (err.message.includes(
-      'Received unexpected EOS on DATA frame from server'
-    ) ||
-      err.message.includes('RST_STREAM') ||
-      err.message.includes('HTTP/2 error code: INTERNAL_ERROR') ||
-      err.message.includes('Connection closed with unknown cause'))
-  );
 }
