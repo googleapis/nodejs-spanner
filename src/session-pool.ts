@@ -270,13 +270,12 @@ export function isInstanceNotFoundError(
  * @param {Error} error The error to check.
  * @return {boolean} True if the error is a 'Create session permission' error, and otherwise false.
  */
-export function isCreateSessionPermissionError(
+export function isPermissionError(
   error: grpc.ServiceError | undefined
 ): boolean {
   return (
     error !== undefined &&
-    error.code === grpc.status.PERMISSION_DENIED &&
-    error.message.includes('spanner.sessions.create')
+    error.code === grpc.status.PERMISSION_DENIED
   );
 }
 
@@ -574,7 +573,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       if (
         isDatabaseNotFoundError(err) ||
         isInstanceNotFoundError(err) ||
-        isCreateSessionPermissionError(err) ||
+        isPermissionError(err) ||
         isDefaultCredentialsNotSetError(err) ||
         isProjectIdNotSetInEnvironmentError(err)
       ) {
