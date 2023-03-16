@@ -86,7 +86,7 @@ describe('Spanner', () => {
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-west2',
+    config: 'regional-us-central1',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
@@ -2634,6 +2634,123 @@ describe('Spanner', () => {
             /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `shoppingcarts`\./
           );
         }
+      });
+
+      const insertAndDeleteInSameTransactionErrorWithFKADC = (
+        done,
+        database
+      ) => {
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.insert('Customers', {
+            CustomerId: 2,
+            CustomerName: 'John',
+          });
+          transaction!.deleteRows('Customers', [2]);
+          transaction!.commit(err => {
+            assert.match(
+              (err as grpc.ServiceError).message.toLowerCase(),
+              /9 failed_precondition: cannot write a value for the referenced column `customers.customerid` and delete it in the same transaction\./
+            );
+            done();
+          });
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert and delete a referenced key', done => {
+        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database);
+      });
+
+      it('POSTGRESQL should throw error when insert and delete a referenced key', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database_pg);
+      });
+
+      const insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC = (
+        done,
+        database
+      ) => {
+        const customersTable = database.table('Customers');
+        customersTable.insert(
+          {
+            CustomerId: 2,
+            CustomerName: 'Marc',
+          },
+          err => {
+            assert.ifError(err);
+            database.runTransaction((err, transaction) => {
+              assert.ifError(err);
+              transaction!.insert('ShoppingCarts', {
+                CartId: 3,
+                CustomerId: 2,
+                CustomerName: 'Marc',
+              });
+              transaction!.deleteRows('Customers', [2]);
+              transaction!.commit(err => {
+                assert.strictEqual(
+                  (err as grpc.ServiceError).message.toLowerCase(),
+                  '9 failed_precondition: foreign key constraint `fkshoppingcartscustomerid` is violated on table `shoppingcarts`. cannot find referenced values in customers(customerid).'
+                );
+                done();
+              });
+            });
+          }
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert a referencing key and delete a referenced key', done => {
+        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
+          done,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
+          done,
+          fkadc_database_pg
+        );
+      });
+
+      const deleteRuleOnInformationSchemaReferentialConstraints = (
+        done,
+        database
+      ) => {
+        database.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.run(
+            "SELECT DELETE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME = 'FKShoppingCartsCustomerId'",
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value, 'CASCADE');
+              transaction!.end();
+              done();
+            }
+          );
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should test information schema referential constraints', done => {
+        deleteRuleOnInformationSchemaReferentialConstraints(
+          done,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should test information schema referential constraints', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        deleteRuleOnInformationSchemaReferentialConstraints(
+          done,
+          fkadc_database_pg
+        );
       });
     });
   });
