@@ -4604,6 +4604,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "dataBoostEnabled": {
+                      "type": "bool",
+                      "id": 16
                     }
                   },
                   "nested": {
@@ -4868,6 +4872,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "dataBoostEnabled": {
+                      "type": "bool",
+                      "id": 15
                     }
                   }
                 },
