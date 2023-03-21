@@ -2673,29 +2673,46 @@ describe('Spanner', () => {
         database
       ) => {
         const customersTable = database.table('Customers');
+        const cartsTable = database.table('ShoppingCarts');
         customersTable.insert(
-          {
-            CustomerId: 2,
-            CustomerName: 'Marc',
-          },
+          [
+            {
+              CustomerId: 2,
+              CustomerName: 'Marc',
+            },
+            {
+              CustomerId: 3,
+              CustomerName: 'John',
+            },
+          ],
           err => {
             assert.ifError(err);
-            database.runTransaction((err, transaction) => {
-              assert.ifError(err);
-              transaction!.insert('ShoppingCarts', {
-                CartId: 3,
+            cartsTable.insert(
+              {
+                CartId: 2,
                 CustomerId: 2,
                 CustomerName: 'Marc',
-              });
-              transaction!.deleteRows('Customers', [2]);
-              transaction!.commit(err => {
-                assert.strictEqual(
-                  (err as grpc.ServiceError).message.toLowerCase(),
-                  '9 failed_precondition: foreign key constraint `fkshoppingcartscustomerid` is violated on table `shoppingcarts`. cannot find referenced values in customers(customerid).'
-                );
-                done();
-              });
-            });
+              },
+              err => {
+                assert.ifError(err);
+                database.runTransaction((err, transaction) => {
+                  assert.ifError(err);
+                  transaction!.update('ShoppingCarts', {
+                    CartId: 2,
+                    CustomerId: 3,
+                    CustomerName: 'John',
+                  });
+                  transaction!.deleteRows('Customers', [2]);
+                  transaction!.commit(err => {
+                    assert.match(
+                      (err as grpc.ServiceError).message.toLowerCase(),
+                      /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./
+                    );
+                    done();
+                  });
+                });
+              }
+            );
           }
         );
       };
