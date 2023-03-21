@@ -4607,7 +4607,7 @@
                     },
                     "dataBoostEnabled": {
                       "type": "bool",
-                      "id": 15
+                      "id": 16
                     }
                   },
                   "nested": {
@@ -4875,7 +4875,7 @@
                     },
                     "dataBoostEnabled": {
                       "type": "bool",
-                      "id": 16
+                      "id": 15
                     }
                   }
                 },

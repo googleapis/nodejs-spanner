@@ -43090,7 +43090,7 @@
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         if (message.dataBoostEnabled != null && Object.hasOwnProperty.call(message, "dataBoostEnabled"))
-                            writer.uint32(/* id 15, wireType 0 =*/120).bool(message.dataBoostEnabled);
+                            writer.uint32(/* id 16, wireType 0 =*/128).bool(message.dataBoostEnabled);
                         return writer;
                     };
     
@@ -43188,7 +43188,7 @@
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                     break;
                                 }
-                            case 15: {
+                            case 16: {
                                     message.dataBoostEnabled = reader.bool();
                                     break;
                                 }
@@ -46260,7 +46260,7 @@
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                         if (message.dataBoostEnabled != null && Object.hasOwnProperty.call(message, "dataBoostEnabled"))
-                            writer.uint32(/* id 16, wireType 0 =*/128).bool(message.dataBoostEnabled);
+                            writer.uint32(/* id 15, wireType 0 =*/120).bool(message.dataBoostEnabled);
                         return writer;
                     };
     
@@ -46337,7 +46337,7 @@
                                     message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
                                     break;
                                 }
-                            case 16: {
+                            case 15: {
                                     message.dataBoostEnabled = reader.bool();
                                     break;
                                 }
