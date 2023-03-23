@@ -8259,6 +8259,9 @@ describe('Spanner', () => {
             );
           });
         }
+        else {
+          done();
+        }
       });
 
       it('should create and execute a query partition', function (done) {
