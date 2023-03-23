@@ -6666,7 +6666,7 @@ describe('Spanner', () => {
       it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingsql', done => {
         const query = {
           sql: 'SELECT * FROM TxnTable',
-          serverlessAnalyticsEnabled: true,
+          dataBoostEnabled: true,
         } as {} as ExecuteSqlRequest;
 
         DATABASE.run(query, err => {
@@ -6677,8 +6677,8 @@ describe('Spanner', () => {
 
       it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingread', done => {
         const query = {
-          sql: 'SELECT * FROM TxnTable',
-          serverlessAnalyticsEnabled: true,
+          columns: ['Key'],
+          dataBoostEnabled: true,
         } as {} as ReadRequest;
 
         DATABASE.getSnapshot((err, transaction) => {
@@ -8292,10 +8292,8 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        const key = 'k998';
         const selectQuery = {
-          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
-          params: {key},
+          sql: 'SELECT * FROM TxnTable where Key = "k998"',
         };
 
         let row_count = 0;
@@ -8305,14 +8303,14 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(partitions.length, 1);
             partitions.forEach(partition => {
-              transaction!.execute(partition, results => {
-                const rows = results[0].map(row => row.toJSON());
-                row_count += rows.length;
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                row_count += results.map(row => row.toJSON()).length;
                 assert.deepStrictEqual(row_count, 1);
+                transaction!.close();
+                done();
               });
             });
-            transaction!.close();
-            done();
           });
         });
       });
@@ -8325,7 +8323,7 @@ describe('Spanner', () => {
         const QUERY = {
           table: googleSqlTable.name,
           // Set databoostenabled to true for enabling serveless analytics.
-          serverlessAnalyticsEnabled: true,
+          dataBoostEnabled: true,
           keys: [key],
           columns: ['Key'],
         };
@@ -8337,14 +8335,14 @@ describe('Spanner', () => {
             assert.ifError(err);
             assert.deepStrictEqual(partitions.length, 1);
             partitions.forEach(partition => {
-              transaction!.execute(partition, results => {
-                const rows = results[0]?.map(row => row.toJSON());
-                read_row_count += rows.length;
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                read_row_count += results.map(row => row.toJSON()).length;
                 assert.deepStrictEqual(read_row_count, 1);
+                transaction!.close();
+                done();
               });
             });
-            transaction!.close();
-            done();
           });
         });
       });
