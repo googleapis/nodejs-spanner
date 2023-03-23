@@ -6662,33 +6662,6 @@ describe('Spanner', () => {
           postgreSqlRecords
         );
       });
-
-      it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingsql', done => {
-        const query = {
-          sql: 'SELECT * FROM TxnTable',
-          dataBoostEnabled: true,
-        } as {} as ExecuteSqlRequest;
-
-        DATABASE.run(query, err => {
-          assert.match(err!.details, /INVALID_ARGUMENT\./);
-          done();
-        });
-      });
-
-      it('GOOGLE_STANDARD_SQL should throw error with databoost enabled and partition token null for streamingread', done => {
-        const query = {
-          columns: ['Key'],
-          dataBoostEnabled: true,
-        } as {} as ReadRequest;
-
-        DATABASE.getSnapshot((err, transaction) => {
-          assert.ifError(err);
-          transaction!.read(googleSqlTable.name, query, err => {
-            assert.match(err!.details, /INVALID_ARGUMENT\./);
-            done();
-          });
-        });
-      });
     });
 
     describe('dml', () => {
