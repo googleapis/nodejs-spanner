@@ -8258,8 +8258,7 @@ describe('Spanner', () => {
               }
             );
           });
-        }
-        else {
+        } else {
           done();
         }
       });
