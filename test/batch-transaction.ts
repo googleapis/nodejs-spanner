@@ -132,14 +132,14 @@ describe('BatchTransaction', () => {
       gaxOptions: GAX_OPTS,
       params: {},
       types: {},
-      serverlessAnalyticsEnabled: true,
+      dataBoostEnabled: true,
     };
 
     it('should make the correct request', () => {
       const fakeParams = {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
-        serverlessAnalyticsEnabled: true,
+        dataBoostEnabled: true,
       };
 
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
@@ -285,7 +285,7 @@ describe('BatchTransaction', () => {
       keys: ['a', 'b'],
       ranges: [{}, {}],
       gaxOptions: GAX_OPTS,
-      serverlessAnalyticsEnabled: true,
+      dataBoostEnabled: true,
     };
 
     it('should make the correct request', () => {
@@ -293,7 +293,7 @@ describe('BatchTransaction', () => {
       const expectedQuery = {
         table: QUERY.table,
         keySet: fakeKeySet,
-        serverlessAnalyticsEnabled: true,
+        dataBoostEnabled: true,
       };
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
@@ -335,7 +335,7 @@ describe('BatchTransaction', () => {
     });
 
     it('should make read requests for read partitions with data boost enabled', () => {
-      const partition = {table: 'abc', serverlessAnalyticsEnabled: true};
+      const partition = {table: 'abc', dataBoostEnabled: true};
       const stub = sandbox.stub(batchTransaction, 'read');
 
       batchTransaction.execute(partition, assert.ifError);
@@ -348,7 +348,7 @@ describe('BatchTransaction', () => {
     it('should make query requests for non-read partitions with data boost enabled', () => {
       const partition = {
         sql: 'SELECT * FROM Singers',
-        serverlessAnalyticsEnabled: true,
+        dataBoostEnabled: true,
       };
       const stub = sandbox.stub(batchTransaction, 'run');
 
