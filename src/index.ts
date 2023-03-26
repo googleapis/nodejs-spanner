@@ -33,6 +33,7 @@ import {
   PGJsonb,
   SpannerDate,
   Struct,
+  ProtoMessage, ProtoEnum, IProtoMessageParams, IProtoEnumParams,
 } from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
@@ -296,9 +297,9 @@ class Spanner extends GrpcService {
     }
     const config = {
       baseUrl:
-        options.apiEndpoint ||
-        options.servicePath ||
-        v1.SpannerClient.servicePath,
+          options.apiEndpoint ||
+          options.servicePath ||
+          v1.SpannerClient.servicePath,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
@@ -1676,6 +1677,49 @@ class Spanner extends GrpcService {
   static pgJsonb(value): PGJsonb {
     return new codec.PGJsonb(value);
   }
+
+  /**
+   * Helper function to get a Cloud Spanner proMessage object.
+   *
+   * @param {IProtoMessageParams} value The proto message value params in the format of
+   *     @code{IProtoMessageParams}
+   * @returns {ProtoMessage}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const protoMessage = Spanner.protoMessage({
+   *   value: singerInfo,
+   *   messageFunction: singer.spanner.examples.music.SingerInfo,
+   *   fullName: "spanner.examples.music.SingerInfo"
+   * });
+   * ```
+   */
+  static protoMessage(value: IProtoMessageParams): ProtoMessage {
+    return new codec.ProtoMessage(value);
+  }
+
+  /**
+   * Helper function to get a Cloud Spanner proMessage object.
+   *
+   * @param {IProtoEnumParams} value The proto enum value params in the format of
+   *     @code{IProtoEnumParams}
+   * @returns {ProtoEnum}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const protoEnum = Spanner.protoEnum({
+   *   value: '2uhu',
+   *   enumObject: singer.spanner.examples.music.Genre,
+   *   fullName: "spanner.examples.music.Genre"
+   * });
+   * ```
+   */
+  static protoEnum(value: IProtoEnumParams): ProtoEnum {
+    return new codec.ProtoEnum(value);
+  }
+
   /**
    * Helper function to get a Cloud Spanner Struct object.
    *

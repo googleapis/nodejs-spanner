@@ -59,6 +59,7 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
+  columnInfo?: object
 }
 
 export interface CommitOptions {
@@ -564,7 +565,7 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions, columnInfo} =
       request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
@@ -586,6 +587,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.columnInfo;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -620,6 +622,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnInfo
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1041,7 +1044,7 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
+    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions, columnInfo} =
       query;
     let reqOpts;
 
@@ -1062,6 +1065,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.columnInfo;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1101,6 +1105,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnInfo
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {

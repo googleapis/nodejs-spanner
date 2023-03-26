@@ -55,6 +55,7 @@ export interface RowOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   maxResumeRetries?: number;
+  columnInfo?: object;
 }
 
 /**
@@ -335,7 +336,11 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _createRow(values: Value[]): Row {
     const fields = values.map((value, index) => {
       const {name, type} = this._fields[index];
-      return {name, value: codec.decode(value, type as google.spanner.v1.Type)};
+      const columnInfo = this._options.columnInfo?.[name];
+      return {
+        name,
+        value: codec.decode(value, type as google.spanner.v1.Type, columnInfo)
+      };
     });
 
     Object.defineProperty(fields, 'toJSON', {
