@@ -22,6 +22,11 @@ import {Big} from 'big.js';
 import {PreciseDate} from '@google-cloud/precise-date';
 import {GrpcService} from '../src/common-grpc/service';
 import {google} from '../protos/protos';
+import {GoogleError} from 'google-gax';
+import {util} from 'protobufjs';
+import Long = util.Long;
+const singer = require('./data/singer');
+const is = require('is');
 
 describe('codec', () => {
   let codec;
@@ -250,6 +255,100 @@ describe('codec', () => {
       const pgNumeric = new codec.PGNumeric(value);
 
       assert.strictEqual(pgNumeric.toJSON(), value);
+    });
+  });
+
+  describe('ProtoMessage', () => {
+    const protoMessageParams = {
+      value: singer.spanner.examples.music.SingerInfo.create({
+        singerId: new Long(1),
+        genre: singer.spanner.examples.music.Genre.POP,
+        birthDate: 'January',
+        nationality: 'Country1',
+      }),
+      messageFunction: singer.spanner.examples.music.SingerInfo,
+      fullName: 'spanner.examples.music.SingerInfo',
+    };
+
+    it('should store value as buffer', () => {
+      const protoMessage = new codec.ProtoMessage(protoMessageParams);
+      assert(Buffer.isBuffer(protoMessage.value));
+    });
+
+    it('should throw an error when value is not object and protoMessage is not passed', () => {
+      assert.throws(
+        () => {
+          new codec.ProtoMessage({
+            value: {
+              singerId: 1,
+              genre: singer.spanner.examples.music.Genre.POP,
+              birthDate: 'January',
+            },
+            fullName: 'spanner.examples.music.SingerInfo',
+          });
+        },
+        new GoogleError(`protoMessageParams cannot be used for constructing ProtoMessage. 
+          Please pass serializedBytes as value or message object with messageFunction`)
+      );
+    });
+
+    it('toJSON with messageFunction', () => {
+      assert.deepEqual(
+        new codec.ProtoMessage(protoMessageParams).toJSON(),
+        singer.spanner.examples.music.SingerInfo.toObject(
+          protoMessageParams.value
+        )
+      );
+    });
+
+    it('toJSON without messageFunction', () => {
+      const message = new codec.ProtoMessage({
+        value: singer.spanner.examples.music.SingerInfo.encode(
+          protoMessageParams.value
+        ).finish(),
+        fullName: 'spanner.examples.music.SingerInfo',
+      });
+      assert.deepEqual(message.toJSON(), message.value.toString());
+    });
+  });
+
+  describe('ProtoEnum', () => {
+    const enumParams = {
+      value: singer.spanner.examples.music.Genre.JAZZ,
+      enumObject: singer.spanner.examples.music.Genre,
+      fullName: 'spanner.examples.music.Genre',
+    };
+
+    it('should store value as string', () => {
+      const protoEnum = new codec.ProtoEnum(enumParams);
+      assert(is.string(protoEnum.value));
+    });
+
+    it('should throw an error when value is non numeric string and enumObject is not passed', () => {
+      assert.throws(
+        () => {
+          new codec.ProtoEnum({
+            value: 'POP',
+            fullName: 'spanner.examples.music.Genre',
+          });
+        },
+        new GoogleError(`protoEnumParams cannot be used for constructing ProtoEnum. 
+          Please pass int as value or enum string with enumObject`)
+      );
+    });
+
+    it('toJSON with enumObject', () => {
+      assert.deepEqual(new codec.ProtoEnum(enumParams).toJSON(), 'JAZZ');
+    });
+
+    it('toJSON without enumObject', () => {
+      assert.deepEqual(
+        new codec.ProtoEnum({
+          value: singer.spanner.examples.music.Genre.JAZZ,
+          fullName: 'spanner.examples.music.Genre',
+        }).toJSON(),
+        1
+      );
     });
   });
 
@@ -495,6 +594,42 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it('should decode ProtoMessage', () => {
+      const expected = new codec.ProtoMessage({
+        value: singer.spanner.examples.music.SingerInfo.create({
+          singerId: 1,
+          genre: singer.spanner.examples.music.Genre.POP,
+          birthDate: 'January',
+          nationality: 'Country1',
+        }),
+        messageFunction: singer.spanner.examples.music.SingerInfo,
+        fullName: 'spanner.examples.music.SingerInfo',
+      });
+      const encoded = expected.value.toString('base64');
+
+      const decoded = codec.decode(
+        encoded,
+        {
+          code: google.spanner.v1.TypeCode.PROTO,
+          protoTypeFqn: 'spanner.examples.music.SingerInfo',
+        },
+        singer.spanner.examples.music.SingerInfo
+      );
+
+      assert.deepStrictEqual(decoded, expected);
+    });
+
+    it('should decode ProtoEnum', () => {
+      const expected = Buffer.from('bytes value');
+      const encoded = expected.toString('base64');
+
+      const decoded = codec.decode(encoded, {
+        code: google.spanner.v1.TypeCode.BYTES,
+      });
+
+      assert.deepStrictEqual(decoded, expected);
+    });
+
     it('should decode FLOAT64', () => {
       const value = 'Infinity';
 
@@ -730,6 +865,44 @@ describe('codec', () => {
       const encoded = codec.encode(value);
 
       assert.strictEqual(encoded, value.toString('base64'));
+    });
+
+    it('should encode ProtoMessage', () => {
+      const genre = singer.spanner.examples.music.Genre.ROCK;
+      const singerInfo = singer.spanner.examples.music.SingerInfo.create({
+        singerId: 1,
+        genre: genre,
+        birthDate: 'January',
+        nationality: 'Country1',
+      });
+
+      const protoMessage = new codec.ProtoMessage({
+        value: singerInfo,
+        messageFunction: singer.spanner.examples.music.SingerInfo,
+        fullName: 'spanner.examples.music.SingerInfo',
+      });
+
+      const encoded = codec.encode(protoMessage);
+
+      assert.strictEqual(
+        encoded,
+        singer.spanner.examples.music.SingerInfo.encode(singerInfo)
+          .finish()
+          .toString('base64')
+      );
+    });
+
+    it('should encode ProtoEnum', () => {
+      const genre = singer.spanner.examples.music.Genre.ROCK;
+      const protoEnum = new codec.ProtoEnum({
+        value: genre,
+        enumObject: singer.spanner.examples.music.Genre,
+        fullName: 'spanner.examples.music.Genre',
+      });
+
+      const encoded = codec.encode(protoEnum);
+
+      assert.strictEqual(encoded, genre.toString());
     });
 
     it('should encode structs', () => {
