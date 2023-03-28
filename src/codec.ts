@@ -32,13 +32,18 @@ export interface Field {
 
 export interface IProtoMessageParams {
   value: object;
+  // Function representing the message with helper methods for deserializing
+  // and serializing messages, use from generated file.
   messageFunction?: Function;
+  // fully qualified name of the proto representing the enum definition
   fullName: string;
 }
 
 export interface IProtoEnumParams {
   value: string | number;
+  // Object containing enum string to id mappings, use from generated file.
   enumObject?: object;
+  // fully qualified name of the proto representing the enum definition
   fullName: string;
 }
 
@@ -589,7 +594,7 @@ function encodeValue(value: Value): Value {
   }
 
   if (value instanceof ProtoEnum) {
-    return value.value.toString();
+    return value.value;
   }
 
   if (value instanceof Struct) {
