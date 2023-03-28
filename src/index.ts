@@ -33,7 +33,10 @@ import {
   PGJsonb,
   SpannerDate,
   Struct,
-  ProtoMessage, ProtoEnum, IProtoMessageParams, IProtoEnumParams,
+  ProtoMessage,
+  ProtoEnum,
+  IProtoMessageParams,
+  IProtoEnumParams,
 } from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
@@ -297,9 +300,9 @@ class Spanner extends GrpcService {
     }
     const config = {
       baseUrl:
-          options.apiEndpoint ||
-          options.servicePath ||
-          v1.SpannerClient.servicePath,
+        options.apiEndpoint ||
+        options.servicePath ||
+        v1.SpannerClient.servicePath,
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {

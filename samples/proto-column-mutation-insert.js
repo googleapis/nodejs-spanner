@@ -16,8 +16,11 @@
 
 const singer = require('./resource/singer.js');
 
-function main(instanceId = 'my-instance', databaseId = 'my-database',
-    projectId = 'my-project-id') {
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
+) {
   // [START spanner_insert_proto_columns_data]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
@@ -31,7 +34,7 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
 
   // Instantiates a client
   const spanner = new Spanner({
-    projectId: projectId
+    projectId: projectId,
   });
 
   async function protoColumnMutationInsert() {
@@ -41,26 +44,26 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
 
     const genre = singer.spanner.examples.music.Genre.ROCK;
     const singerInfo = singer.spanner.examples.music.SingerInfo.create({
-      "singerId": 1,
-      "genre": genre,
-      "birthDate": "January",
-      "nationality": "Country1"
+      singerId: 1,
+      genre: genre,
+      birthDate: 'January',
+      nationality: 'Country1',
     });
 
     const protoMessage = Spanner.protoMessage({
       value: singerInfo,
       messageFunction: singer.spanner.examples.music.SingerInfo,
-      fullName: "spanner.examples.music.SingerInfo"
+      fullName: 'spanner.examples.music.SingerInfo',
     });
 
     const protoEnum = Spanner.protoEnum({
       value: genre,
       enumObject: singer.spanner.examples.music.Genre,
-      fullName: "spanner.examples.music.Genre"
+      fullName: 'spanner.examples.music.Genre',
     });
 
     // Instantiate Spanner table object.
-    const table = database.table("Singers");
+    const table = database.table('Singers');
 
     const data = [
       {
@@ -71,7 +74,6 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
         SingerGenre: protoEnum,
         SingerInfoArray: [protoMessage],
         SingerGenreArray: [protoEnum],
-
       },
     ];
 

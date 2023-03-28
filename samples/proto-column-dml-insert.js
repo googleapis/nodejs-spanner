@@ -16,8 +16,11 @@
 
 const singer = require('./resource/singer.js');
 
-function main(instanceId = 'my-instance', databaseId = 'my-database',
-    projectId = 'my-project-id') {
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
+) {
   // [START spanner_insert_proto_columns_data_with_dml]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
@@ -41,22 +44,22 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
 
     const genre = singer.spanner.examples.music.Genre.ROCK;
     const singerInfo = singer.spanner.examples.music.SingerInfo.create({
-      "singerId": 1,
-      "genre": genre,
-      "birthDate": "January",
-      "nationality": "Country1"
+      singerId: 1,
+      genre: genre,
+      birthDate: 'January',
+      nationality: 'Country1',
     });
 
     const protoMessage = Spanner.protoMessage({
       value: singerInfo,
       messageFunction: singer.spanner.examples.music.SingerInfo,
-      fullName: "spanner.examples.music.SingerInfo"
+      fullName: 'spanner.examples.music.SingerInfo',
     });
 
     const protoEnum = Spanner.protoEnum({
       value: genre,
       enumObject: singer.spanner.examples.music.Genre,
-      fullName: "spanner.examples.music.Genre"
+      fullName: 'spanner.examples.music.Genre',
     });
 
     // Instantiate Spanner table objects.
@@ -73,13 +76,17 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
                                      SingerGenreArray)
                 VALUES (1, 'Virginia', 'Watson', @id1, @id2, @id3, @id4)`,
           params: {
-            id1: protoMessage, id2: genre, id3: [protoMessage], id4: [protoEnum]
+            id1: protoMessage,
+            id2: genre,
+            id3: [protoMessage],
+            id4: [protoEnum],
           },
         });
 
         const rowCount = Math.floor(stats[stats.rowCount]);
         console.log(
-            `Successfully inserted ${rowCount} record into the Singers table.`);
+          `Successfully inserted ${rowCount} record into the Singers table.`
+        );
 
         await transaction.commit();
       } catch (err) {

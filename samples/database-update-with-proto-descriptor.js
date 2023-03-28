@@ -17,9 +17,9 @@
 const fs = require('fs');
 
 function main(
-    instanceId = 'my-instance',
-    databaseId = 'my-database',
-    projectId = 'my-project-id'
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
 ) {
   // [START spanner_update_database_with_proto_descriptors]
   /**
@@ -42,8 +42,9 @@ function main(
 
   async function updateDatabaseWithProtoDescriptor() {
     // Reading proto descriptor file
-    const protoDescriptor =
-        fs.readFileSync('./resource/descriptors.pb').toString('base64');
+    const protoDescriptor = fs
+      .readFileSync('./resource/descriptors.pb')
+      .toString('base64');
 
     // Updated a new database with an extra statements which will create
     // proto bundle and tables with proto column
@@ -72,9 +73,7 @@ function main(
 
     console.log(`Waiting for update on ${database.id} to complete...`);
     await operation.promise();
-    console.log(
-        `Updated database ${databaseId} with proto column.`
-    );
+    console.log(`Updated database ${databaseId} with proto column.`);
   }
   updateDatabaseWithProtoDescriptor();
   // [END spanner_update_database_with_proto_descriptors]

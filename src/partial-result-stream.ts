@@ -339,7 +339,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
       const columnInfo = this._options.columnInfo?.[name];
       return {
         name,
-        value: codec.decode(value, type as google.spanner.v1.Type, columnInfo)
+        value: codec.decode(value, type as google.spanner.v1.Type, columnInfo),
       };
     });
 

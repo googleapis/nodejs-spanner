@@ -32,14 +32,14 @@ export interface Field {
 
 export interface IProtoMessageParams {
   value: object;
-  messageFunction?: Function,
-  fullName: string
+  messageFunction?: Function;
+  fullName: string;
 }
 
 export interface IProtoEnumParams {
   value: string | number;
-  enumObject?: object,
-  fullName: string
+  enumObject?: object;
+  fullName: string;
 }
 
 export interface Json {
@@ -257,12 +257,12 @@ export class ProtoMessage {
 
     if (protoMessageParams.value instanceof Buffer) {
       this.value = protoMessageParams.value;
-    }
-    else if (protoMessageParams.messageFunction) {
-      this.value = protoMessageParams.messageFunction["encode"](protoMessageParams.value).finish();
-    }
-    else {
-      throw new Error(`${protoMessageParams} cannot be used for constructing ProtoMessage. 
+    } else if (protoMessageParams.messageFunction) {
+      this.value = protoMessageParams.messageFunction['encode'](
+        protoMessageParams.value
+      ).finish();
+    } else {
+      throw new GoogleError(`protoMessageParams cannot be used for constructing ProtoMessage. 
           Please pass serializedBytes as value or message object with messageFunction`);
     }
 
@@ -271,7 +271,9 @@ export class ProtoMessage {
 
   toJSON(): string {
     if (this.messageFunction != null) {
-      return this.messageFunction["toObject"](this.messageFunction["decode"](this.value));
+      return this.messageFunction['toObject'](
+        this.messageFunction['decode'](this.value)
+      );
     }
     return this.value.toString();
   }
@@ -291,14 +293,15 @@ export class ProtoEnum {
 
     if (is.number(protoEnumParams.value)) {
       this.value = protoEnumParams.value.toString();
-    } else if ((typeof protoEnumParams.value == 'string' && /^\d+$/.test(protoEnumParams.value))) {
+    } else if (
+      typeof protoEnumParams.value === 'string' &&
+      /^\d+$/.test(protoEnumParams.value)
+    ) {
       this.value = protoEnumParams.value;
-    }
-    else if (protoEnumParams.enumObject) {
+    } else if (protoEnumParams.enumObject) {
       this.value = protoEnumParams.enumObject[protoEnumParams.value];
-    }
-    else {
-      throw new Error(`${protoEnumParams} cannot be used for constructing ProtoEnum. 
+    } else {
+      throw new GoogleError(`protoEnumParams cannot be used for constructing ProtoEnum. 
           Please pass int as value or enum string with enumObject`);
     }
     this.enumObject = protoEnumParams.enumObject;
@@ -428,10 +431,14 @@ function convertValueToJson(value: Value, options: JSONOptions): Value {
  *
  * @param {*} value Value to decode
  * @param {object[]} type Value type object.
- * @param columnInfo
+ * @param columnInfo Additional parameter for column to deserialize data
  * @returns {*}
  */
-function decode(value: Value, type: spannerClient.spanner.v1.Type, columnInfo?: Function | object): Value {
+function decode(
+  value: Value,
+  type: spannerClient.spanner.v1.Type,
+  columnInfo?: Function | object
+): Value {
   if (is.null(value)) {
     return null;
   }
@@ -444,20 +451,22 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type, columnInfo?: 
     case 'BYTES':
       decoded = Buffer.from(decoded, 'base64');
       break;
+    case spannerClient.spanner.v1.TypeCode.PROTO:
     case 'PROTO':
       decoded = Buffer.from(decoded, 'base64');
       decoded = new ProtoMessage({
         value: decoded,
         fullName: type.protoTypeFqn,
-        messageFunction: columnInfo as Function
-      })
+        messageFunction: columnInfo as Function,
+      });
       break;
+    case spannerClient.spanner.v1.TypeCode.ENUM:
     case 'ENUM':
       decoded = new ProtoEnum({
         value: decoded,
         fullName: type.protoTypeFqn,
-        enumObject: columnInfo as object
-      })
+        enumObject: columnInfo as object,
+      });
       break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
     case 'FLOAT64':
@@ -504,7 +513,8 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type, columnInfo?: 
       decoded = decoded.map(value => {
         return decode(
           value,
-          type.arrayElementType! as spannerClient.spanner.v1.Type, columnInfo
+          type.arrayElementType! as spannerClient.spanner.v1.Type,
+          columnInfo
         );
       });
       break;
@@ -514,7 +524,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type, columnInfo?: 
         const value = decode(
           (!Array.isArray(decoded) && decoded[name!]) || decoded[index],
           type as spannerClient.spanner.v1.Type,
-            columnInfo
+          columnInfo
         );
         return {name, value};
       });
@@ -709,13 +719,12 @@ function getType(value: Value): Type {
   }
 
   if (value instanceof ProtoMessage) {
-    return {type: 'proto', fullName: value.fullName}
+    return {type: 'proto', fullName: value.fullName};
   }
 
   if (value instanceof ProtoEnum) {
-    return {type: 'enum', fullName: value.fullName}
+    return {type: 'enum', fullName: value.fullName};
   }
-
 
   if (is.boolean(value)) {
     return {type: 'bool'};

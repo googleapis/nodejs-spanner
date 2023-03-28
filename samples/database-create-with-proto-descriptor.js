@@ -22,9 +22,9 @@
 const fs = require('fs');
 
 function main(
-    instanceId = 'my-instance',
-    databaseId = 'my-database',
-    projectId = 'my-project-id'
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
 ) {
   // [START spanner_create_database_with_proto_descriptors]
   /**
@@ -47,8 +47,9 @@ function main(
 
   async function createDatabaseWithProtoDescriptor() {
     // Reading proto descriptor file
-    const protoDescriptor =
-        fs.readFileSync('./resource/descriptors.pb').toString('base64');
+    const protoDescriptor = fs
+      .readFileSync('./resource/descriptors.pb')
+      .toString('base64');
 
     // Create a new database with an extra statements which will create
     // proto bundle and tables with proto column
@@ -77,9 +78,7 @@ function main(
 
     console.log(`Waiting for creation of ${database.id} to complete...`);
     await operation.promise();
-    console.log(
-        `Created database ${databaseId} with proto column.`
-    );
+    console.log(`Created database ${databaseId} with proto column.`);
   }
   createDatabaseWithProtoDescriptor();
   // [END spanner_create_database_with_proto_descriptors]

@@ -16,8 +16,11 @@
 
 const singer = require('./resource/singer.js');
 
-function main(instanceId = 'my-instance', databaseId = 'my-database',
-    projectId = 'my-project-id') {
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
+) {
   // [START spanner_query_proto_columns_data]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
@@ -51,11 +54,11 @@ function main(instanceId = 'my-instance', databaseId = 'my-database',
       // `columnInfo` is an optional parameter and is used to deserialize the proto message and enum object back from bytearray,
       // if columnInfo is not passed for proto messages and enums then data for these columns will be bytes and int respectively.
       columnInfo: {
-        "SingerInfo": singer.spanner.examples.music.SingerInfo,
-        "SingerInfoArray": singer.spanner.examples.music.SingerInfo,
-        "SingerGenre": singer.spanner.examples.music.Genre,
-        "SingerGenreArray": singer.spanner.examples.music.Genre,
-      }
+        SingerInfo: singer.spanner.examples.music.SingerInfo,
+        SingerInfoArray: singer.spanner.examples.music.SingerInfo,
+        SingerGenre: singer.spanner.examples.music.Genre,
+        SingerGenreArray: singer.spanner.examples.music.Genre,
+      },
     };
 
     // Queries rows from the Singers table.

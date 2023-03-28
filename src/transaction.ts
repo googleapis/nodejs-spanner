@@ -59,7 +59,7 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
-  columnInfo?: object
+  columnInfo?: object;
 }
 
 export interface CommitOptions {
@@ -565,8 +565,14 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions, columnInfo} =
-      request;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnInfo,
+    } = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -622,7 +628,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-      columnInfo
+      columnInfo,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1044,8 +1050,14 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions, columnInfo} =
-      query;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnInfo,
+    } = query;
     let reqOpts;
 
     const sanitizeRequest = () => {
@@ -1105,7 +1117,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-      columnInfo
+      columnInfo,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
