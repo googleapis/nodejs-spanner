@@ -1693,7 +1693,7 @@ class Spanner extends GrpcService {
    * const {Spanner} = require('@google-cloud/spanner');
    * const protoMessage = Spanner.protoMessage({
    *   value: singerInfo,
-   *   messageFunction: singer.spanner.examples.music.SingerInfo,
+   *   messageFunction: music.SingerInfo,
    *   fullName: "spanner.examples.music.SingerInfo"
    * });
    * ```
@@ -1714,7 +1714,7 @@ class Spanner extends GrpcService {
    * const {Spanner} = require('@google-cloud/spanner');
    * const protoEnum = Spanner.protoEnum({
    *   value: '2uhu',
-   *   enumObject: singer.spanner.examples.music.Genre,
+   *   enumObject: music.Genre,
    *   fullName: "spanner.examples.music.Genre"
    * });
    * ```

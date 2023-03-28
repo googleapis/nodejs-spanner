@@ -15,6 +15,7 @@
 'use strict';
 
 const singer = require('./resource/singer.js');
+const music = singer.spanner.examples.music;
 
 function main(
   instanceId = 'my-instance',
@@ -42,8 +43,8 @@ function main(
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    const genre = singer.spanner.examples.music.Genre.ROCK;
-    const singerInfo = singer.spanner.examples.music.SingerInfo.create({
+    const genre = music.Genre.ROCK;
+    const singerInfo = music.SingerInfo.create({
       singerId: 1,
       genre: genre,
       birthDate: 'January',
@@ -52,13 +53,13 @@ function main(
 
     const protoMessage = Spanner.protoMessage({
       value: singerInfo,
-      messageFunction: singer.spanner.examples.music.SingerInfo,
+      messageFunction: music.SingerInfo,
       fullName: 'spanner.examples.music.SingerInfo',
     });
 
     const protoEnum = Spanner.protoEnum({
       value: genre,
-      enumObject: singer.spanner.examples.music.Genre,
+      enumObject: music.Genre,
       fullName: 'spanner.examples.music.Genre',
     });
 

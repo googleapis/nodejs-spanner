@@ -38,6 +38,7 @@ import {
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 const singer = require('./data/singer');
+const music = singer.spanner.examples.music;
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
@@ -577,22 +578,22 @@ describe('Spanner', () => {
   describe('protoMessage', () => {
     it('should create a ProtoMessage instance', () => {
       const protoMessageParams = {
-        value: singer.spanner.examples.music.SingerInfo.create({
+        value: music.SingerInfo.create({
           singerId: 2,
-          genre: singer.spanner.examples.music.Genre.POP,
+          genre: music.Genre.POP,
           birthDate: 'January',
         }),
-        messageFunction: singer.spanner.examples.music.SingerInfo,
+        messageFunction: music.SingerInfo,
         fullName: 'spanner.examples.music.SingerInfo',
       };
 
       const customValue = {
         value: {
           singerId: 2,
-          genre: singer.spanner.examples.music.Genre.POP,
+          genre: music.Genre.POP,
           birthDate: 'January',
         },
-        messageFunction: singer.spanner.examples.music.SingerInfo,
+        messageFunction: music.SingerInfo,
         fullName: 'spanner.examples.music.SingerInfo',
       };
 
@@ -611,14 +612,14 @@ describe('Spanner', () => {
   describe('protoEnum', () => {
     it('should create a ProtoEnum instance', () => {
       const enumParams = {
-        value: singer.spanner.examples.music.Genre.JAZZ,
-        enumObject: singer.spanner.examples.music.Genre,
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
         fullName: 'spanner.examples.music.Genre',
       };
 
       const customValue = {
-        value: singer.spanner.examples.music.Genre.JAZZ,
-        enumObject: singer.spanner.examples.music.Genre,
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
         fullName: 'spanner.examples.music.Genre',
       };
 
