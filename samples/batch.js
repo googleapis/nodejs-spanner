@@ -40,8 +40,14 @@ async function createAndExecuteQueryPartitions(
   const database = instance.database(databaseId);
   const [transaction] = await database.createBatchTransaction();
 
-  const query = 'SELECT * FROM Singers';
+  const query = {
+    sql: 'SELECT * FROM Singers',
+    // DataBoost option is an optional parameter which can also be used for partition read
+    // and query to execute the request via spanner independent compute resources.
+    dataBoostEnabled: true
+  };
 
+  // A Partition object is serializable and can be used from a different process.
   const [partitions] = await transaction.createQueryPartitions(query);
   console.log(`Successfully created ${partitions.length} query partitions.`);
 
