@@ -44,7 +44,7 @@ async function createAndExecuteQueryPartitions(
     sql: 'SELECT * FROM Singers',
     // DataBoost option is an optional parameter which can also be used for partition read
     // and query to execute the request via spanner independent compute resources.
-    dataBoostEnabled: true
+    dataBoostEnabled: true,
   };
 
   // A Partition object is serializable and can be used from a different process.
