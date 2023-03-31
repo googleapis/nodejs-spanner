@@ -51,7 +51,8 @@ function main(
                    SingerGenre,
                    SingerInfoArray,
                    SingerGenreArray
-            FROM Singers`,
+            FROM Singers 
+            WHERE SingerId = 1`,
       // `columnInfo` is an optional parameter and is used to deserialize the proto message and enum object back from bytearray,
       // if columnInfo is not passed for proto messages and enums then data for these columns will be bytes and int respectively.
       columnInfo: {
@@ -68,7 +69,9 @@ function main(
 
       rows.forEach(row => {
         const json = row.toJSON();
-        console.log(json);
+        console.log(
+          `SingerId: ${json.singerid}, FirstName: ${json.firstname}, LastName: ${json.lastname}`
+        );
       });
     } catch (err) {
       console.error('ERROR:', err);

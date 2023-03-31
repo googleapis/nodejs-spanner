@@ -58,7 +58,7 @@ function main(
             spanner.examples.music.SingerInfo,
             spanner.examples.music.Genre,
             )`;
-    const createSingersTableStatementStatement = `CREATE TABLE SingersProto (
+    const createSingersTableStatementStatement = `CREATE TABLE Singers (
             SingerId   INT64 NOT NULL,
             FirstName  STRING(1024),
             LastName   STRING(1024),

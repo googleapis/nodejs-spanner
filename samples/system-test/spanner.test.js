@@ -20,6 +20,7 @@ const {assert} = require('chai');
 const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
+const fs = require('fs');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
@@ -59,6 +60,8 @@ const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
+const PROTO_DATABASE_ID1 = `test-database-${CURRENT_TIME}-proto1`;
+const PROTO_DATABASE_ID2 = `test-database-${CURRENT_TIME}-proto2`;
 const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
@@ -235,6 +238,8 @@ describe('Spanner', () => {
         instance.database(PG_DATABASE_ID).delete(),
         instance.database(RESTORE_DATABASE_ID).delete(),
         instance.database(ENCRYPTED_RESTORE_DATABASE_ID).delete(),
+        instance.database(PROTO_DATABASE_ID1).delete(),
+        instance.database(PROTO_DATABASE_ID2).delete(),
         instance.backup(BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(COPY_BACKUP_ID).delete(GAX_OPTIONS),
         instance.backup(ENCRYPTED_BACKUP_ID).delete(GAX_OPTIONS),
@@ -1527,6 +1532,118 @@ describe('Spanner', () => {
         )
       );
       assert.include(output, 'CREATE TABLE Singers');
+    });
+  });
+
+  // create_database_with_proto_descriptor
+  it('should create a database with a proto descriptor', async () => {
+    const output = execSync(
+      `node database-create-with-proto-descriptor.js ${PROTO_DATABASE_ID1} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for creation of ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(`Created database ${DATABASE_ID} with proto column.`)
+    );
+  });
+
+  // database_update_with_proto_descriptor
+  it('should update database schema with a proto descriptor', async () => {
+    const output = execSync(
+      `node database-update-with-proto-descriptor.js ${PROTO_DATABASE_ID2} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for update on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(`Updated database ${DATABASE_ID} with proto column.`)
+    );
+  });
+
+  describe('proto columns', () => {
+    const protoDatabaseId = `test-proto-database-${CURRENT_TIME}`;
+    before(async () => {
+      const instance = spanner.instance(INSTANCE_ID);
+      const database = instance.database(protoDatabaseId);
+      // Reading proto descriptor file
+      const protoDescriptor = fs
+        .readFileSync('../resource/descriptors.pb')
+        .toString('base64');
+
+      const createProtoBundleStatement = `CREATE PROTO BUNDLE (
+            spanner.examples.music.SingerInfo,
+            spanner.examples.music.Genre,
+            )`;
+      const createSingersTableStatementStatement = `CREATE TABLE Singers (
+            SingerId   INT64 NOT NULL,
+            FirstName  STRING(1024),
+            LastName   STRING(1024),
+            SingerInfo spanner.examples.music.SingerInfo,
+            SingerGenre spanner.examples.music.Genre,
+            SingerInfoArray ARRAY<spanner.examples.music.SingerInfo>,
+            SingerGenreArray ARRAY<spanner.examples.music.Genre>,
+            ) PRIMARY KEY (SingerId)`;
+
+      const [, operation] = await database.create({
+        protoDescriptors: protoDescriptor,
+        extraStatements: [
+          createProtoBundleStatement,
+          createSingersTableStatementStatement,
+        ],
+      });
+
+      await operation.promise();
+    });
+
+    after(async () => {
+      const database = instance.database(protoDatabaseId);
+      await database.delete();
+    });
+
+    // proto_column_dml_insert
+    it('should insert row with proto column and enum using dml', async () => {
+      const output = execSync(
+        `node proto-column-dml-insert.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 1 record into the Singers table.')
+      );
+    });
+
+    // proto_column_mutation_insert
+    it('should insert row with proto column and enum using mutation', async () => {
+      const output = execSync(
+        `node proto-column-mutation-insert.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Updated data.'));
+    });
+
+    // proto_column_dql
+    it('should read row with proto column and enum using DQL', async () => {
+      const output = execSync(
+        `node proto-column-query.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('SingerId: 1, FirstName: Virginia, LastName: Watson')
+      );
+    });
+
+    // proto_column_read
+    it('should read row with proto column and enum using read', async () => {
+      const output = execSync(
+        `node proto-column-read.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('SingerId: 1, FirstName: Virginia, LastName: Watson')
+      );
     });
   });
 

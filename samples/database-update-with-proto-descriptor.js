@@ -53,7 +53,7 @@ function main(
             spanner.examples.music.SingerInfo,
             spanner.examples.music.Genre,
             )`;
-    const createSingersTableStatementStatement = `CREATE TABLE SingersProto (
+    const createSingersTableStatementStatement = `CREATE TABLE Singers (
             SingerId   INT64 NOT NULL,
             FirstName  STRING(1024),
             LastName   STRING(1024),
@@ -62,6 +62,9 @@ function main(
             SingerInfoArray ARRAY<spanner.examples.music.SingerInfo>,
             SingerGenreArray ARRAY<spanner.examples.music.Genre>,
             ) PRIMARY KEY (SingerId)`;
+
+    // Creating empty database
+    await database.create();
 
     const [, operation] = await database.updateSchema({
       protoDescriptors: protoDescriptor,
