@@ -3382,6 +3382,30 @@ describe('Spanner with mock server', () => {
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
+
+    it('should throw error if begin transaction fails on blind commit', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
+    });
   });
 
   describe('table', () => {
