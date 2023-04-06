@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.8.0](https://github.com/googleapis/nodejs-spanner/compare/v6.7.2...v6.8.0) (2023-04-06)
+
+
+### Features
+
+* Adding new fields for Serverless analytics ([#1816](https://github.com/googleapis/nodejs-spanner/issues/1816)) ([2a6ca6f](https://github.com/googleapis/nodejs-spanner/commit/2a6ca6f09215752f9451d625ac02837e9d70b66a))
+
+
+### Bug Fixes
+
+* Begin transaction foes not handle error ([#1833](https://github.com/googleapis/nodejs-spanner/issues/1833)) ([6ecd366](https://github.com/googleapis/nodejs-spanner/commit/6ecd366da7183d502c710cb5c879984c276b12db))
+* Correcting the proto field Id for field data_boost_enabled ([#1827](https://github.com/googleapis/nodejs-spanner/issues/1827)) ([7f6d4cc](https://github.com/googleapis/nodejs-spanner/commit/7f6d4ccce9269197312f2d795ef854e1789e8fce))
+* Logic for retrying specifiied internal errors ([#1822](https://github.com/googleapis/nodejs-spanner/issues/1822)) ([f915bd1](https://github.com/googleapis/nodejs-spanner/commit/f915bd16cf7e817243e46a319b3e6f270b24bf68)), closes [#1808](https://github.com/googleapis/nodejs-spanner/issues/1808)
+
 ## [6.7.2](https://github.com/googleapis/nodejs-spanner/compare/v6.7.1...v6.7.2) (2023-02-17)
 
 
