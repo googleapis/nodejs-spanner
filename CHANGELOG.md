@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.9.0](https://github.com/googleapis/nodejs-spanner/compare/v6.8.0...v6.9.0) (2023-04-26)
+
+
+### Features
+
+* Leader aware routing ([#1783](https://github.com/googleapis/nodejs-spanner/issues/1783)) ([0703f41](https://github.com/googleapis/nodejs-spanner/commit/0703f4160c4a0b4c9f9f716174daca110ab8e50f))
+
 ## [6.8.0](https://github.com/googleapis/nodejs-spanner/compare/v6.7.2...v6.8.0) (2023-04-06)
 
 
