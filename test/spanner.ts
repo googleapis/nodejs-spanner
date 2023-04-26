@@ -50,7 +50,10 @@ import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -1483,6 +1486,72 @@ describe('Spanner with mock server', () => {
                 .then(() => done());
             })
             .catch(done);
+        });
+      });
+    });
+
+    describe('LeaderAwareRouting', () => {
+      let spannerWithLAREnabled: Spanner;
+      let instanceWithLAREnabled: Instance;
+
+      function newTestDatabaseWithLAREnabled(
+        options?: SessionPoolOptions,
+        queryOptions?: IQueryOptions
+      ): Database {
+        return instanceWithLAREnabled.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
+      }
+
+      before(() => {
+        spannerWithLAREnabled = new Spanner({
+          servicePath: 'localhost',
+          port,
+          sslCreds: grpc.credentials.createInsecure(),
+          routeToLeaderEnabled: true,
+        });
+        // Gets a reference to a Cloud Spanner instance and database
+        instanceWithLAREnabled = spannerWithLAREnabled.instance('instance');
+      });
+
+      it('should execute with leader aware routing enabled in a read/write transaction', async () => {
+        const database = newTestDatabaseWithLAREnabled();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        let metadataCountWithLAREnabled = 0;
+        spannerMock.getMetadata().forEach(metadata => {
+          if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+            metadataCountWithLAREnabled++;
+            assert.strictEqual(
+              metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+              'true'
+            );
+          }
+        });
+        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
+      });
+
+      it('should execute with leader aware routing disabled in a read/write transaction', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+            undefined
+          );
         });
       });
     });
