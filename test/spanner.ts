@@ -3006,6 +3006,34 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    it('should retry on internal error', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          transaction.begin();
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            if (!attempts) {
+              spannerMock.setExecutionTime(
+                spannerMock.commit,
+                SimulatedExecutionTime.ofError({
+                  code: grpc.status.INTERNAL,
+                  message: 'Received RST_STREAM',
+                } as MockError)
+              );
+            }
+            attempts++;
+            return transaction.commit().then(() => updateCount);
+          });
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.strictEqual(attempts, 2);
+
+      await database.close();
+    });
+
     describe('batch-readonly-transaction', () => {
       it('should use session from pool', async () => {
         const database = newTestDatabase({min: 0, incStep: 1});
@@ -3422,6 +3450,30 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should throw error if begin transaction fails on blind commit', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
     });
   });
 

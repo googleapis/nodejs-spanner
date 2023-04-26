@@ -1821,7 +1821,7 @@ export class Transaction extends Dml {
     } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
-      this.begin().then(() => this.commit(options, callback));
+      this.begin().then(() => this.commit(options, callback), callback);
       return;
     }
 

@@ -493,6 +493,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetInstanceConfig_async
    */
   getInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest,
@@ -608,6 +610,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.delete_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_DeleteInstanceConfig_async
    */
   deleteInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest,
@@ -709,6 +713,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetInstance_async
    */
   getInstance(
     request?: protos.google.spanner.admin.instance.v1.IGetInstanceRequest,
@@ -809,6 +815,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.delete_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_DeleteInstance_async
    */
   deleteInstance(
     request?: protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest,
@@ -920,6 +928,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.set_iam_policy.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_SetIamPolicy_async
    */
   setIamPolicy(
     request?: protos.google.iam.v1.ISetIamPolicyRequest,
@@ -1009,6 +1019,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.get_iam_policy.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_GetIamPolicy_async
    */
   getIamPolicy(
     request?: protos.google.iam.v1.IGetIamPolicyRequest,
@@ -1101,6 +1113,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.test_iam_permissions.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_TestIamPermissions_async
    */
   testIamPermissions(
     request?: protos.google.iam.v1.ITestIamPermissionsRequest,
@@ -1240,6 +1254,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstanceConfig_async
    */
   createInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceConfigRequest,
@@ -1334,6 +1350,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstanceConfig_async
    */
   async checkCreateInstanceConfigProgress(
     name: string
@@ -1432,6 +1450,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstanceConfig_async
    */
   updateInstanceConfig(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigRequest,
@@ -1526,6 +1546,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance_config.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstanceConfig_async
    */
   async checkUpdateInstanceConfigProgress(
     name: string
@@ -1607,6 +1629,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstance_async
    */
   createInstance(
     request?: protos.google.spanner.admin.instance.v1.ICreateInstanceRequest,
@@ -1701,6 +1725,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.create_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_CreateInstance_async
    */
   async checkCreateInstanceProgress(
     name: string
@@ -1789,6 +1815,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstance_async
    */
   updateInstance(
     request?: protos.google.spanner.admin.instance.v1.IUpdateInstanceRequest,
@@ -1883,6 +1911,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.update_instance.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_UpdateInstance_async
    */
   async checkUpdateInstanceProgress(
     name: string
@@ -2090,6 +2120,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_configs.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstanceConfigs_async
    */
   listInstanceConfigsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest,
@@ -2441,6 +2473,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instance_config_operations.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstanceConfigOperations_async
    */
   listInstanceConfigOperationsAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest,
@@ -2703,6 +2737,8 @@ export class InstanceAdminClient {
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
    *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/instance_admin.list_instances.js</caption>
+   * region_tag:spanner_v1_generated_InstanceAdmin_ListInstances_async
    */
   listInstancesAsync(
     request?: protos.google.spanner.admin.instance.v1.IListInstancesRequest,

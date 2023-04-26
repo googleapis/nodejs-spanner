@@ -825,7 +825,7 @@ export class SpannerClient {
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {boolean} request.dataBoostEnabled
-   *   If this is for a partitioned read and this field is set to `true`, the
+   *   If this is for a partitioned query and this field is set to `true`, the
    *   request will be executed via Spanner independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
@@ -1082,7 +1082,7 @@ export class SpannerClient {
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {boolean} request.dataBoostEnabled
-   *   If this is for a partitioned query and this field is set to `true`, the
+   *   If this is for a partitioned read and this field is set to `true`, the
    *   request will be executed via Spanner independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
@@ -1783,7 +1783,7 @@ export class SpannerClient {
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {boolean} request.dataBoostEnabled
-   *   If this is for a partitioned read and this field is set to `true`, the
+   *   If this is for a partitioned query and this field is set to `true`, the
    *   request will be executed via Spanner independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
@@ -1867,7 +1867,7 @@ export class SpannerClient {
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {boolean} request.dataBoostEnabled
-   *   If this is for a partitioned query and this field is set to `true`, the
+   *   If this is for a partitioned read and this field is set to `true`, the
    *   request will be executed via Spanner independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
