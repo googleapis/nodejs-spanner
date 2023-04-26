@@ -216,7 +216,7 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
-  routeToLeaderEnabled = true;
+  routeToLeaderEnabled = false;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -318,8 +318,8 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
-    if (options.routeToLeaderEnabled === false) {
-      this.routeToLeaderEnabled = false;
+    if (options.routeToLeaderEnabled === true) {
+      this.routeToLeaderEnabled = true;
     }
 
     this.options = options;
