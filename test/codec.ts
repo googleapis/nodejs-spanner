@@ -330,7 +330,7 @@ describe('codec', () => {
           });
         },
         new GoogleError(`protoEnumParams cannot be used for constructing ProtoEnum. 
-          Please pass int as value or enum string with enumObject`)
+        Either pass number as value or pass enum string const as value with enumObject.`)
       );
     });
 

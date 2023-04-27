@@ -125,28 +125,42 @@ describe('Spanner', () => {
       );
     }
 
-    // Reading proto descriptor file
-    const protoDescriptor = fs
-      .readFileSync('test/data/descriptors.pb')
-      .toString('base64');
-
-    const [, googleSqlOperation] = await DATABASE.create({
-      schema: [
-        `
-        CREATE PROTO BUNDLE (
-            spanner.examples.music.SingerInfo,
-            spanner.examples.music.Genre,
-            )`,
-        `
+    if (IS_EMULATOR_ENABLED) {
+      const [, googleSqlOperation] = await DATABASE.create({
+        schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId)`,
-      ],
-      gaxOptions: GAX_OPTIONS,
-      protoDescriptors: protoDescriptor,
-    });
-    await googleSqlOperation.promise();
+        gaxOptions: GAX_OPTIONS,
+      });
+      await googleSqlOperation.promise();
+    } else {
+      // Reading proto descriptor file
+      const protoDescriptor = fs
+        .readFileSync('test/data/descriptors.pb')
+        .toString('base64');
+
+      const [, googleSqlOperation] = await DATABASE.create({
+        schema: [
+          `
+        CREATE PROTO BUNDLE (
+            spanner.examples.music.SingerInfo,
+            spanner.examples.music.Genre,
+            )`,
+          `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+        ],
+        gaxOptions: GAX_OPTIONS,
+        protoDescriptors: protoDescriptor,
+      });
+
+      await googleSqlOperation.promise();
+    }
+
     RESOURCES_TO_CLEAN.push(DATABASE);
 
     if (!IS_EMULATOR_ENABLED) {
