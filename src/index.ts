@@ -108,8 +108,8 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
 
 /**
  * Session pool configuration options.
- * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
- * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
+ * @property {boolean} [routeToLeaderEnabled=False] If set to true leader aware routing will be enabled.
+ * Enabling leader aware routing would route all requests in RW/PDML transactions to leader region.
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
