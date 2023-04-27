@@ -50,6 +50,10 @@ interface RequestFunction {
  *     that it is not ready for any more data. Increase this value if you
  *     experience 'Stream is still not ready to receive data' errors as a
  *     result of a slow writer in your receiving stream.
+ * @property {object} [columnInfo] An object map using which we can pass
+ * additional properties for each column type which can help in deserializing
+ * the data coming from backend. (Eg: We need to pass Proto Function and Enum
+ * map to deserialize proto messages and enums respectively)
  */
 export interface RowOptions {
   json?: boolean;

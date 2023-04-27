@@ -81,6 +81,7 @@ function main(
   updateDatabaseWithProtoDescriptor();
   // [END spanner_update_database_with_proto_descriptors]
 }
+
 process.on('unhandledRejection', err => {
   console.error(err.message);
   process.exitCode = 1;

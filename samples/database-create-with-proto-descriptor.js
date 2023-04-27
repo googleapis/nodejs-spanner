@@ -83,6 +83,7 @@ function main(
   createDatabaseWithProtoDescriptor();
   // [END spanner_create_database_with_proto_descriptors]
 }
+
 process.on('unhandledRejection', err => {
   console.error(err.message);
   process.exitCode = 1;
