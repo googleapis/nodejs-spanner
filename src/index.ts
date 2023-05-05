@@ -1689,7 +1689,7 @@ class Spanner extends GrpcService {
    * has helper methods to deserializing and serializing messages.
    */
   /**
-   * Helper function to get a Cloud Spanner proMessage object.
+   * Helper function to get a Cloud Spanner proto Message object.
    *
    * @param {IProtoMessageParams} value The proto message value params in the format of
    *     @code{IProtoMessageParams}
@@ -1719,7 +1719,7 @@ class Spanner extends GrpcService {
    * protobufjs.
    */
   /**
-   * Helper function to get a Cloud Spanner proto Message object.
+   * Helper function to get a Cloud Spanner proto enum object.
    *
    * @param {IProtoEnumParams} value The proto enum value params in the format of
    *     @code{IProtoEnumParams}

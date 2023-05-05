@@ -315,7 +315,7 @@ export class ProtoEnum {
   }
 
   toJSON(): string {
-    if (this.enumObject != null) {
+    if (this.enumObject) {
       return Object.getPrototypeOf(this.enumObject)[this.value];
     }
     return this.value.toString();
@@ -860,7 +860,7 @@ function createTypeObject(
     code,
   } as spannerClient.spanner.v1.Type;
 
-  if (code == 'PROTO' || code == 'ENUM') {
+  if (code === 'PROTO' || code === 'ENUM') {
     type.protoTypeFqn = config.fullName || '';
   }
 

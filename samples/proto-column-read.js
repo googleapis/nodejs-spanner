@@ -14,6 +14,7 @@
 
 'use strict';
 
+// eslint-disable-next-line node/no-unpublished-require
 const singer = require('./resource/singer.js');
 const music = singer.spanner.examples.music;
 

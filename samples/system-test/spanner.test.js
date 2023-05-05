@@ -20,7 +20,6 @@ const {assert} = require('chai');
 const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
-const fs = require('fs');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
@@ -1566,49 +1565,10 @@ describe('Spanner', () => {
   });
 
   describe('proto columns', () => {
-    const protoDatabaseId = `test-proto-database-${CURRENT_TIME}`;
-    before(async () => {
-      const instance = spanner.instance(INSTANCE_ID);
-      const database = instance.database(protoDatabaseId);
-      // Reading proto descriptor file
-      const protoDescriptor = fs
-        .readFileSync('../resource/descriptors.pb')
-        .toString('base64');
-
-      const createProtoBundleStatement = `CREATE PROTO BUNDLE (
-            spanner.examples.music.SingerInfo,
-            spanner.examples.music.Genre,
-            )`;
-      const createSingersTableStatementStatement = `CREATE TABLE Singers (
-            SingerId   INT64 NOT NULL,
-            FirstName  STRING(1024),
-            LastName   STRING(1024),
-            SingerInfo spanner.examples.music.SingerInfo,
-            SingerGenre spanner.examples.music.Genre,
-            SingerInfoArray ARRAY<spanner.examples.music.SingerInfo>,
-            SingerGenreArray ARRAY<spanner.examples.music.Genre>,
-            ) PRIMARY KEY (SingerId)`;
-
-      const [, operation] = await database.create({
-        protoDescriptors: protoDescriptor,
-        extraStatements: [
-          createProtoBundleStatement,
-          createSingersTableStatementStatement,
-        ],
-      });
-
-      await operation.promise();
-    });
-
-    after(async () => {
-      const database = instance.database(protoDatabaseId);
-      await database.delete();
-    });
-
     // proto_column_dml_insert
     it('should insert row with proto column and enum using dml', async () => {
       const output = execSync(
-        `node proto-column-dml-insert.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+        `node proto-column-dml-insert.js ${INSTANCE_ID} ${PROTO_DATABASE_ID1} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1619,7 +1579,7 @@ describe('Spanner', () => {
     // proto_column_mutation_insert
     it('should insert row with proto column and enum using mutation', async () => {
       const output = execSync(
-        `node proto-column-mutation-insert.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+        `node proto-column-mutation-insert.js ${INSTANCE_ID} ${PROTO_DATABASE_ID1} ${PROJECT_ID}`
       );
       assert.match(output, new RegExp('Updated data.'));
     });
@@ -1627,7 +1587,7 @@ describe('Spanner', () => {
     // proto_column_dql
     it('should read row with proto column and enum using DQL', async () => {
       const output = execSync(
-        `node proto-column-query.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+        `node proto-column-query.js ${INSTANCE_ID} ${PROTO_DATABASE_ID1} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1638,7 +1598,7 @@ describe('Spanner', () => {
     // proto_column_read
     it('should read row with proto column and enum using read', async () => {
       const output = execSync(
-        `node proto-column-read.js ${INSTANCE_ID} ${protoDatabaseId} ${PROJECT_ID}`
+        `node proto-column-read.js ${INSTANCE_ID} ${PROTO_DATABASE_ID1} ${PROJECT_ID}`
       );
       assert.match(
         output,
