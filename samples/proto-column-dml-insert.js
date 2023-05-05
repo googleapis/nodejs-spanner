@@ -71,7 +71,7 @@ function main(
         return;
       }
       try {
-        const [rows, stats] = await transaction.run({
+        const [, stats] = await transaction.run({
           sql: `INSERT INTO Singers (SingerId, FirstName, LastName,
                                      SingerInfo, SingerGenre,
                                      SingerInfoArray,
