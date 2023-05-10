@@ -89,10 +89,8 @@ async function main(instanceId, databaseId, projectId) {
   // [END spanner_postgresql_alter_sequence]
 }
 
-// process.on('unhandledRejection', err => {
-//   console.error(err.message);
-//   process.exitCode = 1;
-// });
-// main(...process.argv.slice(2));
-
-main('astha-testing','db','span-cloud-testing')
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

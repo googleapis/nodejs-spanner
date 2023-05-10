@@ -91,9 +91,9 @@ async function main(instanceId, databaseId, projectId) {
   await createSequence(instanceId, databaseId);
   // [END spanner_postgresql_create_sequence]
 }
-main('astha-testing','db','span-cloud-testing')
-// process.on('unhandledRejection', err => {
-//   console.error(err.message);
-//   process.exitCode = 1;
-// });
-// main(...process.argv.slice(2));
+
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

@@ -67,9 +67,8 @@ async function main(instanceId, databaseId, projectId) {
   // [END spanner_drop_sequence]
 }
 
-main('astha-testing','abcd','span-cloud-testing')
-// process.on('unhandledRejection', err => {
-//   console.error(err.message);
-//   process.exitCode = 1;
-// });
-// main(...process.argv.slice(2));
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
