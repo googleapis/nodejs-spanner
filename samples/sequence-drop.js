@@ -33,10 +33,9 @@ async function main(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
-  async function alterSequence(instanceId, databaseId) {
+  async function dropSequence(instanceId, databaseId) {
     // Gets a reference to a Cloud Spanner instance and database
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
@@ -46,7 +45,7 @@ async function main(instanceId, databaseId, projectId) {
       'DROP SEQUENCE Seq',
     ];
 
-    // Creates a new table with sequence
+    // Drop sequence from DDL
     try {
       const [operation] = await database.updateSchema(request);
 
@@ -63,7 +62,7 @@ async function main(instanceId, databaseId, projectId) {
       await database.close();
     }
   }
-  await alterSequence(instanceId, databaseId);
+  await dropSequence(instanceId, databaseId);
   // [END spanner_drop_sequence]
 }
 
@@ -72,3 +71,4 @@ process.on('unhandledRejection', err => {
   process.exitCode = 1;
 });
 main(...process.argv.slice(2));
+

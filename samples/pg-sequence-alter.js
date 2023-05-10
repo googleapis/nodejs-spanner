@@ -33,7 +33,6 @@ async function main(instanceId, databaseId, projectId) {
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
-    apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
   });
 
   async function alterSequence(instanceId, databaseId) {
@@ -43,7 +42,6 @@ async function main(instanceId, databaseId, projectId) {
 
     const request = ['ALTER SEQUENCE Seq SKIP RANGE 1000 5000000'];
 
-    // Creates a new table with sequence
     try {
       const [operation] = await database.updateSchema(request);
 
