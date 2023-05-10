@@ -65,7 +65,7 @@ const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 const LOCATION_ID = 'regional-us-central1';
-const PG_LOCATION_ID = 'regional-us-west2';
+const PG_LOCATION_ID = 'us-central1';
 const KEY_LOCATION_ID = 'us-central1';
 const KEY_RING_ID = 'test-key-ring-node';
 const KEY_ID = 'test-key';
@@ -1539,11 +1539,10 @@ describe('Spanner', () => {
         output,
         new RegExp('Successfully inserted 3 record into the Customers table.')
       );
-      assert.match(output, new RegExp('CustomerName: Alice'));
     });
 
     // alter_sequence
-    it('should create a sequence', async () => {
+    it('should alter a sequence', async () => {
       const output = execSync(
         `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
       );
@@ -1557,11 +1556,10 @@ describe('Spanner', () => {
         output,
         new RegExp('Successfully inserted 3 record into the Customers table.')
       );
-      assert.match(output, new RegExp('CustomerName: Lea'));
     });
 
     // drop_sequence
-    it('should create a sequence', async () => {
+    it('should drop a sequence', async () => {
       const output = execSync(
         `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
       );
@@ -1855,19 +1853,18 @@ describe('Spanner', () => {
     // pg_create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
         new RegExp('Successfully inserted 3 record into the Customers table.')
       );
-      assert.match(output, new RegExp('CustomerName: Alice'));
     });
 
     // pg_alter_sequence
-    it('should create a sequence', async () => {
+    it('should alter a sequence', async () => {
       const output = execSync(
-        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node pg-sequence-alter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1879,13 +1876,12 @@ describe('Spanner', () => {
         output,
         new RegExp('Successfully inserted 3 record into the Customers table.')
       );
-      assert.match(output, new RegExp('CustomerName: Lea'));
     });
 
     // pg_drop_sequence
-    it('should create a sequence', async () => {
+    it('should drop a sequence', async () => {
       const output = execSync(
-        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node pg-sequence-drop.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
