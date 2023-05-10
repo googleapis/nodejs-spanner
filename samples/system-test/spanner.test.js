@@ -74,6 +74,7 @@ const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
+  apiEndpoint: 'staging-wrenchworks.sandbox.googleapis.com',
 });
 const LABEL = 'node-sample-tests';
 const GAX_OPTIONS = {
@@ -1528,6 +1529,49 @@ describe('Spanner', () => {
       );
       assert.include(output, 'CREATE TABLE Singers');
     });
+
+    // create_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 3 record into the Customers table.')
+      );
+      assert.match(output, new RegExp('CustomerName: Alice'));
+    });
+
+    // alter_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
+        )
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 3 record into the Customers table.')
+      );
+      assert.match(output, new RegExp('CustomerName: Lea'));
+    });
+
+    // drop_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
+        )
+      );
+    });
   });
 
   describe('postgreSQL', () => {
@@ -1806,6 +1850,49 @@ describe('Spanner', () => {
         new RegExp('Successfully deleted 1 record from the Singers table')
       );
       assert.match(output, new RegExp('Virginia1 Watson1'));
+    });
+
+    // pg_create_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 3 record into the Customers table.')
+      );
+      assert.match(output, new RegExp('CustomerName: Alice'));
+    });
+
+    // pg_alter_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
+        )
+      );
+      assert.match(
+        output,
+        new RegExp('Successfully inserted 3 record into the Customers table.')
+      );
+      assert.match(output, new RegExp('CustomerName: Lea'));
+    });
+
+    // pg_drop_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
+        )
+      );
     });
   });
 });
