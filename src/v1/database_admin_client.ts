@@ -300,6 +300,12 @@ export class DatabaseAdminClient {
     const createDatabaseMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.CreateDatabaseMetadata'
     ) as gax.protobuf.Type;
+    const updateDatabaseResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.Database'
+    ) as gax.protobuf.Type;
+    const updateDatabaseMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.UpdateDatabaseMetadata'
+    ) as gax.protobuf.Type;
     const updateDatabaseDdlResponse = protoFilesRoot.lookup(
       '.google.protobuf.Empty'
     ) as gax.protobuf.Type;
@@ -330,6 +336,11 @@ export class DatabaseAdminClient {
         this.operationsClient,
         createDatabaseResponse.decode.bind(createDatabaseResponse),
         createDatabaseMetadata.decode.bind(createDatabaseMetadata)
+      ),
+      updateDatabase: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        updateDatabaseResponse.decode.bind(updateDatabaseResponse),
+        updateDatabaseMetadata.decode.bind(updateDatabaseMetadata)
       ),
       updateDatabaseDdl: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
@@ -406,6 +417,7 @@ export class DatabaseAdminClient {
       'listDatabases',
       'createDatabase',
       'getDatabase',
+      'updateDatabase',
       'updateDatabaseDdl',
       'dropDatabase',
       'getDatabaseDdl',
@@ -1540,6 +1552,184 @@ export class DatabaseAdminClient {
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
       protos.google.spanner.admin.database.v1.CreateDatabaseMetadata
+    >;
+  }
+  /**
+   * Updates a Cloud Spanner database. The returned
+   * {@link google.longrunning.Operation|long-running operation} can be used to track
+   * the progress of updating the database. If the named database does not
+   * exist, returns `NOT_FOUND`.
+   *
+   * While the operation is pending:
+   *
+   *   * The database's
+   *     {@link google.spanner.admin.database.v1.Database.reconciling|reconciling}
+   *     field is set to true.
+   *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+   *     the operation metadata's
+   *     {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time|cancel_time}
+   *     is set, the updates are reverted, and the operation terminates with a
+   *     `CANCELLED` status.
+   *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+   *     until the pending operation is done (returns successfully or with
+   *     error).
+   *   * Reading the database via the API continues to give the pre-request
+   *     values.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * The new values are in effect and readable via the API.
+   *   * The database's
+   *     {@link google.spanner.admin.database.v1.Database.reconciling|reconciling}
+   *     field becomes false.
+   *
+   * The returned {@link google.longrunning.Operation|long-running operation} will
+   * have a name of the format
+   * `projects/<project>/instances/<instance>/databases/<database>/operations/<operation_id>`
+   * and can be used to track the database modification. The
+   * {@link google.longrunning.Operation.metadata|metadata} field type is
+   * {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata|UpdateDatabaseMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Database|Database}, if successful.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {google.spanner.admin.database.v1.Database} request.database
+   *   Required. The database to update.
+   *   The `name` field of the database is of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
+   * @param {google.protobuf.FieldMask} request.updateMask
+   *   Required. The list of fields to update. Currently, only
+   *   `enable_drop_protection` field can be updated.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.update_database.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabase_async
+   */
+  updateDatabase(
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  updateDatabase(
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateDatabase(
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateDatabase(
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        'database.name': request.database!.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.updateDatabase(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by `updateDatabase()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.update_database.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabase_async
+   */
+  async checkUpdateDatabaseProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseMetadata
+    >
+  > {
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(
+      operation,
+      this.descriptors.longrunning.updateDatabase,
+      this._gaxModule.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseMetadata
     >;
   }
   /**
