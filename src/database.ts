@@ -106,10 +106,7 @@ export type GetDatabaseRolesResponse = PagedResponse<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
 >;
-type SetDatabaseMetadataCallback = ResourceCallback<
-    GaxOperation,
-    IOperation
->;
+type SetDatabaseMetadataCallback = ResourceCallback<GaxOperation, IOperation>;
 type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
@@ -492,45 +489,45 @@ class Database extends common.GrpcServiceObject {
    * ```
    */
   setMetadata(
-      metadata: IDatabase,
-      gaxOptions?: CallOptions
+    metadata: IDatabase,
+    gaxOptions?: CallOptions
   ): Promise<SetDatabaseMetadataResponse>;
   setMetadata(metadata: IDatabase, callback: SetDatabaseMetadataCallback): void;
   setMetadata(
-      metadata: IDatabase,
-      gaxOptions: CallOptions,
-      callback: SetDatabaseMetadataCallback
+    metadata: IDatabase,
+    gaxOptions: CallOptions,
+    callback: SetDatabaseMetadataCallback
   ): void;
   setMetadata(
-      metadata: IDatabase,
-      optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
-      cb?: SetDatabaseMetadataCallback
+    metadata: IDatabase,
+    optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
+    cb?: SetDatabaseMetadataCallback
   ): void | Promise<SetDatabaseMetadataResponse> {
     const gaxOpts =
-        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
-        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
     const reqOpts = {
       database: extend(
-          {
-            name: this.formattedName_,
-          },
-          metadata
+        {
+          name: this.formattedName_,
+        },
+        metadata
       ),
       updateMask: {
         paths: Object.keys(metadata).map(snakeCase),
       },
     };
     return this.request(
-        {
-          client: 'DatabaseAdminClient',
-          method: 'updateDatabase',
-          reqOpts,
-          gaxOpts,
-          headers: this.resourceHeader_,
-        },
-        callback!
+      {
+        client: 'DatabaseAdminClient',
+        method: 'updateDatabase',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      callback!
     );
   }
 
