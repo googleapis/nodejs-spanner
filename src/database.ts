@@ -85,10 +85,11 @@ import {
   RequestCallback,
   ResourceCallback,
   Schema,
+  addLeaderAwareRoutingHeader,
 } from './common';
 import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import IPolicy = google.iam.v1.IPolicy;
@@ -633,13 +634,18 @@ class Database extends common.GrpcServiceObject {
       sessionCount: count,
     };
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
       {
         client: 'SpannerClient',
         method: 'batchCreateSessions',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
@@ -901,13 +907,18 @@ class Database extends common.GrpcServiceObject {
     reqOpts.session.creatorRole =
       options.databaseRole || this.databaseRole || null;
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request<google.spanner.v1.ISession>(
       {
         client: 'SpannerClient',
         method: 'createSession',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
@@ -3370,6 +3381,17 @@ class Database extends common.GrpcServiceObject {
     }
     const databaseName = name.split('/').pop();
     return instanceName + '/databases/' + databaseName;
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.instance.parent as Spanner;
   }
 }
 

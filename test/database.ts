@@ -28,10 +28,13 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
-import {Instance} from '../src';
+import {Spanner, Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import {google} from '../protos/protos';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
@@ -177,11 +180,16 @@ describe('Database', () => {
   // tslint:disable-next-line variable-name
   let DatabaseCached: typeof db.Database;
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+  } as {} as Spanner;
+
   const INSTANCE = {
     request: util.noop,
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
+    parent: SPANNER,
   } as {} as Instance;
 
   const NAME = 'table-name';
@@ -356,7 +364,13 @@ describe('Database', () => {
       assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
       assert.strictEqual(reqOpts.sessionCount, count);
       assert.strictEqual(gaxOpts, undefined);
-      assert.deepStrictEqual(headers, database.resourceHeader_);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign(
+          {[LEADER_AWARE_ROUTING_HEADER]: true},
+          database.resourceHeader_
+        )
+      );
     });
 
     it('should accept just a count number', () => {
@@ -1775,7 +1789,13 @@ describe('Database', () => {
           },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(
+          config.headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            database.resourceHeader_
+          )
+        );
 
         done();
       };

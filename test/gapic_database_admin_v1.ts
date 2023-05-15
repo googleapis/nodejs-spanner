@@ -1625,6 +1625,204 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('updateDatabase', () => {
+    it('invokes updateDatabase without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
+      );
+      request.database ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseRequest',
+        ['database', 'name']
+      );
+      request.database.name = defaultValue1;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateDatabase =
+        stubLongRunningCall(expectedResponse);
+      const [operation] = await client.updateDatabase(request);
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateDatabase without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
+      );
+      request.database ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseRequest',
+        ['database', 'name']
+      );
+      request.database.name = defaultValue1;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateDatabase =
+        stubLongRunningCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.updateDatabase(
+          request,
+          (
+            err?: Error | null,
+            result?: LROperation<
+              protos.google.spanner.admin.database.v1.IDatabase,
+              protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+            > | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const operation = (await promise) as LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >;
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateDatabase with call error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
+      );
+      request.database ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseRequest',
+        ['database', 'name']
+      );
+      request.database.name = defaultValue1;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateDatabase = stubLongRunningCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.updateDatabase(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateDatabase with LRO error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateDatabaseRequest()
+      );
+      request.database ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateDatabaseRequest',
+        ['database', 'name']
+      );
+      request.database.name = defaultValue1;
+      const expectedHeaderRequestParams = `database.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateDatabase = stubLongRunningCall(
+        undefined,
+        undefined,
+        expectedError
+      );
+      const [operation] = await client.updateDatabase(request);
+      await assert.rejects(operation.promise(), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateDatabase as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes checkUpdateDatabaseProgress without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation = await client.checkUpdateDatabaseProgress(
+        expectedResponse.name
+      );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkUpdateDatabaseProgress with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkUpdateDatabaseProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+  });
+
   describe('updateDatabaseDdl', () => {
     it('invokes updateDatabaseDdl without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({
