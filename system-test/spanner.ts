@@ -2038,11 +2038,15 @@ describe('Spanner', () => {
         try {
           await DATABASE.delete();
           assert.ok(false);
-        } catch (err) {}
+        } catch (err) {
+          assert.ok(true);
+        }
         try {
           await instance.delete();
           assert.ok(false);
-        } catch (err) {}
+        } catch (err) {
+          assert.ok(true);
+        }
         // Disabling drop protection on database (for cleanup tasks later).
         const [operation2] = await DATABASE.setMetadata({
           enableDropProtection: false,
