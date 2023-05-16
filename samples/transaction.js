@@ -14,7 +14,7 @@
 
 'use strict';
 
-function readOnlyTransaction(instanceId, databaseId, projectId) {
+async function readOnlyTransaction(instanceId, databaseId, projectId) {
   // [START spanner_read_only_transaction]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
@@ -30,19 +30,34 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
   const spanner = new Spanner({
     projectId: projectId,
   });
+  const options = {
+    acquireTimeout: Infinity,
+    concurrency: Infinity,
+    fail: false,
+    idlesAfter: 10,
+    keepAlive: 30,
+    labels: {},
+    max: 1,
+    maxIdle: 1,
+    min: 1,
+    incStep: 1,
+    closeInactiveTransactions: true,
+    logging: true,
+    databaseRole: null,
+  };
 
   // Gets a reference to a Cloud Spanner instance and database
   const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const database = instance.database(databaseId, options);
 
   // Gets a transaction object that captures the database state
   // at a specific point in time
-  database.getSnapshot(async (err, transaction) => {
+  await database.getSnapshot(async (err, transaction) => {
     if (err) {
       console.error(err);
       return;
     }
-    const queryOne = 'SELECT SingerId, AlbumId, AlbumTitle FROM Albums';
+    const queryOne = 'SELECT SingerId, FirstName FROM Singers';
 
     try {
       // Read #1, using SQL
@@ -54,22 +69,23 @@ function readOnlyTransaction(instanceId, databaseId, projectId) {
           `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
         );
       });
+      await new Promise(r => setTimeout(r, 3000*60));
 
-      const queryTwo = {
-        columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
-      };
-
-      // Read #2, using the `read` method. Even if changes occur
-      // in-between the reads, the transaction ensures that both
-      // return the same data.
-      const [qTwoRows] = await transaction.read('Albums', queryTwo);
-
-      qTwoRows.forEach(row => {
-        const json = row.toJSON();
-        console.log(
-          `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
-        );
-      });
+      // const queryTwo = {
+      //   columns: ['SingerId', 'AlbumId', 'AlbumTitle'],
+      // };
+      //
+      // // Read #2, using the `read` method. Even if changes occur
+      // // in-between the reads, the transaction ensures that both
+      // // return the same data.
+      // const [qTwoRows] = await transaction.read('Albums', queryTwo);
+      //
+      // qTwoRows.forEach(row => {
+      //   const json = row.toJSON();
+      //   console.log(
+      //     `SingerId: ${json.SingerId}, AlbumId: ${json.AlbumId}, AlbumTitle: ${json.AlbumTitle}`
+      //   );
+      // });
 
       console.log('Successfully executed read-only transaction.');
     } catch (err) {
@@ -196,26 +212,27 @@ function readWriteTransaction(instanceId, databaseId, projectId) {
   // [END spanner_read_write_transaction]
 }
 
-require('yargs')
-  .demand(1)
-  .command(
-    'readOnly <instanceName> <databaseName> <projectId>',
-    'Execute a read-only transaction on an example Cloud Spanner table.',
-    {},
-    opts =>
-      readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .command(
-    'readWrite <instanceName> <databaseName> <projectId>',
-    'Execute a read-write transaction on an example Cloud Spanner table.',
-    {},
-    opts =>
-      readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .example('node $0 readOnly "my-instance" "my-database" "my-project-id"')
-  .example('node $0 readWrite "my-instance" "my-database" "my-project-id"')
-  .wrap(120)
-  .recommendCommands()
-  .epilogue('For more information, see https://cloud.google.com/spanner/docs')
-  .strict()
-  .help().argv;
+// require('yargs')
+//   .demand(1)
+//   .command(
+//     'readOnly <instanceName> <databaseName> <projectId>',
+//     'Execute a read-only transaction on an example Cloud Spanner table.',
+//     {},
+//     opts =>
+//       readOnlyTransaction(opts.instanceName, opts.databaseName, opts.projectId)
+//   )
+//   .command(
+//     'readWrite <instanceName> <databaseName> <projectId>',
+//     'Execute a read-write transaction on an example Cloud Spanner table.',
+//     {},
+//     opts =>
+//       readWriteTransaction(opts.instanceName, opts.databaseName, opts.projectId)
+//   )
+//   .example('node $0 readOnly "my-instance" "my-database" "my-project-id"')
+//   .example('node $0 readWrite "my-instance" "my-database" "my-project-id"')
+//   .wrap(120)
+//   .recommendCommands()
+//   .epilogue('For more information, see https://cloud.google.com/spanner/docs')
+//   .strict()
+//   .help().argv;
+await readOnlyTransaction('astha-testing', 'abcdef', 'span-cloud-testing');

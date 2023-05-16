@@ -3145,13 +3145,13 @@ describe('Spanner with mock server', () => {
       let session1;
       let session2;
       await database.runTransactionAsync({optimisticLock: true}, async tx => {
-        session1 = tx!.session.id;
+        session1 = tx!.session?.id;
         await tx!.run(selectSql);
         await tx.commit();
       });
       spannerMock.resetRequests();
       await database.runTransactionAsync(async tx => {
-        session2 = tx!.session.id;
+        session2 = tx!.session?.id;
         await tx!.run(selectSql);
         await tx.commit();
       });

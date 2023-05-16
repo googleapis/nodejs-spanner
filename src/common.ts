@@ -17,6 +17,7 @@
 import {grpc, CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
+import winston = require('winston');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
@@ -75,3 +76,11 @@ export interface PagedOptionsWithFilter extends PagedOptions {
  * by the backend.
  */
 export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
+
+export const DEFAULT_LOGGER_OPTIONS = {
+  transports: [new winston.transports.Console()],
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+};

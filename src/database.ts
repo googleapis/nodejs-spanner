@@ -81,6 +81,7 @@ import {
   NormalCallback,
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
+  DEFAULT_LOGGER_OPTIONS,
   PagedResponse,
   RequestCallback,
   ResourceCallback,
@@ -92,7 +93,6 @@ import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
 import winston = require('winston');
-const {LoggingWinston} = require('@google-cloud/logging-winston');
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
@@ -932,11 +932,11 @@ class Database extends common.GrpcServiceObject {
    * @returns {Transaction}
    */
   private _releaseOnEnd(session: Session, transaction: Snapshot) {
-    if (!transaction.session) {
-      return;
-    }
     transaction.once('end', () => {
       try {
+        if (this.pool_.transactionClosed(transaction)) {
+          return;
+        }
         this.pool_.release(session);
       } catch (e) {
         this.emit('error', e);
@@ -1023,18 +1023,13 @@ class Database extends common.GrpcServiceObject {
   disableLogging(): void {
     this.loggingEnabled = false;
   }
-
-  enableLogging(options?: winston.LoggerOptions): winston.Logger {
-    this.loggingEnabled = true;
-    if (this.logger) {
-      return this.logger;
+  enableLogging(options?: winston.LoggerOptions | null): winston.Logger {
+    if (options) {
+      options = options as winston.LoggerOptions;
     }
-    options = options || {};
-    if (!options.transports) {
-      const loggingWinston = new LoggingWinston();
-      options.transports = [loggingWinston];
+    if (!this.logger) {
+      this.logger = winston.createLogger(options || DEFAULT_LOGGER_OPTIONS);
     }
-    this.logger = winston.createLogger(options);
     return this.logger;
   }
 
@@ -1911,6 +1906,9 @@ class Database extends common.GrpcServiceObject {
         this._releaseOnEnd(session!, transaction!);
       }
       session!.txn = transaction;
+      if (transaction instanceof Snapshot) {
+        throw new GoogleError('Transaction expected, got Snapshot');
+      }
       callback!(err as grpc.ServiceError | null, transaction);
     });
   }
@@ -2874,27 +2872,29 @@ class Database extends common.GrpcServiceObject {
         runFn!(err as grpc.ServiceError);
         return;
       }
-      if (options.optimisticLock) {
-        transaction!.useOptimisticLock();
-      }
-
-      const release = this.pool_.release.bind(this.pool_, session!);
-      const runner = new TransactionRunner(
-        session!,
-        transaction!,
-        runFn!,
-        options
-      );
-
-      runner.run().then(release, err => {
-        if (isSessionNotFoundError(err)) {
-          release();
-          this.runTransaction(options, runFn!);
-        } else {
-          setImmediate(runFn!, err);
-          release();
+      if (transaction instanceof Transaction) {
+        if (options.optimisticLock) {
+          transaction!.useOptimisticLock();
         }
-      });
+
+        const release = this.pool_.release.bind(this.pool_, session!);
+        const runner = new TransactionRunner(
+          session!,
+          transaction!,
+          runFn!,
+          options
+        );
+
+        runner.run().then(release, err => {
+          if (isSessionNotFoundError(err)) {
+            release();
+            this.runTransaction(options, runFn!);
+          } else {
+            setImmediate(runFn!, err);
+            release();
+          }
+        });
+      }
     });
   }
 

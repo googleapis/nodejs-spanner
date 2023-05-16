@@ -21,7 +21,6 @@ import PQueue from 'p-queue';
 import {Database} from './database';
 import {Session, types} from './session';
 import {Snapshot, Transaction} from './transaction';
-import {NormalCallback} from './common';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 
@@ -117,6 +116,7 @@ export interface SessionPoolInterface extends EventEmitter {
    * @name SessionPoolInterface#release
    * @param {Session} session The session to be released.
    */
+  _recycledTransactions: Map<Snapshot, string>;
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
   getSession(
@@ -132,6 +132,7 @@ export interface SessionPoolInterface extends EventEmitter {
     callback: GetSessionCallback
   ): void;
   release(session: Session): void;
+  transactionClosed(transaction?: Snapshot): boolean;
 }
 
 /**
@@ -194,7 +195,7 @@ const DEFAULTS: SessionPoolOptions = {
   min: 25,
   incStep: 25,
   closeInactiveTransactions: false,
-  logging: false,
+  logging: true,
   databaseRole: null,
 };
 
@@ -373,6 +374,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _traces: Map<Session, trace.StackFrame[]>;
   _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
+  _recycledTransactions: Map<Snapshot, string>;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -390,7 +392,14 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `${message}\n${stack.join('\n')}`;
+    return `${message} \t ${stack.join('\t')}`;
+  }
+
+  transactionClosed(transaction?: Snapshot): boolean {
+    if (transaction && this._recycledTransactions.has(transaction)) {
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -518,6 +527,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
+    this._recycledTransactions = new Map();
   }
 
   /**
@@ -639,6 +649,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
+    // if (transaction && !this._recycledTransactions.has(transaction)) {
+    //   return;
+    // }
     if (!this._inventory.borrowed.has(session)) {
       throw new ReleaseError(session);
     }
@@ -1103,16 +1116,16 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     for (const session of this._traces.keys()) {
       if (session.lastUsed && !session.longRunningTransaction) {
         const diff = Date.now() - session?.lastUsed;
-        if (!session.longRunningTransaction && diff > 300) {
+        if (!session.longRunningTransaction && diff > 1000 * 60) {
+          const sessionTrace = SessionPool.formatTrace(
+            this._traces.get(session) || [],
+            'Long running transaction!'
+          );
           if (this.options.logging) {
-            this.database.logger?.warn(
-              SessionPool.formatTrace(
-                this._traces.get(session) || [],
-                'Long running transaction!'
-              )
-            );
+            this.database.logger?.log('warn', sessionTrace);
           }
 
+          this._recycledTransactions.set(session.txn!, sessionTrace);
           session.txn!.session = undefined;
           this.release(session);
           // await session.delete();
