@@ -410,7 +410,7 @@ describe('GrpcService', () => {
         return userAgent;
       };
 
-      const grpcService = new GrpcService(CONFIG, OPTIONS);
+      new GrpcService(CONFIG, OPTIONS);
       assert.strictEqual(OPTIONS['grpc.primary_user_agent'], userAgent);
     });
 
