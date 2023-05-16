@@ -81,7 +81,6 @@ import {
   NormalCallback,
   PagedOptionsWithFilter,
   CLOUD_RESOURCE_HEADER,
-  DEFAULT_LOGGER_OPTIONS,
   PagedResponse,
   RequestCallback,
   ResourceCallback,
@@ -1027,8 +1026,17 @@ class Database extends common.GrpcServiceObject {
     if (options) {
       options = options as winston.LoggerOptions;
     }
+    else {
+      options = {
+        transports: [new winston.transports.Console()],
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        ),
+      };
+    }
     if (!this.logger) {
-      this.logger = winston.createLogger(options || DEFAULT_LOGGER_OPTIONS);
+      this.logger = winston.createLogger(options);
     }
     return this.logger;
   }

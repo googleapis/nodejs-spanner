@@ -507,7 +507,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this._ongoingTransactionDeletion = false;
 
     if (this.options.logging) {
-      database.enableLogging();
+      this.database.enableLogging();
     }
     this.options.databaseRole = this.options.databaseRole
       ? this.options.databaseRole

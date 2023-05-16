@@ -76,11 +76,3 @@ export interface PagedOptionsWithFilter extends PagedOptions {
  * by the backend.
  */
 export const CLOUD_RESOURCE_HEADER = 'google-cloud-resource-prefix';
-
-export const DEFAULT_LOGGER_OPTIONS = {
-  transports: [new winston.transports.Console()],
-  format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.simple()
-  ),
-};
