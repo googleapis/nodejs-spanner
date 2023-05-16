@@ -314,6 +314,21 @@ describe('Spanner', () => {
     );
   });
 
+  // update_database
+  it('should set database metadata', async () => {
+    const output = execSync(
+        `node database-update.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(
+        output,
+        new RegExp(`Waiting for update operation for ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+        output,
+        new RegExp(`Updated database ${DATABASE_ID}.`)
+    );
+  });
+
   describe('encrypted database', () => {
     after(async () => {
       const instance = spanner.instance(INSTANCE_ID);
