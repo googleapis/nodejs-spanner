@@ -20218,6 +20218,39 @@
                              */
     
                             /**
+                             * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabase}.
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @typedef UpdateDatabaseCallback
+                             * @type {function}
+                             * @param {Error|null} error Error, if any
+                             * @param {google.longrunning.Operation} [response] Operation
+                             */
+    
+                            /**
+                             * Calls UpdateDatabase.
+                             * @function updateDatabase
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest} request UpdateDatabaseRequest message or plain object
+                             * @param {google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseCallback} callback Node-style callback called with the error, if any, and Operation
+                             * @returns {undefined}
+                             * @variation 1
+                             */
+                            Object.defineProperty(DatabaseAdmin.prototype.updateDatabase = function updateDatabase(request, callback) {
+                                return this.rpcCall(updateDatabase, $root.google.spanner.admin.database.v1.UpdateDatabaseRequest, $root.google.longrunning.Operation, request, callback);
+                            }, "name", { value: "UpdateDatabase" });
+    
+                            /**
+                             * Calls UpdateDatabase.
+                             * @function updateDatabase
+                             * @memberof google.spanner.admin.database.v1.DatabaseAdmin
+                             * @instance
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest} request UpdateDatabaseRequest message or plain object
+                             * @returns {Promise<google.longrunning.Operation>} Promise
+                             * @variation 2
+                             */
+    
+                            /**
                              * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabaseDdl}.
                              * @memberof google.spanner.admin.database.v1.DatabaseAdmin
                              * @typedef UpdateDatabaseDdlCallback
@@ -21034,6 +21067,8 @@
                              * @property {google.protobuf.ITimestamp|null} [earliestVersionTime] Database earliestVersionTime
                              * @property {string|null} [defaultLeader] Database defaultLeader
                              * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] Database databaseDialect
+                             * @property {boolean|null} [enableDropProtection] Database enableDropProtection
+                             * @property {boolean|null} [reconciling] Database reconciling
                              */
     
                             /**
@@ -21133,6 +21168,22 @@
                             Database.prototype.databaseDialect = 0;
     
                             /**
+                             * Database enableDropProtection.
+                             * @member {boolean} enableDropProtection
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.enableDropProtection = false;
+    
+                            /**
+                             * Database reconciling.
+                             * @member {boolean} reconciling
+                             * @memberof google.spanner.admin.database.v1.Database
+                             * @instance
+                             */
+                            Database.prototype.reconciling = false;
+    
+                            /**
                              * Creates a new Database instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.Database
@@ -21177,6 +21228,10 @@
                                     writer.uint32(/* id 9, wireType 2 =*/74).string(message.defaultLeader);
                                 if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
                                     writer.uint32(/* id 10, wireType 0 =*/80).int32(message.databaseDialect);
+                                if (message.enableDropProtection != null && Object.hasOwnProperty.call(message, "enableDropProtection"))
+                                    writer.uint32(/* id 11, wireType 0 =*/88).bool(message.enableDropProtection);
+                                if (message.reconciling != null && Object.hasOwnProperty.call(message, "reconciling"))
+                                    writer.uint32(/* id 12, wireType 0 =*/96).bool(message.reconciling);
                                 return writer;
                             };
     
@@ -21251,6 +21306,14 @@
                                         }
                                     case 10: {
                                             message.databaseDialect = reader.int32();
+                                            break;
+                                        }
+                                    case 11: {
+                                            message.enableDropProtection = reader.bool();
+                                            break;
+                                        }
+                                    case 12: {
+                                            message.reconciling = reader.bool();
                                             break;
                                         }
                                     default:
@@ -21345,6 +21408,12 @@
                                     case 2:
                                         break;
                                     }
+                                if (message.enableDropProtection != null && message.hasOwnProperty("enableDropProtection"))
+                                    if (typeof message.enableDropProtection !== "boolean")
+                                        return "enableDropProtection: boolean expected";
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    if (typeof message.reconciling !== "boolean")
+                                        return "reconciling: boolean expected";
                                 return null;
                             };
     
@@ -21440,6 +21509,10 @@
                                     message.databaseDialect = 2;
                                     break;
                                 }
+                                if (object.enableDropProtection != null)
+                                    message.enableDropProtection = Boolean(object.enableDropProtection);
+                                if (object.reconciling != null)
+                                    message.reconciling = Boolean(object.reconciling);
                                 return message;
                             };
     
@@ -21468,6 +21541,8 @@
                                     object.earliestVersionTime = null;
                                     object.defaultLeader = "";
                                     object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
+                                    object.enableDropProtection = false;
+                                    object.reconciling = false;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -21492,6 +21567,10 @@
                                     object.defaultLeader = message.defaultLeader;
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
                                     object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                if (message.enableDropProtection != null && message.hasOwnProperty("enableDropProtection"))
+                                    object.enableDropProtection = message.enableDropProtection;
+                                if (message.reconciling != null && message.hasOwnProperty("reconciling"))
+                                    object.reconciling = message.reconciling;
                                 return object;
                             };
     
@@ -22786,6 +22865,508 @@
                             };
     
                             return GetDatabaseRequest;
+                        })();
+    
+                        v1.UpdateDatabaseRequest = (function() {
+    
+                            /**
+                             * Properties of an UpdateDatabaseRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IUpdateDatabaseRequest
+                             * @property {google.spanner.admin.database.v1.IDatabase|null} [database] UpdateDatabaseRequest database
+                             * @property {google.protobuf.IFieldMask|null} [updateMask] UpdateDatabaseRequest updateMask
+                             */
+    
+                            /**
+                             * Constructs a new UpdateDatabaseRequest.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an UpdateDatabaseRequest.
+                             * @implements IUpdateDatabaseRequest
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest=} [properties] Properties to set
+                             */
+                            function UpdateDatabaseRequest(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateDatabaseRequest database.
+                             * @member {google.spanner.admin.database.v1.IDatabase|null|undefined} database
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @instance
+                             */
+                            UpdateDatabaseRequest.prototype.database = null;
+    
+                            /**
+                             * UpdateDatabaseRequest updateMask.
+                             * @member {google.protobuf.IFieldMask|null|undefined} updateMask
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @instance
+                             */
+                            UpdateDatabaseRequest.prototype.updateMask = null;
+    
+                            /**
+                             * Creates a new UpdateDatabaseRequest instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseRequest} UpdateDatabaseRequest instance
+                             */
+                            UpdateDatabaseRequest.create = function create(properties) {
+                                return new UpdateDatabaseRequest(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseRequest.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest} message UpdateDatabaseRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateDatabaseRequest.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.database != null && Object.hasOwnProperty.call(message, "database"))
+                                    $root.google.spanner.admin.database.v1.Database.encode(message.database, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.updateMask != null && Object.hasOwnProperty.call(message, "updateMask"))
+                                    $root.google.protobuf.FieldMask.encode(message.updateMask, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseRequest.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseRequest} message UpdateDatabaseRequest message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateDatabaseRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateDatabaseRequest message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseRequest} UpdateDatabaseRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateDatabaseRequest.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.UpdateDatabaseRequest();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.database = $root.google.spanner.admin.database.v1.Database.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.updateMask = $root.google.protobuf.FieldMask.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateDatabaseRequest message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseRequest} UpdateDatabaseRequest
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateDatabaseRequest.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateDatabaseRequest message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateDatabaseRequest.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.database != null && message.hasOwnProperty("database")) {
+                                    var error = $root.google.spanner.admin.database.v1.Database.verify(message.database);
+                                    if (error)
+                                        return "database." + error;
+                                }
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask")) {
+                                    var error = $root.google.protobuf.FieldMask.verify(message.updateMask);
+                                    if (error)
+                                        return "updateMask." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseRequest} UpdateDatabaseRequest
+                             */
+                            UpdateDatabaseRequest.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.UpdateDatabaseRequest)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.UpdateDatabaseRequest();
+                                if (object.database != null) {
+                                    if (typeof object.database !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseRequest.database: object expected");
+                                    message.database = $root.google.spanner.admin.database.v1.Database.fromObject(object.database);
+                                }
+                                if (object.updateMask != null) {
+                                    if (typeof object.updateMask !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseRequest.updateMask: object expected");
+                                    message.updateMask = $root.google.protobuf.FieldMask.fromObject(object.updateMask);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateDatabaseRequest message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {google.spanner.admin.database.v1.UpdateDatabaseRequest} message UpdateDatabaseRequest
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateDatabaseRequest.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.database = null;
+                                    object.updateMask = null;
+                                }
+                                if (message.database != null && message.hasOwnProperty("database"))
+                                    object.database = $root.google.spanner.admin.database.v1.Database.toObject(message.database, options);
+                                if (message.updateMask != null && message.hasOwnProperty("updateMask"))
+                                    object.updateMask = $root.google.protobuf.FieldMask.toObject(message.updateMask, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateDatabaseRequest to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateDatabaseRequest.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateDatabaseRequest
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseRequest
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateDatabaseRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.UpdateDatabaseRequest";
+                            };
+    
+                            return UpdateDatabaseRequest;
+                        })();
+    
+                        v1.UpdateDatabaseMetadata = (function() {
+    
+                            /**
+                             * Properties of an UpdateDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IUpdateDatabaseMetadata
+                             * @property {google.spanner.admin.database.v1.IUpdateDatabaseRequest|null} [request] UpdateDatabaseMetadata request
+                             * @property {google.spanner.admin.database.v1.IOperationProgress|null} [progress] UpdateDatabaseMetadata progress
+                             * @property {google.protobuf.ITimestamp|null} [cancelTime] UpdateDatabaseMetadata cancelTime
+                             */
+    
+                            /**
+                             * Constructs a new UpdateDatabaseMetadata.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents an UpdateDatabaseMetadata.
+                             * @implements IUpdateDatabaseMetadata
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseMetadata=} [properties] Properties to set
+                             */
+                            function UpdateDatabaseMetadata(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * UpdateDatabaseMetadata request.
+                             * @member {google.spanner.admin.database.v1.IUpdateDatabaseRequest|null|undefined} request
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseMetadata.prototype.request = null;
+    
+                            /**
+                             * UpdateDatabaseMetadata progress.
+                             * @member {google.spanner.admin.database.v1.IOperationProgress|null|undefined} progress
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseMetadata.prototype.progress = null;
+    
+                            /**
+                             * UpdateDatabaseMetadata cancelTime.
+                             * @member {google.protobuf.ITimestamp|null|undefined} cancelTime
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseMetadata.prototype.cancelTime = null;
+    
+                            /**
+                             * Creates a new UpdateDatabaseMetadata instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseMetadata=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseMetadata} UpdateDatabaseMetadata instance
+                             */
+                            UpdateDatabaseMetadata.create = function create(properties) {
+                                return new UpdateDatabaseMetadata(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseMetadata} message UpdateDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateDatabaseMetadata.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.request != null && Object.hasOwnProperty.call(message, "request"))
+                                    $root.google.spanner.admin.database.v1.UpdateDatabaseRequest.encode(message.request, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.progress != null && Object.hasOwnProperty.call(message, "progress"))
+                                    $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                if (message.cancelTime != null && Object.hasOwnProperty.call(message, "cancelTime"))
+                                    $root.google.protobuf.Timestamp.encode(message.cancelTime, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified UpdateDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IUpdateDatabaseMetadata} message UpdateDatabaseMetadata message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            UpdateDatabaseMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an UpdateDatabaseMetadata message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseMetadata} UpdateDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateDatabaseMetadata.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.UpdateDatabaseMetadata();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.request = $root.google.spanner.admin.database.v1.UpdateDatabaseRequest.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.progress = $root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 3: {
+                                            message.cancelTime = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an UpdateDatabaseMetadata message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseMetadata} UpdateDatabaseMetadata
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            UpdateDatabaseMetadata.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an UpdateDatabaseMetadata message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            UpdateDatabaseMetadata.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.request != null && message.hasOwnProperty("request")) {
+                                    var error = $root.google.spanner.admin.database.v1.UpdateDatabaseRequest.verify(message.request);
+                                    if (error)
+                                        return "request." + error;
+                                }
+                                if (message.progress != null && message.hasOwnProperty("progress")) {
+                                    var error = $root.google.spanner.admin.database.v1.OperationProgress.verify(message.progress);
+                                    if (error)
+                                        return "progress." + error;
+                                }
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime")) {
+                                    var error = $root.google.protobuf.Timestamp.verify(message.cancelTime);
+                                    if (error)
+                                        return "cancelTime." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an UpdateDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.UpdateDatabaseMetadata} UpdateDatabaseMetadata
+                             */
+                            UpdateDatabaseMetadata.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.UpdateDatabaseMetadata)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.UpdateDatabaseMetadata();
+                                if (object.request != null) {
+                                    if (typeof object.request !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseMetadata.request: object expected");
+                                    message.request = $root.google.spanner.admin.database.v1.UpdateDatabaseRequest.fromObject(object.request);
+                                }
+                                if (object.progress != null) {
+                                    if (typeof object.progress !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseMetadata.progress: object expected");
+                                    message.progress = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress);
+                                }
+                                if (object.cancelTime != null) {
+                                    if (typeof object.cancelTime !== "object")
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancelTime: object expected");
+                                    message.cancelTime = $root.google.protobuf.Timestamp.fromObject(object.cancelTime);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an UpdateDatabaseMetadata message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {google.spanner.admin.database.v1.UpdateDatabaseMetadata} message UpdateDatabaseMetadata
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            UpdateDatabaseMetadata.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.request = null;
+                                    object.progress = null;
+                                    object.cancelTime = null;
+                                }
+                                if (message.request != null && message.hasOwnProperty("request"))
+                                    object.request = $root.google.spanner.admin.database.v1.UpdateDatabaseRequest.toObject(message.request, options);
+                                if (message.progress != null && message.hasOwnProperty("progress"))
+                                    object.progress = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress, options);
+                                if (message.cancelTime != null && message.hasOwnProperty("cancelTime"))
+                                    object.cancelTime = $root.google.protobuf.Timestamp.toObject(message.cancelTime, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this UpdateDatabaseMetadata to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            UpdateDatabaseMetadata.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for UpdateDatabaseMetadata
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseMetadata
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            UpdateDatabaseMetadata.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.UpdateDatabaseMetadata";
+                            };
+    
+                            return UpdateDatabaseMetadata;
                         })();
     
                         v1.UpdateDatabaseDdlRequest = (function() {

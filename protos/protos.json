@@ -1262,7 +1262,7 @@
                     "v1": {
                       "options": {
                         "csharp_namespace": "Google.Cloud.Spanner.Admin.Database.V1",
-                        "go_package": "google.golang.org/genproto/googleapis/spanner/admin/database/v1;database",
+                        "go_package": "cloud.google.com/go/spanner/admin/database/apiv1/databasepb;databasepb",
                         "java_multiple_files": true,
                         "java_outer_classname": "SpannerDatabaseAdminProto",
                         "java_package": "com.google.spanner.admin.database.v1",
@@ -1833,6 +1833,34 @@
                                 }
                               ]
                             },
+                            "UpdateDatabase": {
+                              "requestType": "UpdateDatabaseRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{database.name=projects/*/instances/*/databases/*}",
+                                "(google.api.http).body": "database",
+                                "(google.api.method_signature)": "database,update_mask",
+                                "(google.longrunning.operation_info).response_type": "Database",
+                                "(google.longrunning.operation_info).metadata_type": "UpdateDatabaseMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "patch": "/v1/{database.name=projects/*/instances/*/databases/*}",
+                                    "body": "database"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "database,update_mask"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "Database",
+                                    "metadata_type": "UpdateDatabaseMetadata"
+                                  }
+                                }
+                              ]
+                            },
                             "UpdateDatabaseDdl": {
                               "requestType": "UpdateDatabaseDdlRequest",
                               "responseType": "google.longrunning.Operation",
@@ -2290,6 +2318,17 @@
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
+                            },
+                            "enableDropProtection": {
+                              "type": "bool",
+                              "id": 11
+                            },
+                            "reconciling": {
+                              "type": "bool",
+                              "id": 12,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
                             }
                           },
                           "nested": {
@@ -2397,6 +2436,40 @@
                                 "(google.api.field_behavior)": "REQUIRED",
                                 "(google.api.resource_reference).type": "spanner.googleapis.com/Database"
                               }
+                            }
+                          }
+                        },
+                        "UpdateDatabaseRequest": {
+                          "fields": {
+                            "database": {
+                              "type": "Database",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "updateMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
+                        "UpdateDatabaseMetadata": {
+                          "fields": {
+                            "request": {
+                              "type": "UpdateDatabaseRequest",
+                              "id": 1
+                            },
+                            "progress": {
+                              "type": "OperationProgress",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
                             }
                           }
                         },
@@ -2712,7 +2785,7 @@
                     "v1": {
                       "options": {
                         "csharp_namespace": "Google.Cloud.Spanner.Admin.Instance.V1",
-                        "go_package": "google.golang.org/genproto/googleapis/spanner/admin/instance/v1;instance",
+                        "go_package": "cloud.google.com/go/spanner/admin/instance/apiv1/instancepb;instancepb",
                         "java_multiple_files": true,
                         "java_outer_classname": "SpannerInstanceAdminProto",
                         "java_package": "com.google.spanner.admin.instance.v1",
@@ -3577,7 +3650,7 @@
             "v1": {
               "options": {
                 "csharp_namespace": "Google.Cloud.Spanner.V1",
-                "go_package": "google.golang.org/genproto/googleapis/spanner/v1;spanner",
+                "go_package": "cloud.google.com/go/spanner/apiv1/spannerpb;spannerpb",
                 "java_multiple_files": true,
                 "java_outer_classname": "SpannerProto",
                 "java_package": "com.google.spanner.v1",

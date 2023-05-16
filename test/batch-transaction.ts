@@ -24,10 +24,13 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import {Session, Database} from '../src';
+import {Session, Database, Spanner} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -57,8 +60,17 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const SPANNER = {
+  routeToLeaderEnabled: true,
+};
+
+const INSTANCE = {
+  parent: SPANNER,
+};
+
 const DATABASE = {
   formattedName_: 'database',
+  parent: INSTANCE,
 };
 
 class FakeTransaction {
@@ -74,6 +86,11 @@ class FakeTransaction {
   static encodeParams(): object {
     return {};
   }
+
+  _getSpanner(): Spanner {
+    return SPANNER as Spanner;
+  }
+
   run() {}
   read() {}
 }
@@ -149,11 +166,15 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createQueryPartitions(QUERY, assert.ifError);
 
-      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
       assert.strictEqual(method, 'partitionQuery');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+      );
     });
 
     it('should accept query as string', () => {
@@ -300,11 +321,15 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createReadPartitions(QUERY, assert.ifError);
 
-      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
       assert.strictEqual(method, 'partitionRead');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+      );
     });
   });
 

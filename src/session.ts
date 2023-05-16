@@ -36,9 +36,14 @@ import {
   CreateSessionOptions,
 } from './database';
 import {ServiceObjectConfig} from '@google-cloud/common';
-import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  addLeaderAwareRoutingHeader,
+} from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
+import {Spanner} from '.';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -378,13 +383,18 @@ export class Session extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
+
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
     return this.request(
       {
         client: 'SpannerClient',
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (resp) {
@@ -511,6 +521,17 @@ export class Session extends common.GrpcServiceObject {
     }
     const sessionName = name.split('/').pop();
     return databaseName + '/sessions/' + sessionName;
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.parent.parent.parent as Spanner;
   }
 }
 

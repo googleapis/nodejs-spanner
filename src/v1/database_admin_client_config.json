@@ -44,6 +44,11 @@
           "retry_codes_name": "idempotent",
           "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
         },
+        "UpdateDatabase": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "idempotent",
+          "retry_params_name": "e9fafda332ce8a1702dc1575de3ca81c4feb4799"
+        },
         "UpdateDatabaseDdl": {
           "timeout_millis": 3600000,
           "retry_codes_name": "idempotent",
