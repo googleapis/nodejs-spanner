@@ -329,7 +329,7 @@ describe('Spanner', () => {
     // cleanup
     const [operation] = await instance
       .database(DATABASE_ID)
-      .setMetadata({enableDropProtection: true});
+      .setMetadata({enableDropProtection: false});
     await operation.promise();
   });
 
