@@ -33,12 +33,16 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {google as spannerClient} from '../protos/protos';
-import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  addLeaderAwareRoutingHeader,
+} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database} from '.';
+import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 export type Rows = Array<Row | Json>;
@@ -370,13 +374,22 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -602,6 +615,15 @@ export class Snapshot extends EventEmitter {
       }
     );
 
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (this.id && transaction.begin) {
         delete transaction.begin;
@@ -612,7 +634,7 @@ export class Snapshot extends EventEmitter {
         method: 'streamingRead',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       });
     };
 
@@ -1077,6 +1099,15 @@ export class Snapshot extends EventEmitter {
       });
     };
 
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
         try {
@@ -1093,7 +1124,7 @@ export class Snapshot extends EventEmitter {
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       });
     };
 
@@ -1299,6 +1330,17 @@ export class Snapshot extends EventEmitter {
           .on('data', chunk => this._idWaiter.emit('data', chunk))
           .once('end', () => this._idWaiter.emit('end'))
       );
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  protected _getSpanner(): Spanner {
+    return this.session.parent.parent.parent as Spanner;
   }
 }
 
@@ -1620,13 +1662,18 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'executeBatchDml',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -1774,7 +1821,7 @@ export class Transaction extends Dml {
     } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
-      this.begin().then(() => this.commit(options, callback));
+      this.begin().then(() => this.commit(options, callback), callback);
       return;
     }
 
@@ -1789,13 +1836,18 @@ export class Transaction extends Dml {
       this.requestOptions
     );
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
         gaxOpts: gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
@@ -2124,13 +2176,18 @@ export class Transaction extends Dml {
       transactionId,
     };
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'rollback',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err: null | ServiceError) => {
         this.end();
