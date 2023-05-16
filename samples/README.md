@@ -35,6 +35,7 @@ and automatic, synchronous replication for high availability.
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
+  * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
@@ -466,6 +467,23 @@ __Usage:__
 
 
 `node database-update-default-leader.js <INSTANCE_ID> <DATABASE_ID> <DEFAULT_LEADER> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates a Cloud Spanner Database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
