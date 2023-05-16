@@ -55,7 +55,7 @@ function main(
       await operation.promise();
       console.log(`Updated database ${database.id}.`);
     } catch (err) {
-      console.log(`ERROR:`, err);
+      console.log('ERROR:', err);
     } finally {
       // Close the database when finished.
       database.close();
