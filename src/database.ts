@@ -95,6 +95,9 @@ import winston = require('winston');
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
+import * as Config from "winston/lib/winston/config";
+import * as logform from "logform";
+import * as Transport from "winston-transport";
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -126,6 +129,20 @@ export interface SessionPoolConstructor {
     database: Database,
     options?: SessionPoolOptions | null
   ): SessionPoolInterface;
+}
+
+export interface LoggerOptions {
+  levels?: Config.AbstractConfigSetLevels;
+  silent?: boolean;
+  format?: logform.Format;
+  level?: string;
+  exitOnError?: Function | boolean;
+  defaultMeta?: any;
+  transports?: Transport[] | Transport;
+  handleExceptions?: boolean;
+  handleRejections?: boolean;
+  exceptionHandlers?: any;
+  rejectionHandlers?: any;
 }
 
 export interface SetIamPolicyRequest {
@@ -1022,21 +1039,21 @@ class Database extends common.GrpcServiceObject {
   disableLogging(): void {
     this.loggingEnabled = false;
   }
-  enableLogging(options?: winston.LoggerOptions | null): winston.Logger {
-    if (options) {
-      options = options as winston.LoggerOptions;
-    }
-    else {
-      options = {
+  enableLogging(loggingOptions = {}): winston.Logger {
+    console.log(loggingOptions);
+    if (loggingOptions !== null && typeof loggingOptions === 'object') {
+      loggingOptions = loggingOptions as winston.LoggerOptions;
+    } else {
+      loggingOptions = {
         transports: [new winston.transports.Console()],
         format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.simple()
+          winston.format.colorize(),
+          winston.format.simple()
         ),
       };
     }
     if (!this.logger) {
-      this.logger = winston.createLogger(options);
+      this.logger = winston.createLogger(loggingOptions);
     }
     return this.logger;
   }

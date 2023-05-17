@@ -57,7 +57,6 @@ function main(
     };
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId, options);
-    database.enableLogging();
 
     // Creates a new user defined role and grant permissions
     await database.getSnapshot(async (err, transaction) => {
