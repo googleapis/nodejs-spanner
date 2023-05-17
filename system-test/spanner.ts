@@ -100,6 +100,9 @@ describe('Spanner', () => {
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
   const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = instance.database(generateName('database'), {incStep: 1});
+  const DATABASE_DROP_PROTECTION = instance.database(generateName('database'), {
+    incStep: 1,
+  });
   const TABLE_NAME = 'Singers';
   const PG_DATABASE = instance.database(generateName('pg-db'), {incStep: 1});
 
@@ -119,7 +122,7 @@ describe('Spanner', () => {
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
-    const [, googleSqlOperation] = await DATABASE.create({
+    const [, googleSqlOperation1] = await DATABASE.create({
       schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
@@ -127,8 +130,19 @@ describe('Spanner', () => {
           ) PRIMARY KEY(SingerId)`,
       gaxOptions: GAX_OPTIONS,
     });
-    await googleSqlOperation.promise();
+    await googleSqlOperation1.promise();
     RESOURCES_TO_CLEAN.push(DATABASE);
+
+    const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
+      schema: `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+      gaxOptions: GAX_OPTIONS,
+    });
+    await googleSqlOperation2.promise();
+    RESOURCES_TO_CLEAN.push(DATABASE_DROP_PROTECTION);
 
     if (!IS_EMULATOR_ENABLED) {
       const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
@@ -161,10 +175,10 @@ describe('Spanner', () => {
         baseConfig: baseInstanceConfig.name,
         gaxOptions: GAX_OPTIONS,
       };
-      const [, operation] = await instanceConfig.create(
-        customInstanceConfigRequest
-      );
-      await operation.promise();
+      // const [, operation] = await instanceConfig.create(
+      //   customInstanceConfigRequest
+      // );
+      // await operation.promise();
       INSTANCE_CONFIGS_TO_CLEAN.push(instanceConfig);
     }
   });
@@ -2020,50 +2034,6 @@ describe('Spanner', () => {
       });
     });
 
-    it('enable_drop_protection should be disabled by default', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
-      DATABASE.getMetadata((err, databaseMetadata) => {
-        assert.ifError(err);
-        assert.strictEqual(databaseMetadata!.enableDropProtection, false);
-        done();
-      });
-    });
-
-    it('enable_drop_protection on database', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
-      DATABASE.setMetadata({
-        enableDropProtection: true,
-      }).then(() => {
-        DATABASE.getMetadata().then(data => {
-          assert.strictEqual(data[0].enableDropProtection, true);
-          DATABASE.delete()
-            .then(() => {
-              assert.ok(false);
-            })
-            .catch(() => {
-              assert.ok(true);
-              instance
-                .delete()
-                .then(() => {
-                  assert.ok(false);
-                })
-                .catch(() => {
-                  assert.ok(true);
-                  DATABASE.setMetadata({
-                    enableDropProtection: false,
-                  }).then(() => {
-                    done();
-                  });
-                });
-            });
-        });
-      });
-    });
-
     const createTable = (done, database, dialect, createTableStatement) => {
       database.updateSchema(
         [createTableStatement],
@@ -2185,6 +2155,43 @@ describe('Spanner', () => {
         this.skip();
       }
       await listDatabaseOperation(PG_DATABASE);
+    });
+
+    it('enable_drop_protection should be disabled by default', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [databaseMetadata] = await DATABASE_DROP_PROTECTION.getMetadata();
+      assert.strictEqual(databaseMetadata!.enableDropProtection, false);
+    });
+
+    it('enable_drop_protection on database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [operation1] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: true,
+      });
+      await operation1.promise();
+
+      try {
+        await DATABASE_DROP_PROTECTION.delete();
+        assert.ok(false);
+      } catch (err) {
+        assert.ok(true);
+      }
+
+      try {
+        await instance.delete();
+        assert.ok(false);
+      } catch (err) {
+        assert.ok(true);
+      }
+
+      const [operation2] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: false,
+      });
+      await operation2.promise();
     });
 
     describe('FineGrainedAccessControl', () => {
