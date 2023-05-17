@@ -175,10 +175,10 @@ describe('Spanner', () => {
         baseConfig: baseInstanceConfig.name,
         gaxOptions: GAX_OPTIONS,
       };
-      // const [, operation] = await instanceConfig.create(
-      //   customInstanceConfigRequest
-      // );
-      // await operation.promise();
+      const [, operation] = await instanceConfig.create(
+        customInstanceConfigRequest
+      );
+      await operation.promise();
       INSTANCE_CONFIGS_TO_CLEAN.push(instanceConfig);
     }
   });
