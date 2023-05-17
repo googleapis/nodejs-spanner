@@ -108,8 +108,8 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
 
 /**
  * Session pool configuration options.
- * @property {boolean} [routeToLeaderEnabled=False] If set to true leader aware routing will be enabled.
- * Enabling leader aware routing would route all requests in RW/PDML transactions to leader region.
+ * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
+ * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -216,7 +216,7 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
-  routeToLeaderEnabled = false;
+  routeToLeaderEnabled = true;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -318,8 +318,8 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
-    if (options.routeToLeaderEnabled === true) {
-      this.routeToLeaderEnabled = true;
+    if (options.routeToLeaderEnabled === false) {
+      this.routeToLeaderEnabled = false;
     }
 
     this.options = options;
