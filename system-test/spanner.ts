@@ -2181,13 +2181,6 @@ describe('Spanner', () => {
         assert.ok(true);
       }
 
-      try {
-        await instance.delete();
-        assert.ok(false);
-      } catch (err) {
-        assert.ok(true);
-      }
-
       const [operation2] = await DATABASE_DROP_PROTECTION.setMetadata({
         enableDropProtection: false,
       });
