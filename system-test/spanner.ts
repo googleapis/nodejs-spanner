@@ -44,7 +44,6 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
-import {error} from 'is';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -2021,46 +2020,48 @@ describe('Spanner', () => {
       });
     });
 
-    it('enable_drop_protection should be disabled by default', done => {
-      if (!IS_EMULATOR_ENABLED) {
-        DATABASE.getMetadata((err, databaseMetadata) => {
-          assert.ifError(err);
-          assert.strictEqual(databaseMetadata!.enableDropProtection, false);
-          done();
-        });
+    it('enable_drop_protection should be disabled by default', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
       }
+      DATABASE.getMetadata((err, databaseMetadata) => {
+        assert.ifError(err);
+        assert.strictEqual(databaseMetadata!.enableDropProtection, false);
+        done();
+      });
     });
 
-    it('enable_drop_protection on database', done => {
-      if (!IS_EMULATOR_ENABLED) {
-        DATABASE.setMetadata({
-          enableDropProtection: true,
-        }).then(() => {
-          DATABASE.getMetadata().then(data => {
-            assert.strictEqual(data[0].enableDropProtection, true);
-            DATABASE.delete()
-              .then(() => {
-                assert.ok(false);
-              })
-              .catch(() => {
-                assert.ok(true);
-                instance
-                  .delete()
-                  .then(() => {
-                    assert.ok(false);
-                  })
-                  .catch(() => {
-                    assert.ok(true);
-                    DATABASE.setMetadata({
-                      enableDropProtection: false,
-                    }).then(() => {
-                      done();
-                    });
-                  });
-              });
-          });
-        });
+    it('enable_drop_protection on database', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
       }
+      DATABASE.setMetadata({
+        enableDropProtection: true,
+      }).then(() => {
+        DATABASE.getMetadata().then(data => {
+          assert.strictEqual(data[0].enableDropProtection, true);
+          DATABASE.delete()
+            .then(() => {
+              assert.ok(false);
+            })
+            .catch(() => {
+              assert.ok(true);
+              instance
+                .delete()
+                .then(() => {
+                  assert.ok(false);
+                })
+                .catch(() => {
+                  assert.ok(true);
+                  DATABASE.setMetadata({
+                    enableDropProtection: false,
+                  }).then(() => {
+                    done();
+                  });
+                });
+            });
+        });
+      });
     });
 
     const createTable = (done, database, dialect, createTableStatement) => {
