@@ -1,4 +1,4 @@
-ARG VARIANT="16"
+ARG VARIANT="18"
 FROM mcr.microsoft.com/devcontainers/typescript-node:${VARIANT}
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive
