@@ -114,6 +114,7 @@ export class Session extends common.GrpcServiceObject {
   longRunningTransaction?: boolean;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
+  transactionLogged: boolean;
 
   constructor(database: Database, name?: string) {
     const methods = {
@@ -265,6 +266,7 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
+    this.transactionLogged = false;
   }
   /**
    * Delete a session.

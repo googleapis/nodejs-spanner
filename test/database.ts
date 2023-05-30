@@ -28,6 +28,7 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
+import {Transaction} from '../src/transaction';
 import {Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
@@ -80,6 +81,7 @@ function fakePartialResultStream(this: Function & {calledWith_: IArguments}) {
 
 class FakeSession {
   calledWith_: IArguments;
+  txn?: FakeTransaction;
   constructor() {
     this.calledWith_ = arguments;
   }
@@ -100,6 +102,7 @@ class FakeSessionPool extends EventEmitter {
   open() {}
   getSession() {}
   release() {}
+  transactionClosed() {}
 }
 
 class FakeTable {
@@ -111,9 +114,11 @@ class FakeTable {
 
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
+  session: FakeSession;
   constructor() {
     super();
     this.calledWith_ = arguments;
+    this.session = new FakeSession();
   }
   begin() {}
   end() {}
@@ -122,6 +127,11 @@ class FakeTransaction extends EventEmitter {
   }
   runUpdate() {}
 }
+
+(Object.setPrototypeOf || Object.assign)(
+  FakeTransaction.prototype,
+  Transaction.prototype
+);
 
 let fakeTransactionRunner: FakeTransactionRunner;
 
@@ -553,7 +563,7 @@ describe('Database', () => {
 
     beforeEach(() => {
       database.pool_ = {
-        getSession(callback) {
+        getSession(longRunningTransaction, callback) {
           callback(null, SESSION);
         },
       };
@@ -563,7 +573,7 @@ describe('Database', () => {
       const error = new Error('err');
 
       database.pool_ = {
-        getSession(callback) {
+        getSession(longRunningTransaction, callback) {
           callback(error);
         },
       };
@@ -1149,7 +1159,7 @@ describe('Database', () => {
 
       database.pool_ = POOL;
 
-      POOL.getSession = callback => {
+      POOL.getSession = (longRunningTransaction, callback) => {
         callback(null, SESSION);
       };
 
@@ -1167,7 +1177,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      POOL.getSession = callback => {
+      POOL.getSession = (longRunningTransaction, callback) => {
         callback(error);
       };
 
@@ -1246,7 +1256,7 @@ describe('Database', () => {
         return REQUEST_STREAM;
       };
 
-      POOL.getSession = callback => {
+      POOL.getSession = (longRunningTransaction, callback) => {
         callback(null, SESSION);
       };
 
@@ -1265,7 +1275,7 @@ describe('Database', () => {
       const ERROR = new Error('Error.');
 
       beforeEach(() => {
-        POOL.getSession = callback => {
+        POOL.getSession = (longRunningTransaction, callback) => {
           callback(ERROR);
         };
       });
@@ -1283,7 +1293,7 @@ describe('Database', () => {
 
     describe('session retrieved successfully', () => {
       beforeEach(() => {
-        POOL.getSession = callback => {
+        POOL.getSession = (longRunningTransaction, callback) => {
           callback(null, SESSION);
         };
       });
@@ -1360,7 +1370,7 @@ describe('Database', () => {
           cancel: util.noop,
         };
 
-        POOL.getSession = callback => {
+        POOL.getSession = (longRunningTransaction, callback) => {
           callback(null, SESSION);
         };
       });
@@ -1497,6 +1507,7 @@ describe('Database', () => {
     let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
     let runStreamStub: sinon.SinonStub;
+    let transactionClosedStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1509,9 +1520,19 @@ describe('Database', () => {
 
       getSessionStub = (sandbox.stub(fakePool, 'getSession') as sinon.SinonStub)
         .onFirstCall()
-        .callsFake(callback => callback(null, fakeSession))
+        .callsFake((longRunningTransaction, callback) =>
+          callback(null, fakeSession)
+        )
         .onSecondCall()
-        .callsFake(callback => callback(null, fakeSession2));
+        .callsFake((longRunningTransaction, callback) =>
+          callback(null, fakeSession2)
+        );
+
+      transactionClosedStub = (
+        sandbox.stub(fakePool, 'transactionClosed') as sinon.SinonStub
+      ).callsFake(transaction => {
+        return false;
+      });
 
       snapshotStub = sandbox
         .stub(fakeSession, 'snapshot')
@@ -1536,7 +1557,9 @@ describe('Database', () => {
     it('should destroy the stream if `getSession` errors', done => {
       const fakeError = new Error('err');
 
-      getSessionStub.onFirstCall().callsFake(callback => callback(fakeError));
+      getSessionStub
+        .onFirstCall()
+        .callsFake((longRunningTransaction, callback) => callback(fakeError));
 
       database.runStream(QUERY).on('error', err => {
         assert.strictEqual(err, fakeError);
@@ -1867,7 +1890,9 @@ describe('Database', () => {
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => callback(null, fakeSession));
+      ).callsFake((longRunningTransaction, callback) =>
+        callback(null, fakeSession)
+      );
 
       snapshotStub = sandbox
         .stub(fakeSession, 'snapshot')
@@ -1885,7 +1910,9 @@ describe('Database', () => {
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake((longRunningTransaction, callback) =>
+        callback(fakeError)
+      );
 
       database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
@@ -1941,9 +1968,13 @@ describe('Database', () => {
 
       getSessionStub
         .onFirstCall()
-        .callsFake(callback => callback(null, fakeSession))
+        .callsFake((longRunningTransaction, callback) =>
+          callback(null, fakeSession)
+        )
         .onSecondCall()
-        .callsFake(callback => callback(null, fakeSession2));
+        .callsFake((longRunningTransaction, callback) =>
+          callback(null, fakeSession2)
+        );
       beginSnapshotStub.callsFake(callback => callback(fakeError));
 
       // The first session that was not found should be released back into the
@@ -2000,7 +2031,7 @@ describe('Database', () => {
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => {
+      ).callsFake((longRunningTransaction, callback) => {
         callback(null, fakeSession, fakeTransaction);
       });
     });
@@ -2016,7 +2047,9 @@ describe('Database', () => {
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake((longRunningTransaction, callback) =>
+        callback(fakeError)
+      );
 
       database.getTransaction(err => {
         assert.strictEqual(err, fakeError);
@@ -2364,7 +2397,7 @@ describe('Database', () => {
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
-      ).callsFake(callback => {
+      ).callsFake((longRunningTransaction, callback) => {
         callback(null, fakeSession);
       });
 
@@ -2391,7 +2424,9 @@ describe('Database', () => {
       const fakeError = new Error('err');
       const fakeCallback = sandbox.spy();
 
-      getSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake((longRunningTransaction, callback) =>
+        callback(fakeError)
+      );
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
       const [err, rowCount] = fakeCallback.lastCall.args;
@@ -2479,7 +2514,7 @@ describe('Database', () => {
       pool = database.pool_;
 
       (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
+        (longRunningTransaction, callback) => {
           callback(null, SESSION, TRANSACTION);
         }
       );
@@ -2488,8 +2523,8 @@ describe('Database', () => {
     it('should return any errors getting a session', done => {
       const fakeErr = new Error('err');
 
-      (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr)
+      (pool.getSession as sinon.SinonStub).callsFake(
+        (longRunningTransaction, callback) => callback(fakeErr)
       );
 
       database.runTransaction(err => {
@@ -2563,7 +2598,7 @@ describe('Database', () => {
       pool = database.pool_;
 
       (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
-        callback => {
+        (longRunningTransaction, callback) => {
           callback(null, SESSION, TRANSACTION);
         }
       );

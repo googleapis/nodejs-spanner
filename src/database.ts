@@ -1039,8 +1039,7 @@ class Database extends common.GrpcServiceObject {
   disableLogging(): void {
     this.loggingEnabled = false;
   }
-  enableLogging(loggingOptions = {}): winston.Logger {
-    console.log(loggingOptions);
+  enableLogging(loggingOptions?): winston.Logger {
     if (loggingOptions !== null && typeof loggingOptions === 'object') {
       loggingOptions = loggingOptions as winston.LoggerOptions;
     } else {
@@ -1929,12 +1928,16 @@ class Database extends common.GrpcServiceObject {
     this.pool_.getSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
+
+        session!.txn = transaction;
       }
-      session!.txn = transaction;
-      if (transaction instanceof Snapshot) {
-        throw new GoogleError('Transaction expected, got Snapshot');
+      if (
+        transaction instanceof Transaction ||
+        transaction === null ||
+        transaction === undefined
+      ) {
+        callback!(err as grpc.ServiceError | null, transaction);
       }
-      callback!(err as grpc.ServiceError | null, transaction);
     });
   }
 
@@ -3008,7 +3011,7 @@ class Database extends common.GrpcServiceObject {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const [session, transaction] = await promisify(getSession)();
+        const [session, transaction] = await promisify(getSession)(false);
         transaction.requestOptions = Object.assign(
           transaction.requestOptions || {},
           options.requestOptions

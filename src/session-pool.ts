@@ -375,6 +375,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
   _recycledTransactions: Map<Snapshot, string>;
+  _longRunningSessionCleanupTimer: number | null;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -382,7 +383,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {object[]} trace The trace object.
    * @return {string}
    */
-  static formatTrace(frames: trace.StackFrame[], message: string): string {
+  static formatTrace(frames: trace.StackFrame[], message = ''): string {
     const stack = frames.map(frame => {
       const name = frame.getFunctionName() || frame.getMethodName();
       const file = frame.getFileName();
@@ -392,7 +393,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `${message} \t ${stack.join('\t')}`;
+    return `${message} \n ${stack.join('\n')}`;
   }
 
   transactionClosed(transaction?: Snapshot): boolean {
@@ -528,6 +529,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._traces = new Map();
     this._recycledTransactions = new Map();
+    this._longRunningSessionCleanupTimer = null;
   }
 
   /**
@@ -657,6 +659,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     delete session.txn;
+    session.transactionLogged = false;
     session.lastUsed = Date.now();
     session.longRunningTransaction = false;
 
@@ -751,10 +754,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     const maxSessions = this.maxSessions;
 
     if (
-      this.options.closeInactiveTransactions &&
+      (this.options.closeInactiveTransactions || this.options.logging) &&
       this.borrowed / maxSessions >= 0.95
     ) {
       this._startCleaningLongRunningSessions();
+    }
+
+    if (this.options.logging && this.borrowed / maxSessions === 1.0) {
+      this.database.logger?.log(
+        'info',
+        '100% of the session pool is exhausted.' +
+          'Increase max sessions in Session Pool Options as per requirement.'
+      );
     }
 
     return session;
@@ -1113,22 +1124,41 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   async _deleteLongRunningTransactions(): Promise<void> {
     if (this._ongoingTransactionDeletion) return;
     this._ongoingTransactionDeletion = true;
+    if (this.options.logging && !this.options.closeInactiveTransactions) {
+      if (this._longRunningSessionCleanupTimer! - Date.now() > 60 * 60 * 1000) {
+        this._stopCleaningLongRunningSessions();
+        this._longRunningSessionCleanupTimer = null;
+        return;
+      }
+    }
     for (const session of this._traces.keys()) {
       if (session.lastUsed && !session.longRunningTransaction) {
         const diff = Date.now() - session?.lastUsed;
         if (!session.longRunningTransaction && diff > 1000 * 60) {
-          const sessionTrace = SessionPool.formatTrace(
+          let sessionTrace = SessionPool.formatTrace(
             this._traces.get(session) || [],
-            'Long running transaction!'
+            'Long running transaction! Transaction has been closed as it was running for ' +
+              'more than 60 minutes. For long running transactions use batch or partitioned transactions.'
           );
-          if (this.options.logging) {
-            this.database.logger?.log('warn', sessionTrace);
-          }
+          if (this.options.closeInactiveTransactions) {
+            if (this.options.logging) {
+              this.database.logger?.log('warn', sessionTrace);
+            }
 
-          this._recycledTransactions.set(session.txn!, sessionTrace);
-          session.txn!.session = undefined;
-          this.release(session);
-          // await session.delete();
+            this._recycledTransactions.set(session.txn!, sessionTrace);
+            session.txn!.session = undefined;
+            this.release(session);
+          } else if (this.options.logging) {
+            if (!session.transactionLogged) {
+              sessionTrace = SessionPool.formatTrace(
+                this._traces.get(session) || [],
+                'Transaction has been running for longer than 60 minutes and might be causing a leak. ' +
+                  'Enable closeInactiveTransactions in Session Pool Options to automatically clean such transactions.'
+              );
+              session.transactionLogged = true;
+              this.database.logger?.log('warn', sessionTrace);
+            }
+          }
         }
       }
     }
@@ -1190,10 +1220,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _stopHouseKeeping(): void {
     clearInterval(this._pingHandle);
     clearInterval(this._evictHandle);
+    clearInterval(this._longRunningTransactionHandle);
   }
 
   _startCleaningLongRunningSessions(): void {
     if (this._longRunningTransactionHandle) return;
+    if (this.options.logging) {
+      this.database.logger?.log('info', '95% of the session pool is exhausted');
+    }
+    this._longRunningSessionCleanupTimer = Date.now();
     this._longRunningTransactionHandle = setInterval(
       () => this._deleteLongRunningTransactions(),
       120000

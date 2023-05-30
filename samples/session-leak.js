@@ -51,7 +51,7 @@ function main(
       maxIdle: 1,
       min: 1,
       incStep: 1,
-      closeInactiveTransactions: true,
+      closeInactiveTransactions: false,
       logging: true,
       databaseRole: null,
     };
