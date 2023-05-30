@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.10.1](https://github.com/googleapis/nodejs-spanner/compare/v6.10.0...v6.10.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* Set database admin and instance as having handwritten layers (republish docs) ([3e3e624](https://github.com/googleapis/nodejs-spanner/commit/3e3e624187013d62a5ff479386fb8961f279b5ca))
+
 ## [6.10.0](https://github.com/googleapis/nodejs-spanner/compare/v6.9.0...v6.10.0) (2023-05-17)
 
 
