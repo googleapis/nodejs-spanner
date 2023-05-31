@@ -2913,5 +2913,13 @@ describe('Database', () => {
         });
       });
     });
+
+    describe('logging', () => {
+      it('should create logger on enableLogging', done => {
+        assert.strictEqual(database.logger, undefined);
+        database.enableLogging();
+
+      });
+    });
   });
 });
