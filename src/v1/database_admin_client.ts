@@ -300,6 +300,12 @@ export class DatabaseAdminClient {
     const createDatabaseMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.database.v1.CreateDatabaseMetadata'
     ) as gax.protobuf.Type;
+    const updateDatabaseResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.Database'
+    ) as gax.protobuf.Type;
+    const updateDatabaseMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.database.v1.UpdateDatabaseMetadata'
+    ) as gax.protobuf.Type;
     const updateDatabaseDdlResponse = protoFilesRoot.lookup(
       '.google.protobuf.Empty'
     ) as gax.protobuf.Type;
@@ -330,6 +336,11 @@ export class DatabaseAdminClient {
         this.operationsClient,
         createDatabaseResponse.decode.bind(createDatabaseResponse),
         createDatabaseMetadata.decode.bind(createDatabaseMetadata)
+      ),
+      updateDatabase: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        updateDatabaseResponse.decode.bind(updateDatabaseResponse),
+        updateDatabaseMetadata.decode.bind(updateDatabaseMetadata)
       ),
       updateDatabaseDdl: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
@@ -406,6 +417,7 @@ export class DatabaseAdminClient {
       'listDatabases',
       'createDatabase',
       'getDatabase',
+      'updateDatabase',
       'updateDatabaseDdl',
       'dropDatabase',
       'getDatabaseDdl',
@@ -522,7 +534,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Database]{@link google.spanner.admin.database.v1.Database}.
+   *   The first element of the array is an object representing {@link google.spanner.admin.database.v1.Database | Database}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -617,7 +629,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -712,7 +724,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [GetDatabaseDdlResponse]{@link google.spanner.admin.database.v1.GetDatabaseDdlResponse}.
+   *   The first element of the array is an object representing {@link google.spanner.admin.database.v1.GetDatabaseDdlResponse | GetDatabaseDdlResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -827,7 +839,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -921,7 +933,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1019,7 +1031,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1104,7 +1116,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The first element of the array is an object representing {@link google.spanner.admin.database.v1.Backup | Backup}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1204,7 +1216,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The first element of the array is an object representing {@link google.spanner.admin.database.v1.Backup | Backup}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1297,7 +1309,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
    *   for more details and examples.
@@ -1540,6 +1552,184 @@ export class DatabaseAdminClient {
     return decodeOperation as LROperation<
       protos.google.spanner.admin.database.v1.Database,
       protos.google.spanner.admin.database.v1.CreateDatabaseMetadata
+    >;
+  }
+  /**
+   * Updates a Cloud Spanner database. The returned
+   * {@link google.longrunning.Operation|long-running operation} can be used to track
+   * the progress of updating the database. If the named database does not
+   * exist, returns `NOT_FOUND`.
+   *
+   * While the operation is pending:
+   *
+   *   * The database's
+   *     {@link google.spanner.admin.database.v1.Database.reconciling|reconciling}
+   *     field is set to true.
+   *   * Cancelling the operation is best-effort. If the cancellation succeeds,
+   *     the operation metadata's
+   *     {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.cancel_time|cancel_time}
+   *     is set, the updates are reverted, and the operation terminates with a
+   *     `CANCELLED` status.
+   *   * New UpdateDatabase requests will return a `FAILED_PRECONDITION` error
+   *     until the pending operation is done (returns successfully or with
+   *     error).
+   *   * Reading the database via the API continues to give the pre-request
+   *     values.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * The new values are in effect and readable via the API.
+   *   * The database's
+   *     {@link google.spanner.admin.database.v1.Database.reconciling|reconciling}
+   *     field becomes false.
+   *
+   * The returned {@link google.longrunning.Operation|long-running operation} will
+   * have a name of the format
+   * `projects/<project>/instances/<instance>/databases/<database>/operations/<operation_id>`
+   * and can be used to track the database modification. The
+   * {@link google.longrunning.Operation.metadata|metadata} field type is
+   * {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata|UpdateDatabaseMetadata}.
+   * The {@link google.longrunning.Operation.response|response} field type is
+   * {@link google.spanner.admin.database.v1.Database|Database}, if successful.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {google.spanner.admin.database.v1.Database} request.database
+   *   Required. The database to update.
+   *   The `name` field of the database is of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
+   * @param {google.protobuf.FieldMask} request.updateMask
+   *   Required. The list of fields to update. Currently, only
+   *   `enable_drop_protection` field can be updated.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.update_database.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabase_async
+   */
+  updateDatabase(
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  >;
+  updateDatabase(
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateDatabase(
+    request: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateDatabase(
+    request?: protos.google.spanner.admin.database.v1.IUpdateDatabaseRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.database.v1.IDatabase,
+            protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.database.v1.IDatabase,
+        protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        'database.name': request.database!.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.updateDatabase(request, options, callback);
+  }
+  /**
+   * Check the status of the long running operation returned by `updateDatabase()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1/database_admin.update_database.js</caption>
+   * region_tag:spanner_v1_generated_DatabaseAdmin_UpdateDatabase_async
+   */
+  async checkUpdateDatabaseProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseMetadata
+    >
+  > {
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(
+      operation,
+      this.descriptors.longrunning.updateDatabase,
+      this._gaxModule.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.database.v1.Database,
+      protos.google.spanner.admin.database.v1.UpdateDatabaseMetadata
     >;
   }
   /**
@@ -2238,7 +2428,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Database]{@link google.spanner.admin.database.v1.Database}.
+   *   The first element of the array is Array of {@link google.spanner.admin.database.v1.Database | Database}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -2340,7 +2530,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [Database]{@link google.spanner.admin.database.v1.Database} on 'data' event.
+   *   An object stream which emits an object representing {@link google.spanner.admin.database.v1.Database | Database} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listDatabasesAsync()`
@@ -2392,7 +2582,7 @@ export class DatabaseAdminClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Database]{@link google.spanner.admin.database.v1.Database}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.spanner.admin.database.v1.Database | Database}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
@@ -2478,7 +2668,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Backup]{@link google.spanner.admin.database.v1.Backup}.
+   *   The first element of the array is Array of {@link google.spanner.admin.database.v1.Backup | Backup}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -2617,7 +2807,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [Backup]{@link google.spanner.admin.database.v1.Backup} on 'data' event.
+   *   An object stream which emits an object representing {@link google.spanner.admin.database.v1.Backup | Backup} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listBackupsAsync()`
@@ -2706,7 +2896,7 @@ export class DatabaseAdminClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Backup]{@link google.spanner.admin.database.v1.Backup}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.spanner.admin.database.v1.Backup | Backup}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
@@ -2804,7 +2994,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
+   *   The first element of the array is Array of {@link google.longrunning.Operation | Operation}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -2954,7 +3144,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
+   *   An object stream which emits an object representing {@link google.longrunning.Operation | Operation} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listDatabaseOperationsAsync()`
@@ -3050,7 +3240,7 @@ export class DatabaseAdminClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Operation]{@link google.longrunning.Operation}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.longrunning.Operation | Operation}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
@@ -3174,7 +3364,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [Operation]{@link google.longrunning.Operation}.
+   *   The first element of the array is Array of {@link google.longrunning.Operation | Operation}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -3344,7 +3534,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [Operation]{@link google.longrunning.Operation} on 'data' event.
+   *   An object stream which emits an object representing {@link google.longrunning.Operation | Operation} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listBackupOperationsAsync()`
@@ -3464,7 +3654,7 @@ export class DatabaseAdminClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Operation]{@link google.longrunning.Operation}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.longrunning.Operation | Operation}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
@@ -3512,7 +3702,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}.
+   *   The first element of the array is Array of {@link google.spanner.admin.database.v1.DatabaseRole | DatabaseRole}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
@@ -3615,7 +3805,7 @@ export class DatabaseAdminClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole} on 'data' event.
+   *   An object stream which emits an object representing {@link google.spanner.admin.database.v1.DatabaseRole | DatabaseRole} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listDatabaseRolesAsync()`
@@ -3668,7 +3858,7 @@ export class DatabaseAdminClient {
    * @returns {Object}
    *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [DatabaseRole]{@link google.spanner.admin.database.v1.DatabaseRole}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.spanner.admin.database.v1.DatabaseRole | DatabaseRole}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
    *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
@@ -3706,20 +3896,18 @@ export class DatabaseAdminClient {
    * @param {string} request.name - The name of the operation resource.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
-   *   details.
+   *   e.g, timeout, retries, paginations, etc. See {@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions}
+   *   for the details.
    * @param {function(?Error, ?Object)=} callback
    *   The function which will be called with the result of the API call.
    *
    *   The second parameter to the callback is an object representing
-   * [google.longrunning.Operation]{@link
-   * external:"google.longrunning.Operation"}.
+   *   {@link google.longrunning.Operation | google.longrunning.Operation}.
    * @return {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing
-   * [google.longrunning.Operation]{@link
-   * external:"google.longrunning.Operation"}. The promise has a method named
-   * "cancel" which cancels the ongoing API call.
+   * {@link google.longrunning.Operation | google.longrunning.Operation}.
+   * The promise has a method named "cancel" which cancels the ongoing API call.
    *
    * @example
    * ```
@@ -3763,11 +3951,11 @@ export class DatabaseAdminClient {
    *   resources in a page.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   e.g, timeout, retries, paginations, etc. See {@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions} for the
    *   details.
    * @returns {Object}
-   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   *   An iterable Object that conforms to {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | iteration protocols}.
    *
    * @example
    * ```
@@ -3798,8 +3986,8 @@ export class DatabaseAdminClient {
    * @param {string} request.name - The name of the operation resource to be cancelled.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * e.g, timeout, retries, paginations, etc. See {@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions} for the
    * details.
    * @param {function(?Error)=} callback
    *   The function which will be called with the result of the API call.
@@ -3841,9 +4029,9 @@ export class DatabaseAdminClient {
    * @param {string} request.name - The name of the operation resource to be deleted.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
-   * details.
+   * e.g, timeout, retries, paginations, etc. See {@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions}
+   * for the details.
    * @param {function(?Error)=} callback
    *   The function which will be called with the result of the API call.
    * @return {Promise} - The promise which resolves when API call finishes.

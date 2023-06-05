@@ -32,7 +32,7 @@ import "google/spanner/v1/transaction.proto";
 import "google/spanner/v1/type.proto";
 
 option csharp_namespace = "Google.Cloud.Spanner.V1";
-option go_package = "google.golang.org/genproto/googleapis/spanner/v1;spanner";
+option go_package = "cloud.google.com/go/spanner/apiv1/spannerpb;spannerpb";
 option java_multiple_files = true;
 option java_outer_classname = "SpannerProto";
 option java_package = "com.google.spanner.v1";
@@ -643,6 +643,13 @@ message ExecuteSqlRequest {
 
   // Common options for this request.
   RequestOptions request_options = 11;
+
+  // If this is for a partitioned query and this field is set to `true`, the
+  // request will be executed via Spanner independent compute resources.
+  //
+  // If the field is set to `true` but the request does not set
+  // `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+  bool data_boost_enabled = 16;
 }
 
 // The request for [ExecuteBatchDml][google.spanner.v1.Spanner.ExecuteBatchDml].
@@ -949,6 +956,13 @@ message ReadRequest {
 
   // Common options for this request.
   RequestOptions request_options = 11;
+
+  // If this is for a partitioned read and this field is set to `true`, the
+  // request will be executed via Spanner independent compute resources.
+  //
+  // If the field is set to `true` but the request does not set
+  // `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+  bool data_boost_enabled = 15;
 }
 
 // The request for [BeginTransaction][google.spanner.v1.Spanner.BeginTransaction].
