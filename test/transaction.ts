@@ -31,7 +31,7 @@ import {
   ExecuteSqlRequest,
   ReadRequest,
 } from '../src/transaction';
-import {grpc} from 'google-gax';
+import {GoogleError, grpc} from 'google-gax';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -726,6 +726,20 @@ describe('Transaction', () => {
           done();
         });
         assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+      });
+
+      it('should throw an error for recycled session', done => {
+        snapshot.session = undefined;
+        REQUEST_STREAM.resetHistory();
+
+        const stream = snapshot.runStream(QUERY);
+        stream.on('error', error => {
+          assert.strictEqual(
+            error.message,
+            'Transaction has been closed as it was running for more than 60 minutes'
+          );
+          done();
+        });
       });
     });
 

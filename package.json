@@ -33,7 +33,7 @@
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "system-test": "mocha build/system-test --timeout 1600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",
-    "test": "c8 mocha build/test build/test/common --timeout 75000",
+    "test": "c8 mocha build/test build/test/common",
     "ycsb": "node ./benchmark/ycsb.js  run -P ./benchmark/workloada -p table=usertable -p cloudspanner.instance=ycsb-instance -p operationcount=100 -p cloudspanner.database=ycsb",
     "fix": "gts fix",
     "clean": "gts clean",
@@ -51,7 +51,6 @@
   },
   "dependencies": {
     "@google-cloud/common": "^4.0.0",
-    "@google-cloud/logging-winston": "^5.2.1",
     "@google-cloud/precise-date": "^3.0.0",
     "@google-cloud/projectify": "^3.0.0",
     "@google-cloud/promisify": "^3.0.0",

@@ -651,9 +651,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {Session} session The session to release.
    */
   release(session: Session): void {
-    // if (transaction && !this._recycledTransactions.has(transaction)) {
-    //   return;
-    // }
     if (!this._inventory.borrowed.has(session)) {
       throw new ReleaseError(session);
     }
@@ -1121,20 +1118,26 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     session.txn = transaction;
   }
 
-  async _deleteLongRunningTransactions(): Promise<void> {
+  async _deleteLongRunningTransactions(
+    longRunningTransactionTimeout: number = 1000 * 60 * 60
+  ): Promise<void> {
     if (this._ongoingTransactionDeletion) return;
     this._ongoingTransactionDeletion = true;
     if (this.options.logging && !this.options.closeInactiveTransactions) {
-      if (this._longRunningSessionCleanupTimer! - Date.now() > 60 * 60 * 1000) {
+      if (Date.now() - this._longRunningSessionCleanupTimer! > 60 * 60 * 1000) {
         this._stopCleaningLongRunningSessions();
         this._longRunningSessionCleanupTimer = null;
+        this._ongoingTransactionDeletion = false;
         return;
       }
     }
     for (const session of this._traces.keys()) {
       if (session.lastUsed && !session.longRunningTransaction) {
         const diff = Date.now() - session?.lastUsed;
-        if (!session.longRunningTransaction && diff > 1000 * 60) {
+        if (
+          !session.longRunningTransaction &&
+          diff > longRunningTransactionTimeout
+        ) {
           let sessionTrace = SessionPool.formatTrace(
             this._traces.get(session) || [],
             'Long running transaction! Transaction has been closed as it was running for ' +
@@ -1233,7 +1236,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       () => this._deleteLongRunningTransactions(),
       120000
     );
-    this._longRunningTransactionHandle.ref();
+    this._longRunningTransactionHandle.unref();
   }
 
   _stopCleaningLongRunningSessions(): void {

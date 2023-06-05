@@ -1054,6 +1054,7 @@ class Database extends common.GrpcServiceObject {
     if (!this.logger) {
       this.logger = winston.createLogger(loggingOptions);
     }
+    this.loggingEnabled = true;
     return this.logger;
   }
 

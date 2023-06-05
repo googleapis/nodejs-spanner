@@ -36,6 +36,7 @@ import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import {google} from '../protos/protos';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
+import * as winston from 'winston';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -1548,7 +1549,9 @@ describe('Database', () => {
     });
 
     it('should get a read session via `getSession`', () => {
-      getSessionStub.callsFake(() => {});
+      getSessionStub.callsFake((longRunningTransaction, callback) => {
+        assert.strictEqual(longRunningTransaction, false);
+      });
       database.runStream(QUERY);
 
       assert.strictEqual(getSessionStub.callCount, 1);
@@ -2413,7 +2416,9 @@ describe('Database', () => {
     });
 
     it('should get a read only session from the pool', () => {
-      getSessionStub.callsFake(() => {});
+      getSessionStub.callsFake((longRunningTransaction, callback) => {
+        assert.strictEqual(longRunningTransaction, true);
+      });
 
       database.runPartitionedUpdate(QUERY, assert.ifError);
 
@@ -2915,10 +2920,60 @@ describe('Database', () => {
     });
 
     describe('logging', () => {
+      const expectedTransports = [new winston.transports.Console()];
+      const expectedFormat = winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      );
+
+      const compareLoggers = (logger, expectedTransports, expectedFormat) => {
+        assert.deepStrictEqual(
+          logger.transports.length,
+          expectedTransports.length
+        );
+
+        for (let i = 0; i < expectedTransports.length; i++) {
+          assert.strictEqual(
+            logger.transports[i].constructor,
+            expectedTransports[i].constructor
+          );
+        }
+        assert.deepStrictEqual(logger.format.options, expectedFormat.options);
+      };
+
       it('should create logger on enableLogging', done => {
         assert.strictEqual(database.logger, undefined);
-        database.enableLogging();
+        const logger = database.enableLogging();
+        compareLoggers(logger, expectedTransports, expectedFormat);
+        done();
+      });
 
+      it('should disable logging', done => {
+        database.enableLogging();
+        assert.strictEqual(database.loggingEnabled, true);
+        database.disableLogging();
+        assert.strictEqual(database.loggingEnabled, false);
+        done();
+      });
+
+      it('should return existing logger', done => {
+        const expectedTransports = [
+          new winston.transports.File({
+            filename: 'combined.log',
+          }),
+        ];
+        const expectedFormat = winston.format.combine(
+          winston.format.metadata()
+        );
+        const LOGGING_OBJECT = winston.createLogger({
+          transports: expectedTransports,
+          format: expectedFormat,
+        });
+        database.enableLogging(LOGGING_OBJECT);
+        database.disableLogging();
+        const logger = database.enableLogging();
+        compareLoggers(logger, expectedTransports, expectedFormat);
+        done();
       });
     });
   });

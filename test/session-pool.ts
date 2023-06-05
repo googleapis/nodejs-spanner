@@ -29,6 +29,8 @@ import {Session} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
+import * as winston from 'winston';
+import { EventEmitter } from "events";
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -38,8 +40,9 @@ function FakePQueue(options) {
 
 FakePQueue.default = FakePQueue;
 
-class FakeTransaction {
+class FakeTransaction{
   options;
+  session?;
   constructor(options?) {
     this.options = options;
   }
@@ -220,6 +223,11 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.min, 25);
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
+        assert.strictEqual(sessionPool.options.logging, true);
+        assert.strictEqual(
+          sessionPool.options.closeInactiveTransactions,
+          false
+        );
       });
 
       it('should not override user options', () => {
@@ -235,6 +243,20 @@ describe('SessionPool', () => {
       it('should use default value of Database for databaseRole', () => {
         sessionPool = new SessionPool(DATABASE);
         assert.strictEqual(sessionPool.options.databaseRole, 'parent_role');
+      });
+
+      it('should create logger', () => {
+        const db = {
+          batchCreateSessions: noop,
+          databaseRole: 'parent_role',
+          logger: undefined,
+          enableLogging: () => {
+            db.logger = winston.createLogger();
+          },
+        } as unknown as Database;
+        assert.strictEqual(db.logger, undefined);
+        sessionPool = new SessionPool(db);
+        assert.notStrictEqual(db.logger, undefined);
       });
 
       describe('min and max', () => {
@@ -556,6 +578,19 @@ describe('SessionPool', () => {
       assert.strictEqual(session.txn, undefined);
     });
 
+    it('should unset transactionLogged and longRunningTransaction for any old transactions', () => {
+      const session = createSession();
+
+      sessionPool._release = noop;
+      inventory.borrowed.add(session);
+      session.transactionLogged = true;
+      session.longRunningTransaction = true;
+
+      sessionPool.release(session);
+      assert.strictEqual(session.transactionLogged, false);
+      assert.strictEqual(session.longRunningTransaction, false);
+    });
+
     it('should update the lastUsed timestamp', () => {
       const session = createSession();
 
@@ -713,6 +748,33 @@ describe('SessionPool', () => {
       assert.strictEqual(session, fakeSession2);
       session = sessionPool._borrowFrom(true);
       assert.strictEqual(session, fakeSession1);
+    });
+
+    it('should set lastUsed and longRunningTransaction', () => {
+      const fakeSession = createSession();
+
+      inventory.sessions.push(fakeSession);
+
+      const session = sessionPool._borrowFrom(true);
+      assert.notStrictEqual(session.lastUsed, undefined);
+      assert.strictEqual(session.longRunningTransaction, true);
+    });
+
+    it('should set lastUsed and longRunningTransaction', () => {
+      const startCleaningLongRunningSessionsStub = (
+        sandbox.stub(
+          sessionPool,
+          '_startCleaningLongRunningSessions'
+        ) as sinon.SinonStub
+      ).callsFake(() => {});
+      sessionPool.options.max = 1;
+      sessionPool.options.closeInactiveTransactions = true;
+      const fakeSession = createSession();
+      inventory.sessions.push(fakeSession);
+
+      sessionPool._borrowFrom(true);
+
+      assert.strictEqual(startCleaningLongRunningSessionsStub.callCount, 1);
     });
   });
 
@@ -1313,6 +1375,19 @@ describe('SessionPool', () => {
 
       assert.strictEqual(sessionPool._traces.has(createSession(id)), false);
     });
+
+    it('should call _stopCleaningLongRunningSessions', () => {
+      const fakeSession = createSession('id');
+
+      inventory.borrowed.add(fakeSession);
+      const stopCleaningLongRunningSessionsStub = sandbox.stub(
+        sessionPool,
+        '_stopCleaningLongRunningSessions'
+      );
+      sessionPool.options.closeInactiveTransactions = true;
+      sessionPool._release(fakeSession);
+      assert.strictEqual(stopCleaningLongRunningSessionsStub.callCount, 1);
+    });
   });
 
   describe('_startHouseKeeping', () => {
@@ -1343,8 +1418,13 @@ describe('SessionPool', () => {
     it('should clear the intervals', () => {
       sessionPool._pingHandle = setTimeout(noop, 1);
       sessionPool._evictHandle = setTimeout(noop, 1);
+      sessionPool._longRunningTransactionHandle = setTimeout(noop, 1);
 
-      const fakeHandles = [sessionPool._pingHandle, sessionPool._evictHandle];
+      const fakeHandles = [
+        sessionPool._pingHandle,
+        sessionPool._evictHandle,
+        sessionPool._longRunningTransactionHandle,
+      ];
       const stub = sandbox.stub(global, 'clearInterval');
 
       sessionPool._stopHouseKeeping();
@@ -1353,6 +1433,101 @@ describe('SessionPool', () => {
         const [handle] = stub.getCall(i).args;
         assert.strictEqual(handle, fakeHandle);
       });
+    });
+  });
+
+  describe('_startCleaningLongRunningSessions', () => {
+    it('should set an interval to clean long running transactions', done => {
+      const expectedInterval = 120000;
+      const clock = sandbox.useFakeTimers();
+
+      sandbox
+        .stub(sessionPool, '_deleteLongRunningTransactions')
+        .callsFake(async () => done());
+      sessionPool.options.logging = false;
+
+      sessionPool._startCleaningLongRunningSessions();
+      clock.tick(expectedInterval);
+    });
+  });
+
+  describe('transactionClosed', () => {
+    it('should return true when transaction is closed', () => {
+      const fakeTxn = new FakeTransaction() as unknown as Transaction;
+      assert.strictEqual(sessionPool.transactionClosed(fakeTxn), false);
+      sessionPool._recycledTransactions.set(fakeTxn, 'fake stack-trace');
+      assert.strictEqual(sessionPool.transactionClosed(fakeTxn), true);
+    });
+  });
+
+  describe('_deleteLongRunningTransactions', () => {
+    it('should stop logging long running transactions after 60 minutes', async () => {
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 100000 + 60 * 60 * 1000 + 10;
+      });
+
+      const stopCleaningLongRunningSessionsStub = sandbox
+        .stub(sessionPool, '_stopCleaningLongRunningSessions')
+        .callsFake(() => {});
+      sessionPool._longRunningSessionCleanupTimer = 100000;
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(stopCleaningLongRunningSessionsStub.callCount, 1);
+    });
+
+    it('should log once if logging is enabled and closeInactiveTransactions is disabled', async () => {
+      const trace = [createStackFrame()];
+      const session = createSession('a');
+
+      const formatTraceStub = sandbox
+        .stub(SessionPool, 'formatTrace')
+        .callsFake((frames, message) => {
+          return 'fake-trace';
+        });
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 100000 + 60 * 60 * 1000 + 10;
+      });
+      sessionPool._longRunningSessionCleanupTimer = 100000 + 60 * 60 * 1000;
+      sessionPool._traces.set(session, trace);
+      session.lastUsed = 100000;
+      session.longRunningTransaction = false;
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(formatTraceStub.callCount, 2);
+      assert.strictEqual(session.transactionLogged, true);
+      // deleteLongRunningTransactions should not print stack trace a second time
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(formatTraceStub.callCount, 3);
+    });
+
+    it('should close inactive transaction', async () => {
+      const session = createSession('a');
+      const trace = [createStackFrame()];
+
+      sandbox.stub(SessionPool, 'formatTrace').callsFake((frames, message) => {
+        return 'fake-trace';
+      });
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 100000 + 60 * 60 * 1000 + 10;
+      });
+      sessionPool._traces.set(session, trace);
+      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sessionPool._longRunningSessionCleanupTimer = 100000 + 60 * 60 * 1000;
+      sessionPool.options.closeInactiveTransactions = true;
+      sessionPool.options.logging = false;
+      session.lastUsed = 100000;
+      session.longRunningTransaction = false;
+      session.txn = new FakeTransaction() as unknown as Transaction;
+      session.txn.session = session;
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(session.txn?.session, undefined);
+      assert.strictEqual(
+        sessionPool._recycledTransactions.has(session.txn!),
+        true
+      );
+      assert.strictEqual(session.txn?.session, undefined);
+      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 });
