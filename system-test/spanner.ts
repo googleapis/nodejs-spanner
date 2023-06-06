@@ -2259,7 +2259,7 @@ describe('Spanner', () => {
         await grantAccessToRole(
           PG_DATABASE,
           'CREATE ROLE child',
-          'GRANT SELECT ON TABLE Singers TO child'
+          'GRANT SELECT ON TABLE singers TO child'
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2313,8 +2313,8 @@ describe('Spanner', () => {
         await userDefinedDatabaseRoleRevoked(
           PG_DATABASE,
           'CREATE ROLE orphan',
-          'GRANT SELECT ON TABLE Singers TO orphan',
-          'REVOKE SELECT ON TABLE Singers FROM orphan'
+          'GRANT SELECT ON TABLE singers TO orphan',
+          'REVOKE SELECT ON TABLE singers FROM orphan'
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2419,7 +2419,7 @@ describe('Spanner', () => {
         grantAccessSuccess(
           done,
           PG_DATABASE,
-          'GRANT SELECT ON TABLE Singers TO read_access'
+          'GRANT SELECT ON TABLE singers TO read_access'
         );
       });
 
@@ -2472,7 +2472,7 @@ describe('Spanner', () => {
         grantAccessFailure(
           done,
           PG_DATABASE,
-          'GRANT INSERT ON TABLE Singers TO write_access'
+          'GRANT INSERT ON TABLE singers TO write_access'
         );
       });
 
