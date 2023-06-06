@@ -99,6 +99,9 @@ import FieldMask = google.protobuf.FieldMask;
 import * as Config from "winston/lib/winston/config";
 import * as logform from "logform";
 import * as Transport from "winston-transport";
+import IDatabase = google.spanner.admin.database.v1.IDatabase;
+import snakeCase = require('lodash.snakecase');
+
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
@@ -107,6 +110,8 @@ export type GetDatabaseRolesResponse = PagedResponse<
   IDatabaseRole,
   databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
 >;
+type SetDatabaseMetadataCallback = ResourceCallback<GaxOperation, IOperation>;
+type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
 type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
 type CreateBatchTransactionCallback = ResourceCallback<
@@ -443,6 +448,108 @@ class Database extends common.GrpcServiceObject {
       Database.getEnvironmentQueryOptions()
     );
     this.loggingEnabled = false;
+  }
+  /**
+   * @typedef {array} SetDatabaseMetadataResponse
+   * @property {object} 0 The {@link Database} metadata.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback SetDatabaseMetadataCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} metadata The {@link Database} metadata.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Update the metadata for this database. Note that this method follows PATCH
+   * semantics, so previously-configured settings will persist.
+   *
+   * Wrapper around {@link v1.DatabaseAdminClient#updateDatabase}.
+   *
+   * @see {@link v1.DatabaseAdminClient#updateDatabase}
+   * @see [UpdateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabase)
+   *
+   * @param {object} metadata The metadata you wish to set.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {SetDatabaseMetadataCallback} [callback] Callback function.
+   * @returns {Promise<SetDatabaseMetadataResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * const metadata = {
+   *   enableDropProtection: true
+   * };
+   *
+   * database.setMetadata(metadata, function(err, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Metadata updated successfully.
+   *     });
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.setMetadata(metadata).then(function(data) {
+   *   const operation = data[0];
+   *   const apiResponse = data[1];
+   * });
+   * ```
+   */
+  setMetadata(
+    metadata: IDatabase,
+    gaxOptions?: CallOptions
+  ): Promise<SetDatabaseMetadataResponse>;
+  setMetadata(metadata: IDatabase, callback: SetDatabaseMetadataCallback): void;
+  setMetadata(
+    metadata: IDatabase,
+    gaxOptions: CallOptions,
+    callback: SetDatabaseMetadataCallback
+  ): void;
+  setMetadata(
+    metadata: IDatabase,
+    optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
+    cb?: SetDatabaseMetadataCallback
+  ): void | Promise<SetDatabaseMetadataResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    const reqOpts = {
+      database: extend(
+        {
+          name: this.formattedName_,
+        },
+        metadata
+      ),
+      updateMask: {
+        paths: Object.keys(metadata).map(snakeCase),
+      },
+    };
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'updateDatabase',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      callback!
+    );
   }
 
   static getEnvironmentQueryOptions() {
@@ -3394,6 +3501,7 @@ callbackifyAll(Database, {
     'runTransaction',
     'runTransactionAsync',
     'session',
+    'setMetadata',
     'table',
     'updateSchema',
   ],

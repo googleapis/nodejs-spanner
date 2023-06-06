@@ -402,6 +402,18 @@ describe('GrpcService', () => {
       assert.strictEqual(grpcService.userAgent, userAgent);
     });
 
+    it('should set the primary_user_agent from user-agent', () => {
+      const userAgent = 'user-agent/0.0.0';
+
+      getUserAgentFromPackageJsonOverride = packageJson => {
+        assert.strictEqual(packageJson, CONFIG.packageJson);
+        return userAgent;
+      };
+
+      new GrpcService(CONFIG, OPTIONS);
+      assert.strictEqual(OPTIONS['grpc.primary_user_agent'], userAgent);
+    });
+
     it('should localize the service', () => {
       assert.deepStrictEqual(
         Object.keys(grpcService.protos),

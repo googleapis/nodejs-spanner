@@ -9385,6 +9385,115 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** Properties of a DdlStatementActionInfo. */
+                    interface IDdlStatementActionInfo {
+
+                        /** DdlStatementActionInfo action */
+                        action?: (string|null);
+
+                        /** DdlStatementActionInfo entityType */
+                        entityType?: (string|null);
+
+                        /** DdlStatementActionInfo entityNames */
+                        entityNames?: (string[]|null);
+                    }
+
+                    /** Represents a DdlStatementActionInfo. */
+                    class DdlStatementActionInfo implements IDdlStatementActionInfo {
+
+                        /**
+                         * Constructs a new DdlStatementActionInfo.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IDdlStatementActionInfo);
+
+                        /** DdlStatementActionInfo action. */
+                        public action: string;
+
+                        /** DdlStatementActionInfo entityType. */
+                        public entityType: string;
+
+                        /** DdlStatementActionInfo entityNames. */
+                        public entityNames: string[];
+
+                        /**
+                         * Creates a new DdlStatementActionInfo instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DdlStatementActionInfo instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IDdlStatementActionInfo): google.spanner.admin.database.v1.DdlStatementActionInfo;
+
+                        /**
+                         * Encodes the specified DdlStatementActionInfo message. Does not implicitly {@link google.spanner.admin.database.v1.DdlStatementActionInfo.verify|verify} messages.
+                         * @param message DdlStatementActionInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IDdlStatementActionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DdlStatementActionInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DdlStatementActionInfo.verify|verify} messages.
+                         * @param message DdlStatementActionInfo message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IDdlStatementActionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DdlStatementActionInfo message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DdlStatementActionInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.DdlStatementActionInfo;
+
+                        /**
+                         * Decodes a DdlStatementActionInfo message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DdlStatementActionInfo
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.DdlStatementActionInfo;
+
+                        /**
+                         * Verifies a DdlStatementActionInfo message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DdlStatementActionInfo message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DdlStatementActionInfo
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.DdlStatementActionInfo;
+
+                        /**
+                         * Creates a plain object from a DdlStatementActionInfo message. Also converts values to other types if specified.
+                         * @param message DdlStatementActionInfo
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.DdlStatementActionInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DdlStatementActionInfo to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for DdlStatementActionInfo
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
                     /** Properties of an UpdateDatabaseDdlMetadata. */
                     interface IUpdateDatabaseDdlMetadata {
 
@@ -9402,6 +9511,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata progress */
                         progress?: (google.spanner.admin.database.v1.IOperationProgress[]|null);
+
+                        /** UpdateDatabaseDdlMetadata actions */
+                        actions?: (google.spanner.admin.database.v1.IDdlStatementActionInfo[]|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlMetadata. */
@@ -9427,6 +9539,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlMetadata progress. */
                         public progress: google.spanner.admin.database.v1.IOperationProgress[];
+
+                        /** UpdateDatabaseDdlMetadata actions. */
+                        public actions: google.spanner.admin.database.v1.IDdlStatementActionInfo[];
 
                         /**
                          * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.

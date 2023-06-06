@@ -23636,6 +23636,273 @@
                             return UpdateDatabaseDdlRequest;
                         })();
     
+                        v1.DdlStatementActionInfo = (function() {
+    
+                            /**
+                             * Properties of a DdlStatementActionInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @interface IDdlStatementActionInfo
+                             * @property {string|null} [action] DdlStatementActionInfo action
+                             * @property {string|null} [entityType] DdlStatementActionInfo entityType
+                             * @property {Array.<string>|null} [entityNames] DdlStatementActionInfo entityNames
+                             */
+    
+                            /**
+                             * Constructs a new DdlStatementActionInfo.
+                             * @memberof google.spanner.admin.database.v1
+                             * @classdesc Represents a DdlStatementActionInfo.
+                             * @implements IDdlStatementActionInfo
+                             * @constructor
+                             * @param {google.spanner.admin.database.v1.IDdlStatementActionInfo=} [properties] Properties to set
+                             */
+                            function DdlStatementActionInfo(properties) {
+                                this.entityNames = [];
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * DdlStatementActionInfo action.
+                             * @member {string} action
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @instance
+                             */
+                            DdlStatementActionInfo.prototype.action = "";
+    
+                            /**
+                             * DdlStatementActionInfo entityType.
+                             * @member {string} entityType
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @instance
+                             */
+                            DdlStatementActionInfo.prototype.entityType = "";
+    
+                            /**
+                             * DdlStatementActionInfo entityNames.
+                             * @member {Array.<string>} entityNames
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @instance
+                             */
+                            DdlStatementActionInfo.prototype.entityNames = $util.emptyArray;
+    
+                            /**
+                             * Creates a new DdlStatementActionInfo instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDdlStatementActionInfo=} [properties] Properties to set
+                             * @returns {google.spanner.admin.database.v1.DdlStatementActionInfo} DdlStatementActionInfo instance
+                             */
+                            DdlStatementActionInfo.create = function create(properties) {
+                                return new DdlStatementActionInfo(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified DdlStatementActionInfo message. Does not implicitly {@link google.spanner.admin.database.v1.DdlStatementActionInfo.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDdlStatementActionInfo} message DdlStatementActionInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DdlStatementActionInfo.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.action != null && Object.hasOwnProperty.call(message, "action"))
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.action);
+                                if (message.entityType != null && Object.hasOwnProperty.call(message, "entityType"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.entityType);
+                                if (message.entityNames != null && message.entityNames.length)
+                                    for (var i = 0; i < message.entityNames.length; ++i)
+                                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.entityNames[i]);
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified DdlStatementActionInfo message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.DdlStatementActionInfo.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.IDdlStatementActionInfo} message DdlStatementActionInfo message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            DdlStatementActionInfo.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes a DdlStatementActionInfo message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.database.v1.DdlStatementActionInfo} DdlStatementActionInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DdlStatementActionInfo.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.database.v1.DdlStatementActionInfo();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.action = reader.string();
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.entityType = reader.string();
+                                            break;
+                                        }
+                                    case 3: {
+                                            if (!(message.entityNames && message.entityNames.length))
+                                                message.entityNames = [];
+                                            message.entityNames.push(reader.string());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes a DdlStatementActionInfo message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.database.v1.DdlStatementActionInfo} DdlStatementActionInfo
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            DdlStatementActionInfo.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies a DdlStatementActionInfo message.
+                             * @function verify
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            DdlStatementActionInfo.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.action != null && message.hasOwnProperty("action"))
+                                    if (!$util.isString(message.action))
+                                        return "action: string expected";
+                                if (message.entityType != null && message.hasOwnProperty("entityType"))
+                                    if (!$util.isString(message.entityType))
+                                        return "entityType: string expected";
+                                if (message.entityNames != null && message.hasOwnProperty("entityNames")) {
+                                    if (!Array.isArray(message.entityNames))
+                                        return "entityNames: array expected";
+                                    for (var i = 0; i < message.entityNames.length; ++i)
+                                        if (!$util.isString(message.entityNames[i]))
+                                            return "entityNames: string[] expected";
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates a DdlStatementActionInfo message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.database.v1.DdlStatementActionInfo} DdlStatementActionInfo
+                             */
+                            DdlStatementActionInfo.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.database.v1.DdlStatementActionInfo)
+                                    return object;
+                                var message = new $root.google.spanner.admin.database.v1.DdlStatementActionInfo();
+                                if (object.action != null)
+                                    message.action = String(object.action);
+                                if (object.entityType != null)
+                                    message.entityType = String(object.entityType);
+                                if (object.entityNames) {
+                                    if (!Array.isArray(object.entityNames))
+                                        throw TypeError(".google.spanner.admin.database.v1.DdlStatementActionInfo.entityNames: array expected");
+                                    message.entityNames = [];
+                                    for (var i = 0; i < object.entityNames.length; ++i)
+                                        message.entityNames[i] = String(object.entityNames[i]);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from a DdlStatementActionInfo message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {google.spanner.admin.database.v1.DdlStatementActionInfo} message DdlStatementActionInfo
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            DdlStatementActionInfo.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.arrays || options.defaults)
+                                    object.entityNames = [];
+                                if (options.defaults) {
+                                    object.action = "";
+                                    object.entityType = "";
+                                }
+                                if (message.action != null && message.hasOwnProperty("action"))
+                                    object.action = message.action;
+                                if (message.entityType != null && message.hasOwnProperty("entityType"))
+                                    object.entityType = message.entityType;
+                                if (message.entityNames && message.entityNames.length) {
+                                    object.entityNames = [];
+                                    for (var j = 0; j < message.entityNames.length; ++j)
+                                        object.entityNames[j] = message.entityNames[j];
+                                }
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this DdlStatementActionInfo to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            DdlStatementActionInfo.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for DdlStatementActionInfo
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.database.v1.DdlStatementActionInfo
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            DdlStatementActionInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.database.v1.DdlStatementActionInfo";
+                            };
+    
+                            return DdlStatementActionInfo;
+                        })();
+    
                         v1.UpdateDatabaseDdlMetadata = (function() {
     
                             /**
@@ -23647,6 +23914,7 @@
                              * @property {Array.<google.protobuf.ITimestamp>|null} [commitTimestamps] UpdateDatabaseDdlMetadata commitTimestamps
                              * @property {boolean|null} [throttled] UpdateDatabaseDdlMetadata throttled
                              * @property {Array.<google.spanner.admin.database.v1.IOperationProgress>|null} [progress] UpdateDatabaseDdlMetadata progress
+                             * @property {Array.<google.spanner.admin.database.v1.IDdlStatementActionInfo>|null} [actions] UpdateDatabaseDdlMetadata actions
                              */
     
                             /**
@@ -23661,6 +23929,7 @@
                                 this.statements = [];
                                 this.commitTimestamps = [];
                                 this.progress = [];
+                                this.actions = [];
                                 if (properties)
                                     for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                         if (properties[keys[i]] != null)
@@ -23708,6 +23977,14 @@
                             UpdateDatabaseDdlMetadata.prototype.progress = $util.emptyArray;
     
                             /**
+                             * UpdateDatabaseDdlMetadata actions.
+                             * @member {Array.<google.spanner.admin.database.v1.IDdlStatementActionInfo>} actions
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
+                             * @instance
+                             */
+                            UpdateDatabaseDdlMetadata.prototype.actions = $util.emptyArray;
+    
+                            /**
                              * Creates a new UpdateDatabaseDdlMetadata instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata
@@ -23744,6 +24021,9 @@
                                 if (message.progress != null && message.progress.length)
                                     for (var i = 0; i < message.progress.length; ++i)
                                         $root.google.spanner.admin.database.v1.OperationProgress.encode(message.progress[i], writer.uint32(/* id 5, wireType 2 =*/42).fork()).ldelim();
+                                if (message.actions != null && message.actions.length)
+                                    for (var i = 0; i < message.actions.length; ++i)
+                                        $root.google.spanner.admin.database.v1.DdlStatementActionInfo.encode(message.actions[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                                 return writer;
                             };
     
@@ -23802,6 +24082,12 @@
                                             if (!(message.progress && message.progress.length))
                                                 message.progress = [];
                                             message.progress.push($root.google.spanner.admin.database.v1.OperationProgress.decode(reader, reader.uint32()));
+                                            break;
+                                        }
+                                    case 6: {
+                                            if (!(message.actions && message.actions.length))
+                                                message.actions = [];
+                                            message.actions.push($root.google.spanner.admin.database.v1.DdlStatementActionInfo.decode(reader, reader.uint32()));
                                             break;
                                         }
                                     default:
@@ -23870,6 +24156,15 @@
                                             return "progress." + error;
                                     }
                                 }
+                                if (message.actions != null && message.hasOwnProperty("actions")) {
+                                    if (!Array.isArray(message.actions))
+                                        return "actions: array expected";
+                                    for (var i = 0; i < message.actions.length; ++i) {
+                                        var error = $root.google.spanner.admin.database.v1.DdlStatementActionInfo.verify(message.actions[i]);
+                                        if (error)
+                                            return "actions." + error;
+                                    }
+                                }
                                 return null;
                             };
     
@@ -23916,6 +24211,16 @@
                                         message.progress[i] = $root.google.spanner.admin.database.v1.OperationProgress.fromObject(object.progress[i]);
                                     }
                                 }
+                                if (object.actions) {
+                                    if (!Array.isArray(object.actions))
+                                        throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.actions: array expected");
+                                    message.actions = [];
+                                    for (var i = 0; i < object.actions.length; ++i) {
+                                        if (typeof object.actions[i] !== "object")
+                                            throw TypeError(".google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata.actions: object expected");
+                                        message.actions[i] = $root.google.spanner.admin.database.v1.DdlStatementActionInfo.fromObject(object.actions[i]);
+                                    }
+                                }
                                 return message;
                             };
     
@@ -23936,6 +24241,7 @@
                                     object.statements = [];
                                     object.commitTimestamps = [];
                                     object.progress = [];
+                                    object.actions = [];
                                 }
                                 if (options.defaults) {
                                     object.database = "";
@@ -23959,6 +24265,11 @@
                                     object.progress = [];
                                     for (var j = 0; j < message.progress.length; ++j)
                                         object.progress[j] = $root.google.spanner.admin.database.v1.OperationProgress.toObject(message.progress[j], options);
+                                }
+                                if (message.actions && message.actions.length) {
+                                    object.actions = [];
+                                    for (var j = 0; j < message.actions.length; ++j)
+                                        object.actions[j] = $root.google.spanner.admin.database.v1.DdlStatementActionInfo.toObject(message.actions[j], options);
                                 }
                                 return object;
                             };

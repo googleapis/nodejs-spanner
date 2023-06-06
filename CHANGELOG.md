@@ -4,6 +4,26 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.10.1](https://github.com/googleapis/nodejs-spanner/compare/v6.10.0...v6.10.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* Set database admin and instance as having handwritten layers (republish docs) ([3e3e624](https://github.com/googleapis/nodejs-spanner/commit/3e3e624187013d62a5ff479386fb8961f279b5ca))
+
+## [6.10.0](https://github.com/googleapis/nodejs-spanner/compare/v6.9.0...v6.10.0) (2023-05-17)
+
+
+### Features
+
+* Add support for UpdateDatabase ([#1802](https://github.com/googleapis/nodejs-spanner/issues/1802)) ([f4fbe71](https://github.com/googleapis/nodejs-spanner/commit/f4fbe71d819fde9a237f25b03af228b27cf58689))
+* Add support for UpdateDatabase in Cloud Spanner ([#1848](https://github.com/googleapis/nodejs-spanner/issues/1848)) ([dd9d505](https://github.com/googleapis/nodejs-spanner/commit/dd9d505e1480b9f45f0f4a09b0abca8282d5fceb))
+
+
+### Bug Fixes
+
+* Set grpc useragent ([#1847](https://github.com/googleapis/nodejs-spanner/issues/1847)) ([021e54e](https://github.com/googleapis/nodejs-spanner/commit/021e54ef469d7d95bae64c687b65489cbfc56cfa))
+
 ## [6.9.0](https://github.com/googleapis/nodejs-spanner/compare/v6.8.0...v6.9.0) (2023-04-26)
 
 

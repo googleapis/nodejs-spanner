@@ -2497,6 +2497,23 @@
                             }
                           }
                         },
+                        "DdlStatementActionInfo": {
+                          "fields": {
+                            "action": {
+                              "type": "string",
+                              "id": 1
+                            },
+                            "entityType": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "entityNames": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
                         "UpdateDatabaseDdlMetadata": {
                           "fields": {
                             "database": {
@@ -2527,6 +2544,11 @@
                               "rule": "repeated",
                               "type": "OperationProgress",
                               "id": 5
+                            },
+                            "actions": {
+                              "rule": "repeated",
+                              "type": "DdlStatementActionInfo",
+                              "id": 6
                             }
                           }
                         },
