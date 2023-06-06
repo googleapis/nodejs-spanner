@@ -6358,41 +6358,38 @@ describe('Spanner', () => {
         min: 1,
         incStep: 1,
         closeInactiveTransactions: false,
-        logging: true,
+        logging: false,
         databaseRole: null,
       };
       const database = instance.database(DATABASE.formattedName_, options);
       setLongRunningTransactionTimeout(1000 * 60);
+
+      function sleep(ms: number): void {
+        setTimeout(() => {}, ms);
+      }
 
       database.getSnapshot(async (err, transaction) => {
         if (err) {
           console.error(err);
           return;
         }
-        const queryOne = 'SELECT SingerId, FirstName FROM Singers';
 
-        try {
-          // Read #1, using SQL
-          const [qOneRows] = await transaction.run(queryOne);
-
-          qOneRows.forEach(row => {
-            const json = row.toJSON();
-            console.log(
-              `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}`
+        transaction!.run('SELECT 1', (err, rows) => {
+          const session = transaction!.session;
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 1);
+          sleep(2000 * 60);
+          assert.strictEqual(transaction?.session, undefined);
+          assert.strictEqual(session?.txn, undefined);
+          transaction!.run('SELECT 1', err => {
+            assert.match(
+              err!.details,
+              /Transaction has been closed as it was running for more than 60 minutes/
             );
-          });
-          await new Promise(r => setTimeout(r, 3000 * 60));
-
-          //await transaction.run(queryOne);
-
-          console.log('Successfully executed read-only transaction.');
-        } catch (err) {
-          console.error('ERROR:', err);
-        } finally {
-          transaction.end();
-          // Close the database when finished.
-          await database.close();
-        }
+            transaction!.end();
+            done();
+          })
+        });
       });
     });
   });
