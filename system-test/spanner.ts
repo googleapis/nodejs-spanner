@@ -2214,6 +2214,14 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
+      it('POSTGRESQL should create a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createUserDefinedDatabaseRole(PG_DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
       const grantAccessToRole = async (
         database,
         createRoleQuery,
@@ -2240,6 +2248,18 @@ describe('Spanner', () => {
           DATABASE,
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should grant access to a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await grantAccessToRole(
+          PG_DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE singers TO child'
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2286,6 +2306,19 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
+      it('POSTGRESQL should revoke permissions of a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleRevoked(
+          PG_DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE singers TO orphan',
+          'REVOKE SELECT ON TABLE singers FROM orphan'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
       const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
@@ -2325,13 +2358,22 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessSuccess = (done, database) => {
+      it('POSTGRESQL should drop the user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleDropped(
+          PG_DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const grantAccessSuccess = (done, database, grantPermissionQuery) => {
         const id = 7;
         database.updateSchema(
-          [
-            'CREATE ROLE read_access',
-            'GRANT SELECT ON TABLE Singers TO ROLE read_access',
-          ],
+          ['CREATE ROLE read_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2363,16 +2405,28 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessSuccess(done, DATABASE);
+        grantAccessSuccess(
+          done,
+          DATABASE,
+          'GRANT SELECT ON TABLE Singers TO ROLE read_access'
+        );
       });
 
-      const grantAccessFailure = (done, database) => {
+      it('POSTGRESQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessSuccess(
+          done,
+          PG_DATABASE,
+          'GRANT SELECT ON TABLE singers TO read_access'
+        );
+      });
+
+      const grantAccessFailure = (done, database, grantPermissionQuery) => {
         const id = 8;
         database.updateSchema(
-          [
-            'CREATE ROLE write_access',
-            'GRANT INSERT ON TABLE Singers TO ROLE write_access',
-          ],
+          ['CREATE ROLE write_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2404,7 +2458,22 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessFailure(done, DATABASE);
+        grantAccessFailure(
+          done,
+          DATABASE,
+          'GRANT INSERT ON TABLE Singers TO ROLE write_access'
+        );
+      });
+
+      it('POSTGRESQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessFailure(
+          done,
+          PG_DATABASE,
+          'GRANT INSERT ON TABLE singers TO write_access'
+        );
       });
 
       const listDatabaseRoles = async database => {
@@ -2429,6 +2498,13 @@ describe('Spanner', () => {
           this.skip();
         }
         await listDatabaseRoles(DATABASE);
+      });
+
+      it('POSTGRESQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await listDatabaseRoles(PG_DATABASE);
       });
 
       const getIamPolicy = (done, database) => {
