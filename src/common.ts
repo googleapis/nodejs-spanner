@@ -89,3 +89,9 @@ export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
 export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
   headers[LEADER_AWARE_ROUTING_HEADER] = 'true';
 }
+
+export let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
+
+export default function setLongRunningTransactionTimeout(timeout: number) {
+  LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;
+}

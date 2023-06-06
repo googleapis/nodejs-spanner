@@ -16,7 +16,7 @@
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
-import {describe, it, before, after, beforeEach} from 'mocha';
+import {describe, it, before, after, beforeEach, afterEach} from 'mocha';
 import pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
@@ -44,6 +44,7 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import setLongRunningTransactionTimeout from '../src/common';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -6064,6 +6065,10 @@ describe('Spanner', () => {
   describe('SessionPool', () => {
     const table = DATABASE.table(TABLE_NAME);
 
+    afterEach(async () => {
+      setLongRunningTransactionTimeout(1000 * 60 * 60);
+    });
+
     it('should insert and query a row', done => {
       const id = generateName('id');
       const name = generateName('name');
@@ -6214,6 +6219,57 @@ describe('Spanner', () => {
           );
         }
       );
+    });
+
+    it('should close inactive transactions', done => {
+      const options = {
+        acquireTimeout: Infinity,
+        concurrency: Infinity,
+        fail: false,
+        idlesAfter: 10,
+        keepAlive: 30,
+        labels: {},
+        max: 1,
+        maxIdle: 1,
+        min: 1,
+        incStep: 1,
+        closeInactiveTransactions: false,
+        logging: true,
+        databaseRole: null,
+      };
+      const database = instance.database(DATABASE.formattedName_, options);
+      setLongRunningTransactionTimeout(1000 * 60);
+
+      database.getSnapshot(async (err, transaction) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        const queryOne = 'SELECT SingerId, FirstName FROM Singers';
+
+        try {
+          // Read #1, using SQL
+          const [qOneRows] = await transaction.run(queryOne);
+
+          qOneRows.forEach(row => {
+            const json = row.toJSON();
+            console.log(
+              `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}`
+            );
+          });
+          await new Promise(r => setTimeout(r, 3000 * 60));
+
+          //await transaction.run(queryOne);
+
+          console.log('Successfully executed read-only transaction.');
+        } catch (err) {
+          console.error('ERROR:', err);
+        } finally {
+          transaction.end();
+          // Close the database when finished.
+          await database.close();
+        }
+      });
     });
   });
 
