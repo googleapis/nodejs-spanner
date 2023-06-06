@@ -126,13 +126,13 @@ export interface SessionPoolInterface extends EventEmitter {
  * @property {number} [acquireTimeout=Infinity] Time in milliseconds before
  *     giving up trying to acquire a session. If the specified value is
  *     `Infinity`, a timeout will not occur.
- * @property {number} [concurrency=10] How many concurrent requests the pool is
+ * @property {number} [concurrency=Infinity] How many concurrent requests the pool is
  *     allowed to make.
  * @property {boolean} [fail=false] If set to true, an error will be thrown when
  *     there are no available sessions for a request.
  * @property {number} [idlesAfter=10] How long until a resource becomes idle, in
  *     minutes.
- * @property {number} [keepAlive=50] How often to ping idle sessions, in
+ * @property {number} [keepAlive=30] How often to ping idle sessions, in
  *     minutes. Must be less than 1 hour.
  * @property {Object<string, string>} [labels] Labels to apply to any session
  *     created by the pool.
@@ -140,7 +140,7 @@ export interface SessionPoolInterface extends EventEmitter {
  *     given time.
  * @property {number} [maxIdle=1] Maximum number of idle resources to keep in
  *     the pool at any given time.
- * @property {number} [min=0] Minimum number of resources to keep in the pool at
+ * @property {number} [min=25] Minimum number of resources to keep in the pool at
  *     any given time.
  * @property {number} [writes=0.0]. Deprecated.
  * @property {number} [incStep=25] The number of new sessions to create when at

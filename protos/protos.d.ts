@@ -7876,6 +7876,20 @@ export namespace google {
                         public getDatabase(request: google.spanner.admin.database.v1.IGetDatabaseRequest): Promise<google.spanner.admin.database.v1.Database>;
 
                         /**
+                         * Calls UpdateDatabase.
+                         * @param request UpdateDatabaseRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public updateDatabase(request: google.spanner.admin.database.v1.IUpdateDatabaseRequest, callback: google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseCallback): void;
+
+                        /**
+                         * Calls UpdateDatabase.
+                         * @param request UpdateDatabaseRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateDatabase(request: google.spanner.admin.database.v1.IUpdateDatabaseRequest): Promise<google.longrunning.Operation>;
+
+                        /**
                          * Calls UpdateDatabaseDdl.
                          * @param request UpdateDatabaseDdlRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and Operation
@@ -8122,6 +8136,13 @@ export namespace google {
                          * @param [response] Database
                          */
                         type GetDatabaseCallback = (error: (Error|null), response?: google.spanner.admin.database.v1.Database) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabase}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type UpdateDatabaseCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
 
                         /**
                          * Callback as used by {@link google.spanner.admin.database.v1.DatabaseAdmin|updateDatabaseDdl}.
@@ -8374,6 +8395,12 @@ export namespace google {
 
                         /** Database databaseDialect */
                         databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
+
+                        /** Database enableDropProtection */
+                        enableDropProtection?: (boolean|null);
+
+                        /** Database reconciling */
+                        reconciling?: (boolean|null);
                     }
 
                     /** Represents a Database. */
@@ -8414,6 +8441,12 @@ export namespace google {
 
                         /** Database databaseDialect. */
                         public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
+
+                        /** Database enableDropProtection. */
+                        public enableDropProtection: boolean;
+
+                        /** Database reconciling. */
+                        public reconciling: boolean;
 
                         /**
                          * Creates a new Database instance using the specified properties.
@@ -9025,6 +9058,218 @@ export namespace google {
 
                         /**
                          * Gets the default type url for GetDatabaseRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateDatabaseRequest. */
+                    interface IUpdateDatabaseRequest {
+
+                        /** UpdateDatabaseRequest database */
+                        database?: (google.spanner.admin.database.v1.IDatabase|null);
+
+                        /** UpdateDatabaseRequest updateMask */
+                        updateMask?: (google.protobuf.IFieldMask|null);
+                    }
+
+                    /** Represents an UpdateDatabaseRequest. */
+                    class UpdateDatabaseRequest implements IUpdateDatabaseRequest {
+
+                        /**
+                         * Constructs a new UpdateDatabaseRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IUpdateDatabaseRequest);
+
+                        /** UpdateDatabaseRequest database. */
+                        public database?: (google.spanner.admin.database.v1.IDatabase|null);
+
+                        /** UpdateDatabaseRequest updateMask. */
+                        public updateMask?: (google.protobuf.IFieldMask|null);
+
+                        /**
+                         * Creates a new UpdateDatabaseRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateDatabaseRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IUpdateDatabaseRequest): google.spanner.admin.database.v1.UpdateDatabaseRequest;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseRequest message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseRequest.verify|verify} messages.
+                         * @param message UpdateDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IUpdateDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseRequest message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseRequest.verify|verify} messages.
+                         * @param message UpdateDatabaseRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IUpdateDatabaseRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateDatabaseRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.UpdateDatabaseRequest;
+
+                        /**
+                         * Decodes an UpdateDatabaseRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateDatabaseRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.UpdateDatabaseRequest;
+
+                        /**
+                         * Verifies an UpdateDatabaseRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateDatabaseRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateDatabaseRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.UpdateDatabaseRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateDatabaseRequest message. Also converts values to other types if specified.
+                         * @param message UpdateDatabaseRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.UpdateDatabaseRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateDatabaseRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateDatabaseRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateDatabaseMetadata. */
+                    interface IUpdateDatabaseMetadata {
+
+                        /** UpdateDatabaseMetadata request */
+                        request?: (google.spanner.admin.database.v1.IUpdateDatabaseRequest|null);
+
+                        /** UpdateDatabaseMetadata progress */
+                        progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** UpdateDatabaseMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents an UpdateDatabaseMetadata. */
+                    class UpdateDatabaseMetadata implements IUpdateDatabaseMetadata {
+
+                        /**
+                         * Constructs a new UpdateDatabaseMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.database.v1.IUpdateDatabaseMetadata);
+
+                        /** UpdateDatabaseMetadata request. */
+                        public request?: (google.spanner.admin.database.v1.IUpdateDatabaseRequest|null);
+
+                        /** UpdateDatabaseMetadata progress. */
+                        public progress?: (google.spanner.admin.database.v1.IOperationProgress|null);
+
+                        /** UpdateDatabaseMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new UpdateDatabaseMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateDatabaseMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.database.v1.IUpdateDatabaseMetadata): google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseMetadata message. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.verify|verify} messages.
+                         * @param message UpdateDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.database.v1.IUpdateDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateDatabaseMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.database.v1.UpdateDatabaseMetadata.verify|verify} messages.
+                         * @param message UpdateDatabaseMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.database.v1.IUpdateDatabaseMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateDatabaseMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+
+                        /**
+                         * Decodes an UpdateDatabaseMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateDatabaseMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+
+                        /**
+                         * Verifies an UpdateDatabaseMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateDatabaseMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateDatabaseMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.database.v1.UpdateDatabaseMetadata;
+
+                        /**
+                         * Creates a plain object from an UpdateDatabaseMetadata message. Also converts values to other types if specified.
+                         * @param message UpdateDatabaseMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.database.v1.UpdateDatabaseMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateDatabaseMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateDatabaseMetadata
                          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                          * @returns The default type url
                          */
@@ -17400,6 +17645,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest dataBoostEnabled */
+                dataBoostEnabled?: (boolean|null);
             }
 
             /** Represents an ExecuteSqlRequest. */
@@ -17443,6 +17691,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest dataBoostEnabled. */
+                public dataBoostEnabled: boolean;
 
                 /**
                  * Creates a new ExecuteSqlRequest instance using the specified properties.
@@ -18566,6 +18817,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest dataBoostEnabled */
+                dataBoostEnabled?: (boolean|null);
             }
 
             /** Represents a ReadRequest. */
@@ -18606,6 +18860,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest dataBoostEnabled. */
+                public dataBoostEnabled: boolean;
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
