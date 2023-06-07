@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.11.0](https://github.com/googleapis/nodejs-spanner/compare/v6.10.1...v6.11.0) (2023-06-06)
+
+
+### Features
+
+* **spanner:** Add DdlStatementActionInfo and add actions to UpdateDatabaseDdlMetadata ([#1860](https://github.com/googleapis/nodejs-spanner/issues/1860)) ([3e86f36](https://github.com/googleapis/nodejs-spanner/commit/3e86f369b927e3bf0a2046bd13d0b6a39a9bb076))
+* Testing for fgac in pg ([#1811](https://github.com/googleapis/nodejs-spanner/issues/1811)) ([c48945f](https://github.com/googleapis/nodejs-spanner/commit/c48945f536685d6e4ee4097cfac7d5f57853553e))
+
 ## [6.10.1](https://github.com/googleapis/nodejs-spanner/compare/v6.10.0...v6.10.1) (2023-05-30)
 
 
