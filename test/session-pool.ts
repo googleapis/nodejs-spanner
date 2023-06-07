@@ -30,7 +30,6 @@ import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
 import * as winston from 'winston';
-import { EventEmitter } from "events";
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -40,7 +39,7 @@ function FakePQueue(options) {
 
 FakePQueue.default = FakePQueue;
 
-class FakeTransaction{
+class FakeTransaction {
   options;
   session?;
   constructor(options?) {
@@ -1481,7 +1480,7 @@ describe('SessionPool', () => {
 
       const formatTraceStub = sandbox
         .stub(SessionPool, 'formatTrace')
-        .callsFake((frames, message) => {
+        .callsFake(() => {
           return 'fake-trace';
         });
       sandbox.stub(Date, 'now').callsFake(() => {
@@ -1504,7 +1503,7 @@ describe('SessionPool', () => {
       const session = createSession('a');
       const trace = [createStackFrame()];
 
-      sandbox.stub(SessionPool, 'formatTrace').callsFake((frames, message) => {
+      sandbox.stub(SessionPool, 'formatTrace').callsFake(() => {
         return 'fake-trace';
       });
       sandbox.stub(Date, 'now').callsFake(() => {

@@ -1136,14 +1136,13 @@ export class Snapshot extends EventEmitter {
         }
       }
 
-      const req = this.requestStream({
+      return this.requestStream({
         client: 'SpannerClient',
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
         headers: headers,
       });
-      return req;
     };
 
     return partialResultStream(this._wrapWithIdWaiter(makeRequest), {

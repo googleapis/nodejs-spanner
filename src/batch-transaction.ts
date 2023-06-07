@@ -20,7 +20,7 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../protos/protos';
-import {Session, Database, Spanner} from '.';
+import {Session, Database} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
@@ -169,7 +169,8 @@ class BatchTransaction extends Snapshot {
     });
     config.reqOpts = extend({}, query);
     config.headers = {
-      [CLOUD_RESOURCE_HEADER]: (this.session!.parent as Database).formattedName_,
+      [CLOUD_RESOURCE_HEADER]: (this.session!.parent as Database)
+        .formattedName_,
     };
     delete query.partitionOptions;
     this.session!.request(config, (err, resp) => {

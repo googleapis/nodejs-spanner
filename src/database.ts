@@ -1146,11 +1146,9 @@ class Database extends common.GrpcServiceObject {
    * Enables logging or updates Logger.
    *
    * @method Database#enableLogging
-   * @param {object} [gaxOptions] Request configuration options,
-   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
-   *     for more details.
-   * @param {DatabaseExistsCallback} [callback] Callback function.
-   * @returns {Promise<DatabaseExistsResponse>}
+   * @param {winston.LoggerOptions} [loggingOptions] options for logging
+   * including transports, levels, formatting , etc. By default, the values are
+   * logged to console.
    *
    * @example
    * ```
@@ -1160,16 +1158,15 @@ class Database extends common.GrpcServiceObject {
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
    *
-   * database.exists(function(err, exists) {});
-   *
-   * //-
-   * // If the callback is omitted, we'll return a Promise.
-   * //-
-   * database.exists().then(function(data) {
-   *   const exists = data[0];
-   * });
+   * loggingOptions = {
+   *         transports: [new winston.transports.Console()],
+   *         format: winston.format.combine(
+   *           winston.format.colorize(),
+   *           winston.format.simple()
+   *         ),
+   *       }
+   * database.enableLogging(loggingOptions);
    * ```
-   *
    */
   enableLogging(loggingOptions?: winston.LoggerOptions): winston.Logger {
     let updateLogger = false;
@@ -2063,7 +2060,6 @@ class Database extends common.GrpcServiceObject {
     this.pool_.getSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
-
         session!.txn = transaction;
       }
       if (

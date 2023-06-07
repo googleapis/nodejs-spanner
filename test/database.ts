@@ -1597,9 +1597,9 @@ describe('Database', () => {
           callback(null, fakeSession2)
         );
 
-      transactionClosedStub = (
+      (
         sandbox.stub(fakePool, 'transactionClosed') as sinon.SinonStub
-      ).callsFake(transaction => {
+      ).callsFake(_ => {
         return false;
       });
 
@@ -1617,7 +1617,7 @@ describe('Database', () => {
     });
 
     it('should get a read session via `getSession`', () => {
-      getSessionStub.callsFake((longRunningTransaction, callback) => {
+      getSessionStub.callsFake((longRunningTransaction, _) => {
         assert.strictEqual(longRunningTransaction, false);
       });
       database.runStream(QUERY);
@@ -2490,7 +2490,7 @@ describe('Database', () => {
     });
 
     it('should get a read only session from the pool', () => {
-      getSessionStub.callsFake((longRunningTransaction, callback) => {
+      getSessionStub.callsFake((longRunningTransaction, _) => {
         assert.strictEqual(longRunningTransaction, true);
       });
 

@@ -102,6 +102,9 @@ describe('Spanner with mock server', () => {
   let dbCounter = 1;
 
   function newTestDatabase(options?: SessionPoolOptions): Database {
+    options = Object.assign({}, options, {
+      logging: false,
+    }) as SessionPoolOptions;
     return instance.database(`database-${dbCounter++}`, options);
   }
 

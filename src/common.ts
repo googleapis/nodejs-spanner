@@ -17,7 +17,6 @@
 import {grpc, CallOptions, Operation as GaxOperation} from 'google-gax';
 import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
-import winston = require('winston');
 
 export type IOperation = instanceAdmin.longrunning.IOperation;
 
@@ -97,7 +96,7 @@ export let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
 
 /**
  * Set timeout for long-running transactions.
- * @param timeout Timeout for Long Running Transactions.
+ * @param {number} [timeout] Timeout for Long Running Transactions.
  */
 export default function setLongRunningTransactionTimeout(timeout: number) {
   LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;

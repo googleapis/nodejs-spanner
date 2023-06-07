@@ -34,7 +34,7 @@ import {
   ExecuteSqlRequest,
   ReadRequest,
 } from '../src/transaction';
-import {GoogleError, grpc} from 'google-gax';
+import {grpc} from 'google-gax';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
