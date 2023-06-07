@@ -760,7 +760,7 @@ describe('SessionPool', () => {
       assert.strictEqual(session.longRunningTransaction, true);
     });
 
-    it('should set lastUsed and longRunningTransaction', () => {
+    it('should call _startCleaningLongRunningSessions', () => {
       const startCleaningLongRunningSessionsStub = (
         sandbox.stub(
           sessionPool,
