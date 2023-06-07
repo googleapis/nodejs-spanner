@@ -23,6 +23,7 @@ import {Session, types} from './session';
 import {Snapshot, Transaction} from './transaction';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
+import { LONG_RUNNING_TRANSACTION_TIMEOUT } from "./common";
 
 /**
  * @callback SessionPoolCloseCallback
@@ -1233,7 +1234,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
     this._longRunningSessionCleanupTimer = Date.now();
     this._longRunningTransactionHandle = setInterval(
-      () => this._deleteLongRunningTransactions(),
+      () =>
+        this._deleteLongRunningTransactions(LONG_RUNNING_TRANSACTION_TIMEOUT),
       120000
     );
     this._longRunningTransactionHandle.unref();

@@ -747,14 +747,11 @@ describe('Transaction', () => {
         snapshot.session = undefined;
         REQUEST_STREAM.resetHistory();
 
-        const stream = snapshot.runStream(QUERY);
-        stream.on('error', error => {
-          assert.strictEqual(
-            error.message,
-            'Transaction has been closed as it was running for more than 60 minutes'
-          );
-          done();
-        });
+        assert.throws(
+          () => snapshot.runStream(QUERY),
+          /Transaction has been closed as it was running for more than 60 minutes/
+        );
+        done();
       });
     });
 

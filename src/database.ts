@@ -96,9 +96,6 @@ import winston = require('winston');
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
-import * as Config from "winston/lib/winston/config";
-import * as logform from "logform";
-import * as Transport from "winston-transport";
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
 
@@ -135,20 +132,6 @@ export interface SessionPoolConstructor {
     database: Database,
     options?: SessionPoolOptions | null
   ): SessionPoolInterface;
-}
-
-export interface LoggerOptions {
-  levels?: Config.AbstractConfigSetLevels;
-  silent?: boolean;
-  format?: logform.Format;
-  level?: string;
-  exitOnError?: Function | boolean;
-  defaultMeta?: any;
-  transports?: Transport[] | Transport;
-  handleExceptions?: boolean;
-  handleRejections?: boolean;
-  exceptionHandlers?: any;
-  rejectionHandlers?: any;
 }
 
 export interface SetIamPolicyRequest {
@@ -1153,12 +1136,45 @@ class Database extends common.GrpcServiceObject {
       );
     });
   }
-
+  /**
+   * Disables logging.
+   */
   disableLogging(): void {
     this.loggingEnabled = false;
   }
-  enableLogging(loggingOptions?): winston.Logger {
+  /**
+   * Enables logging or updates Logger.
+   *
+   * @method Database#enableLogging
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {DatabaseExistsCallback} [callback] Callback function.
+   * @returns {Promise<DatabaseExistsResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.exists(function(err, exists) {});
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.exists().then(function(data) {
+   *   const exists = data[0];
+   * });
+   * ```
+   *
+   */
+  enableLogging(loggingOptions?: winston.LoggerOptions): winston.Logger {
+    let updateLogger = false;
     if (loggingOptions !== null && typeof loggingOptions === 'object') {
+      updateLogger = true;
       loggingOptions = loggingOptions as winston.LoggerOptions;
     } else {
       loggingOptions = {
@@ -1169,7 +1185,7 @@ class Database extends common.GrpcServiceObject {
         ),
       };
     }
-    if (!this.logger) {
+    if (!this.logger || updateLogger) {
       this.logger = winston.createLogger(loggingOptions);
     }
     this.loggingEnabled = true;

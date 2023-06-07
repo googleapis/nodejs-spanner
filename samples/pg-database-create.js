@@ -88,9 +88,8 @@ function main(
   // [END spanner_postgresql_create_database]
 }
 
-// process.on('unhandledRejection', err => {
-//   console.error(err.message);
-//   process.exitCode = 1;
-// });
-// main(...process.argv.slice(2));
-main('astha-testing','db123','span-cloud-testing')
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

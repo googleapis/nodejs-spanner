@@ -39,7 +39,7 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import {grpc, CallOptions} from 'google-gax';
+import {grpc, CallOptions, GoogleError} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
@@ -6357,16 +6357,12 @@ describe('Spanner', () => {
         maxIdle: 1,
         min: 1,
         incStep: 1,
-        closeInactiveTransactions: false,
+        closeInactiveTransactions: true,
         logging: false,
         databaseRole: null,
       };
       const database = instance.database(DATABASE.formattedName_, options);
       setLongRunningTransactionTimeout(1000 * 60);
-
-      function sleep(ms: number): void {
-        setTimeout(() => {}, ms);
-      }
 
       database.getSnapshot(async (err, transaction) => {
         if (err) {
@@ -6374,21 +6370,26 @@ describe('Spanner', () => {
           return;
         }
 
-        transaction!.run('SELECT 1', (err, rows) => {
+        transaction!.run('SELECT 1', async (err, rows) => {
           const session = transaction!.session;
           assert.ifError(err);
           assert.strictEqual(rows.length, 1);
-          sleep(2000 * 60);
+          await new Promise(r => setTimeout(r, 2000 * 60));
           assert.strictEqual(transaction?.session, undefined);
           assert.strictEqual(session?.txn, undefined);
-          transaction!.run('SELECT 1', err => {
-            assert.match(
-              err!.details,
-              /Transaction has been closed as it was running for more than 60 minutes/
-            );
-            transaction!.end();
-            done();
-          })
+          assert.strictEqual(
+            session?.parent.pool_._recycledTransactions.size,
+            1
+          );
+
+          const promise = transaction!.run('SELECT 1');
+          await assert.rejects(
+            promise,
+            new GoogleError(
+              'Transaction has been closed as it was running for more than 60 minutes'
+            )
+          );
+          done();
         });
       });
     });

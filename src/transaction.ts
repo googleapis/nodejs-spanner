@@ -1078,16 +1078,16 @@ export class Snapshot extends EventEmitter {
       query;
     let reqOpts;
 
+    if (!this.session) {
+      throw new GoogleError(
+        'Transaction has been closed as it was running for more than 60 minutes'
+      );
+    }
+
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
       const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
-
-      if (!this.session) {
-        throw new GoogleError(
-          'Transaction has been closed as it was running for more than 60 minutes'
-        );
-      }
       if (this.id) {
         transaction.id = this.id as Uint8Array;
       } else if (this._options.readWrite) {
