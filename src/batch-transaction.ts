@@ -20,8 +20,11 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../protos/protos';
-import {Session, Database} from '.';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {Session, Database, Spanner} from '.';
+import {
+  CLOUD_RESOURCE_HEADER,
+  addLeaderAwareRoutingHeader,
+} from '../src/common';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -133,12 +136,18 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.gaxOptions;
     delete reqOpts.types;
 
+    const headers: {[k: string]: string} = {};
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.createPartitions_(
       {
         client: 'SpannerClient',
         method: 'partitionQuery',
         reqOpts,
         gaxOpts: query.gaxOptions,
+        headers: headers,
       },
       callback
     );
@@ -225,12 +234,18 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.keys;
     delete reqOpts.ranges;
 
+    const headers: {[k: string]: string} = {};
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.createPartitions_(
       {
         client: 'SpannerClient',
         method: 'partitionRead',
         reqOpts,
         gaxOpts: options.gaxOptions,
+        headers: headers,
       },
       callback
     );
