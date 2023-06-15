@@ -1460,7 +1460,7 @@ describe('SessionPool', () => {
   });
 
   describe('_deleteLongRunningTransactions', () => {
-    it('should stop logging long running transactions after 60 minutes', async () => {
+    it('should stop cleanup of long running transactions after 60 minutes', async () => {
       sandbox.stub(Date, 'now').callsFake(() => {
         return 100000 + 60 * 60 * 1000 + 10;
       });
@@ -1468,7 +1468,7 @@ describe('SessionPool', () => {
       const stopCleaningLongRunningSessionsStub = sandbox
         .stub(sessionPool, '_stopCleaningLongRunningSessions')
         .callsFake(() => {});
-      sessionPool._longRunningSessionCleanupTimer = 100000;
+      sessionPool._lastSessionRecycle = 100000;
 
       await sessionPool._deleteLongRunningTransactions();
       assert.strictEqual(stopCleaningLongRunningSessionsStub.callCount, 1);
@@ -1486,7 +1486,7 @@ describe('SessionPool', () => {
       sandbox.stub(Date, 'now').callsFake(() => {
         return 100000 + 60 * 60 * 1000 + 10;
       });
-      sessionPool._longRunningSessionCleanupTimer = 100000 + 60 * 60 * 1000;
+      sessionPool._lastSessionRecycle = 100000 + 50 * 60 * 1000;
       sessionPool._traces.set(session, trace);
       session.lastUsed = 100000;
       session.longRunningTransaction = false;
@@ -1511,7 +1511,7 @@ describe('SessionPool', () => {
       });
       sessionPool._traces.set(session, trace);
       const releaseStub = sandbox.stub(sessionPool, 'release');
-      sessionPool._longRunningSessionCleanupTimer = 100000 + 60 * 60 * 1000;
+      sessionPool._lastSessionRecycle = 100000 + 50 * 60 * 1000;
       sessionPool.options.closeInactiveTransactions = true;
       sessionPool.options.logging = false;
       session.lastUsed = 100000;

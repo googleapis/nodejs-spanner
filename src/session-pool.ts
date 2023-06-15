@@ -387,7 +387,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
   _recycledTransactions: Map<Snapshot, string>;
-  _longRunningSessionCleanupTimer: number | null;
+  _lastSessionRecycle: number | null;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -552,7 +552,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     this._traces = new Map();
     this._recycledTransactions = new Map();
-    this._longRunningSessionCleanupTimer = null;
+    this._lastSessionRecycle = null;
   }
 
   /**
@@ -1165,15 +1165,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (this._ongoingTransactionDeletion) return;
     this._ongoingTransactionDeletion = true;
 
-    // If only logging is enabled and closeInactiveTransactions is disabled,
-    // stop cleanup after 60 minutes until triggered again.
-    if (this.options.logging && !this.options.closeInactiveTransactions) {
-      if (Date.now() - this._longRunningSessionCleanupTimer! > 60 * 60 * 1000) {
-        this._stopCleaningLongRunningSessions();
-        this._longRunningSessionCleanupTimer = null;
-        this._ongoingTransactionDeletion = false;
-        return;
-      }
+    // Stop cleanup after 60 minutes until triggered again unless a session has
+    // been recycled in the last 60 minutes.
+    if (Date.now() - this._lastSessionRecycle! > 60 * 60 * 1000) {
+      this._stopCleaningLongRunningSessions();
+      this._lastSessionRecycle = null;
+      this._ongoingTransactionDeletion = false;
+      return;
     }
 
     // Traverse each ongoing transaction and check if it needs to be recycled
@@ -1198,6 +1196,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
             this._recycledTransactions.set(session.txn!, sessionTrace);
             session.txn!.session = undefined;
             this.release(session);
+            this._lastSessionRecycle = Date.now();
           } else if (this.options.logging) {
             // If only logging is true, mark session as logged so that
             // we don't log the same transaction multiple times.
@@ -1286,7 +1285,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (this.options.logging) {
       this.database.logger?.log('info', '95% of the session pool is exhausted');
     }
-    this._longRunningSessionCleanupTimer = Date.now();
+    this._lastSessionRecycle = Date.now();
     this._longRunningTransactionHandle = setInterval(
       () =>
         this._deleteLongRunningTransactions(LONG_RUNNING_TRANSACTION_TIMEOUT),
@@ -1304,5 +1303,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     if (this._longRunningTransactionHandle)
       clearInterval(this._longRunningTransactionHandle);
     this._longRunningTransactionHandle = undefined;
+    this._lastSessionRecycle = null;
   }
 }
