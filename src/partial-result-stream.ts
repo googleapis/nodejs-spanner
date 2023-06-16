@@ -50,16 +50,30 @@ interface RequestFunction {
  *     that it is not ready for any more data. Increase this value if you
  *     experience 'Stream is still not ready to receive data' errors as a
  *     result of a slow writer in your receiving stream.
- * @property {object} [columnInfo] An object map using which we can pass
+ * @property {object} [columnsMetadata] An object map that can be used to pass
  * additional properties for each column type which can help in deserializing
  * the data coming from backend. (Eg: We need to pass Proto Function and Enum
- * map to deserialize proto messages and enums respectively)
+ * map to deserialize proto messages and enums, respectively.)
  */
 export interface RowOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   maxResumeRetries?: number;
-  columnInfo?: object;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. It's specifically useful for data types like
+   * protobuf where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, the customer needs
+   * to supply a custom parameter. This parameter should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   */
+  columnsMetadata?: object;
 }
 
 /**
@@ -340,10 +354,14 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _createRow(values: Value[]): Row {
     const fields = values.map((value, index) => {
       const {name, type} = this._fields[index];
-      const columnInfo = this._options.columnInfo?.[name];
+      const columnMetadata = this._options.columnsMetadata?.[name];
       return {
         name,
-        value: codec.decode(value, type as google.spanner.v1.Type, columnInfo),
+        value: codec.decode(
+          value,
+          type as google.spanner.v1.Type,
+          columnMetadata
+        ),
       };
     });
 

@@ -64,7 +64,6 @@ function main(
       fullName: 'spanner.examples.music.Genre',
     });
 
-    // Instantiate Spanner table objects.
     database.runTransaction(async (err, transaction) => {
       if (err) {
         console.error(err);
@@ -85,7 +84,7 @@ function main(
           },
         });
 
-        const rowCount = Math.floor(stats[stats.rowCount]);
+        const rowCount = stats[stats.rowCount];
         console.log(
           `Successfully inserted ${rowCount} record into the Singers table.`
         );

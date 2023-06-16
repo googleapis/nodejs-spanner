@@ -54,9 +54,11 @@ function main(
                    SingerGenreArray
             FROM Singers 
             WHERE SingerId = 1`,
-      // `columnInfo` is an optional parameter and is used to deserialize the proto message and enum object back from bytearray,
-      // if columnInfo is not passed for proto messages and enums then data for these columns will be bytes and int respectively.
-      columnInfo: {
+      /* `columnsMetadata` is an optional parameter and is used to deserialize the
+      proto message and enum object back from bytearray.
+      If columnsMetadata is not passed for proto messages and enums, then the data
+      types for these columns will be bytes and int respectively. */
+      columnsMetadata: {
         SingerInfo: music.SingerInfo,
         SingerInfoArray: music.SingerInfo,
         SingerGenre: music.Genre,

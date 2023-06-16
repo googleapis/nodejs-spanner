@@ -40,14 +40,16 @@ function main(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
+  // Creating empty database
+  database.create();
+
   async function updateDatabaseWithProtoDescriptor() {
-    // Reading proto descriptor file
+    // Read a proto descriptor file and convert it to a base64 string
     const protoDescriptor = fs
       .readFileSync('./resource/descriptors.pb')
       .toString('base64');
 
-    // Updated a new database with an extra statements which will create
-    // proto bundle and tables with proto column
+    // Add a proto bundle and a table with proto columns to an existing database.
     console.log(`Updating database ${database.formattedName_}.`);
     const createProtoBundleStatement = `CREATE PROTO BUNDLE (
             spanner.examples.music.SingerInfo,
@@ -62,9 +64,6 @@ function main(
             SingerInfoArray ARRAY<spanner.examples.music.SingerInfo>,
             SingerGenreArray ARRAY<spanner.examples.music.Genre>,
             ) PRIMARY KEY (SingerId)`;
-
-    // Creating empty database
-    await database.create();
 
     const [, operation] = await database.updateSchema({
       protoDescriptors: protoDescriptor,

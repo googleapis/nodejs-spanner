@@ -260,10 +260,15 @@ describe('Spanner', () => {
      * @param insertData data to insert
      * @param dialect sql dialect
      * @param callback
-     * @param columnInfoForRead Optional parameter use for read/query for
+     * @param columnsMetadataForRead Optional parameter use for read/query for
      *      deserializing Proto messages and enum
      */
-    function insert(insertData, dialect, callback, columnInfoForRead?: {}) {
+    function insert(
+      insertData,
+      dialect,
+      callback,
+      columnsMetadataForRead?: {}
+    ) {
       const id = generateName('id');
 
       insertData.Key = id;
@@ -274,7 +279,7 @@ describe('Spanner', () => {
         params: {
           id,
         },
-        columnInfo: columnInfoForRead,
+        columnsMetadata: columnsMetadataForRead,
       };
       let database = DATABASE;
       if (dialect === Spanner.POSTGRESQL) {

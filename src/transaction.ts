@@ -59,7 +59,21 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
-  columnInfo?: object;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. It's specifically useful for data types like
+   * protobuf where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, the customer needs
+   * to supply a custom parameter. This parameter should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   */
+  columnsMetadata?: object;
 }
 
 export interface CommitOptions {
@@ -571,7 +585,7 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
       requestOptions,
-      columnInfo,
+      columnsMetadata,
     } = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
@@ -593,7 +607,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
-    delete request.columnInfo;
+    delete request.columnsMetadata;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -628,7 +642,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-      columnInfo,
+      columnsMetadata,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1056,7 +1070,7 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
       requestOptions,
-      columnInfo,
+      columnsMetadata,
     } = query;
     let reqOpts;
 
@@ -1077,7 +1091,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
-      delete query.columnInfo;
+      delete query.columnsMetadata;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1117,7 +1131,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
-      columnInfo,
+      columnsMetadata,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {

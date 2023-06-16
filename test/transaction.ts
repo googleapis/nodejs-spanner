@@ -363,7 +363,7 @@ describe('Transaction', () => {
           json: true,
           jsonOptions: {a: 'b'},
           maxResumeRetries: 10,
-          columnInfo: {column1: {test: 'ss'}, column2: Function},
+          columnsMetadata: {column1: {test: 'ss'}, column2: Function},
         };
 
         snapshot.createReadStream(TABLE, fakeOptions);
@@ -672,7 +672,7 @@ describe('Transaction', () => {
           json: true,
           jsonOptions: {a: 'b'},
           maxResumeRetries: 10,
-          columnInfo: {column1: {test: 'ss'}, column2: Function},
+          columnsMetadata: {column1: {test: 'ss'}, column2: Function},
         };
 
         const fakeQuery = Object.assign({}, QUERY, expectedOptions);

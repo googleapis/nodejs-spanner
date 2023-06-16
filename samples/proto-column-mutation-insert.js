@@ -64,7 +64,7 @@ function main(
       fullName: 'spanner.examples.music.Genre',
     });
 
-    // Instantiate Spanner table object.
+    // Get a reference to the Singers table
     const table = database.table('Singers');
 
     const data = [

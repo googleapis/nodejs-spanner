@@ -46,13 +46,12 @@ function main(
   const database = instance.database(databaseId);
 
   async function createDatabaseWithProtoDescriptor() {
-    // Reading proto descriptor file
+    // Read a proto descriptor file and convert it to a base64 string
     const protoDescriptor = fs
       .readFileSync('./resource/descriptors.pb')
       .toString('base64');
 
-    // Create a new database with an extra statements which will create
-    // proto bundle and tables with proto column
+    // Create a new database with a proto bundle and a table with proto columns
     console.log(`Creating database ${database.formattedName_}.`);
     const createProtoBundleStatement = `CREATE PROTO BUNDLE (
             spanner.examples.music.SingerInfo,
