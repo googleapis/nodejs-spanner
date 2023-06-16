@@ -92,7 +92,7 @@ export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
 /*!
  * Timeout value for long-running transactions
  */
-export let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
+let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
 
 /**
  * Set timeout for long-running transactions.
@@ -103,3 +103,10 @@ module.exports = {
     LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;
   },
 };
+
+/**
+ * Get timeout for long-running transactions.
+ */
+export function getLongRunningTransactionTimeout() {
+  return LONG_RUNNING_TRANSACTION_TIMEOUT;
+}
