@@ -98,6 +98,8 @@ export let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
  * Set timeout for long-running transactions.
  * @param {number} [timeout] Timeout for Long Running Transactions.
  */
-export default function setLongRunningTransactionTimeout(timeout: number) {
-  LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;
-}
+module.exports = {
+  setLongRunningTransactionTimeout: function (timeout: number) {
+    LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;
+  },
+};
