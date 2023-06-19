@@ -44,7 +44,7 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
-const setLongRunningTransactionTimeout = require('../src/common');
+import {_setLongRunningTransactionTimeout} from '../src/common';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -6190,7 +6190,7 @@ describe('Spanner', () => {
     const table = DATABASE.table(TABLE_NAME);
 
     afterEach(async () => {
-      setLongRunningTransactionTimeout(1000 * 60 * 60);
+      _setLongRunningTransactionTimeout(1000 * 60 * 60);
     });
 
     it('should insert and query a row', done => {
@@ -6362,7 +6362,7 @@ describe('Spanner', () => {
         databaseRole: null,
       };
       const database = instance.database(DATABASE.formattedName_, options);
-      setLongRunningTransactionTimeout(1000 * 60);
+      _setLongRunningTransactionTimeout(1000 * 60);
 
       database.getSnapshot(async (err, transaction) => {
         if (err) {
