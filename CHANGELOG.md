@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.12.0](https://github.com/googleapis/nodejs-spanner/compare/v6.11.0...v6.12.0) (2023-06-19)
+
+
+### Features
+
+* Databoostenabled for Query and Read partitions ([#1784](https://github.com/googleapis/nodejs-spanner/issues/1784)) ([66ff70c](https://github.com/googleapis/nodejs-spanner/commit/66ff70cd377d5e3f60a6796bc36bab3a39337f31))
+
 ## [6.11.0](https://github.com/googleapis/nodejs-spanner/compare/v6.10.1...v6.11.0) (2023-06-06)
 
 
