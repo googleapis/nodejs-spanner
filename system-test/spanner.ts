@@ -275,6 +275,47 @@ describe('Spanner', () => {
         });
       });
     }
+    function readUntypedData(column, value, dialect, callback) {
+      const id = generateName('id');
+      const insertData = {
+        Key: id,
+        [column]: value,
+      };
+
+      let table = googleSqlTable;
+      let query: ExecuteSqlRequest = {
+        sql: 'SELECT * FROM `' + table.name + '` WHERE ' + column + ' = @value',
+        params: {
+          value,
+        },
+      };
+      let database = DATABASE;
+      if (dialect === Spanner.POSTGRESQL) {
+        table = postgreSqlTable;
+        query = {
+          sql: 'SELECT * FROM ' + table.name + ' WHERE "' + column + '" = $1',
+          params: {
+            p1: value,
+          },
+        };
+        database = PG_DATABASE;
+      }
+      table.insert(insertData, (err, insertResp) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        database.run(query, (err, rows, readResp) => {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          callback(null, rows.shift(), insertResp, readResp);
+        });
+      });
+    }
 
     before(async () => {
       if (IS_EMULATOR_ENABLED) {
@@ -757,6 +798,27 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped int64 values', done => {
+        readUntypedData(
+          'IntValue',
+          '5',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().IntValue, 5);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped int64 values', done => {
+        readUntypedData('IntValue', '5', Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntValue, 5);
+          done();
+        });
+      });
     });
 
     describe('float64s', () => {
@@ -902,6 +964,27 @@ describe('Spanner', () => {
         insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, values);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped float64 values', done => {
+        readUntypedData(
+          'FloatValue',
+          5.6,
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().FloatValue, 5.6);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped float64 values', done => {
+        readUntypedData('FloatValue', 5.6, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatValue, 5.6);
           done();
         });
       });
@@ -1055,6 +1138,38 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped numeric values', done => {
+        readUntypedData(
+          'NumericValue',
+          '5.623',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().NumericValue.value,
+              Spanner.numeric('5.623').value
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped numeric values', done => {
+        readUntypedData(
+          'NumericValue',
+          '5.623',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().NumericValue,
+              Spanner.pgNumeric(5.623)
+            );
+            done();
+          }
+        );
+      });
     });
 
     describe('strings', () => {
@@ -1152,6 +1267,32 @@ describe('Spanner', () => {
           (err, row) => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped string values', done => {
+        readUntypedData(
+          'StringValue',
+          'hello',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringValue, 'hello');
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped string values', done => {
+        readUntypedData(
+          'StringValue',
+          'hello',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringValue, 'hello');
             done();
           }
         );
@@ -1257,6 +1398,32 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped bytes values', done => {
+        readUntypedData(
+          'BytesValue',
+          Buffer.from('b'),
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('b'));
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped bytes values', done => {
+        readUntypedData(
+          'BytesValue',
+          Buffer.from('b'),
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('b'));
+            done();
+          }
+        );
+      });
     });
 
     describe('jsons', () => {
@@ -1315,6 +1482,23 @@ describe('Spanner', () => {
               {key1: 'value1'},
               {key2: 'value2'},
             ]);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped json values', done => {
+        const value = {
+          key1: 'value1',
+          key2: 'value2',
+        };
+        readUntypedData(
+          'JsonValue',
+          value,
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().JsonValue, value);
             done();
           }
         );
@@ -1435,6 +1619,40 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', done => {
+        readUntypedData(
+          'TimestampValue',
+          '2014-09-27T12:30:00.45Z',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            const time = row.toJSON().TimestampValue.getTime();
+            assert.strictEqual(
+              time,
+              Spanner.timestamp('2014-09-27T12:30:00.45Z').getTime()
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped timestamp values', done => {
+        readUntypedData(
+          'TimestampValue',
+          '2014-09-27T12:30:00.45Z',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            const time = row.toJSON().TimestampValue.getTime();
+            assert.strictEqual(
+              time,
+              Spanner.timestamp('2014-09-27T12:30:00.45Z').getTime()
+            );
+            done();
+          }
+        );
+      });
     });
 
     describe('dates', () => {
@@ -1541,6 +1759,38 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped date values', done => {
+        readUntypedData(
+          'DateValue',
+          '2014-09-27',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              Spanner.date(row.toJSON().DateValue),
+              Spanner.date('2014-09-27')
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped date values', done => {
+        readUntypedData(
+          'DateValue',
+          '2014-09-27',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              Spanner.date(row.toJSON().DateValue),
+              Spanner.date('2014-09-27')
+            );
+            done();
+          }
+        );
+      });
     });
 
     describe('jsonb', () => {
@@ -1599,6 +1849,18 @@ describe('Spanner', () => {
             done();
           }
         );
+      });
+
+      it('POSTGRESQL should read untyped json values', done => {
+        const value = Spanner.pgJsonb({
+          key1: 'value1',
+          key2: 'value2',
+        });
+        readUntypedData('JsonbValue', value, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbValue, value);
+          done();
+        });
       });
     });
 

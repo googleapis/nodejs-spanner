@@ -961,7 +961,6 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
         assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
         assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
-        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
         assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
         assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
         assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
