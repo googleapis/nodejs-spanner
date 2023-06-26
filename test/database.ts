@@ -28,11 +28,15 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
-import {Instance} from '../src';
+import {Spanner, Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import {google} from '../protos/protos';
+import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 
@@ -91,16 +95,6 @@ class FakeSession {
   }
 }
 
-interface ReadSessionCallback {
-  (err: Error, session?: null): void;
-  (err: null, session: FakeSession): void;
-}
-
-interface WriteSessionCallback {
-  (err: Error, session?: null, transaction?: null): void;
-  (err: null, session: FakeSession, transaction: FakeTransaction): void;
-}
-
 class FakeSessionPool extends EventEmitter {
   calledWith_: IArguments;
   constructor() {
@@ -108,8 +102,7 @@ class FakeSessionPool extends EventEmitter {
     this.calledWith_ = arguments;
   }
   open() {}
-  getReadSession() {}
-  getWriteSession() {}
+  getSession() {}
   release() {}
 }
 
@@ -147,7 +140,7 @@ class FakeTransactionRunner {
 
 let fakeAsyncTransactionRunner: FakeAsyncTransactionRunner<{}>;
 
-class FakeAsyncTransactionRunner<T> {
+class FakeAsyncTransactionRunner<T extends {}> {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
@@ -187,11 +180,16 @@ describe('Database', () => {
   // tslint:disable-next-line variable-name
   let DatabaseCached: typeof db.Database;
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+  } as {} as Spanner;
+
   const INSTANCE = {
     request: util.noop,
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
+    parent: SPANNER,
   } as {} as Instance;
 
   const NAME = 'table-name';
@@ -230,6 +228,7 @@ describe('Database', () => {
     extend(Database, DatabaseCached);
     database = new Database(INSTANCE, NAME, POOL_OPTIONS);
     database.parent = INSTANCE;
+    database.databaseRole = 'parent_role';
   });
 
   afterEach(() => sandbox.restore());
@@ -365,7 +364,13 @@ describe('Database', () => {
       assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
       assert.strictEqual(reqOpts.sessionCount, count);
       assert.strictEqual(gaxOpts, undefined);
-      assert.deepStrictEqual(headers, database.resourceHeader_);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign(
+          {[LEADER_AWARE_ROUTING_HEADER]: true},
+          database.resourceHeader_
+        )
+      );
     });
 
     it('should accept just a count number', () => {
@@ -386,7 +391,33 @@ describe('Database', () => {
 
       const {reqOpts} = stub.lastCall.args[0];
 
-      assert.deepStrictEqual(reqOpts.sessionTemplate, {labels});
+      assert.strictEqual(reqOpts.sessionTemplate.labels, labels);
+    });
+
+    it('should accept session databaseRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions(
+        {count: 10, databaseRole: 'child_role'},
+        assert.ifError
+      );
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(reqOpts.sessionTemplate.creatorRole, 'child_role');
+    });
+
+    it('should use default databaseRole', () => {
+      const stub = sandbox.stub(database, 'request');
+
+      database.batchCreateSessions({count: 10}, assert.ifError);
+
+      const {reqOpts} = stub.lastCall.args[0];
+
+      assert.deepStrictEqual(
+        reqOpts.sessionTemplate.creatorRole,
+        'parent_role'
+      );
     });
 
     it('should accept gaxOptions', () => {
@@ -404,7 +435,7 @@ describe('Database', () => {
       const error = new Error('err');
       const response = {};
 
-      sandbox.stub(database, 'request').callsFake((_, cb) => {
+      sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(error, response);
       });
 
@@ -427,7 +458,7 @@ describe('Database', () => {
         stub.withArgs(session.name).returns(fakeSessions[i]);
       });
 
-      sandbox.stub(database, 'request').callsFake((_, cb) => {
+      sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(null, response);
       });
 
@@ -436,6 +467,59 @@ describe('Database', () => {
         assert.deepStrictEqual(sessions, fakeSessions);
         assert.strictEqual(resp, response);
         done();
+      });
+    });
+  });
+
+  describe('setMetadata', () => {
+    const METADATA = {
+      needsToBeSnakeCased: true,
+    } as inst.IDatabase;
+    const ORIGINAL_METADATA = extend({}, METADATA);
+
+    it('should make and return the request', () => {
+      const requestReturnValue = {};
+
+      function callback() {}
+
+      database.request = (config, callback_) => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'updateDatabase');
+
+        const expectedReqOpts = extend({}, METADATA, {
+          name: database.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.reqOpts.database, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts.updateMask, {
+          paths: ['needs_to_be_snake_cased'],
+        });
+
+        assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+
+        assert.strictEqual(callback_, callback);
+
+        return requestReturnValue;
+      };
+
+      const returnValue = database.setMetadata(METADATA, callback);
+      assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      database.setMetadata(METADATA, gaxOptions, assert.ifError);
+    });
+
+    it('should not require a callback', () => {
+      assert.doesNotThrow(() => {
+        database.setMetadata(METADATA);
       });
     });
   });
@@ -537,7 +621,7 @@ describe('Database', () => {
 
     beforeEach(() => {
       database.pool_ = {
-        getReadSession(callback) {
+        getSession(callback) {
           callback(null, SESSION);
         },
       };
@@ -547,7 +631,7 @@ describe('Database', () => {
       const error = new Error('err');
 
       database.pool_ = {
-        getReadSession(callback) {
+        getSession(callback) {
           callback(error);
         },
       };
@@ -1133,7 +1217,7 @@ describe('Database', () => {
 
       database.pool_ = POOL;
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(null, SESSION);
       };
 
@@ -1141,7 +1225,7 @@ describe('Database', () => {
     });
 
     it('should get a session', done => {
-      POOL.getReadSession = () => {
+      POOL.getSession = () => {
         done();
       };
 
@@ -1151,7 +1235,7 @@ describe('Database', () => {
     it('should return error if it cannot get a session', done => {
       const error = new Error('Error.');
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(error);
       };
 
@@ -1230,7 +1314,7 @@ describe('Database', () => {
         return REQUEST_STREAM;
       };
 
-      POOL.getReadSession = callback => {
+      POOL.getSession = callback => {
         callback(null, SESSION);
       };
 
@@ -1238,7 +1322,7 @@ describe('Database', () => {
     });
 
     it('should get a session when stream opens', done => {
-      POOL.getReadSession = () => {
+      POOL.getSession = () => {
         done();
       };
 
@@ -1249,7 +1333,7 @@ describe('Database', () => {
       const ERROR = new Error('Error.');
 
       beforeEach(() => {
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(ERROR);
         };
       });
@@ -1267,7 +1351,7 @@ describe('Database', () => {
 
     describe('session retrieved successfully', () => {
       beforeEach(() => {
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(null, SESSION);
         };
       });
@@ -1344,7 +1428,7 @@ describe('Database', () => {
           cancel: util.noop,
         };
 
-        POOL.getReadSession = callback => {
+        POOL.getSession = callback => {
           callback(null, SESSION);
         };
       });
@@ -1478,7 +1562,7 @@ describe('Database', () => {
     let fakeStream: Transform;
     let fakeStream2: Transform;
 
-    let getReadSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
     let runStreamStub: sinon.SinonStub;
 
@@ -1491,9 +1575,7 @@ describe('Database', () => {
       fakeStream = through.obj();
       fakeStream2 = through.obj();
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
-      )
+      getSessionStub = (sandbox.stub(fakePool, 'getSession') as sinon.SinonStub)
         .onFirstCall()
         .callsFake(callback => callback(null, fakeSession))
         .onSecondCall()
@@ -1512,19 +1594,17 @@ describe('Database', () => {
       sandbox.stub(fakeSnapshot2, 'runStream').returns(fakeStream2);
     });
 
-    it('should get a read session via `getReadSession`', () => {
-      getReadSessionStub.callsFake(() => {});
+    it('should get a read session via `getSession`', () => {
+      getSessionStub.callsFake(() => {});
       database.runStream(QUERY);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
-    it('should destroy the stream if `getReadSession` errors', done => {
+    it('should destroy the stream if `getSession` errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub
-        .onFirstCall()
-        .callsFake(callback => callback(fakeError));
+      getSessionStub.onFirstCall().callsFake(callback => callback(fakeError));
 
       database.runStream(QUERY).on('error', err => {
         assert.strictEqual(err, fakeError);
@@ -1704,9 +1784,18 @@ describe('Database', () => {
         assert.strictEqual(config.method, 'createSession');
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(
+          config.headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            database.resourceHeader_
+          )
+        );
 
         done();
       };
@@ -1718,6 +1807,9 @@ describe('Database', () => {
       database.request = config => {
         assert.deepStrictEqual(config.reqOpts, {
           database: database.formattedName_,
+          session: {
+            creatorRole: database.databaseRole,
+          },
         });
 
         assert.strictEqual(config.gaxOpts, undefined);
@@ -1733,12 +1825,46 @@ describe('Database', () => {
       const originalOptions = extend(true, {}, options);
 
       database.request = config => {
-        assert.deepStrictEqual(config.reqOpts.session, {labels});
+        assert.deepStrictEqual(config.reqOpts.session.labels, labels);
         assert.deepStrictEqual(options, originalOptions);
         done();
       };
 
       database.createSession({labels}, assert.ifError);
+    });
+
+    it('should send databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'child_role'};
+      const options = {a: 'b', databaseRole: databaseRole};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(databaseRole, assert.ifError);
+    });
+
+    it('should send default databaseRole correctly', done => {
+      const databaseRole = {databaseRole: 'parent_role'};
+      const options = {a: 'b'};
+      const originalOptions = extend(true, {}, options);
+
+      database.request = config => {
+        assert.deepStrictEqual(
+          config.reqOpts.session.creatorRole,
+          databaseRole.databaseRole
+        );
+        assert.deepStrictEqual(options, originalOptions);
+        done();
+      };
+
+      database.createSession(databaseRole, assert.ifError);
     });
 
     describe('error', () => {
@@ -1801,7 +1927,7 @@ describe('Database', () => {
     let fakeSnapshot: FakeTransaction;
 
     let beginSnapshotStub: sinon.SinonStub;
-    let getReadSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
 
     beforeEach(() => {
@@ -1813,8 +1939,8 @@ describe('Database', () => {
         sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
       ).callsFake(callback => callback(null));
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => callback(null, fakeSession));
 
       snapshotStub = sandbox
@@ -1822,18 +1948,18 @@ describe('Database', () => {
         .returns(fakeSnapshot);
     });
 
-    it('should call through to `SessionPool#getReadSession`', () => {
-      getReadSessionStub.callsFake(() => {});
+    it('should call through to `SessionPool#getSession`', () => {
+      getSessionStub.callsFake(() => {});
 
       database.getSnapshot(assert.ifError);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
 
       database.getSnapshot(err => {
         assert.strictEqual(err, fakeError);
@@ -1887,7 +2013,7 @@ describe('Database', () => {
       );
       sandbox.stub(fakeSession2, 'snapshot').returns(fakeSnapshot2);
 
-      getReadSessionStub
+      getSessionStub
         .onFirstCall()
         .callsFake(callback => callback(null, fakeSession))
         .onSecondCall()
@@ -1939,32 +2065,32 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakeTransaction: FakeTransaction;
 
-    let getWriteSessionStub: sinon.SinonStub;
+    let getSessionStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
       fakeTransaction = new FakeTransaction();
 
-      getWriteSessionStub = (
-        sandbox.stub(fakePool, 'getWriteSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession, fakeTransaction);
       });
     });
 
     it('should get a read/write transaction', () => {
-      getWriteSessionStub.callsFake(() => {});
+      getSessionStub.callsFake(() => {});
 
       database.getTransaction(assert.ifError);
 
-      assert.strictEqual(getWriteSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', done => {
       const fakeError = new Error('err');
 
-      getWriteSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
 
       database.getTransaction(err => {
         assert.strictEqual(err, fakeError);
@@ -2014,7 +2140,10 @@ describe('Database', () => {
   describe('getSessions', () => {
     it('should make the correct request', done => {
       const gaxOpts = {};
-      const options = {a: 'a', gaxOptions: gaxOpts};
+      const options: {
+        a: string;
+        gaxOptions?: {};
+      } = {a: 'a', gaxOptions: gaxOpts};
 
       const expectedReqOpts = extend({}, options, {
         database: database.formattedName_,
@@ -2039,7 +2168,10 @@ describe('Database', () => {
       const pageToken = 'token';
       const gaxOptions = {pageSize, pageToken, timeout: 1000};
       const expectedGaxOpts = {timeout: 1000};
-      const options = {a: 'a', gaxOptions: gaxOptions};
+      const options: {
+        a: string;
+        gaxOptions?: {pageSize: number; pageToken: string; timeout: number};
+      } = {a: 'a', gaxOptions: gaxOptions};
       const expectedReqOpts = extend(
         {},
         options,
@@ -2070,7 +2202,9 @@ describe('Database', () => {
 
       const optionsPageSize = 5;
       const optionsPageToken = 'optionsToken';
-      const options = Object.assign(
+      const options: {
+        gaxOptions?: {pageSize: number; pageToken: string; timeout: number};
+      } = Object.assign(
         {},
         {
           pageSize: optionsPageSize,
@@ -2293,7 +2427,7 @@ describe('Database', () => {
     let fakeSession: FakeSession;
     let fakePartitionedDml: FakeTransaction;
 
-    let getReadSessionStub;
+    let getSessionStub;
     let beginStub;
     let runUpdateStub;
 
@@ -2302,8 +2436,8 @@ describe('Database', () => {
       fakeSession = new FakeSession();
       fakePartitionedDml = new FakeTransaction();
 
-      getReadSessionStub = (
-        sandbox.stub(fakePool, 'getReadSession') as sinon.SinonStub
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
       ).callsFake(callback => {
         callback(null, fakeSession);
       });
@@ -2320,18 +2454,18 @@ describe('Database', () => {
     });
 
     it('should get a read only session from the pool', () => {
-      getReadSessionStub.callsFake(() => {});
+      getSessionStub.callsFake(() => {});
 
       database.runPartitionedUpdate(QUERY, assert.ifError);
 
-      assert.strictEqual(getReadSessionStub.callCount, 1);
+      assert.strictEqual(getSessionStub.callCount, 1);
     });
 
     it('should return any pool errors', () => {
       const fakeError = new Error('err');
       const fakeCallback = sandbox.spy();
 
-      getReadSessionStub.callsFake(callback => callback(fakeError));
+      getSessionStub.callsFake(callback => callback(fakeError));
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
       const [err, rowCount] = fakeCallback.lastCall.args;
@@ -2418,7 +2552,7 @@ describe('Database', () => {
     beforeEach(() => {
       pool = database.pool_;
 
-      (sandbox.stub(pool, 'getWriteSession') as sinon.SinonStub).callsFake(
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }
@@ -2428,7 +2562,7 @@ describe('Database', () => {
     it('should return any errors getting a session', done => {
       const fakeErr = new Error('err');
 
-      (pool.getWriteSession as sinon.SinonStub).callsFake(callback =>
+      (pool.getSession as sinon.SinonStub).callsFake(callback =>
         callback(fakeErr)
       );
 
@@ -2502,7 +2636,7 @@ describe('Database', () => {
     beforeEach(() => {
       pool = database.pool_;
 
-      (sandbox.stub(pool, 'getWriteSession') as sinon.SinonStub).callsFake(
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }

@@ -28,7 +28,7 @@ import * as sn from 'sinon';
 import {PassThrough} from 'stream';
 
 const sinon = sn.createSandbox();
-const glob = global as {} as {GCLOUD_SANDBOX_ENV: boolean | {}};
+const glob = global as {} as {GCLOUD_SANDBOX_ENV?: boolean | {}};
 
 const gaxProtosDir = path.join(
   path.dirname(require.resolve('google-gax')),
@@ -90,6 +90,24 @@ describe('GrpcService', () => {
   const ROOT_DIR = '/root/dir';
   const PROTO_FILE_PATH = 'filepath.proto';
   const SERVICE_PATH = 'service.path';
+
+  interface Config {
+    proto: {};
+    protosDir: string;
+    protoServices: {
+      Service: {
+        path: string;
+        service: string;
+      };
+    };
+    packageJson: {
+      name: string;
+      version: string;
+    };
+    grpcMetadata?: {
+      property: string;
+    };
+  }
 
   const CONFIG = {
     proto: {},
@@ -344,7 +362,7 @@ describe('GrpcService', () => {
         'x-goog-api-client': EXPECTED_API_CLIENT_HEADER,
       };
 
-      const config = Object.assign({}, CONFIG);
+      const config: Config = Object.assign({}, CONFIG);
       delete config.grpcMetadata;
 
       const grpcService = new GrpcService(config, OPTIONS);
@@ -382,6 +400,18 @@ describe('GrpcService', () => {
 
       const grpcService = new GrpcService(CONFIG, OPTIONS);
       assert.strictEqual(grpcService.userAgent, userAgent);
+    });
+
+    it('should set the primary_user_agent from user-agent', () => {
+      const userAgent = 'user-agent/0.0.0';
+
+      getUserAgentFromPackageJsonOverride = packageJson => {
+        assert.strictEqual(packageJson, CONFIG.packageJson);
+        return userAgent;
+      };
+
+      new GrpcService(CONFIG, OPTIONS);
+      assert.strictEqual(OPTIONS['grpc.primary_user_agent'], userAgent);
     });
 
     it('should localize the service', () => {

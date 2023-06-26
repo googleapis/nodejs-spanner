@@ -15,7 +15,12 @@
 
 'use strict';
 
-async function getBackupOperations(instanceId, databaseId, projectId) {
+async function getBackupOperations(
+  instanceId,
+  databaseId,
+  backupId,
+  projectId
+) {
   // [START spanner_list_backup_operations]
   // Imports the Google Cloud client library
   const {Spanner, protos} = require('@google-cloud/spanner');
@@ -25,6 +30,7 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
    */
   // const projectId = 'my-project-id';
   // const databaseId = 'my-database';
+  // const backupId = 'my-backup';
   // const instanceId = 'my-instance';
 
   // Creates a client
@@ -35,7 +41,7 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
   // Gets a reference to a Cloud Spanner instance
   const instance = spanner.instance(instanceId);
 
-  // List backup operations
+  // List create backup operations
   try {
     const [backupOperations] = await instance.getBackupOperations({
       filter:
@@ -50,6 +56,32 @@ async function getBackupOperations(instanceId, databaseId, projectId) {
         );
       console.log(
         `Backup ${metadata.name} on database ${metadata.database} is ` +
+          `${metadata.progress.progressPercent}% complete.`
+      );
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  }
+
+  // List copy backup operations
+  try {
+    console.log(
+      '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
+        `AND (metadata.source_backup:${backupId})`
+    );
+    const [backupOperations] = await instance.getBackupOperations({
+      filter:
+        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
+        `AND (metadata.source_backup:${backupId})`,
+    });
+    console.log('Copy Backup Operations:');
+    backupOperations.forEach(backupOperation => {
+      const metadata =
+        protos.google.spanner.admin.database.v1.CopyBackupMetadata.decode(
+          backupOperation.metadata.value
+        );
+      console.log(
+        `Backup ${metadata.name} copied from source backup ${metadata.sourceBackup} is ` +
           `${metadata.progress.progressPercent}% complete.`
       );
     });

@@ -36,23 +36,35 @@ import {
   CreateSessionOptions,
 } from './database';
 import {ServiceObjectConfig} from '@google-cloud/common';
-import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  addLeaderAwareRoutingHeader,
+} from './common';
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
+import {Spanner} from '.';
 
 export type GetSessionResponse = [Session, r.Response];
 
 /**
- * enum to capture the possible session types
+ * @deprecated. enum to capture the possible session types
  */
 export const enum types {
   ReadOnly = 'readonly',
   ReadWrite = 'readwrite',
 }
 
+export interface GetSessionMetadataResponse {
+  name?: string | null;
+  labels?: {[k: string]: string} | null;
+  createTime?: google.protobuf.ITimestamp | null;
+  approximateLastUseTime?: google.protobuf.ITimestamp | null;
+  databaseRole?: string | null;
+}
+
 export type GetSessionMetadataCallback =
-  NormalCallback<google.spanner.v1.ISession>;
-export type GetSessionMetadataResponse = [google.spanner.v1.ISession];
+  NormalCallback<GetSessionMetadataResponse>;
 
 export type KeepAliveCallback = NormalCallback<google.spanner.v1.IResultSet>;
 export type KeepAliveResponse = [google.spanner.v1.IResultSet];
@@ -102,7 +114,6 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
 export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
-  type?: types;
   txn?: Transaction;
   lastUsed?: number;
   lastError?: grpc.ServiceError;
@@ -231,6 +242,11 @@ export class Session extends common.GrpcServiceObject {
           typeof optionsOrCallback === 'function'
             ? optionsOrCallback
             : callback;
+
+        this.labels = options.labels || null;
+        this.databaseRole =
+          options.databaseRole || database.databaseRole || null;
+
         return database.createSession(options, (err, session, apiResponse) => {
           if (err) {
             callback(err, null, apiResponse);
@@ -367,16 +383,23 @@ export class Session extends common.GrpcServiceObject {
     const reqOpts = {
       name: this.formattedName_,
     };
+
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
     return this.request(
       {
         client: 'SpannerClient',
         method: 'getSession',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (resp) {
+          resp.databaseRole = resp.creatorRole;
+          delete resp.creatorRole;
           this.metadata = resp;
         }
         callback!(err, resp);
@@ -498,6 +521,17 @@ export class Session extends common.GrpcServiceObject {
     }
     const sessionName = name.split('/').pop();
     return databaseName + '/sessions/' + sessionName;
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.parent.parent.parent as Spanner;
   }
 }
 

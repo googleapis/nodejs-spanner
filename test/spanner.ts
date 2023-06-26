@@ -16,8 +16,15 @@
 
 import {after, before, beforeEach, describe, Done, it} from 'mocha';
 import * as assert from 'assert';
-import {grpc, Status} from 'google-gax';
-import {Database, Instance, SessionPool, Snapshot, Spanner} from '../src';
+import {grpc, Status, ServiceError} from 'google-gax';
+import {
+  Database,
+  Instance,
+  SessionPool,
+  Snapshot,
+  Spanner,
+  Transaction,
+} from '../src';
 import * as mock from './mockserver/mockspanner';
 import {
   MockError,
@@ -30,7 +37,6 @@ import {TEST_INSTANCE_NAME} from './mockserver/mockinstanceadmin';
 import * as mockDatabaseAdmin from './mockserver/mockdatabaseadmin';
 import * as sinon from 'sinon';
 import {google} from '../protos/protos';
-import {types} from '../src/session';
 import {ExecuteSqlRequest, RunResponse} from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseOperationsOptions} from '../src/instance';
@@ -44,7 +50,10 @@ import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -170,7 +179,7 @@ describe('Spanner with mock server', () => {
     it('should return different database instances when the same database is requested twice with different session pool options', async () => {
       const dbWithDefaultOptions = newTestDatabase();
       const dbWithWriteSessions = instance.database(dbWithDefaultOptions.id!, {
-        writes: 1.0,
+        fail: false,
       });
       assert.notStrictEqual(dbWithDefaultOptions, dbWithWriteSessions);
     });
@@ -254,7 +263,7 @@ describe('Spanner with mock server', () => {
       } catch (e) {
         // Ignore the fact that streaming read is unimplemented on the mock
         // server. We just want to verify that the correct request is sent.
-        assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+        assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
       } finally {
         snapshot.end();
         await database.close();
@@ -282,6 +291,7 @@ describe('Spanner with mock server', () => {
               requestTag: 'request-tag',
             },
           });
+          await tx!.batchUpdate([insertSql, insertSql]);
           return await tx.commit();
         }
       );
@@ -300,6 +310,16 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+      assert.ok(request.transaction?.begin, 'transaction is not empty');
+      const nextBatchRequest = spannerMock
+        .getRequests()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteBatchDmlRequest).statements;
+        }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
+
       const commitRequest = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).mutations;
       }) as v1.CommitRequest;
@@ -308,6 +328,38 @@ describe('Spanner with mock server', () => {
         commitRequest.requestOptions!.transactionTag,
         'transaction-tag'
       );
+    });
+
+    it('should use txn ID from batchUpdate if non-ok status', async () => {
+      const sql = "INSERT INTO TBL (NUM, NAME) VALUES (14, 'Four')";
+      const database = newTestDatabase();
+      const err = {
+        message: 'Not OK',
+      } as MockError;
+      spannerMock.putStatementResult(
+        sql,
+        mock.StatementResult.updateCount(1, err)
+      );
+
+      await database.runTransactionAsync(async tx => {
+        await tx!.batchUpdate([sql, insertSql]);
+        await tx!.batchUpdate([sql, insertSql]);
+        return await tx.commit();
+      });
+      await database.close();
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteBatchDmlRequest).statements;
+      }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(request, 'no ExecuteBatchDmlRequest found');
+      assert.ok(request.transaction?.begin, 'transaction is not empty');
+      const nextBatchRequest = spannerMock
+        .getRequests()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteBatchDmlRequest).statements;
+        }) as v1.ExecuteBatchDmlRequest;
+      assert.ok(nextBatchRequest, 'no ExecuteBatchDmlRequest found');
+      assert.ok(nextBatchRequest.transaction?.id, 'no transaction ID');
     });
 
     it('should execute update with requestOptions', async () => {
@@ -336,6 +388,7 @@ describe('Spanner with mock server', () => {
       );
       assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
       assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
@@ -353,7 +406,10 @@ describe('Spanner with mock server', () => {
     it('should execute read with requestOptions in a read/write transaction', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
-        {requestOptions: {transactionTag: 'transaction-tag'}},
+        {
+          optimisticLock: true,
+          requestOptions: {transactionTag: 'transaction-tag'},
+        },
         async tx => {
           try {
             return await tx.read('foo', {
@@ -366,7 +422,7 @@ describe('Spanner with mock server', () => {
           } catch (e) {
             // Ignore the fact that streaming read is unimplemented on the mock
             // server. We just want to verify that the correct request is sent.
-            assert.strictEqual(e.code, Status.UNIMPLEMENTED);
+            assert.strictEqual((e as ServiceError).code, Status.UNIMPLEMENTED);
             return undefined;
           } finally {
             tx.end();
@@ -387,6 +443,13 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
+      );
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.readWrite!.readLockMode,
+        'OPTIMISTIC'
       );
     });
 
@@ -729,7 +792,7 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected error');
       } catch (err) {
         assert.strictEqual(
-          err.message,
+          (err as ServiceError).message,
           'Stream is still not ready to receive data after 1 attempts to resume.'
         );
       } finally {
@@ -1052,7 +1115,10 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (e) {
-        assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
       } finally {
         await database.close();
       }
@@ -1103,7 +1169,10 @@ describe('Spanner with mock server', () => {
         await database.run(sql);
         assert.fail('missing expected error');
       } catch (e) {
-        assert.strictEqual(e.message, '14 UNAVAILABLE: Transient error');
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '14 UNAVAILABLE: Transient error'
+        );
       } finally {
         await database.close();
       }
@@ -1127,7 +1196,9 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected exception');
       } catch (err) {
         assert.ok(
-          err.message.includes('Value of type undefined not recognized.')
+          (err as ServiceError).message.includes(
+            'Value of type undefined not recognized.'
+          )
         );
       } finally {
         await database.close();
@@ -1178,7 +1249,9 @@ describe('Spanner with mock server', () => {
           assert.fail('missing expected exception');
         } catch (err) {
           assert.ok(
-            err.message.includes('Value of type undefined not recognized.')
+            (err as ServiceError).message.includes(
+              'Value of type undefined not recognized.'
+            )
           );
         }
       });
@@ -1204,6 +1277,43 @@ describe('Spanner with mock server', () => {
           await database.close();
         });
 
+        it('should retry UNAVAILABLE during streaming with txn ID from inline begin response', async () => {
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          const database = newTestDatabase();
+
+          await database.runTransactionAsync(async tx => {
+            await tx.run(selectSql);
+            await tx.commit();
+          });
+          await database.close();
+
+          const requests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.ExecuteSqlRequest).sql)
+            .map(req => req as v1.ExecuteSqlRequest);
+          assert.strictEqual(requests.length, 2);
+          assert.ok(
+            requests[0].transaction?.begin!.readWrite,
+            'inline txn is not set.'
+          );
+          assert.ok(
+            requests[1].transaction!.id,
+            'Transaction ID is not used for retries.'
+          );
+          assert.ok(
+            requests[1].resumeToken,
+            'Resume token is not set for the retried'
+          );
+        });
+
         it('should not retry non-retryable error during streaming', async () => {
           const database = newTestDatabase();
           const err = {
@@ -1218,7 +1328,10 @@ describe('Spanner with mock server', () => {
             await database.run(selectSql);
             assert.fail('missing expected error');
           } catch (e) {
-            assert.strictEqual(e.message, '2 UNKNOWN: Test error');
+            assert.strictEqual(
+              (e as ServiceError).message,
+              '2 UNKNOWN: Test error'
+            );
           }
           await database.close();
         });
@@ -1373,6 +1486,72 @@ describe('Spanner with mock server', () => {
                 .then(() => done());
             })
             .catch(done);
+        });
+      });
+    });
+
+    describe('LeaderAwareRouting', () => {
+      let spannerWithLAREnabled: Spanner;
+      let instanceWithLAREnabled: Instance;
+
+      function newTestDatabaseWithLAREnabled(
+        options?: SessionPoolOptions,
+        queryOptions?: IQueryOptions
+      ): Database {
+        return instanceWithLAREnabled.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
+      }
+
+      before(() => {
+        spannerWithLAREnabled = new Spanner({
+          servicePath: 'localhost',
+          port,
+          sslCreds: grpc.credentials.createInsecure(),
+          routeToLeaderEnabled: true,
+        });
+        // Gets a reference to a Cloud Spanner instance and database
+        instanceWithLAREnabled = spannerWithLAREnabled.instance('instance');
+      });
+
+      it('should execute with leader aware routing enabled in a read/write transaction', async () => {
+        const database = newTestDatabaseWithLAREnabled();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        let metadataCountWithLAREnabled = 0;
+        spannerMock.getMetadata().forEach(metadata => {
+          if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+            metadataCountWithLAREnabled++;
+            assert.strictEqual(
+              metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+              'true'
+            );
+          }
+        });
+        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
+      });
+
+      it('should execute with leader aware routing disabled in a read/write transaction', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+            undefined
+          );
         });
       });
     });
@@ -1885,29 +2064,12 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors on BeginTransaction during Database.runTransaction()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
-      const pool = db.pool_ as SessionPool;
-      // Wait until one read-only session has been created.
-      pool.once('available', () => {
-        spannerMock.setExecutionTime(
-          spannerMock.beginTransaction,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.NOT_FOUND,
-            message: 'Session not found',
-          } as MockError)
-        );
-        runTransactionWithExpectedSessionRetry(db, done);
-      });
-    });
-
-    it('should retry "Session not found" errors for a query on a write-session on Database.runTransaction()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for a query on a session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -1940,12 +2102,12 @@ describe('Spanner with mock server', () => {
       });
     }
 
-    it('should retry "Session not found" errors for Commit on a write-session on Database.runTransaction()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for Commit on a session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.commit,
           SimulatedExecutionTime.ofError({
@@ -1993,12 +2155,12 @@ describe('Spanner with mock server', () => {
         .catch(done);
     });
 
-    it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransaction()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for runUpdate on a session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -2024,12 +2186,12 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransaction()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for executeBatchDml on a session on Database.runTransaction()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeBatchDml,
           SimulatedExecutionTime.ofError({
@@ -2058,29 +2220,12 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors on BeginTransaction during Database.runTransactionAsync()', done => {
-      // Create a session pool with 1 read-only session.
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 0.0});
-      const pool = db.pool_ as SessionPool;
-      // Wait until one read-only session has been created.
-      pool.once('available', async () => {
-        spannerMock.setExecutionTime(
-          spannerMock.beginTransaction,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.NOT_FOUND,
-            message: 'Session not found',
-          } as MockError)
-        );
-        runAsyncTransactionWithExpectedSessionRetry(db).then(done).catch(done);
-      });
-    });
-
-    it('should retry "Session not found" errors for a query on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for a query on a session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -2108,16 +2253,16 @@ describe('Spanner with mock server', () => {
         });
         await db.close();
       } catch (e) {
-        assert.fail(e);
+        assert.fail(e as ServiceError);
       }
     }
 
-    it('should retry "Session not found" errors for Commit on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for Commit on a session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.commit,
           SimulatedExecutionTime.ofError({
@@ -2143,12 +2288,12 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors for runUpdate on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for runUpdate on a session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeStreamingSql,
           SimulatedExecutionTime.ofError({
@@ -2175,12 +2320,12 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should retry "Session not found" errors for executeBatchDml on a write-session on Database.runTransactionAsync()', done => {
-      const db = newTestDatabase({min: 1, incStep: 1, writes: 1.0});
+    it('should retry "Session not found" errors for executeBatchDml on a session on Database.runTransactionAsync()', done => {
+      const db = newTestDatabase({min: 1, incStep: 1});
       const pool = db.pool_ as SessionPool;
       // Wait until one session with a transaction has been created.
       pool.once('available', async () => {
-        assert.strictEqual(pool.writes, 1);
+        assert.strictEqual(pool.size, 1);
         spannerMock.setExecutionTime(
           spannerMock.executeBatchDml,
           SimulatedExecutionTime.ofError({
@@ -2271,7 +2416,6 @@ describe('Spanner with mock server', () => {
         max: 10,
         incStep: 1,
         concurrency: 5,
-        writes: 0.1,
         fail: true,
       });
       try {
@@ -2294,9 +2438,9 @@ describe('Spanner with mock server', () => {
         rows.forEach(() => {});
         assert.strictEqual(pool.size, 1);
         if (i > 0) {
-          assert.strictEqual(pool._inventory[types.ReadOnly][0].id, sessionId);
+          assert.strictEqual(pool._inventory.sessions[0].id, sessionId);
         }
-        sessionId = pool._inventory[types.ReadOnly][0].id;
+        sessionId = pool._inventory.sessions[0].id;
       }
     }
 
@@ -2317,7 +2461,10 @@ describe('Spanner with mock server', () => {
           await database.getSnapshot();
           assert.fail('missing expected exception');
         } catch (e) {
-          assert.strictEqual(e.name, SessionPoolExhaustedError.name);
+          assert.strictEqual(
+            (e as ServiceError).name,
+            SessionPoolExhaustedError.name
+          );
           const exhausted = e as SessionPoolExhaustedError;
           assert.ok(exhausted.messages);
           assert.strictEqual(exhausted.messages.length, 1);
@@ -2345,7 +2492,7 @@ describe('Spanner with mock server', () => {
             assert.fail(`missing expected exception, got ${rows.length} rows`);
           } catch (e) {
             assert.strictEqual(
-              e.message,
+              (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
           }
@@ -2388,7 +2535,7 @@ describe('Spanner with mock server', () => {
             assert.fail(`missing expected exception, got ${rowCount}`);
           } catch (e) {
             assert.strictEqual(
-              e.message,
+              (e as ServiceError).message,
               `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
             );
           }
@@ -2414,7 +2561,6 @@ describe('Spanner with mock server', () => {
         max: 10,
         incStep: 1,
         concurrency: 5,
-        writes: 0.1,
         fail: true,
       });
       try {
@@ -2448,8 +2594,6 @@ describe('Spanner with mock server', () => {
         const r = database.run(selectSql);
         await Promise.all([w, r]);
         assert.strictEqual(pool.size, 1);
-        assert.strictEqual(pool.writes, 0);
-        assert.strictEqual(pool.reads, 1);
       } finally {
         await database.close();
       }
@@ -2468,7 +2612,10 @@ describe('Spanner with mock server', () => {
           await database.getSnapshot();
           assert.fail('missing expected exception');
         } catch (e) {
-          assert.strictEqual(e.message, 'No resources available.');
+          assert.strictEqual(
+            (e as ServiceError).message,
+            'No resources available.'
+          );
         }
       } finally {
         if (tx1) {
@@ -2478,76 +2625,32 @@ describe('Spanner with mock server', () => {
       }
     });
 
-    it('should not create unnecessary write-prepared sessions', async () => {
-      const query = {
-        sql: selectSql,
-      };
-      const update = {
-        sql: insertSql,
-      };
-      const database = newTestDatabase({
-        writes: 0.2,
-        min: 100,
-      });
-      const pool = database.pool_ as SessionPool;
-      try {
-        // First execute three consecutive read/write transactions.
-        const promises: Array<Promise<RunResponse | number | [number]>> = [];
-        for (let i = 0; i < 3; i++) {
-          promises.push(executeSimpleUpdate(database, update));
-          const ms = Math.floor(Math.random() * 5) + 1;
-          await sleep(ms);
-        }
-        let maxWriteSessions = 0;
-        for (let i = 0; i < 500; i++) {
-          if (Math.random() < 0.8) {
-            promises.push(database.run(query));
-          } else {
-            promises.push(executeSimpleUpdate(database, update));
-          }
-          maxWriteSessions = Math.max(maxWriteSessions, pool.writes);
-          const ms = Math.floor(Math.random() * 5) + 1;
-          await sleep(ms);
-        }
-        await Promise.all(promises);
-      } finally {
-        await database.close();
-      }
-    });
-
     it('should pre-fill session pool', async () => {
       const database = newTestDatabase({
-        writes: 0.2,
         min: 100,
         max: 200,
       });
       const pool = database.pool_ as SessionPool;
-      const expectedWrites = pool.options.min! * pool.options.writes!;
-      const expectedReads = pool.options.min! - expectedWrites;
-      assert.strictEqual(pool.size, expectedReads + expectedWrites);
+      const expectedAmount = pool.options.min!;
+      assert.strictEqual(pool.size, expectedAmount);
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
       while (
-        (pool._inventory[types.ReadOnly].length < expectedReads ||
-          pool._inventory[types.ReadWrite].length < expectedWrites) &&
+        pool._inventory.sessions.length < expectedAmount &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
       }
-      assert.strictEqual(pool.reads, expectedReads);
-      assert.strictEqual(pool.writes, expectedWrites);
       await database.close();
     });
 
     it('should use pre-filled session pool', async () => {
       const database = newTestDatabase({
-        writes: 0.2,
         min: 100,
         max: 200,
       });
       const pool = database.pool_ as SessionPool;
-      const expectedWrites = pool.options.min! * pool.options.writes!;
-      const expectedReads = pool.options.min! - expectedWrites;
+      const expectedAmount = pool.options.min!;
       // Start executing a query. This query should use one of the sessions that
       // has been pre-filled into the pool.
       const [rows] = await database.run(selectSql);
@@ -2555,18 +2658,13 @@ describe('Spanner with mock server', () => {
       // Wait until all sessions have been created and prepared.
       const started = new Date().getTime();
       while (
-        (pool._inventory[types.ReadOnly].length < expectedReads ||
-          pool._inventory[types.ReadWrite].length < expectedWrites) &&
+        pool._inventory.sessions.length < expectedAmount &&
         new Date().getTime() - started < 1000
       ) {
         await sleep(1);
       }
-      assert.strictEqual(pool.size, expectedReads + expectedWrites);
-      assert.strictEqual(
-        pool._inventory[types.ReadWrite].length,
-        expectedWrites
-      );
-      assert.strictEqual(pool._inventory[types.ReadOnly].length, expectedReads);
+      assert.strictEqual(pool.size, expectedAmount);
+      assert.strictEqual(pool._inventory.sessions.length, expectedAmount);
       await database.close();
     });
 
@@ -2591,7 +2689,7 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (err) {
-        assert.strictEqual(err.code, Status.NOT_FOUND);
+        assert.strictEqual((err as ServiceError).code, Status.NOT_FOUND);
       } finally {
         await database.close();
       }
@@ -2623,7 +2721,7 @@ describe('Spanner with mock server', () => {
           assert.strictEqual(pool.size, 25);
           await database.close();
         } catch (err) {
-          assert.fail(err);
+          assert.fail(err as ServiceError);
         }
       }
     });
@@ -2649,7 +2747,10 @@ describe('Spanner with mock server', () => {
         await database.run(selectSql);
         assert.fail('missing expected error');
       } catch (err) {
-        assert.strictEqual(err.code, Status.PERMISSION_DENIED);
+        assert.strictEqual(
+          (err as ServiceError).code,
+          Status.PERMISSION_DENIED
+        );
       } finally {
         await database.close();
       }
@@ -2672,39 +2773,6 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(pool.size, 2);
       assert.strictEqual(rows[0][0].length, 3);
       assert.strictEqual(rows[1][0].length, 3);
-      await database.close();
-    });
-
-    it('should use pre-filled write sessions', async () => {
-      const database = newTestDatabase({
-        writes: 0.2,
-        min: 100,
-        max: 200,
-      });
-      const pool = database.pool_ as SessionPool;
-      const expectedWrites = pool.options.min! * pool.options.writes!;
-      const expectedReads = pool.options.min! - expectedWrites;
-      // Execute an update.
-      const [count] = await database.runTransactionAsync(
-        (transaction): Promise<[number]> => {
-          return transaction.runUpdate(insertSql).then(updateCount => {
-            transaction.commit();
-            return updateCount;
-          });
-        }
-      );
-      assert.strictEqual(count, 1);
-      // Wait until all sessions have been created and prepared.
-      const started = new Date().getTime();
-      while (
-        (pool._pending > 0 || pool._pendingPrepare > 0) &&
-        new Date().getTime() - started < 1000
-      ) {
-        await sleep(1);
-      }
-      assert.strictEqual(pool.reads, expectedReads);
-      assert.strictEqual(pool.writes, expectedWrites);
-      assert.strictEqual(pool.size, expectedReads + expectedWrites);
       await database.close();
     });
 
@@ -2894,6 +2962,7 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const [updated] = await database.runTransactionAsync(
         (transaction): Promise<number[]> => {
+          transaction.begin();
           return transaction.runUpdate(insertSql).then(updateCount => {
             if (!attempts) {
               spannerMock.abortTransaction(transaction);
@@ -2915,6 +2984,7 @@ describe('Spanner with mock server', () => {
         await database.runTransactionAsync(
           {timeout: 1},
           (transaction): Promise<number[]> => {
+            transaction.begin();
             attempts++;
             return transaction.runUpdate(insertSql).then(updateCount => {
               // Always abort the transaction.
@@ -2926,13 +2996,41 @@ describe('Spanner with mock server', () => {
         assert.fail('missing expected DEADLINE_EXCEEDED error');
       } catch (e) {
         assert.strictEqual(
-          e.code,
+          (e as ServiceError).code,
           grpc.status.DEADLINE_EXCEEDED,
-          `Got unexpected error ${e} with code ${e.code}`
+          `Got unexpected error ${e} with code ${(e as ServiceError).code}`
         );
         // The transaction should be tried at least once before timing out.
         assert.ok(attempts >= 1);
       }
+      await database.close();
+    });
+
+    it('should retry on internal error', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          transaction.begin();
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            if (!attempts) {
+              spannerMock.setExecutionTime(
+                spannerMock.commit,
+                SimulatedExecutionTime.ofError({
+                  code: grpc.status.INTERNAL,
+                  message: 'Received RST_STREAM',
+                } as MockError)
+              );
+            }
+            attempts++;
+            return transaction.commit().then(() => updateCount);
+          });
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.strictEqual(attempts, 2);
+
       await database.close();
     });
 
@@ -3006,8 +3104,10 @@ describe('Spanner with mock server', () => {
           await database.runPartitionedUpdate(updateSql);
           assert.fail('missing expected INTERNAL error');
         } catch (err) {
-          assert.strictEqual(err.code, grpc.status.INTERNAL);
-          assert.ok(err.message.includes('Generic internal error'));
+          assert.strictEqual((err as ServiceError).code, grpc.status.INTERNAL);
+          assert.ok(
+            (err as ServiceError).message.includes('Generic internal error')
+          );
         } finally {
           await database.close();
         }
@@ -3062,6 +3162,257 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use inline begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, insertSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use optimistic lock for runTransactionAsync', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          optimisticLock: true,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin!.readWrite!.readLockMode,
+        'OPTIMISTIC'
+      );
+    });
+
+    it('should use optimistic lock for runTransaction', done => {
+      const database = newTestDatabase();
+      database.runTransaction({optimisticLock: true}, async (err, tx) => {
+        assert.ifError(err);
+        await tx!.run(selectSql);
+        await tx!.commit();
+        await database.close();
+
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.readWrite!.readLockMode,
+          'OPTIMISTIC'
+        );
+        done();
+      });
+    });
+
+    it('should reuse a session for optimistic and pessimistic locks', async () => {
+      const database = newTestDatabase({min: 1, max: 1});
+      let session1;
+      let session2;
+      await database.runTransactionAsync({optimisticLock: true}, async tx => {
+        session1 = tx!.session.id;
+        await tx!.run(selectSql);
+        await tx.commit();
+      });
+      spannerMock.resetRequests();
+      await database.runTransactionAsync(async tx => {
+        session2 = tx!.session.id;
+        await tx!.run(selectSql);
+        await tx.commit();
+      });
+      assert.strictEqual(session1, session2);
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.notStrictEqual(
+        request.transaction!.begin!.readWrite!.readLockMode,
+        'OPTIMISTIC'
+      );
+    });
+
+    it('should only inline one begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        await Promise.all([rowCount1, rowCount2]);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, selectSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction on retry', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        await tx!.run(selectSql);
+        if (!attempts) {
+          spannerMock.abortTransaction(tx);
+        }
+        attempts++;
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction on retry with optimistic lock', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync({optimisticLock: true}, async tx => {
+        await tx!.run(selectSql);
+        if (!attempts) {
+          spannerMock.abortTransaction(tx);
+        }
+        attempts++;
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options!.readWrite!.readLockMode,
+        'OPTIMISTIC'
+      );
+    });
+
+    it('should use beginTransaction on retry for unknown reason', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        try {
+          await tx.runUpdate(invalidSql);
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            (e as ServiceError).message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
+        await tx.run(selectSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction for streaming on retry for unknown reason', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        try {
+          await getRowCountFromStreamingSql(tx!, {sql: invalidSql});
+          assert.fail('missing expected error');
+        } catch (e) {
+          assert.strictEqual(
+            (e as ServiceError).message,
+            `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+          );
+        }
+        await tx.run(selectSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should fail if beginTransaction fails', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          await tx!.run(selectSql);
+          spannerMock.abortTransaction(tx);
+          await tx!.run(insertSql);
+          await tx.commit();
+        });
+        assert.fail('missing expected error');
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should use transactionTag on blind commit', async () => {
       const database = newTestDatabase({min: 0});
       const [session] = await database.createSession({});
@@ -3085,6 +3436,44 @@ describe('Spanner with mock server', () => {
         request.requestOptions!.transactionTag,
         'transaction-tag'
       );
+    });
+
+    it('should run begin transaction on blind commit', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        tx.insert('foo', {id: 1, name: 'One'});
+        await tx.commit();
+      });
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should throw error if begin transaction fails on blind commit', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
     });
   });
 
@@ -3172,9 +3561,12 @@ describe('Spanner with mock server', () => {
         });
         assert.fail('Missing expected error');
       } catch (e) {
-        assert.strictEqual(e.code, Status.FAILED_PRECONDITION);
+        assert.strictEqual(
+          (e as ServiceError).code,
+          Status.FAILED_PRECONDITION
+        );
         assert.ok(
-          e.message.includes(
+          (e as ServiceError).message.includes(
             'Convert the value to a JSON string containing an array instead'
           )
         );
@@ -3869,13 +4261,13 @@ function executeSimpleUpdate(
 }
 
 function getRowCountFromStreamingSql(
-  database: Database,
+  context: Database | Transaction,
   query: ExecuteSqlRequest
 ): Promise<number> {
   return new Promise<number>((resolve, reject) => {
     let rows = 0;
     let errored = false;
-    database
+    context
       .runStream(query)
       .on('error', err => {
         errored = true;

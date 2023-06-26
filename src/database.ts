@@ -85,11 +85,30 @@ import {
   RequestCallback,
   ResourceCallback,
   Schema,
+  addLeaderAwareRoutingHeader,
 } from './common';
 import {Duplex, Readable, Transform} from 'stream';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {EnumKey, RequestConfig, TranslateEnumKeys} from '.';
+import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
 import arrify = require('arrify');
+import {ServiceError} from 'google-gax';
+import IPolicy = google.iam.v1.IPolicy;
+import Policy = google.iam.v1.Policy;
+import FieldMask = google.protobuf.FieldMask;
+import IDatabase = google.spanner.admin.database.v1.IDatabase;
+import snakeCase = require('lodash.snakecase');
+
+export type GetDatabaseRolesCallback = RequestCallback<
+  IDatabaseRole,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
+>;
+export type GetDatabaseRolesResponse = PagedResponse<
+  IDatabaseRole,
+  databaseAdmin.spanner.admin.database.v1.IListDatabaseRolesResponse
+>;
+type SetDatabaseMetadataCallback = ResourceCallback<GaxOperation, IOperation>;
+type SetDatabaseMetadataResponse = [GaxOperation, IOperation];
+type IDatabaseRole = databaseAdmin.spanner.admin.database.v1.IDatabaseRole;
 
 type CreateBatchTransactionCallback = ResourceCallback<
   BatchTransaction,
@@ -114,6 +133,11 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
+export interface SetIamPolicyRequest {
+  policy: Policy | null;
+  updateMask?: FieldMask | null;
+}
+
 export type UpdateSchemaCallback = ResourceCallback<
   GaxOperation,
   databaseAdmin.longrunning.IOperation
@@ -130,6 +154,7 @@ type ResultSetStats = spannerClient.spanner.v1.ResultSetStats;
 type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
+export type GetDatabaseRolesOptions = PagedOptionsWithFilter;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -163,7 +188,10 @@ type GetSchemaResponse = [
   string[],
   databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
 ];
-
+type GetIamPolicyResponse = IPolicy;
+type GetIamPolicyCallback = RequestCallback<IPolicy>;
+type SetIamPolicyResponse = IPolicy;
+type SetIamPolicyCallback = RequestCallback<IPolicy>;
 type GetSessionsCallback = RequestCallback<
   Session,
   google.spanner.v1.IListSessionsResponse
@@ -187,6 +215,12 @@ export type CreateSessionResponse = [
 
 export interface CreateSessionOptions {
   labels?: {[k: string]: string} | null;
+  databaseRole?: string | null;
+  gaxOptions?: CallOptions;
+}
+
+export interface GetIamPolicyOptions {
+  requestedPolicyVersion?: number | null;
   gaxOptions?: CallOptions;
 }
 
@@ -270,6 +304,7 @@ class Database extends common.GrpcServiceObject {
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
+  databaseRole?: string | null;
   constructor(
     instance: Instance,
     name: string,
@@ -375,6 +410,9 @@ class Database extends common.GrpcServiceObject {
       typeof poolOptions === 'function'
         ? new (poolOptions as SessionPoolConstructor)(this, null)
         : new SessionPool(this, poolOptions);
+    if (typeof poolOptions === 'object') {
+      this.databaseRole = poolOptions.databaseRole || null;
+    }
     this.formattedName_ = formattedName_;
     this.instance = instance;
     this.resourceHeader_ = {
@@ -388,6 +426,108 @@ class Database extends common.GrpcServiceObject {
     this.queryOptions_ = Object.assign(
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
+    );
+  }
+  /**
+   * @typedef {array} SetDatabaseMetadataResponse
+   * @property {object} 0 The {@link Database} metadata.
+   * @property {object} 1 The full API response.
+   */
+  /**
+   * @callback SetDatabaseMetadataCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} metadata The {@link Database} metadata.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Update the metadata for this database. Note that this method follows PATCH
+   * semantics, so previously-configured settings will persist.
+   *
+   * Wrapper around {@link v1.DatabaseAdminClient#updateDatabase}.
+   *
+   * @see {@link v1.DatabaseAdminClient#updateDatabase}
+   * @see [UpdateDatabase API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabase)
+   *
+   * @param {object} metadata The metadata you wish to set.
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {SetDatabaseMetadataCallback} [callback] Callback function.
+   * @returns {Promise<SetDatabaseMetadataResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * const metadata = {
+   *   enableDropProtection: true
+   * };
+   *
+   * database.setMetadata(metadata, function(err, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Metadata updated successfully.
+   *     });
+   * });
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.setMetadata(metadata).then(function(data) {
+   *   const operation = data[0];
+   *   const apiResponse = data[1];
+   * });
+   * ```
+   */
+  setMetadata(
+    metadata: IDatabase,
+    gaxOptions?: CallOptions
+  ): Promise<SetDatabaseMetadataResponse>;
+  setMetadata(metadata: IDatabase, callback: SetDatabaseMetadataCallback): void;
+  setMetadata(
+    metadata: IDatabase,
+    gaxOptions: CallOptions,
+    callback: SetDatabaseMetadataCallback
+  ): void;
+  setMetadata(
+    metadata: IDatabase,
+    optionsOrCallback?: CallOptions | SetDatabaseMetadataCallback,
+    cb?: SetDatabaseMetadataCallback
+  ): void | Promise<SetDatabaseMetadataResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    const reqOpts = {
+      database: extend(
+        {
+          name: this.formattedName_,
+        },
+        metadata
+      ),
+      updateMask: {
+        paths: Object.keys(metadata).map(snakeCase),
+      },
+    };
+    return this.request(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'updateDatabase',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      callback!
     );
   }
 
@@ -483,12 +623,18 @@ class Database extends common.GrpcServiceObject {
 
     const count = options.count;
     const labels = options.labels || {};
+    const databaseRole = options.databaseRole || this.databaseRole || null;
 
     const reqOpts: google.spanner.v1.IBatchCreateSessionsRequest = {
       database: this.formattedName_,
-      sessionTemplate: {labels},
+      sessionTemplate: {labels: labels, creatorRole: databaseRole},
       sessionCount: count,
     };
+
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
 
     this.request<google.spanner.v1.IBatchCreateSessionsResponse>(
       {
@@ -496,7 +642,7 @@ class Database extends common.GrpcServiceObject {
         method: 'batchCreateSessions',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
@@ -639,9 +785,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err, null, undefined);
+        callback!(err as ServiceError, null, undefined);
         return;
       }
       const transaction = this.batchTransaction({session: session!}, options);
@@ -749,8 +895,18 @@ class Database extends common.GrpcServiceObject {
       database: this.formattedName_,
     };
 
+    reqOpts.session = {};
+
     if (options.labels) {
-      reqOpts.session = {labels: options.labels};
+      reqOpts.session.labels = options.labels;
+    }
+
+    reqOpts.session.creatorRole =
+      options.databaseRole || this.databaseRole || null;
+
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
     }
 
     this.request<google.spanner.v1.ISession>(
@@ -759,7 +915,7 @@ class Database extends common.GrpcServiceObject {
         method: 'createSession',
         reqOpts,
         gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err, resp) => {
         if (err) {
@@ -1388,6 +1544,86 @@ class Database extends common.GrpcServiceObject {
       }
     );
   }
+
+  /**
+   * Options object for requested policy version.
+   *
+   * @typedef {object} GetIamPolicyOptions
+   * @property {number|null} [requestedPolicyVersion] policy version requested, possible values are 0, 1 and 3,
+   *     See {@link https://cloud.google.com/iam/docs/policies#versions} for more details
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
+   * @callback GetIamPolicyCallback
+   * @param {?Error} err Request error, if any.
+   * @param {google.iam.v1.Policy| undefined} policy Returns policy for the give database
+   */
+  /**
+   * Retrieves the policy of the database.
+   *
+   * A Policy is a collection of bindings. A binding binds one or more members, or principals,
+   * to a single role. Principals can be user accounts, service accounts, Google groups, and
+   * domains (such as G Suite). A role is a named list of permissions; each role can be an IAM
+   * predefined role or a user-created custom role.
+   *
+   * @see {@link #getIamPolicy}
+   *
+   * @method Database#getIamPolicy
+   * @param {object} [options] requestedPolicyVersion and gax options(configuration options)
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html}
+   *     for more details on gax options.
+   * @param {GetIamPolicyCallback} [callback] Callback function.
+   * @returns {Promise<Policy | undefined>}
+   *     When resolved, contains the current policy of the database.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const policy = await database.getIamPolicy();
+   * console.log(policy.bindings, policy.version, policy.etag, policy.auditConfigs)
+   * const policyWithVersion specified = await database.getIamPolicy({requestedPolicyVersion: 3});
+   * ```
+   */
+  getIamPolicy(options?: GetIamPolicyOptions): Promise<GetIamPolicyResponse>;
+  getIamPolicy(callback: GetIamPolicyCallback): void;
+  getIamPolicy(
+    options: GetIamPolicyOptions,
+    callback: GetIamPolicyCallback
+  ): void;
+  getIamPolicy(
+    optionsOrCallback?: GetIamPolicyOptions | GetIamPolicyCallback,
+    cb?: GetIamPolicyCallback
+  ): void | Promise<GetIamPolicyResponse> {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    const reqOpts: databaseAdmin.iam.v1.IGetIamPolicyRequest = {
+      resource: this.formattedName_,
+      options: {
+        requestedPolicyVersion: options.requestedPolicyVersion || null,
+      },
+    };
+    this.request<GetIamPolicyResponse>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'getIamPolicy',
+        reqOpts,
+        gaxOpts: options.gaxOptions,
+        headers: this.resourceHeader_,
+      },
+      (err, resp) => {
+        callback!(err, resp);
+      }
+    );
+  }
+
   /**
    * Options object for listing sessions.
    *
@@ -1500,13 +1736,13 @@ class Database extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetSessionsOptions).pageSize,
+          pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetSessionsOptions).pageSize;
+      delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
     this.request<
@@ -1591,13 +1827,13 @@ class Database extends common.GrpcServiceObject {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetSessionsOptions).pageSize,
+          pageToken: (gaxOpts as GetSessionsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetSessionsOptions).pageSize;
+      delete (gaxOpts as GetSessionsOptions).pageToken;
     }
 
     return this.requestStream({
@@ -1684,9 +1920,9 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err);
+        callback!(err as ServiceError);
         return;
       }
 
@@ -1758,7 +1994,7 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getWriteSession((err, session, transaction) => {
+    this.pool_.getSession((err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
@@ -1854,6 +2090,117 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
+   * @typedef {array} GetDatabaseRolesResponse
+   * @property {IDatabaseRolees[]} 0 Array of list of database roles.
+   * @property {object} 1 A query object to receive more results.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback GetDatabaseRolesCallback
+   * @param {?Error} err Request error, if any.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * Gets a list of database roles
+   *
+   * @see {@link v1.DatabaseAdminClient#getDatabaseRoles}
+   * @see [GetDatabaseRoles API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.database.v1#google.spanner.admin.database.v1.DatabaseAdmin.GetDatabaseRoles)
+   *
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {GetDatabaseRolesCallback} [callback] Callback function.
+   * @returns {Promise<GetDatabaseRolesResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * database.getDatabaseRoles(function(err, roles) {
+   *   // `roles` is an array of `DatabaseRoles` objects.
+   * });
+   *
+   * //-
+   * // To control how many API requests are made and page through the results
+   * // manually, set `autoPaginate` to `false`.
+   * //-
+   * function callback(err, roles, nextQuery, apiResponse) {
+   *   if (nextQuery) {
+   *     // More results exist.
+   *     database.getDatabaseRoles(nextQuery, callback);
+   *   }
+   * }
+   *
+   * database.getInstances({
+   *   gaxOptions: {autoPaginate: false}
+   * }, callback);
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * database.getInstances().then(function(data) {
+   *   const roles = data[0];
+   * });
+   * ```
+   */
+  getDatabaseRoles(gaxOptions?: CallOptions): Promise<GetDatabaseRolesResponse>;
+  getDatabaseRoles(callback: GetDatabaseRolesCallback): void;
+  getDatabaseRoles(
+    gaxOptions: CallOptions,
+    callback: GetDatabaseRolesCallback
+  ): void;
+  getDatabaseRoles(
+    optionsOrCallback?: CallOptions | GetDatabaseRolesCallback,
+    cb?: GetDatabaseRolesCallback
+  ): void | Promise<GetDatabaseRolesResponse> {
+    const gaxOpts =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    let reqOpts = {
+      parent: this.formattedName_,
+    };
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However, values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: (gaxOpts as GetDatabaseRolesOptions).pageSize,
+          pageToken: (gaxOpts as GetDatabaseRolesOptions).pageToken,
+        },
+        reqOpts
+      );
+      delete (gaxOpts as GetDatabaseRolesOptions).pageSize;
+      delete (gaxOpts as GetDatabaseRolesOptions).pageToken;
+    }
+    this.request<
+      IDatabaseRole,
+      databaseAdmin.spanner.admin.database.v1.ListDatabaseRolesResponse
+    >(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'listDatabaseRoles',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      (err, roles, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, gaxOpts, nextPageRequest!)
+          : null;
+
+        callback!(err, roles, nextQuery, ...args);
+      }
+    );
+  }
+
+  /**
    * Make an API request, first assuring an active session is used.
    *
    * @private
@@ -1871,9 +2218,9 @@ class Database extends common.GrpcServiceObject {
     callback?: PoolRequestCallback
   ): void | Promise<Session> {
     const pool = this.pool_;
-    pool.getReadSession((err, session) => {
+    pool.getSession((err, session) => {
       if (err) {
-        callback!(err, null);
+        callback!(err as ServiceError, null);
         return;
       }
       config.reqOpts.session = session!.formattedName_;
@@ -1916,9 +2263,9 @@ class Database extends common.GrpcServiceObject {
       }
     }
     waitForSessionStream.on('reading', () => {
-      pool.getReadSession((err, session_) => {
+      pool.getSession((err, session_) => {
         if (err) {
-          destroyStream(err);
+          destroyStream(err as ServiceError);
           return;
         }
         session = session_!;
@@ -2276,9 +2623,9 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
-        callback!(err, 0);
+        callback!(err as ServiceError, 0);
         return;
       }
 
@@ -2448,7 +2795,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getReadSession((err, session) => {
+    this.pool_.getSession((err, session) => {
       if (err) {
         proxyStream.destroy(err);
         return;
@@ -2603,7 +2950,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    this.pool_.getWriteSession((err, session?, transaction?) => {
+    this.pool_.getSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
@@ -2611,6 +2958,9 @@ class Database extends common.GrpcServiceObject {
       if (err) {
         runFn!(err as grpc.ServiceError);
         return;
+      }
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
       }
 
       const release = this.pool_.release.bind(this.pool_, session!);
@@ -2712,17 +3062,20 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    const getWriteSession = this.pool_.getWriteSession.bind(this.pool_);
+    const getSession = this.pool_.getSession.bind(this.pool_);
     // Loop to retry 'Session not found' errors.
     // (and yes, we like while (true) more than for (;;) here)
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const [session, transaction] = await promisify(getWriteSession)();
+        const [session, transaction] = await promisify(getSession)();
         transaction.requestOptions = Object.assign(
           transaction.requestOptions || {},
           options.requestOptions
         );
+        if (options.optimisticLock) {
+          transaction.useOptimisticLock();
+        }
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,
@@ -2736,7 +3089,7 @@ class Database extends common.GrpcServiceObject {
           this.pool_.release(session);
         }
       } catch (e) {
-        if (!isSessionNotFoundError(e)) {
+        if (!isSessionNotFoundError(e as ServiceError)) {
           throw e;
         }
       }
@@ -2779,6 +3132,101 @@ class Database extends common.GrpcServiceObject {
    * const table = database.table('Singers');
    * ```
    */
+
+  /**
+   * @callback SetIamPolicyCallback
+   * @param {?Error} err Request error, if any.
+   * @param {google.iam.v1.Policy| undefined} policy Returns policy for the give database
+   */
+  /**
+   * Sets the policy for the database.
+   *
+   * A Policy is a collection of bindings. A binding binds one or more members, or principals,
+   * to a single role. Principals can be user accounts, service accounts, Google groups, and
+   * domains (such as G Suite). A role is a named list of permissions; each role can be an IAM
+   * predefined role or a user-created custom role.
+   *
+   * @see {@link #setIamPolicy}
+   *
+   * @method Database#setIamPolicy
+   * @param {object} [policy] requestedPolicyVersion and gax options(configuration options)
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html}
+   *     for more details on gax options.
+   * @param {object} [options] Requested configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html}
+   *     for more details on Call Options.
+   * @param {SetIamPolicyCallback} [callback] Callback function.
+   * @returns {Promise<Policy | undefined>}
+   *     When resolved, contains the current policy of the database.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const binding = {
+   *     role: 'roles/spanner.fineGrainedAccessUser',
+   *     members: ['user:asthamohta@google.com'],
+   *     condition: {
+   *         title: 'new condition',
+   *         expression: 'resource.name.endsWith("/databaseRoles/parent")',
+   *     },
+   * };
+   * const policy = {
+   *     bindings: [newBinding],
+   *     version: 3,
+   *};
+   * const policy = await database.setIamPolicy({policy: policy});
+   * ```
+   */
+  setIamPolicy(policy: SetIamPolicyRequest): Promise<SetIamPolicyResponse>;
+  setIamPolicy(
+    policy: SetIamPolicyRequest,
+    options?: CallOptions
+  ): Promise<SetIamPolicyResponse>;
+  setIamPolicy(
+    policy: SetIamPolicyRequest,
+    callback: SetIamPolicyCallback
+  ): void;
+  setIamPolicy(
+    policy: SetIamPolicyRequest,
+    options: CallOptions,
+    callback: SetIamPolicyCallback
+  ): void;
+  setIamPolicy(
+    policy: SetIamPolicyRequest,
+    optionsOrCallback?: CallOptions | SetIamPolicyCallback,
+    cb?: SetIamPolicyCallback
+  ): Promise<SetIamPolicyResponse> | void {
+    const options =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+    const callback =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as SetIamPolicyCallback)
+        : cb;
+    const gaxOpts = options as CallOptions;
+
+    const reqOpts: databaseAdmin.iam.v1.ISetIamPolicyRequest = {
+      resource: this.formattedName_,
+      policy: policy.policy,
+      updateMask: policy.updateMask || null,
+    };
+
+    this.request<SetIamPolicyResponse>(
+      {
+        client: 'DatabaseAdminClient',
+        method: 'setIamPolicy',
+        reqOpts,
+        gaxOpts: gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      (err, resp) => {
+        callback!(err, resp);
+      }
+    );
+  }
+
   table(name: string) {
     if (!name) {
       throw new GoogleError('A name is required to access a Table object.');
@@ -2931,6 +3379,17 @@ class Database extends common.GrpcServiceObject {
     const databaseName = name.split('/').pop();
     return instanceName + '/databases/' + databaseName;
   }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  private _getSpanner(): Spanner {
+    return this.instance.parent as Spanner;
+  }
 }
 
 /*! Developer Documentation
@@ -2973,12 +3432,14 @@ callbackifyAll(Database, {
     'getSessions',
     'getSnapshot',
     'getTransaction',
+    'getIamPolicy',
     'restore',
     'run',
     'runPartitionedUpdate',
     'runTransaction',
     'runTransactionAsync',
     'session',
+    'setMetadata',
     'table',
     'updateSchema',
   ],

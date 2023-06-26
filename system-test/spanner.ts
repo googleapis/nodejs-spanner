@@ -23,7 +23,14 @@ import * as crypto from 'crypto';
 import * as extend from 'extend';
 import * as is from 'is';
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance} from '../src';
+import {
+  Backup,
+  Database,
+  Spanner,
+  Instance,
+  InstanceConfig,
+  Session,
+} from '../src';
 import {Key} from '../src/table';
 import {
   ReadRequest,
@@ -36,8 +43,12 @@ import {grpc, CallOptions} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
+import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
+const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
+
+const IAM_MEMBER = process.env.IAM_MEMBER;
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
@@ -75,7 +86,7 @@ describe('Spanner', () => {
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-west1',
+    config: 'regional-us-west2',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
@@ -83,11 +94,22 @@ describe('Spanner', () => {
     },
     gaxOptions: GAX_OPTIONS,
   };
+
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
+  const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = instance.database(generateName('database'), {incStep: 1});
+  const DATABASE_DROP_PROTECTION = instance.database(generateName('database'), {
+    incStep: 1,
+  });
   const TABLE_NAME = 'Singers';
+  const PG_DATABASE = instance.database(generateName('pg-db'), {incStep: 1});
+
+  // Custom instance configs start with 'custom-'
+  const instanceConfig = spanner.instanceConfig(
+    'custom-' + generateName('instance-config')
+  );
 
   before(async () => {
     await deleteOldTestInstances();
@@ -100,7 +122,7 @@ describe('Spanner', () => {
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
-    const [, operation] = await DATABASE.create({
+    const [, googleSqlOperation1] = await DATABASE.create({
       schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
@@ -108,137 +130,242 @@ describe('Spanner', () => {
           ) PRIMARY KEY(SingerId)`,
       gaxOptions: GAX_OPTIONS,
     });
-    await operation.promise();
+    await googleSqlOperation1.promise();
     RESOURCES_TO_CLEAN.push(DATABASE);
+
+    const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
+      schema: `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+      gaxOptions: GAX_OPTIONS,
+    });
+    await googleSqlOperation2.promise();
+    RESOURCES_TO_CLEAN.push(DATABASE_DROP_PROTECTION);
+
+    if (!IS_EMULATOR_ENABLED) {
+      const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
+        databaseDialect: Spanner.POSTGRESQL,
+        gaxOptions: GAX_OPTIONS,
+      });
+      await postgreSqlOperation.promise();
+      const schema = [
+        `
+       CREATE TABLE ${TABLE_NAME} (
+         SingerId VARCHAR(1024) NOT NULL,
+         Name VARCHAR(1024),
+         PRIMARY KEY (SingerId)
+       );`,
+      ];
+      const [postgreSqlOperationUpdateDDL] = await pg_database.updateSchema(
+        schema
+      );
+      await postgreSqlOperationUpdateDDL.promise();
+      RESOURCES_TO_CLEAN.push(PG_DATABASE);
+
+      // Create a user-managed instance config from a base instance config.
+      const [baseInstanceConfig] = await spanner.getInstanceConfig(
+        INSTANCE_CONFIG.config
+      );
+      const customInstanceConfigRequest = {
+        replicas: baseInstanceConfig.replicas!.concat(
+          baseInstanceConfig!.optionalReplicas![0]
+        ),
+        baseConfig: baseInstanceConfig.name,
+        gaxOptions: GAX_OPTIONS,
+      };
+      const [, operation] = await instanceConfig.create(
+        customInstanceConfigRequest
+      );
+      await operation.promise();
+      INSTANCE_CONFIGS_TO_CLEAN.push(instanceConfig);
+    }
   });
 
   after(async () => {
-    if (generateInstanceForTest) {
-      // Deleting all backups before an instance can be deleted.
-      await Promise.all(
-        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
-          backup => backup.delete(GAX_OPTIONS)
-        )
-      );
-      /**
-       * Deleting instances created during this test.
-       * All databasess will automatically be deleted with instance.
-       * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
-       */
-      await Promise.all(
-        RESOURCES_TO_CLEAN.filter(resource => resource instanceof Instance).map(
-          instance => instance.delete(GAX_OPTIONS)
-        )
-      );
-    } else {
-      /**
-       * Limit the number of concurrent 'Administrative requests per minute'
-       * Not to exceed quota
-       * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
-       */
-      const limit = pLimit(5);
-      await Promise.all(
-        RESOURCES_TO_CLEAN.map(resource =>
-          limit(() => resource.delete(GAX_OPTIONS))
-        )
-      );
+    try {
+      if (generateInstanceForTest) {
+        // Sleep for 30 seconds before cleanup, just in case
+        await new Promise(resolve => setTimeout(resolve, 30000));
+        // Deleting all backups before an instance can be deleted.
+        await Promise.all(
+          RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
+            backup => backup.delete(GAX_OPTIONS)
+          )
+        );
+        /**
+         * Deleting instances created during this test.
+         * All databasess will automatically be deleted with instance.
+         * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
+         */
+        await Promise.all(
+          RESOURCES_TO_CLEAN.filter(
+            resource => resource instanceof Instance
+          ).map(instance => instance.delete(GAX_OPTIONS))
+        );
+      } else {
+        /**
+         * Limit the number of concurrent 'Administrative requests per minute'
+         * Not to exceed quota
+         * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
+         */
+        const limit = pLimit(5);
+        await Promise.all(
+          RESOURCES_TO_CLEAN.map(resource =>
+            limit(() => resource.delete(GAX_OPTIONS))
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Cleanup failed:', err);
     }
+    /**
+     * Deleting instance configs created during this test.
+     * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig}
+     */
+    await Promise.all(
+      INSTANCE_CONFIGS_TO_CLEAN.map(instanceConfig =>
+        instanceConfig.delete({gaxOpts: GAX_OPTIONS})
+      )
+    );
   });
 
   describe('types', () => {
     const TABLE_NAME = 'TypeCheck';
-    const table = DATABASE.table(TABLE_NAME);
+    const googleSqlTable = DATABASE.table(TABLE_NAME);
+    const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-    function insert(insertData, callback) {
+    function insert(insertData, dialect, callback) {
       const id = generateName('id');
 
       insertData.Key = id;
 
+      let table = googleSqlTable;
+      let query: ExecuteSqlRequest = {
+        sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
+        params: {
+          id,
+        },
+      };
+      let database = DATABASE;
+      if (dialect === Spanner.POSTGRESQL) {
+        table = postgreSqlTable;
+        query = {
+          sql: 'SELECT * FROM ' + table.name + ' WHERE "Key" = $1',
+          params: {
+            p1: id,
+          },
+        };
+        database = PG_DATABASE;
+      }
       table.insert(insertData, (err, insertResp) => {
         if (err) {
           callback(err);
           return;
         }
 
-        DATABASE.run(
-          {
-            sql: 'SELECT * FROM `' + table.name + '` WHERE Key = @id',
-            params: {
-              id,
-            },
-          },
-          (err, rows, readResp) => {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            callback(null, rows.shift(), insertResp, readResp);
+        database.run(query, (err, rows, readResp) => {
+          if (err) {
+            callback(err);
+            return;
           }
-        );
+
+          callback(null, rows.shift(), insertResp, readResp);
+        });
       });
     }
 
-    before(done => {
+    before(async () => {
       if (IS_EMULATOR_ENABLED) {
-        DATABASE.updateSchema(
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
-            CREATE TABLE ${TABLE_NAME} (
-              Key STRING(MAX) NOT NULL,
-              BytesValue BYTES(MAX),
-              BoolValue BOOL,
-              DateValue DATE,
-              FloatValue FLOAT64,
-              IntValue INT64,
-              NumericValue NUMERIC,
-              StringValue STRING(MAX),
-              TimestampValue TIMESTAMP,
-              BytesArray ARRAY<BYTES(MAX)>,
-              BoolArray ARRAY<BOOL>,
-              DateArray ARRAY<DATE>,
-              FloatArray ARRAY<FLOAT64>,
-              IntArray ARRAY<INT64>,
-              NumericArray ARRAY<NUMERIC>,
-              StringArray ARRAY<STRING(MAX)>,
-              TimestampArray ARRAY<TIMESTAMP>,
-              CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
-            ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
-        );
-      } else {
-        DATABASE.updateSchema(
-          `
-              CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                BytesValue BYTES(MAX),
-                BoolValue BOOL,
-                DateValue DATE,
-                FloatValue FLOAT64,
-                JsonValue JSON,
-                IntValue INT64,
-                NumericValue NUMERIC,
-                StringValue STRING(MAX),
-                TimestampValue TIMESTAMP,
-                BytesArray ARRAY<BYTES(MAX)>,
-                BoolArray ARRAY<BOOL>,
-                DateArray ARRAY<DATE>,
-                FloatArray ARRAY<FLOAT64>,
-                JsonArray ARRAY<JSON>,
-                IntArray ARRAY<INT64>,
-                NumericArray ARRAY<NUMERIC>,
-                StringArray ARRAY<STRING(MAX)>,
-                TimestampArray ARRAY<TIMESTAMP>,
-                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true)
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
-            `,
-          execAfterOperationComplete(done)
+            `
         );
+        await googleSqlOperationUpdateDDL.promise();
+      } else {
+        const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
+          `
+              CREATE TABLE ${TABLE_NAME}
+              (
+                Key             STRING( MAX) NOT NULL,
+                BytesValue      BYTES( MAX),
+                BoolValue       BOOL,
+                DateValue       DATE,
+                FloatValue      FLOAT64,
+                JsonValue       JSON,
+                IntValue        INT64,
+                NumericValue    NUMERIC,
+                StringValue     STRING( MAX),
+                TimestampValue  TIMESTAMP,
+                BytesArray      ARRAY<BYTES(MAX)>,
+                BoolArray       ARRAY<BOOL>,
+                DateArray       ARRAY< DATE >,
+                FloatArray      ARRAY<FLOAT64>,
+                JsonArray       ARRAY<JSON>,
+                IntArray        ARRAY<INT64>,
+                NumericArray    ARRAY< NUMERIC >,
+                StringArray     ARRAY<STRING(MAX)>,
+                TimestampArray  ARRAY< TIMESTAMP >,
+                CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
+              ) PRIMARY KEY (Key)
+            `
+        );
+        await googleSqlOperationUpdateDDL.promise();
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
       }
     });
 
     describe('uneven rows', () => {
-      it('should allow differently-ordered rows', done => {
+      const differentlyOrderedRows = (done, dialect) => {
         const data = [
           {
             Key: generateName('id'),
@@ -252,37 +379,60 @@ describe('Spanner', () => {
           },
         ];
 
+        let table = googleSqlTable;
+        let database = DATABASE;
+        let query: ExecuteSqlRequest = {
+          sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
+          params: {
+            a: data[0].Key,
+            b: data[1].Key,
+          },
+        };
+        if (dialect === Spanner.POSTGRESQL) {
+          table = postgreSqlTable;
+          database = PG_DATABASE;
+          query = {
+            sql: `SELECT * FROM ${table.name} WHERE "Key" = $1 OR "Key" = $2`,
+            params: {
+              p1: data[0].Key,
+              p2: data[1].Key,
+            },
+          };
+        }
+
         table.insert(data, err => {
           assert.ifError(err);
 
-          DATABASE.run(
-            {
-              sql: `SELECT * FROM \`${table.name}\` WHERE Key = @a OR KEY = @b`,
-              params: {
-                a: data[0].Key,
-                b: data[1].Key,
-              },
-            },
-            (err, rows) => {
-              assert.ifError(err);
+          database.run(query, (err, rows) => {
+            assert.ifError(err);
 
-              const row1 = rows![0].toJSON();
-              assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
-              assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
+            const row1 = rows![0].toJSON();
+            assert.deepStrictEqual(row1.IntValue, data[0].IntValue);
+            assert.deepStrictEqual(row1.BoolValue, data[0].BoolValue);
 
-              const row2 = rows![1].toJSON();
-              assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
-              assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
+            const row2 = rows![1].toJSON();
+            assert.deepStrictEqual(row2.IntValue, data[1].IntValue);
+            assert.deepStrictEqual(row2.BoolValue, data[1].BoolValue);
 
-              done();
-            }
-          );
+            done();
+          });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should allow differently-ordered rows', done => {
+        differentlyOrderedRows(done, Spanner.GOOGLE_STANDARD_SQL);
+      });
+
+      it('POSTGRESQL should allow differently-ordered rows}', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        differentlyOrderedRows(done, Spanner.POSTGRESQL);
       });
     });
 
     describe('structs', () => {
-      it('should correctly decode structs', done => {
+      it('GOOGLE_STANDARD_SQL should correctly decode structs', done => {
         const query = 'SELECT ARRAY(SELECT as struct 1, "hello")';
 
         DATABASE.run(query, (err, rows) => {
@@ -321,7 +471,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('should correctly decode structs', done => {
+      it('GOOGLE_STANDARD_SQL should correctly decode structs', done => {
         const query =
           'SELECT 1 as id, ARRAY(select as struct 2 as id, "hello" as name)';
 
@@ -373,40 +523,91 @@ describe('Spanner', () => {
     });
 
     describe('booleans', () => {
-      it('should write boolean values', done => {
-        insert({BoolValue: true}, (err, row) => {
+      const booleanInsert = (done, dialect, value) => {
+        insert({BoolValue: value}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.strictEqual(row.toJSON().BoolValue, true);
+          assert.strictEqual(row.toJSON().BoolValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write boolean values', done => {
+        booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, true);
       });
 
-      it('should write null boolean values', done => {
-        insert({BoolValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().BoolValue, null);
-          done();
-        });
+      it('POSTGRESQL should write boolean values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        booleanInsert(done, Spanner.POSTGRESQL, true);
       });
 
-      it('should write empty boolean array values', done => {
-        insert({BoolArray: []}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null boolean values', done => {
+        booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null boolean values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        booleanInsert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty boolean array values', done => {
+        insert({BoolArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, []);
           done();
         });
       });
 
-      it('should write null boolean array values', done => {
-        insert({BoolArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BoolArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null boolean array values', done => {
+        insert({BoolArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
           done();
         });
       });
 
-      it('should write boolean array values', done => {
-        insert({BoolArray: [true, false]}, (err, row) => {
+      it('POSTGRESQL should write null boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write boolean array values', done => {
+        insert(
+          {BoolArray: [true, false]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write boolean array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BoolArray: [true, false]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
           done();
@@ -415,26 +616,43 @@ describe('Spanner', () => {
     });
 
     describe('int64s', () => {
-      it('should write int64 values', done => {
-        insert({IntValue: Spanner.int(1234)}, (err, row) => {
+      const int64Insert = (done, dialect, value) => {
+        insert({IntValue: value}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().IntValue, 1234);
+          if (value) {
+            value = value.valueOf();
+          }
+          assert.deepStrictEqual(row.toJSON().IntValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write int64 values', done => {
+        int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.int(1234));
       });
 
-      it('should write null int64 values', done => {
-        insert({IntValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().IntValue, null);
-          done();
-        });
+      it('POSTGRESQL should write int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        int64Insert(done, Spanner.POSTGRESQL, Spanner.int(1234));
       });
 
-      it('should throw for of bounds integers', done => {
+      it('GOOGLE_STANDARD_SQL should write null int64 values', done => {
+        int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        int64Insert(done, Spanner.POSTGRESQL, null);
+      });
+
+      const int64OutOfBounds = (done, dialect) => {
         const value = '9223372036854775807';
 
-        insert({IntValue: value}, (err, row) => {
+        insert({IntValue: value}, dialect, (err, row) => {
           assert.ifError(err);
 
           assert.throws(() => {
@@ -443,40 +661,97 @@ describe('Spanner', () => {
 
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw for of bounds integers', done => {
+        int64OutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should optionally wrap out of bounds integers', done => {
+      it('POSTGRESQL should throw for of bounds integers', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        int64OutOfBounds(done, Spanner.POSTGRESQL);
+      });
+
+      const int64WrapOutOfBounds = (done, dialect) => {
         const value = '9223372036854775807';
 
-        insert({IntValue: value}, (err, row) => {
+        insert({IntValue: value}, dialect, (err, row) => {
           assert.ifError(err);
           const expected = Spanner.int(value);
           const actual = row.toJSON({wrapNumbers: true}).IntValue;
           assert.deepStrictEqual(actual, expected);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should optionally wrap out of bounds integers', done => {
+        int64WrapOutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should write empty in64 array values', done => {
-        insert({IntArray: []}, (err, row) => {
+      it('POSTGRESQL should optionally wrap out of bounds integers', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        int64WrapOutOfBounds(done, Spanner.POSTGRESQL);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty in64 array values', done => {
+        insert({IntArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, []);
           done();
         });
       });
 
-      it('should write null int64 array values', done => {
-        insert({IntArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty in64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({IntArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null int64 array values', done => {
+        insert({IntArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, [null]);
           done();
         });
       });
 
-      it('should write int64 array values', done => {
+      it('POSTGRESQL should write null int64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({IntArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, [null]);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write int64 array values', done => {
         const values = [1, 2, 3];
 
-        insert({IntArray: values}, (err, row) => {
+        insert({IntArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntArray, values);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write int64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1, 2, 3];
+
+        insert({IntArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, values);
           done();
@@ -485,74 +760,146 @@ describe('Spanner', () => {
     });
 
     describe('float64s', () => {
-      it('should write float64 values', done => {
-        insert({FloatValue: 8.2}, (err, row) => {
+      const float64Insert = (done, dialect, value) => {
+        insert({FloatValue: value}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatValue, 8.2);
+          if (typeof value === 'object' && value !== null) {
+            value = value.value;
+          }
+          assert.deepStrictEqual(row.toJSON().FloatValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write float64 values', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
-      it('should write null float64 values', done => {
-        insert({FloatValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().FloatValue, null);
-          done();
-        });
+      it('POSTGRESQL should write float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, 8.2);
       });
 
-      it('should accept a Float object with an Int-like value', done => {
-        insert({FloatValue: Spanner.float(8)}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatValue, 8);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write null float64 values', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('should handle Infinity', done => {
-        insert({FloatValue: Infinity}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatValue, Infinity);
-          done();
-        });
+      it('POSTGRESQL should write null float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, null);
       });
 
-      it('should handle -Infinity', done => {
-        insert({FloatValue: -Infinity}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().FloatValue, -Infinity);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float(8));
       });
 
-      it('should handle NaN', done => {
-        insert({FloatValue: NaN}, (err, row) => {
-          assert.ifError(err);
-          assert(isNaN(row.toJSON().FloatValue));
-          done();
-        });
+      it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, Spanner.float(8));
       });
 
-      it('should write empty float64 array values', done => {
-        insert({FloatArray: []}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should handle Infinity', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
+      });
+
+      it('POSTGRESQL should handle Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle -Infinity', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
+      });
+
+      it('POSTGRESQL should handle -Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, -Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
+      });
+
+      it('POSTGRESQL should handle NaN', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float64Insert(done, Spanner.POSTGRESQL, NaN);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty float64 array values', done => {
+        insert({FloatArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, []);
           done();
         });
       });
 
-      it('should write null float64 array values', done => {
-        insert({FloatArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({FloatArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null float64 array values', done => {
+        insert(
+          {FloatArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({FloatArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
           done();
         });
       });
 
-      it('should write float64 array values', done => {
+      it('GOOGLE_STANDARD_SQL should write float64 array values', done => {
         const values = [1.2, 2.3, 3.4];
 
-        insert({FloatArray: values}, (err, row) => {
+        insert(
+          {FloatArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().FloatArray, values);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1.2, 2.3, 3.4];
+
+        insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, values);
           done();
@@ -561,55 +908,148 @@ describe('Spanner', () => {
     });
 
     describe('numerics', () => {
-      it('should write numeric values', done => {
-        const value = Spanner.numeric('3.141592653');
-
-        insert({NumericValue: value}, (err, row) => {
+      const numericInsert = (done, dialect, value) => {
+        insert({NumericValue: value}, dialect, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write numeric values', done => {
+        numericInsert(
+          done,
+          Spanner.GOOGLE_STANDARD_SQL,
+          Spanner.numeric('3.141592653')
+        );
       });
 
-      it('should write null numeric values', done => {
-        insert({NumericValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().NumericValue, null);
-          done();
-        });
+      it('POSTGRESQL should write numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        numericInsert(
+          done,
+          Spanner.POSTGRESQL,
+          Spanner.pgNumeric('3.141592653')
+        );
       });
 
-      it('should throw for out of bounds values', done => {
-        insert({NumericValue: Spanner.numeric('3.1415926535')}, err => {
+      it('GOOGLE_STANDARD_SQL should write null numeric values', done => {
+        numericInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        numericInsert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('POSTGRESQL should bind NaN', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        numericInsert(done, Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
+      });
+
+      const numericInsertOutOfBounds = (done, dialect, value) => {
+        insert({NumericValue: value}, dialect, err => {
           assert.strictEqual(err.code, grpc.status.FAILED_PRECONDITION);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw for out of bounds values', done => {
+        numericInsertOutOfBounds(
+          done,
+          Spanner.GOOGLE_STANDARD_SQL,
+          Spanner.numeric('3.1415926535')
+        );
       });
 
-      it('should write empty numeric array values', done => {
-        insert({NumericArray: []}, (err, row) => {
+      it('POSTGRESQL should throw for out of bounds values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        numericInsertOutOfBounds(
+          done,
+          Spanner.POSTGRESQL,
+          Spanner.pgNumeric('1e131072')
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty numeric array values', done => {
+        insert({NumericArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, []);
           done();
         });
       });
 
-      it('should write null numeric array values', done => {
-        insert({NumericArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({NumericArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().NumericArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null numeric array values', done => {
+        insert(
+          {NumericArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({NumericArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
           done();
         });
       });
 
-      it('should write numeric array values', done => {
+      it('GOOGLE_STANDARD_SQL should write numeric array values', done => {
         const values = [
           Spanner.numeric('-99999999999999999999999999999.999999999'),
           Spanner.numeric('3.141592653'),
           Spanner.numeric('99999999999999999999999999999.999999999'),
         ];
 
-        insert({NumericArray: values}, (err, row) => {
+        insert(
+          {NumericArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().NumericArray, values);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write numeric array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [
+          Spanner.pgNumeric('-99999999999999999999999999999.999999999'),
+          Spanner.pgNumeric('3.141592653'),
+          Spanner.pgNumeric('99999999999999999999999999999.999999999'),
+        ];
+
+        insert({NumericArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, values);
           done();
@@ -618,84 +1058,200 @@ describe('Spanner', () => {
     });
 
     describe('strings', () => {
-      it('should write string values', done => {
-        insert({StringValue: 'abc'}, (err, row) => {
+      const stringInsert = (done, dialect, value) => {
+        insert({StringValue: value}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.strictEqual(row.toJSON().StringValue, 'abc');
+          assert.strictEqual(row.toJSON().StringValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write string values', done => {
+        stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, 'abc');
       });
 
-      it('should write null string values', done => {
-        insert({StringValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().StringValue, null);
-          done();
-        });
+      it('POSTGRESQL should write string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        stringInsert(done, Spanner.POSTGRESQL, 'abc');
       });
 
-      it('should write empty string array values', done => {
-        insert({StringArray: []}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null string values', done => {
+        stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        stringInsert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty string array values', done => {
+        insert({StringArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, []);
           done();
         });
       });
 
-      it('should write null string array values', done => {
-        insert({StringArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({StringArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().StringArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null string array values', done => {
+        insert(
+          {StringArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringArray, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({StringArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, [null]);
           done();
         });
       });
 
-      it('should write string array values', done => {
-        insert({StringArray: ['abc', 'def']}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write string array values', done => {
+        insert(
+          {StringArray: ['abc', 'def']},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert(
+          {StringArray: ['abc', 'def']},
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
+            done();
+          }
+        );
       });
     });
 
     describe('bytes', () => {
-      it('should write bytes values', done => {
-        insert({BytesValue: Buffer.from('abc')}, (err, row) => {
+      const bytesInsert = (done, dialect, value) => {
+        insert({BytesValue: value}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('abc'));
+          assert.deepStrictEqual(row.toJSON().BytesValue, value);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write bytes values', done => {
+        bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, Buffer.from('abc'));
       });
 
-      it('should write null bytes values', done => {
-        insert({BytesValue: null}, (err, row) => {
-          assert.ifError(err);
-          assert.strictEqual(row.toJSON().BytesValue, null);
-          done();
-        });
+      it('POSTGRESQL should write bytes values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        bytesInsert(done, Spanner.POSTGRESQL, Buffer.from('abc'));
       });
 
-      it('should write empty bytes array values', done => {
-        insert({BytesArray: []}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null bytes values', done => {
+        bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null bytes values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        bytesInsert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty bytes array values', done => {
+        insert({BytesArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, []);
           done();
         });
       });
 
-      it('should write null bytes array values', done => {
-        insert({BytesArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BytesArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().BytesArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null bytes array values', done => {
+        insert(
+          {BytesArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({BytesArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
           done();
         });
       });
 
-      it('should write bytes array values', done => {
+      it('GOOGLE_STANDARD_SQL should write bytes array values', done => {
         const values = [Buffer.from('a'), Buffer.from('b')];
 
-        insert({BytesArray: values}, (err, row) => {
+        insert(
+          {BytesArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesArray, values);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write bytes array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Buffer.from('a'), Buffer.from('b')];
+
+        insert({BytesArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, values);
           done();
@@ -710,44 +1266,49 @@ describe('Spanner', () => {
         }
       });
 
-      it('should write json values', done => {
-        insert({JsonValue: {key1: 'value1', key2: 'value2'}}, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonValue, {
-            key1: 'value1',
-            key2: 'value2',
-          });
-          done();
-        });
+      it('GOOGLE_STANDARD_SQL should write json values', done => {
+        insert(
+          {JsonValue: {key1: 'value1', key2: 'value2'}},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().JsonValue, {
+              key1: 'value1',
+              key2: 'value2',
+            });
+            done();
+          }
+        );
       });
 
-      it('should write null json values', done => {
-        insert({JsonValue: null}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null json values', done => {
+        insert({JsonValue: null}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().JsonValue, null);
           done();
         });
       });
 
-      it('should write empty json array values', done => {
-        insert({JsonArray: []}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write empty json array values', done => {
+        insert({JsonArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().JsonArray, []);
           done();
         });
       });
 
-      it('should write null json array values', done => {
-        insert({JsonArray: [null]}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null json array values', done => {
+        insert({JsonArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().JsonArray, [null]);
           done();
         });
       });
 
-      it('should write json array values', done => {
+      it('GOOGLE_STANDARD_SQL should write json array values', done => {
         insert(
           {JsonArray: [{key1: 'value1'}, {key2: 'value2'}]},
+          Spanner.GOOGLE_STANDARD_SQL,
           (err, row) => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().JsonArray, [
@@ -761,45 +1322,114 @@ describe('Spanner', () => {
     });
 
     describe('timestamps', () => {
-      it('should write timestamp values', done => {
+      const timestampInsert = (done, dialect) => {
         const date = Spanner.timestamp();
 
-        insert({TimestampValue: date}, (err, row) => {
+        insert({TimestampValue: date}, dialect, (err, row) => {
           assert.ifError(err);
           const time = row.toJSON().TimestampValue.getTime();
           assert.strictEqual(time, date.getTime());
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write timestamp values', done => {
+        timestampInsert(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should write null timestamp values', done => {
-        insert({TimestampValue: null}, (err, row) => {
+      it('POSTGRESQL should write timestamp values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        timestampInsert(done, Spanner.POSTGRESQL);
+      });
+
+      const timestampInsertNull = (done, dialect) => {
+        insert({TimestampValue: null}, dialect, (err, row) => {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().TimestampValue, null);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write null timestamp values', done => {
+        timestampInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should write empty timestamp array values', done => {
-        insert({TimestampArray: []}, (err, row) => {
+      it('POSTGRESQL should write null timestamp values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        timestampInsertNull(done, Spanner.POSTGRESQL);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty timestamp array values', done => {
+        insert(
+          {TimestampArray: []},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().TimestampArray, []);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write empty timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({TimestampArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, []);
           done();
         });
       });
 
-      it('should write null timestamp array values', done => {
-        insert({TimestampArray: [null]}, (err, row) => {
+      it('GOOGLE_STANDARD_SQL should write null timestamp array values', done => {
+        insert(
+          {TimestampArray: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({TimestampArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
           done();
         });
       });
 
-      it('should write timestamp array values', done => {
+      it('GOOGLE_STANDARD_SQL should write timestamp array values', done => {
         const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
 
-        insert({TimestampArray: values}, (err, row) => {
+        insert(
+          {TimestampArray: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().TimestampArray, values);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write timestamp array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
+
+        insert({TimestampArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, values);
           done();
@@ -808,44 +1438,103 @@ describe('Spanner', () => {
     });
 
     describe('dates', () => {
-      it('should write date values', done => {
-        const date = Spanner.date();
-
-        insert({DateValue: date}, (err, row) => {
+      const dateInsert = (done, dialect) => {
+        insert({DateValue: Spanner.date()}, dialect, (err, row) => {
           assert.ifError(err);
-          assert.deepStrictEqual(Spanner.date(row.toJSON().DateValue), date);
+          assert.deepStrictEqual(
+            Spanner.date(row.toJSON().DateValue),
+            Spanner.date()
+          );
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write date values', done => {
+        dateInsert(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should write null date values', done => {
-        insert({DateValue: null}, (err, row) => {
+      it('POSTGRESQL should write date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        dateInsert(done, Spanner.POSTGRESQL);
+      });
+
+      const dateInsertNull = (done, dialect) => {
+        insert({DateValue: null}, dialect, (err, row) => {
           assert.ifError(err);
           assert.strictEqual(row.toJSON().DateValue, null);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write null date values', done => {
+        dateInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('should write empty date array values', done => {
-        insert({DateArray: []}, (err, row) => {
+      it('POSTGRESQL should write null date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        dateInsertNull(done, Spanner.POSTGRESQL);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty date array values', done => {
+        insert({DateArray: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, []);
           done();
         });
       });
 
-      it('should write null date array values', done => {
-        insert({DateArray: [null]}, (err, row) => {
+      it('POSTGRESQL should write empty date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({DateArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().DateArray, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null date array values', done => {
+        insert({DateArray: [null]}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, [null]);
           done();
         });
       });
 
-      it('should write date array values', done => {
+      it('POSTGRESQL should write null date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({DateArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().DateArray, [null]);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write date array values', done => {
         const values = [Spanner.date(), Spanner.date('3-3-1933')];
 
-        insert({DateArray: values}, (err, row) => {
+        insert({DateArray: values}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          const {DateArray} = row.toJSON();
+          assert.deepStrictEqual(DateArray, values);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write date array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [Spanner.date(), Spanner.date('3-3-1933')];
+
+        insert({DateArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           const {DateArray} = row.toJSON();
           assert.deepStrictEqual(DateArray, values);
@@ -854,11 +1543,70 @@ describe('Spanner', () => {
       });
     });
 
+    describe('jsonb', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
+      it('POSTGRESQL should write jsonb values', done => {
+        const value = Spanner.pgJsonb({
+          key1: 'value1',
+          key2: 'value2',
+        });
+        insert({JsonbValue: value}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbValue, value);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null jsonb values', done => {
+        insert({JsonbValue: null}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbValue, null);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write empty json array values', done => {
+        insert({JsonbArray: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbArray, []);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write null json array values', done => {
+        insert({JsonbArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().JsonbArray, [null]);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write json array values', done => {
+        insert(
+          {JsonbArray: [{key1: 'value1'}, {key2: 'value2'}]},
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().JsonbArray, [
+              Spanner.pgJsonb({key1: 'value1'}),
+              Spanner.pgJsonb({key2: 'value2'}),
+            ]);
+            done();
+          }
+        );
+      });
+    });
+
     describe('commit timestamp', () => {
-      it('should accept the commit timestamp placeholder', done => {
+      const commitTimestamp = (done, dialect) => {
         const data = {CommitTimestamp: Spanner.COMMIT_TIMESTAMP};
 
-        insert(data, (err, row, {commitTimestamp}) => {
+        insert(data, dialect, (err, row, {commitTimestamp}) => {
           assert.ifError(err);
 
           const timestampFromCommit = Spanner.timestamp(commitTimestamp);
@@ -867,14 +1615,36 @@ describe('Spanner', () => {
           assert.deepStrictEqual(timestampFromCommit, timestampFromRead);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept the commit timestamp placeholder', done => {
+        commitTimestamp(done, Spanner.GOOGLE_STANDARD_SQL);
+      });
+
+      it('POSTGRESQL should accept the commit timestamp placeholder', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        commitTimestamp(done, Spanner.POSTGRESQL);
       });
     });
 
-    it('should throw an error for incorrect value types', done => {
+    const incorrectValueType = (done, table) => {
       table.insert({BoolValue: 'abc'}, err => {
         assert(err);
         done();
       });
+    };
+
+    it('GOOGLE_STANDARD_SQL should throw an error for incorrect value types', done => {
+      incorrectValueType(done, googleSqlTable);
+    });
+
+    it('POSTGRESQL should throw an error for incorrect value types', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      incorrectValueType(done, postgreSqlTable);
     });
   });
 
@@ -991,6 +1761,17 @@ describe('Spanner', () => {
   });
 
   describe('instanceConfigs', () => {
+    it('should have created the instance config', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      instanceConfig.get((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual(metadata!.name, instanceConfig.formattedName_);
+        done();
+      });
+    });
+
     it('should list the available instanceConfigs', done => {
       spanner.getInstanceConfigs((err, instanceConfigs) => {
         assert.ifError(err);
@@ -1022,7 +1803,7 @@ describe('Spanner', () => {
         );
     });
 
-    it('should get an instanceConfig', function (done) {
+    it("should get an instanceConfig's metadata using getInstanceConfig", function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1033,7 +1814,7 @@ describe('Spanner', () => {
       });
     });
 
-    it('should get an instanceConfig in promise mode', function (done) {
+    it("should get an instanceConfig's metadata in promise mode using getInstanceConfig", function (done) {
       if (IS_EMULATOR_ENABLED) {
         this.skip();
       }
@@ -1046,33 +1827,170 @@ describe('Spanner', () => {
         })
         .catch(done);
     });
+
+    it("should get an instanceConfig's metadata using get", function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      spanner
+        .instanceConfig('nam6')
+        .get()
+        .then(data => {
+          const instanceConfig = data[0];
+          assert(instanceConfig.displayName);
+          done();
+        })
+        .catch(done);
+    });
+
+    it("should list an instanceConfig's operations without filter", async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+
+      const [operationsWithoutFilter] =
+        await spanner.getInstanceConfigOperations();
+      const operationForCurrentInstanceConfig = operationsWithoutFilter!.find(
+        operation =>
+          operation.name &&
+          operation.name.includes(instanceConfig.formattedName_)
+      );
+      assert.ok(operationForCurrentInstanceConfig);
+      assert.strictEqual(
+        operationForCurrentInstanceConfig!.metadata!.type_url,
+        'type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata'
+      );
+    });
+
+    it("should list an instanceConfig's operations with filter", async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+
+      const [operationsWithFilter] = await spanner.getInstanceConfigOperations({
+        filter: `(metadata.@type:type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata) AND
+                    (name:${instanceConfig.formattedName_})`,
+      });
+      const operationForCurrentInstanceConfigWithFilter =
+        operationsWithFilter[0];
+      assert.ok(operationForCurrentInstanceConfigWithFilter);
+      const operationForCurrentInstanceConfigWithFilterMetadata =
+        CreateInstanceConfigMetadata.decode(
+          operationForCurrentInstanceConfigWithFilter!.metadata!
+            .value! as Uint8Array
+        );
+      assert.strictEqual(
+        operationForCurrentInstanceConfigWithFilterMetadata.instanceConfig!
+          .name,
+        `${instanceConfig.formattedName_}`
+      );
+    });
+
+    it('should update the instance config metadata', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const newData = {
+        instanceConfig: {
+          displayName: 'new-display-name-' + shortUUID(),
+        },
+      };
+
+      instanceConfig.setMetadata(
+        newData,
+        execAfterOperationComplete(err => {
+          assert.ifError(err);
+
+          instanceConfig.get((err, metadata) => {
+            assert.ifError(err);
+            assert.strictEqual(
+              metadata!.displayName,
+              newData.instanceConfig.displayName
+            );
+            done();
+          });
+        })
+      );
+    });
+
+    it('should return true for instance config that exist', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const doesExist = await instanceConfig.exists();
+      assert.strictEqual(doesExist, true);
+    });
+
+    it('should return false for instance configs that do not exist', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const doesExist = await spanner
+        .instanceConfig('bad-instance-config')
+        .exists();
+      assert.strictEqual(doesExist, false);
+    });
   });
 
   describe('Databases', () => {
     const TABLE_NAME = 'SingersTest';
-    it('should auto create a database', done => {
-      const database = instance.database(generateName('database'));
+    const autoCreateDatabase = (done, databaseId) => {
+      const database = instance.database(generateName(databaseId));
 
       database.get({autoCreate: true} as GetDatabaseConfig, err => {
         assert.ifError(err);
         RESOURCES_TO_CLEAN.push(database);
         database.getMetadata(done);
       });
+    };
+
+    it('GOOGLE_STANDARD_SQL should auto create a database', done => {
+      autoCreateDatabase(done, 'database');
     });
 
-    it('should have created the database', done => {
-      DATABASE.getMetadata((err, metadata) => {
+    it('POSTGRESQL should auto create a database', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      autoCreateDatabase(done, 'pg-db');
+    });
+
+    const createDatabase = (done, database, dialect) => {
+      database.getMetadata((err, metadata) => {
         assert.ifError(err);
-        assert.strictEqual(metadata!.name, DATABASE.formattedName_);
+        assert.strictEqual(metadata!.name, database.formattedName_);
         assert.strictEqual(metadata!.state, 'READY');
+        if (IS_EMULATOR_ENABLED) {
+          assert.strictEqual(
+            metadata!.databaseDialect,
+            'DATABASE_DIALECT_UNSPECIFIED'
+          );
+        } else {
+          assert.strictEqual(metadata!.databaseDialect, dialect);
+        }
         done();
       });
+    };
+
+    it('GOOGLE_STANDARD_SQL should have created the database', done => {
+      createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
+    });
+
+    it('POSTGRESQL should have created the database', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      createDatabase(done, PG_DATABASE, 'POSTGRESQL');
     });
 
     it('should list the databases from an instance', done => {
       instance.getDatabases((err, databases) => {
         assert.ifError(err);
         assert(databases!.length > 0);
+        // check if enableDropProtection is populated for databases.
+        databases!.map(db => {
+          assert.notStrictEqual(db.metadata.enableDropProtection, null);
+        });
         done();
       });
     });
@@ -1116,7 +2034,37 @@ describe('Spanner', () => {
       });
     });
 
-    it('should create a table', done => {
+    const createTable = (done, database, dialect, createTableStatement) => {
+      database.updateSchema(
+        [createTableStatement],
+        execAfterOperationComplete(err => {
+          assert.ifError(err);
+
+          function replaceNewLinesAndSpacing(str, dialect) {
+            const schema = str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
+            if (dialect === Spanner.GOOGLE_STANDARD_SQL) {
+              return schema;
+            } else {
+              return schema.toLowerCase();
+            }
+          }
+
+          database.getSchema((err, statements) => {
+            assert.ifError(err);
+            assert.ok(
+              statements!.some(
+                s =>
+                  replaceNewLinesAndSpacing(s, dialect) ===
+                  replaceNewLinesAndSpacing(createTableStatement, dialect)
+              )
+            );
+            done();
+          });
+        })
+      );
+    };
+
+    it('GOOGLE_STANDARD_SQL should create a table', done => {
       const createTableStatement = `
         CREATE TABLE ${TABLE_NAME} (
           SingerId INT64 NOT NULL,
@@ -1124,29 +2072,27 @@ describe('Spanner', () => {
           LastName STRING(1024),
           SingerInfo BYTES(MAX),
         ) PRIMARY KEY(SingerId)`;
-
-      DATABASE.updateSchema(
-        [createTableStatement],
-        execAfterOperationComplete(err => {
-          assert.ifError(err);
-
-          function replaceNewLinesAndSpacing(str) {
-            return str.replace(/\n\s*/g, '').replace(/\s+/g, ' ');
-          }
-
-          DATABASE.getSchema((err, statements) => {
-            assert.ifError(err);
-            assert.ok(
-              statements!.some(
-                s =>
-                  replaceNewLinesAndSpacing(s) ===
-                  replaceNewLinesAndSpacing(createTableStatement)
-              )
-            );
-            done();
-          });
-        })
+      createTable(
+        done,
+        DATABASE,
+        Spanner.GOOGLE_STANDARD_SQL,
+        createTableStatement
       );
+    });
+
+    it('POSTGRESQL should create a table', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const createTableStatement = `
+        CREATE TABLE ${TABLE_NAME} (
+          SingerId BIGINT NOT NULL,
+          FirstName CHARACTER VARYING,
+          LastName CHARACTER VARYING,
+          SingerInfo BYTEA,
+          PRIMARY KEY(SingerId)
+        )`;
+      createTable(done, PG_DATABASE, Spanner.POSTGRESQL, createTableStatement);
     });
 
     it('should list database operations on an instance', async function () {
@@ -1176,16 +2122,13 @@ describe('Spanner', () => {
       assert.strictEqual(createMeta.database, databaseFullName);
     });
 
-    it('should list database operations on a database', async function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
+    const listDatabaseOperation = async function (database) {
       // Look up the database full name from the metadata to expand any {{projectId}} tokens.
-      const [databaseMetadata] = await DATABASE.getMetadata();
+      const [databaseMetadata] = await database.getMetadata();
       const databaseFullName = databaseMetadata.name;
 
       // List operations.
-      const [databaseOperations] = await DATABASE.getOperations();
+      const [databaseOperations] = await database.getOperations();
 
       // Validate operation has at least the create operation for the database.
       assert.ok(databaseOperations.length > 0);
@@ -1198,19 +2141,454 @@ describe('Spanner', () => {
         databaseCreateOperation!.metadata!.value! as Uint8Array
       );
       assert.strictEqual(createMeta.database, databaseFullName);
+    };
+
+    it('GOOGLE_STANDARD_SQL should list database operations on a database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      await listDatabaseOperation(DATABASE);
+    });
+
+    it('POSTGRESQL should list database operations on a database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      await listDatabaseOperation(PG_DATABASE);
+    });
+
+    it('enable_drop_protection should be disabled by default', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [databaseMetadata] = await DATABASE_DROP_PROTECTION.getMetadata();
+      assert.strictEqual(databaseMetadata!.enableDropProtection, false);
+    });
+
+    it('enable_drop_protection on database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [operation1] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: true,
+      });
+      await operation1.promise();
+
+      try {
+        await DATABASE_DROP_PROTECTION.delete();
+        assert.ok(false);
+      } catch (err) {
+        assert.ok(true);
+      }
+
+      const [operation2] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: false,
+      });
+      await operation2.promise();
+    });
+
+    describe('FineGrainedAccessControl', () => {
+      before(function () {
+        if (SKIP_FGAC_TESTS === 'true') {
+          this.skip();
+        }
+      });
+      const createUserDefinedDatabaseRole = async (database, query) => {
+        database.updateSchema(
+          [query],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(query));
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should create a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createUserDefinedDatabaseRole(DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should create a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createUserDefinedDatabaseRole(PG_DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const grantAccessToRole = async (
+        database,
+        createRoleQuery,
+        grantAccessQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery, grantAccessQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              assert.ok(statements.includes(grantAccessQuery));
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should grant access to a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await grantAccessToRole(
+          DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE Singers TO ROLE child'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should grant access to a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await grantAccessToRole(
+          PG_DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE singers TO child'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const userDefinedDatabaseRoleRevoked = async (
+        database,
+        createRoleQuery,
+        grantPermissionQuery,
+        revokePermissionQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery, grantPermissionQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              assert.ok(statements.includes(grantPermissionQuery));
+              database.updateSchema(
+                [revokePermissionQuery],
+                execAfterOperationComplete(err => {
+                  assert.ifError(err);
+                  database.getSchema((err, statements) => {
+                    assert.ifError(err);
+                    assert.ok(!statements.includes(grantPermissionQuery));
+                  });
+                })
+              );
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should revoke permissions of a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleRevoked(
+          DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE Singers TO ROLE orphan',
+          'REVOKE SELECT ON TABLE Singers FROM ROLE orphan'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should revoke permissions of a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleRevoked(
+          PG_DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE singers TO orphan',
+          'REVOKE SELECT ON TABLE singers FROM orphan'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const userDefinedDatabaseRoleDropped = async (
+        database,
+        createRoleQuery,
+        dropRoleQuery
+      ) => {
+        database.updateSchema(
+          [createRoleQuery],
+          execAfterOperationComplete(err => {
+            assert.ifError(err);
+            database.getSchema((err, statements) => {
+              assert.ifError(err);
+              assert.ok(statements.includes(createRoleQuery));
+              database.updateSchema(
+                [dropRoleQuery],
+                execAfterOperationComplete(err => {
+                  assert.ifError(err);
+                  database.getSchema((err, statements) => {
+                    assert.ifError(err);
+                    assert.ok(!statements.includes(createRoleQuery));
+                  });
+                })
+              );
+            });
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should drop the user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleDropped(
+          DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should drop the user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleDropped(
+          PG_DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const grantAccessSuccess = (done, database, grantPermissionQuery) => {
+        const id = 7;
+        database.updateSchema(
+          ['CREATE ROLE read_access', grantPermissionQuery],
+          execAfterOperationComplete(async err => {
+            assert.ifError(err);
+            const table = database.table('Singers');
+            table.insert(
+              {
+                SingerId: id,
+              },
+              err => {
+                assert.ifError(err);
+                const dbReadRole = instance.database(database.formattedName_, {
+                  databaseRole: 'read_access',
+                });
+                const query = {
+                  sql: 'SELECT SingerId, Name FROM Singers',
+                };
+                dbReadRole.run(query, (err, rows) => {
+                  assert.ifError(err);
+                  assert.ok(rows.length > 0);
+                  table.deleteRows([id]);
+                  done();
+                });
+              }
+            );
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessSuccess(
+          done,
+          DATABASE,
+          'GRANT SELECT ON TABLE Singers TO ROLE read_access'
+        );
+      });
+
+      it('POSTGRESQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessSuccess(
+          done,
+          PG_DATABASE,
+          'GRANT SELECT ON TABLE singers TO read_access'
+        );
+      });
+
+      const grantAccessFailure = (done, database, grantPermissionQuery) => {
+        const id = 8;
+        database.updateSchema(
+          ['CREATE ROLE write_access', grantPermissionQuery],
+          execAfterOperationComplete(async err => {
+            assert.ifError(err);
+            const table = database.table('Singers');
+            // INSERT access cannot SELECT data from table
+            table.insert(
+              {
+                SingerId: id,
+              },
+              err => {
+                assert.ifError(err);
+                const dbWriteRole = instance.database(database.formattedName_, {
+                  databaseRole: 'write_access',
+                });
+                const query = {
+                  sql: 'SELECT SingerId, Name FROM Singers',
+                };
+                dbWriteRole.run(query, err => {
+                  assert(err);
+                  table.deleteRows([id]);
+                  done();
+                });
+              }
+            );
+          })
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessFailure(
+          done,
+          DATABASE,
+          'GRANT INSERT ON TABLE Singers TO ROLE write_access'
+        );
+      });
+
+      it('POSTGRESQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessFailure(
+          done,
+          PG_DATABASE,
+          'GRANT INSERT ON TABLE singers TO write_access'
+        );
+      });
+
+      const listDatabaseRoles = async database => {
+        const [updateRole] = await database.updateSchema([
+          'CREATE ROLE new_parent',
+        ]);
+        await updateRole.promise();
+
+        const [databaseRoles] = await database.getDatabaseRoles();
+        assert.ok(databaseRoles.length > 0);
+        assert.ok(
+          databaseRoles.find(
+            role =>
+              role.name ===
+              database.formattedName_ + '/databaseRoles/new_parent'
+          )
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await listDatabaseRoles(DATABASE);
+      });
+
+      it('POSTGRESQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await listDatabaseRoles(PG_DATABASE);
+      });
+
+      const getIamPolicy = (done, database) => {
+        database.getIamPolicy((err, policy) => {
+          assert.ifError(err);
+          assert.strictEqual(policy!.version, 0);
+          assert.deepStrictEqual(policy!.bindings, []);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should get IAM Policy', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        getIamPolicy(done, DATABASE);
+      });
+
+      it('POSTGRESQL should should get IAM Policy', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        getIamPolicy(done, PG_DATABASE);
+      });
+
+      const setIamPolicy = async database => {
+        const newBinding = {
+          role: 'roles/spanner.fineGrainedAccessUser',
+          members: [`user:${IAM_MEMBER}`],
+          condition: {
+            title: 'new condition',
+            expression: 'resource.name.endsWith("/databaseRoles/parent")',
+          },
+        };
+        const policy = {
+          bindings: [newBinding],
+          version: 3,
+        };
+        await database.setIamPolicy({policy: policy}, (err, policy) => {
+          assert.ifError(err);
+          assert.strictEqual(policy.version, 3);
+          assert.deepStrictEqual(policy.bindings, newBinding);
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should set IAM Policy', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await setIamPolicy(DATABASE);
+      });
+
+      it('POSTGRESQL should should set IAM Policy', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await setIamPolicy(PG_DATABASE);
+      });
     });
   });
 
   describe('Backups', () => {
-    let database1: Database;
-    let database2: Database;
-    let restoreDatabase: Database;
+    const SKIP_POSTGRESQL_BACKUP_TESTS = true;
 
-    let backup1: Backup;
-    let backup2: Backup;
+    let googleSqlDatabase1: Database;
+    let googleSqlDatabase2: Database;
+    let googleSqlRestoreDatabase: Database;
 
-    const backup1Name = generateName('backup');
-    const backup2Name = generateName('backup');
+    let postgreSqlDatabase1: Database;
+    let postgreSqlDatabase2: Database;
+    let postgreSqlRestoreDatabase: Database;
+
+    let googleSqlBackup1: Backup;
+    let googleSqlBackup2: Backup;
+
+    let postgreSqlBackup1: Backup;
+    let postgreSqlBackup2: Backup;
+
+    const googleSqlBackup1Name = generateName('backup');
+    const googleSqlBackup2Name = generateName('backup');
+
+    const postgreSqlBackup1Name = generateName('pg-backup');
+    const postgreSqlBackup2Name = generateName('pg-backup');
+
     const backupExpiryDate = futureDateByHours(12);
     const backupExpiryPreciseDate = Spanner.timestamp(backupExpiryDate);
 
@@ -1221,73 +2599,156 @@ describe('Spanner', () => {
       if (SKIP_BACKUPS === 'true') {
         this.skip();
       }
-      database1 = DATABASE;
+      googleSqlDatabase1 = DATABASE;
+      postgreSqlDatabase1 = PG_DATABASE;
 
-      await database1.table(TABLE_NAME).insert({
+      await googleSqlDatabase1.table(TABLE_NAME).insert({
+        SingerId: generateName('id'),
+        Name: generateName('name'),
+      });
+
+      await postgreSqlDatabase1.table(TABLE_NAME).insert({
         SingerId: generateName('id'),
         Name: generateName('name'),
       });
 
       // Create a second database since only one pending backup can be created
       // per database.
-      database2 = instance.database(generateName('database'));
-      const [, database2CreateOperation] = await database2.create({
-        schema: `
+      googleSqlDatabase2 = instance.database(generateName('database'));
+      const [, googleSqlDatabase2CreateOperation] =
+        await googleSqlDatabase2.create({
+          schema: `
         CREATE TABLE Albums (
           AlbumId STRING(1024) NOT NULL,
           AlbumTitle STRING(1024) NOT NULL,
           ) PRIMARY KEY(AlbumId)`,
-        gaxOptions: GAX_OPTIONS,
-      });
-      await database2CreateOperation.promise();
-      RESOURCES_TO_CLEAN.push(database2);
+          gaxOptions: GAX_OPTIONS,
+        });
+      await googleSqlDatabase2CreateOperation.promise();
+      RESOURCES_TO_CLEAN.push(googleSqlDatabase2);
 
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
+        postgreSqlDatabase2 = instance.database(generateName('pg-db'));
+        const [, postgreSqlDatabase2CreateOperation] =
+          await postgreSqlDatabase2.create({
+            databaseDialect: Spanner.POSTGRESQL,
+            gaxOptions: GAX_OPTIONS,
+          });
+        await postgreSqlDatabase2CreateOperation.promise();
+
+        const schema = [
+          `CREATE TABLE Albums (
+            AlbumId VARCHAR NOT NULL PRIMARY KEY,
+            AlbumTitle VARCHAR NOT NULL
+        );`,
+        ];
+        const [postgreSqlDatabase2UpdateOperation] =
+          await postgreSqlDatabase2.updateSchema(schema);
+        await postgreSqlDatabase2UpdateOperation.promise();
+        RESOURCES_TO_CLEAN.push(postgreSqlDatabase2);
+      }
       // Initialize a database instance to restore to.
-      restoreDatabase = instance.database(generateName('database'));
+      googleSqlRestoreDatabase = instance.database(generateName('database'));
+      postgreSqlRestoreDatabase = instance.database(generateName('pg-db'));
 
       // Create backups.
-      backup1 = instance.backup(backup1Name);
-      backup2 = instance.backup(backup2Name);
-      const [, backup1Operation] = await backup1.create({
-        databasePath: database1.formattedName_,
+      googleSqlBackup1 = instance.backup(googleSqlBackup1Name);
+      googleSqlBackup2 = instance.backup(googleSqlBackup2Name);
+      const [, googleSqlBackup1Operation] = await googleSqlBackup1.create({
+        databasePath: googleSqlDatabase1.formattedName_,
         expireTime: backupExpiryDate,
         gaxOptions: GAX_OPTIONS,
       });
-      const [, backup2Operation] = await backup2.create({
-        databasePath: database2.formattedName_,
+      const [, googleSqlBackup2Operation] = await googleSqlBackup2.create({
+        databasePath: googleSqlDatabase2.formattedName_,
         expireTime: backupExpiryDate,
         gaxOptions: GAX_OPTIONS,
       });
 
-      assert.strictEqual(
-        backup1Operation.metadata!.name,
-        `${instance.formattedName_}/backups/${backup1Name}`
-      );
-      assert.strictEqual(
-        backup1Operation.metadata!.database,
-        database1.formattedName_
-      );
+      if ('database' in googleSqlBackup1Operation.metadata) {
+        assert.strictEqual(
+          googleSqlBackup1Operation.metadata!.name,
+          `${instance.formattedName_}/backups/${googleSqlBackup1Name}`
+        );
+      }
 
-      assert.strictEqual(
-        backup2Operation.metadata!.name,
-        `${instance.formattedName_}/backups/${backup2Name}`
-      );
-      assert.strictEqual(
-        backup2Operation.metadata!.database,
-        database2.formattedName_
-      );
+      if ('database' in googleSqlBackup1Operation.metadata) {
+        assert.strictEqual(
+          googleSqlBackup1Operation.metadata!.database,
+          googleSqlDatabase1.formattedName_
+        );
+      }
+
+      if ('database' in googleSqlBackup2Operation.metadata) {
+        assert.strictEqual(
+          googleSqlBackup2Operation.metadata!.name,
+          `${instance.formattedName_}/backups/${googleSqlBackup2Name}`
+        );
+      }
+      if ('database' in googleSqlBackup2Operation.metadata) {
+        assert.strictEqual(
+          googleSqlBackup2Operation.metadata!.database,
+          googleSqlDatabase2.formattedName_
+        );
+      }
 
       // Wait for backups to finish.
-      await backup1Operation.promise();
-      await backup2Operation.promise();
-      RESOURCES_TO_CLEAN.push(...[backup1, backup2]);
+      await googleSqlBackup1Operation.promise();
+      await googleSqlBackup2Operation.promise();
+      RESOURCES_TO_CLEAN.push(...[googleSqlBackup1, googleSqlBackup2]);
+
+      if (!SKIP_POSTGRESQL_BACKUP_TESTS) {
+        postgreSqlBackup1 = instance.backup(postgreSqlBackup1Name);
+        postgreSqlBackup2 = instance.backup(postgreSqlBackup2Name);
+        const [, postgreSqlBackup1Operation] = await postgreSqlBackup1.create({
+          databasePath: postgreSqlDatabase1.formattedName_,
+          expireTime: backupExpiryDate,
+          gaxOptions: GAX_OPTIONS,
+        });
+        const [, postgreSqlBackup2Operation] = await postgreSqlBackup2.create({
+          databasePath: postgreSqlDatabase2.formattedName_,
+          expireTime: backupExpiryDate,
+          gaxOptions: GAX_OPTIONS,
+        });
+
+        if ('database' in postgreSqlBackup1Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup1Operation.metadata!.name,
+            `${instance.formattedName_}/backups/${postgreSqlBackup1Name}`
+          );
+        }
+        if ('database' in postgreSqlBackup1Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup1Operation.metadata!.database,
+            postgreSqlDatabase1.formattedName_
+          );
+        }
+        if ('database' in postgreSqlBackup2Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup2Operation.metadata!.name,
+            `${instance.formattedName_}/backups/${postgreSqlBackup2Name}`
+          );
+        }
+        if ('database' in postgreSqlBackup2Operation.metadata) {
+          assert.strictEqual(
+            postgreSqlBackup2Operation.metadata!.database,
+            postgreSqlDatabase2.formattedName_
+          );
+        }
+
+        // Wait for backups to finish.
+        await postgreSqlBackup1Operation.promise();
+        await postgreSqlBackup2Operation.promise();
+
+        RESOURCES_TO_CLEAN.push(...[postgreSqlBackup1, postgreSqlBackup2]);
+      }
     });
 
     function futureDateByHours(futureHours: number): number {
       return Date.now() + 1000 * 60 * 60 * futureHours;
     }
 
-    it('should have completed a backup', async () => {
+    const completedBackup = async (backup1, backup1Name, database1) => {
       // Validate backup has completed.
       const [backupInfo] = await backup1.getMetadata();
       assert.strictEqual(backupInfo.state, 'READY');
@@ -1313,9 +2774,25 @@ describe('Spanner', () => {
       );
       const exists = await backup1.exists();
       assert.strictEqual(exists, true);
+    };
+
+    it('GOOGLE_STANDARD_SQL should have completed a backup', async () => {
+      await completedBackup(
+        googleSqlBackup1,
+        googleSqlBackup1Name,
+        googleSqlDatabase1
+      );
     });
 
-    it('should return error for backup expiration time in the past', async () => {
+    it.skip('POSTGRESQL should have completed a backup', async () => {
+      await completedBackup(
+        postgreSqlBackup1,
+        postgreSqlBackup1Name,
+        postgreSqlDatabase1
+      );
+    });
+
+    const pastBackupExpirationTimeError = async database1 => {
       // Create backup.
       const backupName = generateName('backup');
       const backupExpiryDate = futureDateByHours(-12);
@@ -1330,8 +2807,19 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date
-        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.INVALID_ARGUMENT
+        );
       }
+    };
+
+    it('GOOGLE_STANDARD_SQL should return error for backup expiration time in the past', async () => {
+      await pastBackupExpirationTimeError(googleSqlDatabase1);
+    });
+
+    it.skip('POSTGRESQL should return error for backup expiration time in the past', async () => {
+      await pastBackupExpirationTimeError(postgreSqlDatabase1);
     });
 
     it('should return false for a backup that does not exist', async () => {
@@ -1347,8 +2835,17 @@ describe('Spanner', () => {
       const [backups] = await instance.getBackups();
       assert.ok(backups.length > 0);
       assert.ok(
-        backups.find(backup => backup.formattedName_ === backup1.formattedName_)
+        backups.find(
+          backup => backup.formattedName_ === googleSqlBackup1.formattedName_
+        )
       );
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+        assert.ok(
+          backups.find(
+            backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
+          )
+        );
+      }
     });
 
     it('should list backups with pagination', async () => {
@@ -1361,23 +2858,44 @@ describe('Spanner', () => {
         pageToken: resp1!.nextPageToken!,
         gaxOptions: {autoPaginate: false},
       });
+
+      let page3size = 2;
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+        page3size = 4;
+      }
       const [page3] = await instance.getBackups({
-        pageSize: 2,
+        pageSize: page3size,
         gaxOptions: {autoPaginate: false},
       });
       assert.strictEqual(page1.length, 1);
       assert.strictEqual(page2.length, 1);
-      assert.strictEqual(page3.length, 2);
+      assert.strictEqual(page3.length, page3size);
       assert.notStrictEqual(page2[0].formattedName_, page1[0].formattedName_);
       assert.ok(
-        page3.find(backup => backup.formattedName_ === backup1.formattedName_)
+        page3.find(
+          backup => backup.formattedName_ === googleSqlBackup1.formattedName_
+        )
       );
       assert.ok(
-        page3.find(backup => backup.formattedName_ === backup2.formattedName_)
+        page3.find(
+          backup => backup.formattedName_ === googleSqlBackup2.formattedName_
+        )
       );
+      if (!IS_EMULATOR_ENABLED && !SKIP_POSTGRESQL_BACKUP_TESTS) {
+        assert.ok(
+          page3.find(
+            backup => backup.formattedName_ === postgreSqlBackup1.formattedName_
+          )
+        );
+        assert.ok(
+          page3.find(
+            backup => backup.formattedName_ === postgreSqlBackup2.formattedName_
+          )
+        );
+      }
     });
 
-    it('should restore a backup', async () => {
+    const restoreBackup = async (restoreDatabase, backup1, database1) => {
       // Perform restore to a different database.
       const [, restoreOperation] = await restoreDatabase.restore(
         backup1.formattedName_
@@ -1424,20 +2942,53 @@ describe('Spanner', () => {
         filter: 'metadata.@type:RestoreDatabaseMetadata',
       });
       assert.strictEqual(restoreOperations.length, 1);
+    };
+
+    it('GOOGLE_STANDARD_SQL should restore a backup', async () => {
+      await restoreBackup(
+        googleSqlRestoreDatabase,
+        googleSqlBackup1,
+        googleSqlDatabase1
+      );
     });
 
-    it('should not be able to restore to an existing database', async () => {
+    it.skip('POSTGRESQL should restore a backup', async () => {
+      await restoreBackup(
+        postgreSqlRestoreDatabase,
+        postgreSqlBackup1,
+        postgreSqlDatabase1
+      );
+    });
+
+    const restoreExistingDatabaseFail = async (database1, backup1) => {
       // Perform restore to the same database - should fail.
       try {
         await database1.restore(backup1.formattedName_);
         assert.fail('Should not have restored backup over existing database');
       } catch (err) {
         // Expect to get error indicating database already exists.
-        assert.strictEqual(err.code, grpc.status.ALREADY_EXISTS);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.ALREADY_EXISTS
+        );
       }
+    };
+
+    it('GOOGLE_STANDARD_SQL should not be able to restore to an existing database', async () => {
+      await restoreExistingDatabaseFail(
+        googleSqlRestoreDatabase,
+        googleSqlBackup1
+      );
     });
 
-    it('should update backup expiry', async () => {
+    it.skip('POSTGRESQL should not be able to restore to an existing database', async () => {
+      await restoreExistingDatabaseFail(
+        postgreSqlRestoreDatabase,
+        postgreSqlBackup1
+      );
+    });
+
+    const updateBackupExpiry = async backup1 => {
       // Update backup expiry date.
       const updatedBackupExpiryDate = futureDateByHours(24);
       await backup1.updateExpireTime(updatedBackupExpiryDate);
@@ -1452,9 +3003,17 @@ describe('Spanner', () => {
         expiryDateFromMetadataAfterUpdate,
         Spanner.timestamp(updatedBackupExpiryDate)
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should update backup expiry', async () => {
+      await updateBackupExpiry(googleSqlBackup1);
     });
 
-    it('should not update backup expiry to the past', async () => {
+    it.skip('POSTGRESQL should update backup expiry', async () => {
+      await updateBackupExpiry(postgreSqlBackup1);
+    });
+
+    const pastBackupUpdateExpiryDateFail = async backup1 => {
       // Attempt to update expiry date to the past.
       const expiryDateInPast = futureDateByHours(-24);
       try {
@@ -1464,11 +3023,22 @@ describe('Spanner', () => {
         );
       } catch (err) {
         // Expect to get invalid argument error indicating the expiry date.
-        assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.INVALID_ARGUMENT
+        );
       }
+    };
+
+    it('GOOGLE_STANDARD_SQL should not update backup expiry to the past', async () => {
+      await pastBackupUpdateExpiryDateFail(googleSqlBackup1);
     });
 
-    it('should delete backup', async () => {
+    it.skip('POSTGRESQL should not update backup expiry to the past', async () => {
+      await pastBackupUpdateExpiryDateFail(postgreSqlBackup1);
+    });
+
+    const deleteBackup = async backup2 => {
       // Delete backup.
       await backup2.delete();
 
@@ -1478,11 +3048,22 @@ describe('Spanner', () => {
         const [deletedMetadata] = await backup2.getMetadata();
         assert.fail('Backup was not deleted: ' + deletedMetadata.name);
       } catch (err) {
-        assert.strictEqual(err.code, grpc.status.NOT_FOUND);
+        assert.strictEqual(
+          (err as grpc.ServiceError).code,
+          grpc.status.NOT_FOUND
+        );
       }
+    };
+
+    it('GOOGLE_STANDARD_SQL should delete backup', async () => {
+      await deleteBackup(googleSqlBackup2);
     });
 
-    it('should list backup operations', async () => {
+    it.skip('POSTGRESQL should delete backup', async () => {
+      await deleteBackup(postgreSqlBackup2);
+    });
+
+    const listBackupOperations = async (backup1, database1) => {
       // List operations and ensure operation for current backup exists.
       // Without a filter.
       const [operationsWithoutFilter] = await instance.getBackupOperations();
@@ -1515,18 +3096,53 @@ describe('Spanner', () => {
         operationForCurrentBackupWithFilterMetadata.database,
         database1.formattedName_
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should delete backup', async () => {
+      await listBackupOperations(googleSqlBackup1, googleSqlDatabase1);
+    });
+
+    it.skip('POSTGRESQL should delete backup', async () => {
+      await listBackupOperations(postgreSqlBackup1, postgreSqlDatabase1);
     });
   });
 
   describe('Sessions', () => {
     const session = DATABASE.session();
 
-    before(async () => {
-      await session.create();
+    const dbNewRole = instance.database(DATABASE.formattedName_, {
+      databaseRole: 'parent_role',
     });
 
-    after(done => {
-      session.delete(done);
+    const sessionWithDatabaseRole = dbNewRole.session();
+    let sessionWithRole: Session;
+    let sessionWithOverridingRole: Session;
+
+    before(async () => {
+      await session.create();
+      if (!IS_EMULATOR_ENABLED) {
+        const [operation] = await DATABASE.updateSchema([
+          'CREATE ROLE parent_role',
+          'CREATE ROLE child_role',
+          'CREATE ROLE orphan_role',
+        ]);
+        await operation.promise();
+        await sessionWithDatabaseRole.create();
+        [sessionWithRole] = await DATABASE.createSession({
+          databaseRole: 'child_role',
+        });
+        [sessionWithOverridingRole] = await dbNewRole.createSession({
+          databaseRole: 'orphan_role',
+        });
+      }
+    });
+
+    after(async () => {
+      await session.delete();
+      if (!IS_EMULATOR_ENABLED) {
+        await sessionWithDatabaseRole.delete();
+        await sessionWithRole.delete();
+      }
     });
 
     it('should have created the session', done => {
@@ -1563,35 +3179,142 @@ describe('Spanner', () => {
 
       await Promise.all(sessions.map(session => session.delete()));
     });
+
+    it('should have created the session with database database role', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      sessionWithDatabaseRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('parent_role', metadata!.databaseRole);
+        done();
+      });
+    });
+
+    it('should have created the session with database role', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      sessionWithRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('child_role', metadata!.databaseRole);
+        done();
+      });
+    });
+
+    it('should have created the session by overriding database database role', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      sessionWithOverridingRole.getMetadata((err, metadata) => {
+        assert.ifError(err);
+        assert.strictEqual('orphan_role', metadata!.databaseRole);
+        done();
+      });
+    });
+
+    it('should batch create sessions with database role', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const count = 5;
+      const [sessions] = await dbNewRole.batchCreateSessions({count});
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('parent_role', metadata?.databaseRole);
+        })
+      );
+      await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should batch create sessions with database role by overriding session database-role', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const count = 5;
+      const [sessions] = await DATABASE.batchCreateSessions({
+        count,
+        databaseRole: 'child_role',
+      });
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('child_role', metadata?.databaseRole);
+        })
+      );
+      await Promise.all(sessions.map(session => session.delete()));
+    });
+
+    it('should batch create sessions with database role by overriding database-role', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const count = 5;
+      const [sessions] = await dbNewRole.batchCreateSessions({
+        count,
+        databaseRole: 'orphan_role',
+      });
+
+      assert.strictEqual(sessions.length, count);
+      sessions.forEach(session =>
+        session.getMetadata((err, metadata) => {
+          assert.ifError(err);
+          assert.strictEqual('orphan_role', metadata?.databaseRole);
+        })
+      );
+      await Promise.all(sessions.map(session => session.delete()));
+    });
   });
 
   describe('Tables', () => {
     const TABLE_NAME = 'SingersTables';
-    const table = DATABASE.table(TABLE_NAME);
+    const googleSqlTable = DATABASE.table(TABLE_NAME);
+    const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-    before(() => {
-      return table
-        .create(
-          `
-            CREATE TABLE ${TABLE_NAME} (
-              SingerId STRING(1024) NOT NULL,
-              Name STRING(1024),
-              Float FLOAT64,
-              Int INT64,
-              Info BYTES(MAX),
-              Created TIMESTAMP,
-              DOB DATE,
-              Accents ARRAY<STRING(1024)>,
-              PhoneNumbers ARRAY<INT64>,
-              HasGear BOOL,
-            ) PRIMARY KEY(SingerId)`,
+    before(async () => {
+      const googleSqlCreateTable = await googleSqlTable.create(
+        `CREATE TABLE ${TABLE_NAME}
+                (
+                  SingerId     STRING(1024) NOT NULL,
+                  Name         STRING(1024),
+                  Float        FLOAT64,
+                  Int          INT64,
+                  Info         BYTES( MAX),
+                  Created      TIMESTAMP,
+                  DOB          DATE,
+                  Accents      ARRAY<STRING(1024)>,
+                  PhoneNumbers ARRAY<INT64>,
+                  HasGear      BOOL,
+                ) PRIMARY KEY(SingerId)`,
+        GAX_OPTIONS
+      );
+      await onPromiseOperationComplete(googleSqlCreateTable);
+
+      if (!IS_EMULATOR_ENABLED) {
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `CREATE TABLE ${TABLE_NAME}
+              (
+                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+                "Name"     VARCHAR(1024),
+                "Float"    DOUBLE PRECISION,
+                "Int"      BIGINT,
+                "Info"     BYTEA,
+                "Created"  TIMESTAMPTZ,
+                "HasGear"  BOOL
+              )`,
           GAX_OPTIONS
-        )
-        .then(onPromiseOperationComplete);
+        );
+        await onPromiseOperationComplete(postgreSqlCreateTable);
+      }
     });
 
-    it('should throw an error for non-existant tables', done => {
-      const table = DATABASE.table(generateName('nope'));
+    const nonExistentTable = (done, database) => {
+      const table = database.table(generateName('nope'));
 
       table.insert(
         {
@@ -1602,9 +3325,20 @@ describe('Spanner', () => {
           done();
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should throw an error for non-existent tables', done => {
+      nonExistentTable(done, DATABASE);
     });
 
-    it('should throw an error for non-existant columns', done => {
+    it('POSTGRESQL should throw an error for non-existent tables', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      nonExistentTable(done, PG_DATABASE);
+    });
+
+    const nonExistentColumn = (done, table) => {
       table.insert(
         {
           SingerId: generateName('id'),
@@ -1615,9 +3349,20 @@ describe('Spanner', () => {
           done();
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should throw an error for non-existent columns', done => {
+      nonExistentColumn(done, googleSqlTable);
     });
 
-    it('should read rows as a stream', done => {
+    it('POSTGRESQL should throw an error for non-existent columns', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      nonExistentColumn(done, postgreSqlTable);
+    });
+
+    const readRowsStream = (done, table) => {
       const id = generateName('id');
       const name = generateName('name');
 
@@ -1634,7 +3379,7 @@ describe('Spanner', () => {
           table
             .createReadStream({
               keys: [id],
-              columns: ['SingerId', 'name'],
+              columns: ['SingerId', 'Name'],
             })
             .on('error', done)
             .on('data', row => {
@@ -1655,9 +3400,20 @@ describe('Spanner', () => {
             });
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should read rows as a stream', done => {
+      readRowsStream(done, googleSqlTable);
     });
 
-    it('should automatically convert to JSON', done => {
+    it('POSTGRESQL should read rows as a stream', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      readRowsStream(done, postgreSqlTable);
+    });
+
+    const automaticallyConvertToJson = (done, table) => {
       const id = generateName('id');
       const name = generateName('name');
 
@@ -1691,9 +3447,20 @@ describe('Spanner', () => {
             });
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should automatically convert to JSON', done => {
+      automaticallyConvertToJson(done, googleSqlTable);
     });
 
-    it('should automatically convert to JSON with options', done => {
+    it('POSTGRESQL should automatically convert to JSON', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      automaticallyConvertToJson(done, postgreSqlTable);
+    });
+
+    const automaticallyConvertToJsonWithOptions = (done, table) => {
       const id = generateName('id');
 
       table.insert(
@@ -1724,9 +3491,20 @@ describe('Spanner', () => {
             });
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should automatically convert to JSON with options', done => {
+      automaticallyConvertToJsonWithOptions(done, googleSqlTable);
     });
 
-    it('should insert and delete a row', done => {
+    it('POSTGRESQL should automatically convert to JSON with options', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      automaticallyConvertToJsonWithOptions(done, postgreSqlTable);
+    });
+
+    const insertAndDeleteSingleRow = (done, table) => {
       const id = generateName('id');
       const name = generateName('name');
 
@@ -1759,9 +3537,20 @@ describe('Spanner', () => {
           });
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert and delete a row', done => {
+      insertAndDeleteSingleRow(done, googleSqlTable);
     });
 
-    it('should insert and delete multiple rows', done => {
+    it('POSTGRESQL should insert and delete a row', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      insertAndDeleteSingleRow(done, postgreSqlTable);
+    });
+
+    const insertAndDeleteMultipleRows = (done, table) => {
       const id = generateName('id');
       const id2 = generateName('id2');
 
@@ -1803,16 +3592,30 @@ describe('Spanner', () => {
           });
         }
       );
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert and delete multiple rows', done => {
+      insertAndDeleteMultipleRows(done, googleSqlTable);
     });
 
-    it('should insert and delete multiple composite key rows', () => {
+    it('POSTGRESQL should insert and delete multiple rows', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      insertAndDeleteMultipleRows(done, postgreSqlTable);
+    });
+
+    const insertAndDeleteMultipleCompositeKeyRows = (
+      database,
+      createTableStatement
+    ) => {
       const id1 = 1;
       const name1 = generateName('name1');
 
       const id2 = 2;
       const name2 = generateName('name2');
 
-      const table = DATABASE.table('SingersComposite');
+      const table = database.table('SingersComposite');
 
       const keys = [
         [id1, name1],
@@ -1820,14 +3623,7 @@ describe('Spanner', () => {
       ] as {} as string[];
 
       return table
-        .create(
-          `
-          CREATE TABLE SingersComposite (
-            SingerId INT64 NOT NULL,
-            Name STRING(1024),
-          ) PRIMARY KEY(SingerId, Name)
-          `
-        )
+        .create(createTableStatement)
         .then(onPromiseOperationComplete)
         .then(() => {
           return table.insert([
@@ -1864,9 +3660,35 @@ describe('Spanner', () => {
           const rows = data[0];
           assert.strictEqual(rows.length, 0);
         });
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert and delete composite key rows', () => {
+      const createTableStatement = `
+          CREATE TABLE SingersComposite (
+            SingerId INT64 NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId, Name)
+          `;
+      insertAndDeleteMultipleCompositeKeyRows(DATABASE, createTableStatement);
     });
 
-    it('should insert and query multiple rows', done => {
+    it('POSTGRESQL should insert and delete multiple composite key rows', function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const createTableStatement = `
+          CREATE TABLE SingersComposite (
+            "SingerId" BIGINT NOT NULL,
+            "Name" VARCHAR(1024),
+            PRIMARY KEY("SingerId", "Name")
+          )`;
+      insertAndDeleteMultipleCompositeKeyRows(
+        PG_DATABASE,
+        createTableStatement
+      );
+    });
+
+    const insertAndQueryMultipleRows = (done, database, table, query) => {
       const id1 = generateName('id1');
       const name1 = generateName('name');
 
@@ -1887,30 +3709,48 @@ describe('Spanner', () => {
         err => {
           assert.ifError(err);
 
-          DATABASE.run(
-            `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`,
-            (err, rows) => {
-              assert.ifError(err);
+          database.run(query, (err, rows) => {
+            assert.ifError(err);
 
-              // We just want the two most recent ones.
-              rows!.splice(0, rows!.length - 2);
+            // We just want the two most recent ones.
+            rows!.splice(0, rows!.length - 2);
 
-              const rowJson = rows!.map(x => x.toJSON());
+            const rowJson = rows!.map(x => x.toJSON());
 
-              assert.strictEqual(rowJson[0].SingerId, id1);
-              assert.strictEqual(rowJson[0].Name, name1);
+            assert.strictEqual(rowJson[0].SingerId, id1);
+            assert.strictEqual(rowJson[0].Name, name1);
 
-              assert.strictEqual(rowJson[1].SingerId, id2);
-              assert.strictEqual(rowJson[1].Name, name2);
+            assert.strictEqual(rowJson[1].SingerId, id2);
+            assert.strictEqual(rowJson[1].Name, name2);
 
-              done();
-            }
-          );
+            done();
+          });
         }
+      );
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert and query multiple rows', done => {
+      insertAndQueryMultipleRows(
+        done,
+        DATABASE,
+        googleSqlTable,
+        `SELECT * FROM ${TABLE_NAME} ORDER BY SingerId`
       );
     });
 
-    it('should insert then replace a row', done => {
+    it('POSTGRESQL should should insert and query multiple rows', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      insertAndQueryMultipleRows(
+        done,
+        PG_DATABASE,
+        postgreSqlTable,
+        `SELECT * FROM ${TABLE_NAME} ORDER BY "SingerId"`
+      );
+    });
+
+    const insertThenReplaceRow = (done, table) => {
       const originalRow = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -1944,9 +3784,20 @@ describe('Spanner', () => {
           );
         });
       });
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert then replace a row', done => {
+      insertThenReplaceRow(done, googleSqlTable);
     });
 
-    it('should insert then update a row', done => {
+    it('POSTGRESQL should insert then replace a row', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      insertThenReplaceRow(done, postgreSqlTable);
+    });
+
+    const insertThenUpdateRow = (done, table) => {
       const originalRow = {
         SingerId: generateName('id'),
         Name: generateName('name'),
@@ -1981,6 +3832,17 @@ describe('Spanner', () => {
           );
         });
       });
+    };
+
+    it('GOOGLE_STANDARD_SQL should insert then replace a row', done => {
+      insertThenUpdateRow(done, googleSqlTable);
+    });
+
+    it('POSTGRESQL should insert then replace a row', function (done) {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      insertThenUpdateRow(done, postgreSqlTable);
     });
 
     describe('insert & query', () => {
@@ -1995,7 +3857,7 @@ describe('Spanner', () => {
       const PHONE_NUMBERS = [123123123, 234234234];
       const HAS_GEAR = true;
 
-      const INSERT_ROW = {
+      const GOOGLE_SQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
         Float: FLOAT,
@@ -2008,64 +3870,99 @@ describe('Spanner', () => {
         HasGear: HAS_GEAR,
       };
 
-      const EXPECTED_ROW = extend(true, {}, INSERT_ROW);
+      const POSTGRESQL_INSERT_ROW = {
+        SingerId: ID,
+        Name: NAME,
+        Float: FLOAT,
+        Int: INT,
+        Info: INFO,
+        Created: CREATED,
+        HasGear: HAS_GEAR,
+      };
 
-      before(() => {
-        return table.insert(INSERT_ROW);
+      const GOOGLE_SQL_EXPECTED_ROW = extend(true, {}, GOOGLE_SQL_INSERT_ROW);
+      const POSTGRESQL_EXPECTED_ROW = extend(true, {}, POSTGRESQL_INSERT_ROW);
+
+      before(async () => {
+        await googleSqlTable.insert(GOOGLE_SQL_INSERT_ROW);
+        if (!IS_EMULATOR_ENABLED) {
+          await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
+        }
       });
 
-      it('should query in callback mode', done => {
+      const queryCallbackMode = (done, database, query, EXPECTED_ROW) => {
         const options = {
           strong: true,
         };
 
-        DATABASE.run(
-          {
-            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
-            params: {id: ID},
-          },
-          options,
-          (err, rows) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
-            done();
-          }
-        );
+        database.run(query, options, (err, rows) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should query in callback mode', done => {
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+          params: {id: ID},
+        };
+        queryCallbackMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('should query in promise mode', done => {
+      it('POSTGRESQL should query in callback mode', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
+          params: {p1: ID},
+        };
+        queryCallbackMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+      });
+
+      const queryPromiseMode = (done, database, query, EXPECTED_ROW) => {
         const options = {
           strong: true,
         };
 
-        DATABASE.run(
-          {
-            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
-            params: {id: ID},
-          },
-          options
-        )
+        database
+          .run(query, options)
           .then(data => {
             const rows = data[0] as {} as Row[];
             assert.deepStrictEqual(rows!.shift()!.toJSON(), EXPECTED_ROW);
             done();
           })
           .catch(done);
+      };
+
+      it('GOOGLE_STANDARD_SQL should query in promise mode', done => {
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+          params: {id: ID},
+        };
+        queryPromiseMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('should query in stream mode', done => {
+      it('POSTGRESQL should query in promise mode', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
+          params: {p1: ID},
+        };
+        queryPromiseMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+      });
+
+      const queryStreamMode = (done, database, query, EXPECTED_ROW) => {
         const options = {
           strong: true,
         };
         let row;
 
-        const stream = DATABASE.runStream(
-          {
-            sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
-            params: {id: ID},
-          },
-          options
-        )
+        const stream = database
+          .runStream(query, options)
           .on('error', done)
           .once('data', row_ => {
             row = row_;
@@ -2075,19 +3972,45 @@ describe('Spanner', () => {
             assert.deepStrictEqual(row.toJSON(), EXPECTED_ROW);
             done();
           });
+      };
+
+      it('GOOGLE_STANDARD_SQL should query in stream mode', done => {
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
+          params: {id: ID},
+        };
+        queryStreamMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('should allow "SELECT 1" queries', done => {
+      it('POSTGRESQL should query in stream mode', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const query = {
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
+          params: {p1: ID},
+        };
+        queryStreamMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+      });
+
+      it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', done => {
         DATABASE.run('SELECT 1', done);
       });
 
-      it('should return metadata', async () => {
+      it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT 1', done);
+      });
+
+      it('GOOGLE_STANDARD_SQL should return metadata', async () => {
         const [rows, , metadata] = await DATABASE.run({
           sql: `SELECT * FROM ${TABLE_NAME} WHERE SingerId=@id`,
           params: {id: ID},
         });
         assert.strictEqual(rows.length, 1);
-        assert.deepStrictEqual(rows[0].toJSON(), EXPECTED_ROW);
+        assert.deepStrictEqual(rows[0].toJSON(), GOOGLE_SQL_EXPECTED_ROW);
         assert.ok(metadata);
         assert.strictEqual(metadata.rowType!.fields!.length, 10);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
@@ -2102,14 +4025,46 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
       });
 
-      it('should fail invalid queries', done => {
-        DATABASE.run('SELECT Apples AND Oranges', err => {
+      it('POSTGRESQL should return metadata', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const [rows, , metadata] = await PG_DATABASE.run({
+          sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
+          params: {p1: ID},
+        });
+        assert.strictEqual(rows.length, 1);
+        assert.deepStrictEqual(rows[0].toJSON(), POSTGRESQL_EXPECTED_ROW);
+        assert.ok(metadata);
+        assert.strictEqual(metadata.rowType!.fields!.length, 7);
+        assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
+        assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'HasGear');
+      });
+
+      const invalidQueries = (done, database) => {
+        database.run('SELECT Apples AND Oranges', err => {
           assert.strictEqual(err!.code, 3);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', done => {
+        invalidQueries(done, DATABASE);
       });
 
-      it('should query an array of structs', done => {
+      it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        invalidQueries(done, PG_DATABASE);
+      });
+
+      it('GOOGLE_STANDARD_SQL should query an array of structs', done => {
         const query = `
           SELECT ARRAY(SELECT AS STRUCT C1, C2
             FROM (SELECT 'a' AS C1, 1 AS C2 UNION ALL SELECT 'b' AS C1, 2 AS C2)
@@ -2137,7 +4092,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('should query an empty array of structs', done => {
+      it('GOOGLE_STANDARD_SQL should query an empty array of structs', done => {
         const query = `
           SELECT ARRAY(SELECT AS STRUCT * FROM (SELECT 'a', 1) WHERE 0 = 1)`;
 
@@ -2150,22 +4105,38 @@ describe('Spanner', () => {
 
       describe('params', () => {
         describe('boolean', () => {
-          it('should bind the value', done => {
+          const booleanQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: true,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, true);
-              done();
-            });
+            booleanQuery(done, DATABASE, query, true);
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: true,
+              },
+            };
+            booleanQuery(done, PG_DATABASE, query, true);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2175,15 +4146,26 @@ describe('Spanner', () => {
                 v: 'bool',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            booleanQuery(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'bool',
+              },
+            };
+            booleanQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [false, true, false];
 
             const query = {
@@ -2200,7 +4182,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2223,7 +4205,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2246,22 +4228,42 @@ describe('Spanner', () => {
         });
 
         describe('int64', () => {
-          it('should bind the value', done => {
+          const int64Query = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              assert.strictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 1234,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value.value, '1234');
-              done();
-            });
+            int64Query(done, DATABASE, query, '1234');
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 1234,
+              },
+            };
+            int64Query(done, PG_DATABASE, query, '1234');
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2271,15 +4273,26 @@ describe('Spanner', () => {
                 v: 'int64',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            int64Query(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'int64',
+              },
+            };
+            int64Query(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [1, 2, 3, null];
 
             const query = {
@@ -2304,7 +4317,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2327,7 +4340,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2350,22 +4363,42 @@ describe('Spanner', () => {
         });
 
         describe('float64', () => {
-          it('should bind the value', done => {
+          const float64Query = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              assert.strictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 2.2,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value.value, 2.2);
-              done();
-            });
+            float64Query(done, DATABASE, query, 2.2);
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 2.2,
+              },
+            };
+            float64Query(done, PG_DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2375,15 +4408,26 @@ describe('Spanner', () => {
                 v: 'float64',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            float64Query(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'float64',
+              },
+            };
+            float64Query(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [null, 1.1, 2.3, 3.5, null];
 
             const query = {
@@ -2408,7 +4452,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2431,7 +4475,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2452,52 +4496,76 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind Infinity', done => {
+          it('GOOGLE_STANDARD_SQL should bind Infinity', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: Infinity,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value.value, 'Infinity');
-              done();
-            });
+            float64Query(done, DATABASE, query, 'Infinity');
           });
 
-          it('should bind -Infinity', done => {
+          it('POSTGRESQL should bind Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Infinity,
+              },
+            };
+            float64Query(done, PG_DATABASE, query, 'Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind -Infinity', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: -Infinity,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value.value, '-Infinity');
-              done();
-            });
+            float64Query(done, DATABASE, query, '-Infinity');
           });
 
-          it('should bind NaN', done => {
+          it('POSTGRESQL should bind -Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: -Infinity,
+              },
+            };
+            float64Query(done, PG_DATABASE, query, '-Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind NaN', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: NaN,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value.value, 'NaN');
-              done();
-            });
+            float64Query(done, DATABASE, query, 'NaN');
           });
 
-          it('should bind an array of Infinity and NaN', done => {
+          it('POSTGRESQL should bind NaN', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: NaN,
+              },
+            };
+            float64Query(done, PG_DATABASE, query, 'NaN');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', done => {
             const values = [Infinity, -Infinity, NaN];
 
             const query = {
@@ -2524,22 +4592,38 @@ describe('Spanner', () => {
         });
 
         describe('string', () => {
-          it('should bind the value', done => {
+          const stringQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 'abc',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, 'abc');
-              done();
-            });
+            stringQuery(done, DATABASE, query, 'abc');
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 'abc',
+              },
+            };
+            stringQuery(done, PG_DATABASE, query, 'abc');
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2549,15 +4633,26 @@ describe('Spanner', () => {
                 v: 'string',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            stringQuery(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'string',
+              },
+            };
+            stringQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = ['a', 'b', 'c', null];
 
             const query = {
@@ -2574,7 +4669,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2597,7 +4692,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2620,24 +4715,38 @@ describe('Spanner', () => {
         });
 
         describe('bytes', () => {
-          it('should bind the value', done => {
-            const buffer = Buffer.from('abc');
+          const bytesQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows[0][0].value, value);
+              done();
+            });
+          };
 
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
-                v: buffer,
+                v: Buffer.from('abc'),
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, buffer);
-              done();
-            });
+            bytesQuery(done, DATABASE, query, Buffer.from('abc'));
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Buffer.from('abc'),
+              },
+            };
+            bytesQuery(done, PG_DATABASE, query, Buffer.from('abc'));
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2647,15 +4756,26 @@ describe('Spanner', () => {
                 v: 'bytes',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, null);
-              done();
-            });
+            bytesQuery(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'bytes',
+              },
+            };
+            bytesQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [Buffer.from('a'), Buffer.from('b'), null];
 
             const query = {
@@ -2672,7 +4792,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2695,7 +4815,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2718,24 +4838,40 @@ describe('Spanner', () => {
         });
 
         describe('timestamp', () => {
-          it('should bind the value', done => {
-            const timestamp = Spanner.timestamp();
+          const timestampQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows[0][0].value, value);
+              done();
+            });
+          };
 
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+            const timestamp = Spanner.timestamp();
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: timestamp,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.deepStrictEqual(rows[0][0].value, timestamp);
-              done();
-            });
+            timestampQuery(done, DATABASE, query, timestamp);
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const timestamp = Spanner.timestamp();
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: timestamp,
+              },
+            };
+            timestampQuery(done, PG_DATABASE, query, timestamp);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2745,15 +4881,26 @@ describe('Spanner', () => {
                 v: 'timestamp',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            timestampQuery(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'timestamp',
+              },
+            };
+            timestampQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [
               Spanner.timestamp(),
               Spanner.timestamp('3-3-1999'),
@@ -2774,7 +4921,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2797,7 +4944,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2820,27 +4967,45 @@ describe('Spanner', () => {
         });
 
         describe('date', () => {
-          it('should bind the value', done => {
-            const date = Spanner.date();
+          const dateQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
 
+              let returnedDate = Spanner.date(rows[0][0].value);
+              if (value === null) {
+                returnedDate = rows[0][0].value;
+              }
+              assert.deepStrictEqual(returnedDate, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+            const date = Spanner.date();
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: date,
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-
-              const returnedDate = Spanner.date(rows[0][0].value);
-              assert.deepStrictEqual(returnedDate, date);
-
-              done();
-            });
+            dateQuery(done, DATABASE, query, date);
           });
 
-          it('should allow for null values', done => {
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const date = Spanner.date();
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: date,
+              },
+            };
+            dateQuery(done, PG_DATABASE, query, date);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
@@ -2850,15 +5015,26 @@ describe('Spanner', () => {
                 v: 'date',
               },
             };
-
-            DATABASE.run(query, (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows[0][0].value, null);
-              done();
-            });
+            dateQuery(done, DATABASE, query, null);
           });
 
-          it('should bind arrays', done => {
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'date',
+              },
+            };
+            dateQuery(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
             const values = [Spanner.date(), Spanner.date('3-3-1999'), null];
 
             const query = {
@@ -2880,7 +5056,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
             const values = [];
 
             const query: ExecuteSqlRequest = {
@@ -2903,7 +5079,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null arrays', done => {
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @v',
               params: {
@@ -2926,7 +5102,7 @@ describe('Spanner', () => {
         });
 
         describe('structs', () => {
-          it('should bind a simple struct', done => {
+          it('GOOGLE_STANDARD_SQL should bind a simple struct', done => {
             const query = {
               sql: 'SELECT @structParam.userf, @p4',
               params: {
@@ -2948,7 +5124,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind null structs', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.userf is NULL',
               params: {
@@ -2981,7 +5157,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind nested structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind nested structs', done => {
             const query = {
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
@@ -3003,7 +5179,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null nested structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind null nested structs', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.structf.nestedf',
               params: {
@@ -3038,7 +5214,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind empty structs', done => {
+          it('GOOGLE_STANDARD_SQL should bind empty structs', done => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -3056,7 +5232,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind null structs with no fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind null structs with no fields', done => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -3077,7 +5253,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind structs with null fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with null fields', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT @structParam.f1',
               params: {
@@ -3108,7 +5284,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind structs with duplicate fields', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with duplicate fields', done => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<f1 INT64, f1 INT64>(10, 11)',
               params: {
@@ -3135,7 +5311,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should bind structs with missing field names', done => {
+          it('GOOGLE_STANDARD_SQL should bind structs with missing field names', done => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<INT64>(5)',
               params: {
@@ -3153,7 +5329,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should allow equality checks', done => {
+          it('GOOGLE_STANDARD_SQL should allow equality checks', done => {
             const query = {
               sql: 'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
@@ -3174,7 +5350,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should allow nullness checks', done => {
+          it('GOOGLE_STANDARD_SQL should allow nullness checks', done => {
             const query = {
               sql: 'SELECT @structParam IS NULL',
               params: {
@@ -3195,7 +5371,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should allow an array of non-null structs', done => {
+          it('GOOGLE_STANDARD_SQL should allow an array of non-null structs', done => {
             const query = {
               sql: 'SELECT a.threadid FROM UNNEST(@arraysf) a',
               params: {
@@ -3223,7 +5399,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should allow an array of structs with null fields', done => {
+          it('GOOGLE_STANDARD_SQL should allow an array of structs with null fields', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParam.arraysf) a',
               params: {
@@ -3266,7 +5442,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('should allow a null array of structs', done => {
+          it('GOOGLE_STANDARD_SQL should allow a null array of structs', done => {
             const query: ExecuteSqlRequest = {
               sql: 'SELECT a.threadid FROM UNNEST(@structParamArray) a',
               params: {
@@ -3299,14 +5475,21 @@ describe('Spanner', () => {
 
       describe('large reads', () => {
         const TABLE_NAME = 'LargeReads';
-        const table = DATABASE.table(TABLE_NAME);
+        const googleSqlTable = DATABASE.table(TABLE_NAME);
+        const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-        const expectedRow = {
+        const googleSqlExpectedRow = {
           Key: generateName('key'),
           StringValue: string(),
           StringArray: [string(), string(), string(), string()],
           BytesValue: bytes(),
           BytesArray: [bytes(), bytes(), bytes(), bytes()],
+        };
+
+        const postgreSqlExpectedRow = {
+          Key: generateName('key'),
+          StringValue: string(),
+          BytesValue: bytes(),
         };
 
         function string() {
@@ -3327,28 +5510,39 @@ describe('Spanner', () => {
           return Buffer.from(bytes, 'base64');
         }
 
-        before(() => {
-          return table
-            .create(
-              `
+        before(async () => {
+          const googleSqlCreateTable = await googleSqlTable.create(
+            `
               CREATE TABLE ${TABLE_NAME} (
-                Key STRING(MAX) NOT NULL,
-                StringValue STRING(MAX),
-                StringArray ARRAY<STRING(MAX)>,
-                BytesValue BYTES(MAX),
-                BytesArray ARRAY<BYTES(MAX)>
-              ) PRIMARY KEY (Key)`
-            )
-            .then(onPromiseOperationComplete)
-            .then(() => {
-              return table.insert(expectedRow);
-            });
+                                           Key STRING(MAX) NOT NULL,
+                                           StringValue STRING(MAX),
+                                           StringArray ARRAY<STRING(MAX)>,
+                                           BytesValue BYTES(MAX),
+                                           BytesArray ARRAY<BYTES(MAX)>
+              ) PRIMARY KEY (Key)`,
+            GAX_OPTIONS
+          );
+          await onPromiseOperationComplete(googleSqlCreateTable);
+          await googleSqlTable.insert(googleSqlExpectedRow);
+
+          if (!IS_EMULATOR_ENABLED) {
+            const postgreSqlCreateTable = await postgreSqlTable.create(
+              `CREATE TABLE ${TABLE_NAME} (
+                                            "Key" VARCHAR NOT NULL PRIMARY KEY,
+                                            "StringValue" VARCHAR,
+                                            "BytesValue" BYTEA
+               )`,
+              GAX_OPTIONS
+            );
+            await onPromiseOperationComplete(postgreSqlCreateTable);
+            await postgreSqlTable.insert(postgreSqlExpectedRow);
+          }
         });
 
-        it('should read large datasets', done => {
-          table.read(
+        it('GOOGLE_STANDARD_SQL should read large datasets', done => {
+          googleSqlTable.read(
             {
-              keys: [expectedRow.Key],
+              keys: [googleSqlExpectedRow.Key],
               columns: [
                 'Key',
                 'StringValue',
@@ -3362,26 +5556,69 @@ describe('Spanner', () => {
 
               const row = rows![0].toJSON();
 
-              assert.strictEqual(row.Key, expectedRow.Key);
-              assert.strictEqual(row.StringValue, expectedRow.StringValue);
-              assert.deepStrictEqual(row.StringArray, expectedRow.StringArray);
+              assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
+              assert.strictEqual(
+                row.StringValue,
+                googleSqlExpectedRow.StringValue
+              );
+              assert.deepStrictEqual(
+                row.StringArray,
+                googleSqlExpectedRow.StringArray
+              );
 
               row.BytesValue = base64ToBuffer(row.BytesValue);
               row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-              assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
-              assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
+              assert.deepStrictEqual(
+                row.BytesValue,
+                googleSqlExpectedRow.BytesValue
+              );
+              assert.deepStrictEqual(
+                row.BytesArray,
+                googleSqlExpectedRow.BytesArray
+              );
 
               done();
             }
           );
         });
 
-        it('should query large datasets', done => {
+        it('POSTGRESQL should read large datasets', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          postgreSqlTable.read(
+            {
+              keys: [postgreSqlExpectedRow.Key],
+              columns: ['Key', 'StringValue', 'BytesValue'],
+            },
+            (err, rows) => {
+              assert.ifError(err);
+
+              const row = rows![0].toJSON();
+
+              assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
+              assert.strictEqual(
+                row.StringValue,
+                postgreSqlExpectedRow.StringValue
+              );
+
+              row.BytesValue = base64ToBuffer(row.BytesValue);
+              assert.deepStrictEqual(
+                row.BytesValue,
+                postgreSqlExpectedRow.BytesValue
+              );
+
+              done();
+            }
+          );
+        });
+
+        it('GOOGLE_STANDARD_SQL should query large datasets', done => {
           const query = {
-            sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
+            sql: 'SELECT * FROM ' + googleSqlTable.name + ' WHERE Key = @key',
             params: {
-              key: expectedRow.Key,
+              key: googleSqlExpectedRow.Key,
             },
           };
 
@@ -3390,15 +5627,59 @@ describe('Spanner', () => {
 
             const row = rows[0].toJSON();
 
-            assert.strictEqual(row.Key, expectedRow.Key);
-            assert.strictEqual(row.StringValue, expectedRow.StringValue);
-            assert.deepStrictEqual(row.StringArray, expectedRow.StringArray);
+            assert.strictEqual(row.Key, googleSqlExpectedRow.Key);
+            assert.strictEqual(
+              row.StringValue,
+              googleSqlExpectedRow.StringValue
+            );
+            assert.deepStrictEqual(
+              row.StringArray,
+              googleSqlExpectedRow.StringArray
+            );
 
             row.BytesValue = base64ToBuffer(row.BytesValue);
             row.BytesArray = row.BytesArray.map(base64ToBuffer);
 
-            assert.deepStrictEqual(row.BytesValue, expectedRow.BytesValue);
-            assert.deepStrictEqual(row.BytesArray, expectedRow.BytesArray);
+            assert.deepStrictEqual(
+              row.BytesValue,
+              googleSqlExpectedRow.BytesValue
+            );
+            assert.deepStrictEqual(
+              row.BytesArray,
+              googleSqlExpectedRow.BytesArray
+            );
+
+            done();
+          });
+        });
+
+        it('POSTGRESQL should query large datasets', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          const query = {
+            sql: 'SELECT * FROM ' + postgreSqlTable.name + ' WHERE "Key" = $1',
+            params: {
+              p1: postgreSqlExpectedRow.Key,
+            },
+          };
+
+          PG_DATABASE.run(query, (err, rows) => {
+            assert.ifError(err);
+
+            const row = rows[0].toJSON();
+
+            assert.strictEqual(row.Key, postgreSqlExpectedRow.Key);
+            assert.strictEqual(
+              row.StringValue,
+              postgreSqlExpectedRow.StringValue
+            );
+
+            row.BytesValue = base64ToBuffer(row.BytesValue);
+            assert.deepStrictEqual(
+              row.BytesValue,
+              postgreSqlExpectedRow.BytesValue
+            );
 
             done();
           });
@@ -3412,7 +5693,7 @@ describe('Spanner', () => {
         Name: generateName('name'),
       };
 
-      it('should update a row', done => {
+      const updateRow = (done, table) => {
         const row = {
           SingerId: ROW.SingerId,
           Name: generateName('name'),
@@ -3437,9 +5718,20 @@ describe('Spanner', () => {
             );
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should update a row', done => {
+        updateRow(done, googleSqlTable);
       });
 
-      it('should insert a row', done => {
+      it('POSTGRESQL should update a row', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        updateRow(done, postgreSqlTable);
+      });
+
+      const insertRow = (done, table) => {
         table.upsert(ROW, err => {
           assert.ifError(err);
 
@@ -3455,43 +5747,66 @@ describe('Spanner', () => {
             }
           );
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should update a row', done => {
+        insertRow(done, googleSqlTable);
+      });
+
+      it('POSTGRESQL should update a row', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insertRow(done, postgreSqlTable);
       });
     });
 
     describe('read', () => {
       const TABLE_NAME = 'ReadTestTable';
-      const table = DATABASE.table('ReadTestTable');
+      const googleSqlTable = DATABASE.table(TABLE_NAME);
+      const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
       const ALL_COLUMNS = ['Key', 'StringValue'];
 
-      before(() => {
-        return table
-          .create(
-            `
+      before(async () => {
+        const googleSqlCreateTable = await googleSqlTable.create(
+          `
             CREATE TABLE ${TABLE_NAME} (
               Key STRING(MAX) NOT NULL,
               StringValue STRING(MAX)
             ) PRIMARY KEY (Key)`,
-            GAX_OPTIONS
-          )
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            return DATABASE.updateSchema(`
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(googleSqlCreateTable);
+        const googleSqlCreateIndex = await DATABASE.updateSchema(`
               CREATE INDEX ReadByValue ON ${TABLE_NAME}(StringValue)`);
-          })
-          .then(onPromiseOperationComplete)
-          .then(() => {
-            const data: Array<{}> = [];
+        await onPromiseOperationComplete(googleSqlCreateIndex);
 
-            for (let i = 0; i < 15; ++i) {
-              data.push({
-                Key: 'k' + i,
-                StringValue: 'v' + i,
-              });
-            }
+        const data: Array<{}> = [];
 
-            return table.insert(data);
+        for (let i = 0; i < 15; ++i) {
+          data.push({
+            Key: 'k' + i,
+            StringValue: 'v' + i,
           });
+        }
+        await googleSqlTable.insert(data);
+
+        if (!IS_EMULATOR_ENABLED) {
+          const postgreSqlCreateTable = await postgreSqlTable.create(
+            `
+                CREATE TABLE ${TABLE_NAME} (
+                    "Key" VARCHAR NOT NULL PRIMARY KEY, 
+                    "StringValue" VARCHAR
+                )`,
+            GAX_OPTIONS
+          );
+          await onPromiseOperationComplete(postgreSqlCreateTable);
+          const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
+              CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
+          await onPromiseOperationComplete(postgreSqlCreateIndex);
+          await postgreSqlTable.insert(data);
+        }
       });
 
       // all of these tests require testing with and without an index,
@@ -3711,15 +6026,25 @@ describe('Spanner', () => {
         },
       ].forEach(test => {
         // test normally
-        it(test.test, done => {
-          table.read(test.query as ReadRequest, (err, rows) => {
+        it(`GOOGLE_STANDARD_SQL ${test.test}`, done => {
+          googleSqlTable.read(test.query as ReadRequest, (err, rows) => {
+            test.assertions(err, rows);
+            done();
+          });
+        });
+
+        it(`POSTGRESQL ${test.test}`, function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          postgreSqlTable.read(test.query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
           });
         });
 
         // test using an index
-        it(test.test + ' with an index', done => {
+        const readUsingIndex = (done, test, table) => {
           const query = extend(
             {
               index: 'ReadByValue',
@@ -3750,6 +6075,17 @@ describe('Spanner', () => {
             test.assertions(err, rows);
             done();
           });
+        };
+
+        it(`GOOGLE_STANDARD_SQL ${test.test}` + ' with an index', done => {
+          readUsingIndex(done, test, googleSqlTable);
+        });
+
+        it(`POSTGRESQL ${test.test}` + ' with an index', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          readUsingIndex(done, test, postgreSqlTable);
         });
       });
 
@@ -3768,8 +6104,8 @@ describe('Spanner', () => {
         });
       });
 
-      it('should read over invalid table fails', done => {
-        const table = DATABASE.table('ReadTestTablezzz');
+      const readInvalidTable = (done, database) => {
+        const table = database.table('ReadTestTablezzz');
 
         const query = {
           keys: ['k1'],
@@ -3780,9 +6116,20 @@ describe('Spanner', () => {
           assert.strictEqual(err.code, 5);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should read over invalid table fails', done => {
+        readInvalidTable(done, DATABASE);
       });
 
-      it('should read over invalid column fails', done => {
+      it('POSTGRESQL should read over invalid table fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readInvalidTable(done, PG_DATABASE);
+      });
+
+      const readInvalidColumn = (done, table) => {
         const query = {
           keys: ['k1'],
           columns: ['ohnoes'],
@@ -3792,14 +6139,20 @@ describe('Spanner', () => {
           assert.strictEqual(err.code, 5);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should read over invalid column fails', done => {
+        readInvalidColumn(done, googleSqlTable);
       });
 
-      it('should fail if deadline exceeds', function (done) {
-        // This test case somehow causes the emulator to return a RESOURCE_EXHAUSTED
-        // error for this or following gRPC calls.
+      it('POSTGRESQL should read over invalid column fails', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
+        readInvalidColumn(done, postgreSqlTable);
+      });
+
+      const failDeadlineExceed = (done, table) => {
         const query = {
           keys: ['k1'],
           columns: ALL_COLUMNS,
@@ -3812,6 +6165,22 @@ describe('Spanner', () => {
           assert.strictEqual(err.code, 4);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should fail if deadline exceeds', function (done) {
+        // This test case somehow causes the emulator to return a RESOURCE_EXHAUSTED
+        // error for this or following gRPC calls.
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        failDeadlineExceed(done, googleSqlTable);
+      });
+
+      it('POSTGRESQL should fail if deadline exceeds', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        failDeadlineExceed(done, postgreSqlTable);
       });
     });
   });
@@ -3974,43 +6343,62 @@ describe('Spanner', () => {
 
   describe('Transactions', () => {
     const TABLE_NAME = 'TxnTable';
-    const table = DATABASE.table(TABLE_NAME);
+    const googleSqlTable = DATABASE.table(TABLE_NAME);
+    const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-    const schema = `
+    const googleSqlSchema = `
       CREATE TABLE ${TABLE_NAME} (
         Key STRING(MAX) NOT NULL,
         StringValue STRING(MAX),
         NumberValue INT64
       ) PRIMARY KEY (Key)
     `;
+    const postgreSqlSchema = `
+      CREATE TABLE ${TABLE_NAME} (
+        "Key" VARCHAR NOT NULL PRIMARY KEY,
+        "StringValue" VARCHAR ,
+        "NumberValue" BIGINT
+      )`;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const records: any[] = [];
+    const googleSqlRecords = [];
+    const postgreSqlRecords = [];
 
     before(async () => {
-      await onPromiseOperationComplete(await table.create(schema, GAX_OPTIONS));
+      const insertRecords = async function (table, records) {
+        for (let i = 0; i < 5; i++) {
+          const entry = {Key: `k${i}`, StringValue: `v${i}`};
 
-      for (let i = 0; i < 5; i++) {
-        const entry = {Key: `k${i}`, StringValue: `v${i}`};
+          const [{commitTimestamp}] = await table.insert(entry);
+          const record = Object.assign(entry, {
+            commitTimestamp,
+            localTimestamp: Date.now(),
+          });
 
-        const [{commitTimestamp}] = await table.insert(entry);
-        const record = Object.assign(entry, {
-          commitTimestamp,
-          localTimestamp: Date.now(),
-        });
+          records.push(record);
+          await wait(1000);
+        }
+      };
+      await onPromiseOperationComplete(
+        await googleSqlTable.create(googleSqlSchema, GAX_OPTIONS)
+      );
+      await insertRecords(googleSqlTable, googleSqlRecords);
 
-        records.push(record);
-        await wait(1000);
+      if (!IS_EMULATOR_ENABLED) {
+        await onPromiseOperationComplete(
+          await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
+        );
+        await insertRecords(postgreSqlTable, postgreSqlRecords);
       }
     });
 
     describe('snapshots', () => {
-      it('should run a read only transaction', done => {
+      const readOnlyTransaction = (done, database, records) => {
         const options = {
           strong: true,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
@@ -4021,10 +6409,21 @@ describe('Spanner', () => {
             done();
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should run a read only transaction', done => {
+        readOnlyTransaction(done, DATABASE, googleSqlRecords);
       });
 
-      it('should read keys from a table', done => {
-        DATABASE.getSnapshot((err, transaction) => {
+      it('POSTGRESQL should run a read only transaction', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readOnlyTransaction(done, PG_DATABASE, postgreSqlRecords);
+      });
+
+      const readKeysFromTable = (done, database, table, records) => {
+        database.getSnapshot((err, transaction) => {
           assert.ifError(err);
 
           const query = {
@@ -4045,14 +6444,30 @@ describe('Spanner', () => {
             done();
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should read keys from a table', done => {
+        readKeysFromTable(done, DATABASE, googleSqlTable, googleSqlRecords);
       });
 
-      it('should accept a read timestamp', done => {
+      it('POSTGRESQL should read keys from a table', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readKeysFromTable(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          postgreSqlRecords
+        );
+      });
+
+      const acceptReadTimestamp = (done, database, records) => {
         const options = {
           readTimestamp: records[0].commitTimestamp,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(`SELECT * FROM ${TABLE_NAME}`, (err, rows) => {
@@ -4069,9 +6484,20 @@ describe('Spanner', () => {
             done();
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept a read timestamp', done => {
+        acceptReadTimestamp(done, DATABASE, googleSqlRecords);
       });
 
-      it('should accept a min timestamp', done => {
+      it('POSTGRESQL should accept a read timestamp', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        acceptReadTimestamp(done, PG_DATABASE, postgreSqlRecords);
+      });
+
+      const acceptMinTimestamp = (done, database, records) => {
         const query = 'SELECT * FROM ' + TABLE_NAME;
 
         const options = {
@@ -4080,42 +6506,71 @@ describe('Spanner', () => {
 
         // minTimestamp can only be used in single use transactions
         // so we can't use database.getSnapshot here
-        DATABASE.run(query, options, (err, rows) => {
+        database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows!.length, records.length);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept a min timestamp', done => {
+        acceptMinTimestamp(done, DATABASE, googleSqlRecords);
       });
 
-      it('should accept an exact staleness', done => {
+      it('POSTGRESQL should accept a min timestamp', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        acceptMinTimestamp(done, PG_DATABASE, postgreSqlRecords);
+      });
+
+      const acceptExactStaleness = (done, database, records, query) => {
         const options = {
           exactStaleness: Date.now() - records[1].localTimestamp,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run(
-            'SELECT * FROM ' + TABLE_NAME + ' ORDER BY Key',
-            (err, rows) => {
-              assert.ifError(err);
-              assert.strictEqual(rows.length, 2);
+          transaction!.run(query, (err, rows) => {
+            assert.ifError(err);
+            assert.strictEqual(rows.length, 2);
 
-              const rowJson = rows.map(x => x.toJSON());
+            const rowJson = rows.map(x => x.toJSON());
 
-              assert.strictEqual(rowJson[0].Key, 'k0');
-              assert.strictEqual(rowJson[0].StringValue, 'v0');
-              assert.strictEqual(rowJson[1].Key, 'k1');
-              assert.strictEqual(rowJson[1].StringValue, 'v1');
+            assert.strictEqual(rowJson[0].Key, 'k0');
+            assert.strictEqual(rowJson[0].StringValue, 'v0');
+            assert.strictEqual(rowJson[1].Key, 'k1');
+            assert.strictEqual(rowJson[1].StringValue, 'v1');
 
-              transaction!.end();
-              done();
-            }
-          );
+            transaction!.end();
+            done();
+          });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept an exact staleness', done => {
+        acceptExactStaleness(
+          done,
+          DATABASE,
+          googleSqlRecords,
+          `SELECT * FROM ${TABLE_NAME} ORDER BY Key`
+        );
       });
 
-      it('should accept a max staleness', done => {
+      it('POSTGRESQL should accept an exact staleness', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        acceptExactStaleness(
+          done,
+          PG_DATABASE,
+          postgreSqlRecords,
+          `SELECT * FROM ${TABLE_NAME} ORDER BY "Key"`
+        );
+      });
+
+      const acceptMaxStaleness = (done, database, records) => {
         const query = 'SELECT * FROM TxnTable';
 
         const options = {
@@ -4124,19 +6579,35 @@ describe('Spanner', () => {
 
         // maxStaleness can only be used in single use transactions
         // so we can't use database.getSnapshot here
-        DATABASE.run(query, options, (err, rows) => {
+        database.run(query, options, (err, rows) => {
           assert.ifError(err);
           assert.strictEqual(rows!.length, records.length);
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should accept a max staleness', done => {
+        acceptMaxStaleness(done, DATABASE, googleSqlRecords);
       });
 
-      it('should do a strong read with concurrent updates', done => {
+      it('POSTGRESQL should accept a max staleness', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        acceptMaxStaleness(done, PG_DATABASE, postgreSqlRecords);
+      });
+
+      const strongReadWithConcurrentUpdates = (
+        done,
+        database,
+        table,
+        records
+      ) => {
         const options = {
           strong: true,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -4166,14 +6637,40 @@ describe('Spanner', () => {
             );
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', done => {
+        strongReadWithConcurrentUpdates(
+          done,
+          DATABASE,
+          googleSqlTable,
+          googleSqlRecords
+        );
       });
 
-      it('should do an exact read with concurrent updates', done => {
+      it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        strongReadWithConcurrentUpdates(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          postgreSqlRecords
+        );
+      });
+
+      const exactReadWithConcurrentUpdates = (
+        done,
+        database,
+        table,
+        records
+      ) => {
         const options = {
           readTimestamp: records[records.length - 1].commitTimestamp,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -4206,14 +6703,40 @@ describe('Spanner', () => {
             );
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should do a strong read with concurrent updates', done => {
+        exactReadWithConcurrentUpdates(
+          done,
+          DATABASE,
+          googleSqlTable,
+          googleSqlRecords
+        );
       });
 
-      it('should read with staleness & concurrent updates', done => {
+      it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        exactReadWithConcurrentUpdates(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          postgreSqlRecords
+        );
+      });
+
+      const readWithStalenessAndConcurrentUpdates = (
+        done,
+        database,
+        table,
+        records
+      ) => {
         const options = {
           exactStaleness: Date.now() - records[0].localTimestamp,
         };
 
-        DATABASE.getSnapshot(options, (err, transaction) => {
+        database.getSnapshot(options, (err, transaction) => {
           assert.ifError(err);
 
           const query = 'SELECT * FROM TxnTable';
@@ -4241,11 +6764,54 @@ describe('Spanner', () => {
             );
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should read with staleness & concurrent updates', done => {
+        readWithStalenessAndConcurrentUpdates(
+          done,
+          DATABASE,
+          googleSqlTable,
+          googleSqlRecords
+        );
+      });
+
+      it('POSTGRESQL should read with staleness & concurrent updates', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readWithStalenessAndConcurrentUpdates(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          postgreSqlRecords
+        );
       });
     });
 
     describe('dml', () => {
       before(done => {
+        const postgresUpdateDmlDatabase = () => {
+          PG_DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' ("Key", "StringValue") VALUES($1, $2)',
+                params: {
+                  p1: 'k999',
+                  p2: 'abc',
+                },
+              },
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        };
         DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
@@ -4262,210 +6828,331 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              transaction!.commit(done);
+              if (!IS_EMULATOR_ENABLED) {
+                transaction!.commit(postgresUpdateDmlDatabase);
+              } else {
+                transaction!.commit(done);
+              }
             }
           );
         });
       });
 
-      it('should return rowCount from runUpdate', done => {
-        DATABASE.runTransaction((err, transaction) => {
+      const rowCountRunUpdate = (done, database, query) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction!.runUpdate(
-            {
-              sql:
-                'UPDATE ' +
-                TABLE_NAME +
-                ' t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {
-                key: 'k999',
-                str: 'abcd',
-              },
-            },
-            (err, rowCount) => {
-              assert.ifError(err);
-              assert.strictEqual(rowCount, 1);
-              transaction!.rollback(done);
-            }
-          );
+          transaction!.runUpdate(query, (err, rowCount) => {
+            assert.ifError(err);
+            assert.strictEqual(rowCount, 1);
+            transaction!.rollback(done);
+          });
         });
+      };
+      it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate', done => {
+        const query = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {
+            key: 'k999',
+            str: 'abcd',
+          },
+        };
+        rowCountRunUpdate(done, DATABASE, query);
       });
 
-      it('should return rowCount from run', done => {
-        DATABASE.runTransaction((err, transaction) => {
+      it('POSTGRESQL should return rowCount from runUpdate', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const query = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {
+            p1: 'abcd',
+            p2: 'k999',
+          },
+        };
+        rowCountRunUpdate(done, PG_DATABASE, query);
+      });
+
+      const rowCountRun = (done, database, query) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
-          transaction!.run(
-            {
-              sql:
-                'UPDATE ' +
-                TABLE_NAME +
-                ' t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {
-                key: 'k999',
-                str: 'abcd',
-              },
-            },
-            (err, row, stats) => {
-              assert.ifError(err);
+          transaction!.run(query, (err, row, stats) => {
+            assert.ifError(err);
 
-              const rowCount = Math.floor(stats[stats.rowCount!] as number);
-              assert.strictEqual(rowCount, 1);
+            const rowCount = Math.floor(stats[stats.rowCount!] as number);
+            assert.strictEqual(rowCount, 1);
 
-              transaction!.rollback(done);
-            }
-          );
+            transaction!.rollback(done);
+          });
         });
+      };
+      it('GOOGLE_STANDARD_SQL should return rowCount from run', done => {
+        const query = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {
+            key: 'k999',
+            str: 'abcd',
+          },
+        };
+        rowCountRun(done, DATABASE, query);
       });
 
-      it('should exec multiple dml statements on the same txn', done => {
-        const key = 'k1000';
-        const str = 'abcd';
-        const num = 11;
+      it('POSTGRESQL should return rowCount from run', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const query = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {
+            p1: 'abcd',
+            p2: 'k999',
+          },
+        };
+        rowCountRun(done, PG_DATABASE, query);
+      });
 
-        DATABASE.runTransaction((err, transaction) => {
+      const multipleDmlOnTxn = (
+        done,
+        database,
+        insertQuery,
+        updateQuery,
+        selectQuery
+      ) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
-            .runUpdate({
-              sql:
-                'INSERT INTO ' +
-                TABLE_NAME +
-                ' (Key, StringValue) VALUES (@key, @str)',
-              params: {key, str},
+            .runUpdate(insertQuery)
+            .then(data => {
+              const rowCount = data[0];
+              assert.strictEqual(rowCount, 1);
+
+              return transaction!.runUpdate(updateQuery);
             })
             .then(data => {
               const rowCount = data[0];
               assert.strictEqual(rowCount, 1);
 
-              return transaction!.runUpdate({
-                sql:
-                  'UPDATE ' +
-                  TABLE_NAME +
-                  ' t SET t.NumberValue = @num WHERE t.KEY = @key',
-                params: {key, num},
-              });
-            })
-            .then(data => {
-              const rowCount = data[0];
-              assert.strictEqual(rowCount, 1);
-
-              return transaction!.run({
-                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
-                params: {key},
-              });
+              return transaction!.run(selectQuery);
             })
             .then(data => {
               const rows = data[0].map(row => row.toJSON());
 
               assert.strictEqual(rows.length, 1);
               assert.deepStrictEqual(rows[0], {
-                Key: key,
-                StringValue: str,
-                NumberValue: num,
+                Key: 'k1000',
+                StringValue: 'abcd',
+                NumberValue: 11,
               });
 
               return transaction!.rollback();
             })
             .then(() => done(), done);
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should exec multiple dml statements on the same txn', done => {
+        const key = 'k1000';
+        const str = 'abcd';
+        const num = 11;
+        const insertQuery = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' (Key, StringValue) VALUES (@key, @str)',
+          params: {key, str},
+        };
+        const updateQuery = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.NumberValue = @num WHERE t.KEY = @key',
+          params: {key, num},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
+          params: {key},
+        };
+        multipleDmlOnTxn(done, DATABASE, insertQuery, updateQuery, selectQuery);
       });
 
-      it('should show dml changes in query results', done => {
-        const key = 'k999';
+      it('POSTGRESQL should exec multiple dml statements on the same txn', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k1000';
         const str = 'abcd';
+        const num = 11;
+        const insertQuery = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2)',
+          params: {p1: key, p2: str},
+        };
+        const updateQuery = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "NumberValue" = $1 WHERE "Key" = $2',
+          params: {p1: num, p2: key},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+        multipleDmlOnTxn(
+          done,
+          PG_DATABASE,
+          insertQuery,
+          updateQuery,
+          selectQuery
+        );
+      });
 
-        DATABASE.runTransaction((err, transaction) => {
+      const dmlChangesInQueryResults = (
+        done,
+        database,
+        updateQuery,
+        selectQuery
+      ) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
-            .runUpdate({
-              sql:
-                'UPDATE ' +
-                TABLE_NAME +
-                ' t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {key, str},
-            })
+            .runUpdate(updateQuery)
             .then(() => {
-              return transaction!.run({
-                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
-                params: {key},
-              });
+              return transaction!.run(selectQuery);
             })
             .then(data => {
               const rows = data[0].map(row => row.toJSON());
 
               assert.strictEqual(rows.length, 1);
-              assert.strictEqual(rows[0].StringValue, str);
+              assert.strictEqual(rows[0].StringValue, 'abcd');
             })
             .then(() => transaction!.rollback(done), done);
         });
-      });
+      };
 
-      it('should rollback a dml statement', done => {
+      it('GOOGLE_STANDARD_SQL should show dml changes in query results', done => {
         const key = 'k999';
         const str = 'abcd';
+        const updateQuery = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {key, str},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
+          params: {key},
+        };
+        dmlChangesInQueryResults(done, DATABASE, updateQuery, selectQuery);
+      });
 
-        DATABASE.runTransaction((err, transaction) => {
+      it('POSTGRESQL should show dml changes in query results', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k999';
+        const str = 'abcd';
+        const updateQuery = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {p1: str, p2: key},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+        dmlChangesInQueryResults(done, PG_DATABASE, updateQuery, selectQuery);
+      });
+
+      const rollbackDmlStatement = (
+        done,
+        database,
+        updateQuery,
+        selectQuery
+      ) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
-            .runUpdate({
-              sql:
-                'UPDATE ' +
-                TABLE_NAME +
-                ' t SET t.StringValue = @str WHERE t.Key = @key',
-              params: {key, str},
-            })
+            .runUpdate(updateQuery)
             .then(() => transaction!.rollback())
             .then(() => {
-              return DATABASE.run({
-                sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
-                params: {key},
-              });
+              return database.run(selectQuery);
             })
             .then(data => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const rows = data[0].map(row => (row as any).toJSON());
-              assert.notStrictEqual(rows[0].StringValue, str);
+              assert.notStrictEqual(rows[0].StringValue, 'abcd');
               done();
             })
             .catch(done);
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should rollback a dml statement', done => {
+        const key = 'k999';
+        const str = 'abcd';
+        const updateQuery = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {key, str},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE Key = @key',
+          params: {key},
+        };
+        rollbackDmlStatement(done, DATABASE, updateQuery, selectQuery);
       });
 
-      it('should handle using both dml and insert methods', done => {
-        const str = 'dml+mutation';
+      it('POSTGRESQL should rollback a dml statement', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k999';
+        const str = 'abcd';
+        const updateQuery = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {p1: str, p2: key},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+        rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
+      });
 
-        DATABASE.runTransaction((err, transaction) => {
+      const handleDmlAndInsert = (done, database, insertQuery, selectQuery) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!
-            .runUpdate({
-              sql:
-                'INSERT INTO ' +
-                TABLE_NAME +
-                ' (Key, StringValue) VALUES (@key, @str)',
-              params: {
-                key: 'k1001',
-                str,
-              },
-            })
+            .runUpdate(insertQuery)
             .then(() => {
               transaction!.insert('TxnTable', {
                 Key: 'k1002',
-                StringValue: str,
+                StringValue: 'dml+mutation',
               });
 
               return transaction!.commit();
             })
             .then(() => {
-              return DATABASE.run({
-                sql:
-                  'SELECT * FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
-                params: {str},
-              });
+              return database.run(selectQuery);
             })
             .then(data => {
               const rows = data[0];
@@ -4475,68 +7162,413 @@ describe('Spanner', () => {
             })
             .catch(done);
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should handle using both dml and insert methods', done => {
+        const str = 'dml+mutation';
+        const insertQuery = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' (Key, StringValue) VALUES (@key, @str)',
+          params: {
+            key: 'k1001',
+            str,
+          },
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
+          params: {str},
+        };
+        handleDmlAndInsert(done, DATABASE, insertQuery, selectQuery);
+      });
+
+      it('POSTGRESQL should handle using both dml and insert methods', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const str = 'dml+mutation';
+        const insertQuery = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2)',
+          params: {
+            p1: 'k1001',
+            p2: str,
+          },
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
+          params: {p1: str},
+        };
+        handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
+      });
+
+      describe('dml returning', () => {
+        const key = 'k1003';
+        const str = 'abcd';
+        const num = 11;
+
+        const googleSqlInsertReturning = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' (Key, StringValue) VALUES (@key, @str) ' +
+            'THEN RETURN *',
+          params: {key, str},
+        };
+
+        const googleSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.NumberValue = @num WHERE t.KEY = @key ' +
+            'THEN RETURN *',
+          params: {num, key},
+        };
+
+        const googleSqlDeleteReturning = {
+          sql:
+            'DELETE FROM ' +
+            TABLE_NAME +
+            ' t WHERE t.KEY = @key ' +
+            'THEN RETURN *',
+          params: {key},
+        };
+
+        const googleSqlDelete = {
+          sql: 'DELETE FROM ' + TABLE_NAME + ' t WHERE t.KEY = @key',
+          params: {key, num},
+        };
+
+        const postgreSqlUpdateReturning = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' SET "NumberValue" = $1 WHERE "Key" = $2 ' +
+            'RETURNING *',
+          params: {p1: num, p2: key},
+        };
+
+        const postgreSqlDeleteReturning = {
+          sql:
+            'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1 ' + 'RETURNING *',
+          params: {p1: key},
+        };
+
+        const postgreSqlInsertReturning = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2) ' +
+            'RETURNING *',
+          params: {p1: key, p2: str},
+        };
+
+        const postgreSqlDelete = {
+          sql: 'DELETE FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+
+        const rowCountRunUpdate = (
+          done,
+          database,
+          insertQuery,
+          updateQuery,
+          deletequery
+        ) => {
+          database.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!
+              .runUpdate(insertQuery)
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.runUpdate(updateQuery);
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.runUpdate(deletequery);
+              })
+              .then(data => {
+                const rowCount = data[0];
+                assert.strictEqual(rowCount, 1);
+                return transaction!.commit();
+              })
+              .then(() => done(), done)
+              .catch(done);
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDeleteReturning
+          );
+        });
+
+        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
+
+        const assertRowsAndRowCount = data => {
+          const rows = data[0];
+          const stats = data[1];
+          const rowCount = Math.floor(stats[stats.rowCount!] as number);
+          assert.strictEqual(rowCount, 1);
+          rows.forEach(row => {
+            const json = row.toJSON();
+            assert.strictEqual(json.Key, key);
+            assert.strictEqual(json.StringValue, str);
+          });
+        };
+
+        const rowCountRun = (
+          done,
+          database,
+          insertQuery,
+          updateQuery,
+          deletequery
+        ) => {
+          database.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!
+              .run(insertQuery)
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.run(updateQuery);
+              })
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.run(deletequery);
+              })
+              .then(data => {
+                assertRowsAndRowCount(data);
+                return transaction!.commit();
+              })
+              .then(() => done(), done)
+              .catch(done);
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRun(
+            done,
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDeleteReturning
+          );
+        });
+
+        it('POSTGRESQL should return rowCount and rows from run with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          rowCountRun(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
+
+        const partitionedUpdate = (done, database, query) => {
+          database.runPartitionedUpdate(query, err => {
+            assert.match(
+              err.details,
+              /THEN RETURN is not supported in Partitioned DML\./
+            );
+            done();
+          });
+        };
+
+        it('GOOGLE_STANDARD_SQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          partitionedUpdate(done, DATABASE, googleSqlUpdateReturning);
+        });
+
+        it('POSTGRESQL should throw error from partitioned update with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          partitionedUpdate(done, PG_DATABASE, postgreSqlUpdateReturning);
+        });
+
+        const batchUpdate = async (
+          database,
+          insertquery,
+          updateQuery,
+          deleteQuery
+        ) => {
+          const rowCounts = await database.runTransactionAsync(async txn => {
+            const [rowCounts] = await txn.batchUpdate([
+              insertquery,
+              updateQuery,
+              deleteQuery,
+            ]);
+            await txn.commit();
+            return rowCounts;
+          });
+          assert.deepStrictEqual(rowCounts, [1, 1, 1]);
+        };
+
+        it('GOOGLE_STANDARD_SQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          await batchUpdate(
+            DATABASE,
+            googleSqlInsertReturning,
+            googleSqlUpdateReturning,
+            googleSqlDelete
+          );
+        });
+
+        it('POSTGRESQL should run multiple statements from batch update with mix of dml returning', async function () {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+
+          await batchUpdate(
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDelete
+          );
+        });
       });
     });
 
     describe('pdml', () => {
-      it('should execute a simple pdml statement', done => {
-        DATABASE.runPartitionedUpdate(
-          {
-            sql:
-              'UPDATE ' +
-              TABLE_NAME +
-              ' t SET t.StringValue = @str WHERE t.Key = @key',
-            params: {
-              key: 'k1',
-              str: 'abcde',
-            },
+      const simplePdml = (done, database, query) => {
+        database.runPartitionedUpdate(query, (err, rowCount) => {
+          assert.ifError(err);
+          assert.strictEqual(rowCount, 1);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should execute a simple pdml statement', done => {
+        const query = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' t SET t.StringValue = @str WHERE t.Key = @key',
+          params: {
+            key: 'k1',
+            str: 'abcde',
           },
-          (err, rowCount) => {
-            assert.ifError(err);
-            assert.strictEqual(rowCount, 1);
-            done();
-          }
-        );
+        };
+        simplePdml(done, DATABASE, query);
       });
 
-      it('should execute a long running pdml statement', async function () {
-        if (!IS_EMULATOR_ENABLED) {
+      it('POSTGRESQL should execute a simple pdml statement', function (done) {
+        if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
+        const query = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {
+            p1: 'abcde',
+            p2: 'k1',
+          },
+        };
+        simplePdml(done, PG_DATABASE, query);
+      });
 
+      const longRunningPdml = async function (
+        database,
+        updateQuery,
+        selectQuery
+      ) {
         const count = 10000;
 
         const tableData = new Array(count).fill(0).map((_, i) => {
           return {Key: `longpdml${i}`, StringValue: 'a'};
         });
 
-        const str = new Array(1000).fill('b').join('\n');
-
-        return DATABASE.runTransactionAsync(transaction => {
-          transaction.insert('TxnTable', tableData);
-          return transaction.commit();
-        })
+        return database
+          .runTransactionAsync(transaction => {
+            transaction.insert('TxnTable', tableData);
+            return transaction.commit();
+          })
           .then(() => {
-            return DATABASE.runPartitionedUpdate({
-              sql:
-                'UPDATE ' +
-                TABLE_NAME +
-                " t SET t.StringValue = @str WHERE t.StringValue = 'a'",
-              params: {str},
-            });
+            return database.runPartitionedUpdate(updateQuery);
           })
           .then(([rowCount]) => {
             assert.strictEqual(rowCount, count);
 
-            return DATABASE.run({
-              sql:
-                'SELECT Key FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
-              params: {str},
+            return database.run(selectQuery).then(([rows]) => {
+              assert.strictEqual(rows.length, count);
             });
-          })
-          .then(([rows]) => {
-            assert.strictEqual(rows.length, count);
           });
+      };
+
+      it('GOOGLE_STANDARD_SQL should execute a long running pdml statement', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const str = new Array(1000).fill('b').join('\n');
+        const updateQuery = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            " t SET t.StringValue = @str WHERE t.StringValue = 'a'",
+          params: {str},
+        };
+        const selectQuery = {
+          sql: 'SELECT Key FROM ' + TABLE_NAME + ' WHERE StringValue = @str',
+          params: {str},
+        };
+        await longRunningPdml(DATABASE, updateQuery, selectQuery);
+      });
+
+      it('POSTGRESQL should execute a long running pdml statement', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const str = new Array(1000).fill('b').join('\n');
+        const updateQuery = {
+          sql:
+            'UPDATE ' +
+            TABLE_NAME +
+            ' SET "StringValue" = $1 WHERE "StringValue" = \'a\'',
+          params: {p1: str},
+        };
+        const selectQuery = {
+          sql: 'SELECT "Key" FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
+          params: {p1: str},
+        };
+        await longRunningPdml(PG_DATABASE, updateQuery, selectQuery);
       });
     });
 
@@ -4545,7 +7577,7 @@ describe('Spanner', () => {
       const str = 'abcd';
       const num = 11;
 
-      const insert = {
+      const googleSqlInsert = {
         sql:
           'INSERT INTO ' +
           TABLE_NAME +
@@ -4553,7 +7585,15 @@ describe('Spanner', () => {
         params: {key, str},
       };
 
-      const update = {
+      const postgreSqlInsert = {
+        sql:
+          'INSERT INTO ' +
+          TABLE_NAME +
+          ' ("Key", "StringValue") VALUES ($1, $2)',
+        params: {p1: key, p2: str},
+      };
+
+      const googleSqlUpdate = {
         sql:
           'UPDATE ' +
           TABLE_NAME +
@@ -4561,26 +7601,48 @@ describe('Spanner', () => {
         params: {key, num},
       };
 
+      const posgreSqlUpdate = {
+        sql:
+          'UPDATE ' + TABLE_NAME + ' SET "NumberValue" = $1 WHERE "Key" = $2',
+        params: {p1: num, p2: key},
+      };
+
       // this should fail since we're not binding params
-      const borked = {
+      const googleSqlBorked = {
         sql:
           'UPDATE ' +
           TABLE_NAME +
           ' t SET t.NumberValue = @num WHERE t.KEY = @key',
       };
 
-      it('should execute a single statement', async () => {
-        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
+      const postgreSqlBorked = {
+        sql:
+          'UPDATE ' + TABLE_NAME + ' SET "NumberValue" = $1 WHERE "Key" = $2',
+      };
+
+      const executeSingleStatement = async (database, insert) => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert]);
           await txn.rollback();
           return rowCounts;
         });
 
         assert.deepStrictEqual(rowCounts, [1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should execute a single statement', async () => {
+        await executeSingleStatement(DATABASE, googleSqlInsert);
       });
 
-      it('should return an error when no statements are supplied', async () => {
-        const err = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should execute a single statement', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
+      });
+
+      const noStatementError = async database => {
+        const err = await database.runTransactionAsync(async txn => {
           let err;
 
           try {
@@ -4598,20 +7660,50 @@ describe('Spanner', () => {
           'batchUpdate requires at least 1 DML statement.'
         );
         assert.strictEqual(err.code, 3);
+      };
+
+      it('GOOGLE_STANDARD_SQL should return an error when no statements are supplied', async () => {
+        await noStatementError(DATABASE);
       });
 
-      it('should run multiple statements that depend on each other', async () => {
-        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should return an error when no statements are supplied', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await noStatementError(PG_DATABASE);
+      });
+
+      const multipleDependingStatements = async (database, insert, update) => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert, update]);
           await txn.rollback();
           return rowCounts;
         });
 
         assert.deepStrictEqual(rowCounts, [1, 1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should run multiple statements that depend on each other', async () => {
+        await multipleDependingStatements(
+          DATABASE,
+          googleSqlInsert,
+          googleSqlUpdate
+        );
       });
 
-      it('should run after a runUpdate call', async () => {
-        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should run multiple statements that depend on each other', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await multipleDependingStatements(
+          PG_DATABASE,
+          postgreSqlInsert,
+          posgreSqlUpdate
+        );
+      });
+
+      const runAfterRunUpdate = async (database, insert, update) => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
           await txn.runUpdate(insert);
           const [rowCounts] = await txn.batchUpdate([update]);
           await txn.rollback();
@@ -4619,10 +7711,21 @@ describe('Spanner', () => {
         });
 
         assert.deepStrictEqual(rowCounts, [1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should run after a runUpdate call', async () => {
+        await runAfterRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      it('should run before a runUpdate call', async () => {
-        const rowCounts = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should run after a runUpdate call', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
+      });
+
+      const runBeforeRunUpdate = async (database, insert, update) => {
+        const rowCounts = await database.runTransactionAsync(async txn => {
           const [rowCounts] = await txn.batchUpdate([insert]);
           await txn.runUpdate(update);
           await txn.rollback();
@@ -4630,17 +7733,37 @@ describe('Spanner', () => {
         });
 
         assert.deepStrictEqual(rowCounts, [1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should run before a runUpdate call', async () => {
+        await runBeforeRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      it('should stop executing statements if an error occurs', async () => {
-        const err = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should run before a runUpdate call', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await runBeforeRunUpdate(
+          PG_DATABASE,
+          postgreSqlInsert,
+          posgreSqlUpdate
+        );
+      });
+
+      const stopExecutingStatementsIfError = async (
+        database,
+        insert,
+        borked,
+        update
+      ) => {
+        const err = await database.runTransactionAsync(async txn => {
           let err;
 
           try {
             await txn.batchUpdate([insert, borked, update]);
           } catch (e) {
             // Re-throw if the transaction was aborted to trigger a retry.
-            if (e.code === grpc.status.ABORTED) {
+            if ((err as grpc.ServiceError)?.code === grpc.status.ABORTED) {
               throw e;
             }
             err = e;
@@ -4652,10 +7775,35 @@ describe('Spanner', () => {
 
         assert.strictEqual(err.code, grpc.status.INVALID_ARGUMENT);
         assert.deepStrictEqual(err.rowCounts, [1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should stop executing statements if an error occurs', async () => {
+        await stopExecutingStatementsIfError(
+          DATABASE,
+          googleSqlInsert,
+          googleSqlBorked,
+          googleSqlUpdate
+        );
       });
 
-      it('should ignore any additional statement errors', async () => {
-        const err = await DATABASE.runTransactionAsync(async txn => {
+      it('POSTGRESQL should stop executing statements if an error occurs', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await stopExecutingStatementsIfError(
+          PG_DATABASE,
+          postgreSqlInsert,
+          postgreSqlBorked,
+          posgreSqlUpdate
+        );
+      });
+
+      const ignoreAdditionalStatementErrors = async (
+        database,
+        insert,
+        borked
+      ) => {
+        const err = await database.runTransactionAsync(async txn => {
           let err;
 
           try {
@@ -4670,12 +7818,31 @@ describe('Spanner', () => {
 
         assert.strictEqual(err.code, 3);
         assert.deepStrictEqual(err.rowCounts, [1]);
+      };
+
+      it('GOOGLE_STANDARD_SQL should ignore any additional statement errors', async () => {
+        await ignoreAdditionalStatementErrors(
+          DATABASE,
+          googleSqlInsert,
+          googleSqlBorked
+        );
+      });
+
+      it('POSTGRESQL should ignore any additional statement errors', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await ignoreAdditionalStatementErrors(
+          PG_DATABASE,
+          postgreSqlInsert,
+          postgreSqlBorked
+        );
       });
     });
 
     describe('read/write', () => {
-      it('should throw an error for mismatched columns', done => {
-        DATABASE.runTransaction((err, transaction) => {
+      const mismatchedColumnError = (done, database, table) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           const rows = [
@@ -4697,17 +7864,28 @@ describe('Spanner', () => {
           try {
             transaction!.insert(table.name, rows);
           } catch (e) {
-            caughtErrorMessage = e.message;
+            caughtErrorMessage = (e as grpc.ServiceError).message;
           }
           assert.strictEqual(caughtErrorMessage, expectedErrorMessage);
 
           transaction!.end();
           done();
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw an error for mismatched columns', done => {
+        mismatchedColumnError(done, DATABASE, googleSqlTable);
       });
 
-      it('should commit a transaction', done => {
-        DATABASE.runTransaction((err, transaction) => {
+      it('POSTGRESQL should throw an error for mismatched columns', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        mismatchedColumnError(done, PG_DATABASE, postgreSqlTable);
+      });
+
+      const commitTransaction = (done, database, table) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.insert(table.name, {
@@ -4717,10 +7895,21 @@ describe('Spanner', () => {
 
           transaction!.commit(done);
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should commit a transaction', done => {
+        commitTransaction(done, DATABASE, googleSqlTable);
       });
 
-      it('should rollback a transaction', done => {
-        DATABASE.runTransaction((err, transaction) => {
+      it('POSTGRESQL should commit a transaction', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        commitTransaction(done, PG_DATABASE, postgreSqlTable);
+      });
+
+      const rollbackTransaction = (done, database) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run('SELECT * FROM TxnTable', err => {
@@ -4728,6 +7917,17 @@ describe('Spanner', () => {
             transaction!.rollback(done);
           });
         });
+      };
+
+      it('GOOGLE_STANDARD_SQL should rollback a transaction', done => {
+        rollbackTransaction(done, DATABASE);
+      });
+
+      it('POSTGRESQL should rollback a transaction', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        rollbackTransaction(done, PG_DATABASE);
       });
 
       describe('concurrent transactions', () => {
@@ -4736,15 +7936,15 @@ describe('Spanner', () => {
           NumberValue: 0,
         };
 
-        beforeEach(() => {
-          return table.update(defaultRowValues);
+        beforeEach(async () => {
+          await googleSqlTable.update(defaultRowValues);
+          if (!IS_EMULATOR_ENABLED) {
+            await postgreSqlTable.update(defaultRowValues);
+          }
         });
 
-        it('should handle concurrent transactions with read', function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
-          DATABASE.runTransaction((err, transaction) => {
+        const readConcurrentTransaction = (done, database, table) => {
+          database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
             incrementValue(err => {
@@ -4759,7 +7959,7 @@ describe('Spanner', () => {
           });
 
           function incrementValue(callback) {
-            DATABASE.runTransaction((err, transaction) => {
+            database.runTransaction((err, transaction) => {
               assert.ifError(err);
 
               getValue(transaction, (err, value) => {
@@ -4796,13 +7996,24 @@ describe('Spanner', () => {
               }
             );
           }
-        });
+        };
 
-        it('should handle concurrent transactions with query', function (done) {
+        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with read', function (done) {
           if (IS_EMULATOR_ENABLED) {
             this.skip();
           }
-          DATABASE.runTransaction((err, transaction) => {
+          readConcurrentTransaction(done, DATABASE, googleSqlTable);
+        });
+
+        it('POSTGRESQL should handle concurrent transactions with read', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          readConcurrentTransaction(done, PG_DATABASE, postgreSqlTable);
+        });
+
+        const queryConcurrentTransaction = (done, database, table, query) => {
+          database.runTransaction((err, transaction) => {
             assert.ifError(err);
 
             incrementValue(err => {
@@ -4817,7 +8028,7 @@ describe('Spanner', () => {
           });
 
           function incrementValue(callback) {
-            DATABASE.runTransaction((err, transaction) => {
+            database.runTransaction((err, transaction) => {
               assert.ifError(err);
 
               getValue(transaction, (err, value) => {
@@ -4837,43 +8048,60 @@ describe('Spanner', () => {
           }
 
           function getValue(txn, callback) {
-            txn.run(
-              {
-                sql: 'SELECT * FROM ' + table.name + ' WHERE Key = @key',
-                params: {
-                  key: defaultRowValues.Key,
-                },
-              },
-              (err, rows) => {
-                if (err) {
-                  callback(err);
-                  return;
-                }
-
-                const row = rows[0].toJSON();
-                callback(null, row.NumberValue);
+            txn.run(query, (err, rows) => {
+              if (err) {
+                callback(err);
+                return;
               }
-            );
+
+              const row = rows[0].toJSON();
+              callback(null, row.NumberValue);
+            });
           }
+        };
+
+        it('GOOGLE_STANDARD_SQL should handle concurrent transactions with query', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          const query = {
+            sql: 'SELECT * FROM ' + googleSqlTable.name + ' WHERE Key = @key',
+            params: {
+              key: defaultRowValues.Key,
+            },
+          };
+          queryConcurrentTransaction(done, DATABASE, googleSqlTable, query);
+        });
+
+        it('POSTGRESQL should handle concurrent transactions with query', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          const query = {
+            sql: 'SELECT * FROM ' + postgreSqlTable.name + ' WHERE "Key" = $1',
+            params: {
+              p1: defaultRowValues.Key,
+            },
+          };
+          queryConcurrentTransaction(done, PG_DATABASE, postgreSqlTable, query);
         });
       });
 
-      it('should retry an aborted txn when reading fails', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      const retryAbortedTxnWhenReadingFails = (
+        done,
+        database,
+        table,
+        query
+      ) => {
         const key = 'k888';
-        const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
-
         let attempts = 0;
-
         const expectedRow = {
           Key: key,
           NumberValue: null,
           StringValue: 'abc',
         };
 
-        DATABASE.runTransaction((err, transaction) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(query, err => {
@@ -4911,7 +8139,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          DATABASE.runTransaction((err, transaction) => {
+          database.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -4932,14 +8160,38 @@ describe('Spanner', () => {
         function wrap(callback) {
           setImmediate(callback);
         }
-      });
+      };
 
-      it('should retry an aborted txn when commit fails', function (done) {
+      it('GOOGLE_STANDARD_SQL should retry an aborted txn when reading fails', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
+        const key = 'k888';
+        const query = `SELECT * FROM ${googleSqlTable.name} WHERE Key = '${key}'`;
+        retryAbortedTxnWhenReadingFails(done, DATABASE, googleSqlTable, query);
+      });
+
+      it('POSTGRESQL should retry an aborted txn when reading fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k888';
+        const query = {
+          sql: `SELECT * FROM ${postgreSqlTable.name} WHERE "Key" = $1`,
+          params: {
+            p1: key,
+          },
+        };
+        retryAbortedTxnWhenReadingFails(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          query
+        );
+      });
+
+      const retryAbortedTxnWhenCommitFails = (done, database, table, query) => {
         const key = 'k9999';
-        const query = `SELECT * FROM ${table.name} WHERE Key = '${key}'`;
         let attempts = 0;
 
         const expectedRow = {
@@ -4948,7 +8200,7 @@ describe('Spanner', () => {
           StringValue: 'abc',
         };
 
-        DATABASE.runTransaction((err, transaction) => {
+        database.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.run(query, (err, rows) => {
@@ -4984,7 +8236,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          DATABASE.runTransaction((err, transaction) => {
+          database.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -5001,13 +8253,37 @@ describe('Spanner', () => {
             });
           });
         }
-      });
+      };
 
-      it('should return a deadline error instead of aborted', function (done) {
+      it('GOOGLE_STANDARD_SQL should retry an aborted txn when commit fails', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
+        const key = 'k9999';
+        const query = `SELECT * FROM ${googleSqlTable.name} WHERE Key = '${key}'`;
+        retryAbortedTxnWhenCommitFails(done, DATABASE, googleSqlTable, query);
+      });
 
+      it('POSTGRESQL should retry an aborted txn when commit fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k9999';
+        const query = {
+          sql: `SELECT * FROM ${postgreSqlTable.name} WHERE "Key" = $1`,
+          params: {
+            p1: key,
+          },
+        };
+        retryAbortedTxnWhenCommitFails(
+          done,
+          PG_DATABASE,
+          postgreSqlTable,
+          query
+        );
+      });
+
+      const deadlineErrorInsteadOfAbort = (done, database, table) => {
         const options = {
           timeout: 10,
         };
@@ -5015,7 +8291,7 @@ describe('Spanner', () => {
         const query = `SELECT * FROM ${table.name}`;
         let attempts = 0;
 
-        DATABASE.runTransaction(options, (err, transaction) => {
+        database.runTransaction(options, (err, transaction) => {
           if (attempts++ === 1) {
             assert.strictEqual(err!.code, 4);
             assert(
@@ -5046,7 +8322,7 @@ describe('Spanner', () => {
         });
 
         function runOtherTransaction(callback) {
-          DATABASE.runTransaction((err, transaction) => {
+          database.runTransaction((err, transaction) => {
             if (err) {
               callback(err);
               return;
@@ -5066,6 +8342,108 @@ describe('Spanner', () => {
             });
           });
         }
+      };
+
+      it('GOOGLE_STANDARD_SQL should return a deadline error instead of aborted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        deadlineErrorInsteadOfAbort(done, DATABASE, googleSqlTable);
+      });
+
+      it('POSTGRESQL should return a deadline error instead of aborted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+      });
+    });
+
+    describe('batch transactions', () => {
+      before(done => {
+        if (!IS_EMULATOR_ENABLED) {
+          DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k998',
+                  str: 'abc',
+                },
+              },
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        } else {
+          done();
+        }
+      });
+
+      it('should create and execute a query partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = "k998"',
+        };
+
+        let row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      it('should create and execute a read partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: false,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        let read_row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createReadPartitions(QUERY, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                read_row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(read_row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
       });
     });
   });

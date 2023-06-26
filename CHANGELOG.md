@@ -4,6 +4,243 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.12.0](https://github.com/googleapis/nodejs-spanner/compare/v6.11.0...v6.12.0) (2023-06-19)
+
+
+### Features
+
+* Databoostenabled for Query and Read partitions ([#1784](https://github.com/googleapis/nodejs-spanner/issues/1784)) ([66ff70c](https://github.com/googleapis/nodejs-spanner/commit/66ff70cd377d5e3f60a6796bc36bab3a39337f31))
+
+## [6.11.0](https://github.com/googleapis/nodejs-spanner/compare/v6.10.1...v6.11.0) (2023-06-06)
+
+
+### Features
+
+* **spanner:** Add DdlStatementActionInfo and add actions to UpdateDatabaseDdlMetadata ([#1860](https://github.com/googleapis/nodejs-spanner/issues/1860)) ([3e86f36](https://github.com/googleapis/nodejs-spanner/commit/3e86f369b927e3bf0a2046bd13d0b6a39a9bb076))
+* Testing for fgac in pg ([#1811](https://github.com/googleapis/nodejs-spanner/issues/1811)) ([c48945f](https://github.com/googleapis/nodejs-spanner/commit/c48945f536685d6e4ee4097cfac7d5f57853553e))
+
+## [6.10.1](https://github.com/googleapis/nodejs-spanner/compare/v6.10.0...v6.10.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* Set database admin and instance as having handwritten layers (republish docs) ([3e3e624](https://github.com/googleapis/nodejs-spanner/commit/3e3e624187013d62a5ff479386fb8961f279b5ca))
+
+## [6.10.0](https://github.com/googleapis/nodejs-spanner/compare/v6.9.0...v6.10.0) (2023-05-17)
+
+
+### Features
+
+* Add support for UpdateDatabase ([#1802](https://github.com/googleapis/nodejs-spanner/issues/1802)) ([f4fbe71](https://github.com/googleapis/nodejs-spanner/commit/f4fbe71d819fde9a237f25b03af228b27cf58689))
+* Add support for UpdateDatabase in Cloud Spanner ([#1848](https://github.com/googleapis/nodejs-spanner/issues/1848)) ([dd9d505](https://github.com/googleapis/nodejs-spanner/commit/dd9d505e1480b9f45f0f4a09b0abca8282d5fceb))
+
+
+### Bug Fixes
+
+* Set grpc useragent ([#1847](https://github.com/googleapis/nodejs-spanner/issues/1847)) ([021e54e](https://github.com/googleapis/nodejs-spanner/commit/021e54ef469d7d95bae64c687b65489cbfc56cfa))
+
+## [6.9.0](https://github.com/googleapis/nodejs-spanner/compare/v6.8.0...v6.9.0) (2023-04-26)
+
+
+### Features
+
+* Leader aware routing ([#1783](https://github.com/googleapis/nodejs-spanner/issues/1783)) ([0703f41](https://github.com/googleapis/nodejs-spanner/commit/0703f4160c4a0b4c9f9f716174daca110ab8e50f))
+
+## [6.8.0](https://github.com/googleapis/nodejs-spanner/compare/v6.7.2...v6.8.0) (2023-04-06)
+
+
+### Features
+
+* Adding new fields for Serverless analytics ([#1816](https://github.com/googleapis/nodejs-spanner/issues/1816)) ([2a6ca6f](https://github.com/googleapis/nodejs-spanner/commit/2a6ca6f09215752f9451d625ac02837e9d70b66a))
+
+
+### Bug Fixes
+
+* Begin transaction foes not handle error ([#1833](https://github.com/googleapis/nodejs-spanner/issues/1833)) ([6ecd366](https://github.com/googleapis/nodejs-spanner/commit/6ecd366da7183d502c710cb5c879984c276b12db))
+* Correcting the proto field Id for field data_boost_enabled ([#1827](https://github.com/googleapis/nodejs-spanner/issues/1827)) ([7f6d4cc](https://github.com/googleapis/nodejs-spanner/commit/7f6d4ccce9269197312f2d795ef854e1789e8fce))
+* Logic for retrying specifiied internal errors ([#1822](https://github.com/googleapis/nodejs-spanner/issues/1822)) ([f915bd1](https://github.com/googleapis/nodejs-spanner/commit/f915bd16cf7e817243e46a319b3e6f270b24bf68)), closes [#1808](https://github.com/googleapis/nodejs-spanner/issues/1808)
+
+## [6.7.2](https://github.com/googleapis/nodejs-spanner/compare/v6.7.1...v6.7.2) (2023-02-17)
+
+
+### Bug Fixes
+
+* Tests emit empty metadata before emitting unspecified error ([14ef031](https://github.com/googleapis/nodejs-spanner/commit/14ef0318db756e7debad8599b1e274b8877291e1))
+
+## [6.7.1](https://github.com/googleapis/nodejs-spanner/compare/v6.7.0...v6.7.1) (2023-01-23)
+
+
+### Bug Fixes
+
+* Change of tag for fgac ([#1780](https://github.com/googleapis/nodejs-spanner/issues/1780)) ([d75b6dd](https://github.com/googleapis/nodejs-spanner/commit/d75b6dd79ffc2442cbd7a14f1ea952edc6678a64))
+* **codec:** Use index to determine array struct member value ([#1775](https://github.com/googleapis/nodejs-spanner/issues/1775)) ([fc2b695](https://github.com/googleapis/nodejs-spanner/commit/fc2b695d9ea6b65df856b4b081a75165009413ee)), closes [#1774](https://github.com/googleapis/nodejs-spanner/issues/1774)
+
+## [6.7.0](https://github.com/googleapis/nodejs-spanner/compare/v6.6.0...v6.7.0) (2023-01-17)
+
+
+### Features
+
+* Added SuggestConversationSummary RPC ([#1744](https://github.com/googleapis/nodejs-spanner/issues/1744)) ([14346f3](https://github.com/googleapis/nodejs-spanner/commit/14346f3cf8ed0cb0a93c255dc520dc62887c0e1a))
+
+## [6.6.0](https://github.com/googleapis/nodejs-spanner/compare/v6.5.0...v6.6.0) (2022-12-16)
+
+
+### Features
+
+* Export data types in index.ts ([#1726](https://github.com/googleapis/nodejs-spanner/issues/1726)) ([844f57f](https://github.com/googleapis/nodejs-spanner/commit/844f57fa5e79e5e5a5ede80df5e117004427f201)), closes [#1720](https://github.com/googleapis/nodejs-spanner/issues/1720)
+* Fgac support and samples ([#1751](https://github.com/googleapis/nodejs-spanner/issues/1751)) ([0a394df](https://github.com/googleapis/nodejs-spanner/commit/0a394df9bfa193d79edc4c3a3d26238f361c0d45))
+
+
+### Bug Fixes
+
+* Add sleep after admin request intensive tests ([#1758](https://github.com/googleapis/nodejs-spanner/issues/1758)) ([7643ceb](https://github.com/googleapis/nodejs-spanner/commit/7643ceb7cde9f420539877b86fdb0d38b254348d))
+
+## [6.5.0](https://github.com/googleapis/nodejs-spanner/compare/v6.4.0...v6.5.0) (2022-11-30)
+
+
+### Features
+
+* Inline BeginTransaction with first statement ([#1692](https://github.com/googleapis/nodejs-spanner/issues/1692)) ([d1b95d2](https://github.com/googleapis/nodejs-spanner/commit/d1b95d21e2c8cb0eff88351265cad248870bb3ea))
+
+
+### Bug Fixes
+
+* Cleanup different types of session pools ([#1739](https://github.com/googleapis/nodejs-spanner/issues/1739)) ([6f55187](https://github.com/googleapis/nodejs-spanner/commit/6f551877ea0d4b67e3c734377bdadd5d570cf839))
+* **deps:** Use google-gax v3.5.2 ([#1732](https://github.com/googleapis/nodejs-spanner/issues/1732)) ([8341b1f](https://github.com/googleapis/nodejs-spanner/commit/8341b1fa5dfcf0b286892efb8b57c7ad694cdbb8))
+
+## [6.4.0](https://github.com/googleapis/nodejs-spanner/compare/v6.3.0...v6.4.0) (2022-10-27)
+
+
+### Features
+
+* Adding support and samples for Jsonb data type in spangres ([#1729](https://github.com/googleapis/nodejs-spanner/issues/1729)) ([f050354](https://github.com/googleapis/nodejs-spanner/commit/f0503547012ab0ac8a04524ecf7bc92807f35379))
+* Update result_set.proto to return undeclared parameters in ExecuteSql API ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+* Update transaction.proto to include different lock modes ([#1723](https://github.com/googleapis/nodejs-spanner/issues/1723)) ([eaa445e](https://github.com/googleapis/nodejs-spanner/commit/eaa445ed314190abefc17e3672bb5e200142618b))
+
+## [6.3.0](https://github.com/googleapis/nodejs-spanner/compare/v6.2.0...v6.3.0) (2022-10-03)
+
+
+### Features
+
+* Support customer managed instance configurations ([#1611](https://github.com/googleapis/nodejs-spanner/issues/1611)) ([bbe8f69](https://github.com/googleapis/nodejs-spanner/commit/bbe8f697e8838e358973cd4a5f2db9e2d4df5349))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v3 ([#1676](https://github.com/googleapis/nodejs-spanner/issues/1676)) ([3f20ec4](https://github.com/googleapis/nodejs-spanner/commit/3f20ec47bbf89e1f72546a8ebf41a8b4ba93832f))
+* Do not import the whole google-gax from proto JS ([#1553](https://github.com/googleapis/nodejs-spanner/issues/1553)) ([#1700](https://github.com/googleapis/nodejs-spanner/issues/1700)) ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+* use google-gax v3.3.0 ([f9c2640](https://github.com/googleapis/nodejs-spanner/commit/f9c2640e054659a2e8299b8f989fa7936d04b0d7))
+
+## [6.2.0](https://github.com/googleapis/nodejs-spanner/compare/v6.1.4...v6.2.0) (2022-09-16)
+
+
+### Features
+
+* Add custom instance config operations ([#1712](https://github.com/googleapis/nodejs-spanner/issues/1712)) ([4b7716b](https://github.com/googleapis/nodejs-spanner/commit/4b7716be5409698e21bb79edec5cdf1019047de8))
+
+
+### Bug Fixes
+
+* Allow passing gax instance to client constructor ([#1698](https://github.com/googleapis/nodejs-spanner/issues/1698)) ([588c1a2](https://github.com/googleapis/nodejs-spanner/commit/588c1a2e0c449cfcb86cac73da32dd5794ee2baa))
+* **deps:** Use grpc-gcp v1.0.0 ([#1710](https://github.com/googleapis/nodejs-spanner/issues/1710)) ([12eab9d](https://github.com/googleapis/nodejs-spanner/commit/12eab9d628b72b5a7fc88f3d5e932b7a4d70dce2))
+* Move runtime dependencies from dev dependencies to dependencies ([#1704](https://github.com/googleapis/nodejs-spanner/issues/1704)) ([b2c1c0f](https://github.com/googleapis/nodejs-spanner/commit/b2c1c0f93653af6cc7bd9893ca14394f2a631b68))
+* Preserve default values in x-goog-request-params header ([#1711](https://github.com/googleapis/nodejs-spanner/issues/1711)) ([f1ae513](https://github.com/googleapis/nodejs-spanner/commit/f1ae51301d4ea9b0ed1ad4d4762c249fef9f8d08))
+
+## [6.1.4](https://github.com/googleapis/nodejs-spanner/compare/v6.1.3...v6.1.4) (2022-09-06)
+
+
+### Bug Fixes
+
+* Add hashes to requirements.txt ([#1544](https://github.com/googleapis/nodejs-spanner/issues/1544)) ([#1697](https://github.com/googleapis/nodejs-spanner/issues/1697)) ([61a1468](https://github.com/googleapis/nodejs-spanner/commit/61a1468fb0282bad642e643fc98a19d63acdcd1c))
+* Better support for fallback mode ([#1694](https://github.com/googleapis/nodejs-spanner/issues/1694)) ([bbc8831](https://github.com/googleapis/nodejs-spanner/commit/bbc88317149a3d86c50ccfd98092d5bfb77a104e))
+* Change import long to require ([#1695](https://github.com/googleapis/nodejs-spanner/issues/1695)) ([9283f4b](https://github.com/googleapis/nodejs-spanner/commit/9283f4bdfaea0ceececacbb80df3c37bd522b657))
+* **deps:** Update dependency @google-cloud/projectify to v3 ([#1678](https://github.com/googleapis/nodejs-spanner/issues/1678)) ([e3c1499](https://github.com/googleapis/nodejs-spanner/commit/e3c1499d0bdcbe3b578c5e7dc1d725630a1a0a30))
+* **deps:** Update dependency protobufjs to v7 ([#1686](https://github.com/googleapis/nodejs-spanner/issues/1686)) ([2839d23](https://github.com/googleapis/nodejs-spanner/commit/2839d2317ca7368d288ee9d7feb806f0ac2069c6))
+* Target new spanner db admin service config ([#1685](https://github.com/googleapis/nodejs-spanner/issues/1685)) ([2495c07](https://github.com/googleapis/nodejs-spanner/commit/2495c0723be70cf679ffa9e86f45199dbcd8c77b))
+* Test case fix to avoid the latest typescript dependency issue ([#1703](https://github.com/googleapis/nodejs-spanner/issues/1703)) ([6282f64](https://github.com/googleapis/nodejs-spanner/commit/6282f64560510ae54be26d992d168091f7e943bc))
+
+## [6.1.3](https://github.com/googleapis/nodejs-spanner/compare/v6.1.2...v6.1.3) (2022-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/common to v4 ([#1663](https://github.com/googleapis/nodejs-spanner/issues/1663)) ([487c58c](https://github.com/googleapis/nodejs-spanner/commit/487c58ce2a2dbf21cdc1b43ea53d68ea6edbfd81))
+
+## [6.1.2](https://github.com/googleapis/nodejs-spanner/compare/v6.1.1...v6.1.2) (2022-07-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/kms to v3 ([#1664](https://github.com/googleapis/nodejs-spanner/issues/1664)) ([42f41e9](https://github.com/googleapis/nodejs-spanner/commit/42f41e99f3cba9c3bdb981f70d6423c48adbc0d6))
+
+## [6.1.1](https://github.com/googleapis/nodejs-spanner/compare/v6.1.0...v6.1.1) (2022-07-06)
+
+
+### Bug Fixes
+
+* call Promise.race without a long pending promise to prevent memory leak ([#1657](https://github.com/googleapis/nodejs-spanner/issues/1657)) ([768acb6](https://github.com/googleapis/nodejs-spanner/commit/768acb6279914dfe84e372afc1d83dd76ca3dd4d))
+* **deps:** update dependency yargs to v17 ([#1537](https://github.com/googleapis/nodejs-spanner/issues/1537)) ([1039f68](https://github.com/googleapis/nodejs-spanner/commit/1039f68c7b459c2abeef4388fd8541576d374b66))
+
+## [6.1.0](https://github.com/googleapis/nodejs-spanner/compare/v6.0.0...v6.1.0) (2022-07-04)
+
+
+### Features
+
+* add Session creator role ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+* Adding two new fields for Instance create_time and update_time ([#1641](https://github.com/googleapis/nodejs-spanner/issues/1641)) ([91ef6d3](https://github.com/googleapis/nodejs-spanner/commit/91ef6d373a1ed2c7e191de4003571270bfc4e895))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @google-cloud/promisify to v3 ([#1629](https://github.com/googleapis/nodejs-spanner/issues/1629)) ([1467956](https://github.com/googleapis/nodejs-spanner/commit/1467956314c77f66034fa3db166ba68d7c2aba2d))
+* Improve spanner.date handling of years before 1000AD ([#1654](https://github.com/googleapis/nodejs-spanner/issues/1654)) ([fd89a29](https://github.com/googleapis/nodejs-spanner/commit/fd89a294dcab017dbbe7000bce613b0d4ed60f96))
+
+## [6.0.0](https://github.com/googleapis/nodejs-spanner/compare/v5.18.0...v6.0.0) (2022-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* update library to use Node 12 (#1637)
+
+### Features
+
+* Adding IT for date and commit timestamp ([#1621](https://github.com/googleapis/nodejs-spanner/issues/1621)) ([1367aa7](https://github.com/googleapis/nodejs-spanner/commit/1367aa7dc9818be5610dfc5ae67d09652e7009e5))
+* AuditConfig for IAM v1 ([#1599](https://github.com/googleapis/nodejs-spanner/issues/1599)) ([c358d66](https://github.com/googleapis/nodejs-spanner/commit/c358d668ca2a25f99ab73a4b6c1ebbe09c34d4de))
+
+
+### Bug Fixes
+
+* **deps:** update dependency grpc-gcp to ^0.4.0 ([#1603](https://github.com/googleapis/nodejs-spanner/issues/1603)) ([f00b3c6](https://github.com/googleapis/nodejs-spanner/commit/f00b3c65e58c2f36e69a05fef0b3c9bc68a4ee55))
+* fixes for dynamic routing and streaming descriptors ([#1639](https://github.com/googleapis/nodejs-spanner/issues/1639)) ([977a543](https://github.com/googleapis/nodejs-spanner/commit/977a543d693ca2f2e8bb303be6df592aa4def1dd))
+* pin version for nodejs gax-node ([#1617](https://github.com/googleapis/nodejs-spanner/issues/1617)) ([fb0017f](https://github.com/googleapis/nodejs-spanner/commit/fb0017ffab3cfa41cd132df4511a47fb68439bf5))
+
+
+### Build System
+
+* update library to use Node 12 ([#1637](https://github.com/googleapis/nodejs-spanner/issues/1637)) ([994acf3](https://github.com/googleapis/nodejs-spanner/commit/994acf3edd7c261085f58722fa2f86f95b3a56f3))
+
+## [5.18.0](https://github.com/googleapis/nodejs-spanner/compare/v5.17.0...v5.18.0) (2022-04-03)
+
+
+### Features
+
+* add support for Cross region backup proto changes ([#1587](https://github.com/googleapis/nodejs-spanner/issues/1587)) ([9439ca4](https://github.com/googleapis/nodejs-spanner/commit/9439ca4cf260923a7cb90e0568864cb719ab8fc6))
+* integration testing for postgres dialect ([#1593](https://github.com/googleapis/nodejs-spanner/issues/1593)) ([ebe06a6](https://github.com/googleapis/nodejs-spanner/commit/ebe06a6cefbeacc37c40f2474b9d265b78c846e2))
+* Postgres Numeric and database support ([#1592](https://github.com/googleapis/nodejs-spanner/issues/1592)) ([7ca3975](https://github.com/googleapis/nodejs-spanner/commit/7ca3975c5e25e78983f77df9e921642c90874f90))
+* Spanner copy backup ([#1530](https://github.com/googleapis/nodejs-spanner/issues/1530)) ([cefb1b4](https://github.com/googleapis/nodejs-spanner/commit/cefb1b4c831997e5c52122c5e6c3fd9cd9cb2c76))
+
+
+### Bug Fixes
+
+* removing table_catalog from schema information ([#1595](https://github.com/googleapis/nodejs-spanner/issues/1595)) ([8bcbd95](https://github.com/googleapis/nodejs-spanner/commit/8bcbd95e7423f03aa16ffd500fca998f75c8d0cf))
+
+## [5.17.0](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.17.0) (2022-03-09)
+
+
+### Features
+
+* Refactor create database options schema to accept array ([#1578](https://github.com/googleapis/nodejs-spanner/issues/1578)) ([b1c88ac](https://github.com/googleapis/nodejs-spanner/commit/b1c88accee3770bb94e6a7d73e767eaa426a86a3))
+
 ### [5.16.3](https://github.com/googleapis/nodejs-spanner/compare/v5.16.3...v5.16.3) (2022-01-31)
 
 

@@ -417,6 +417,12 @@ export class GrpcService extends Service {
 
     this.maxRetries = options.maxRetries;
     this.userAgent = util.getUserAgentFromPackageJson(config.packageJson);
+
+    if (this.providedUserAgent) {
+      this.userAgent = `${this.providedUserAgent} ${this.userAgent}`;
+    }
+    options['grpc.primary_user_agent'] = this.userAgent;
+
     this.activeServiceMap_ = new Map();
     this.protos = {};
     const protoServices = config.protoServices;
@@ -513,7 +519,7 @@ export class GrpcService extends Service {
     try {
       reqOpts = this.decorateRequest_(reqOpts);
     } catch (e) {
-      callback!(e);
+      callback!(e as Error);
       return;
     }
 
@@ -632,7 +638,7 @@ export class GrpcService extends Service {
       reqOpts = this.decorateRequest_(reqOpts);
     } catch (e) {
       setImmediate(() => {
-        stream.destroy(e);
+        stream.destroy(e as Error);
       });
       return stream;
     }

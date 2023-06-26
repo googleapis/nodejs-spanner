@@ -24,7 +24,16 @@ import * as path from 'path';
 import {common as p} from 'protobufjs';
 import * as streamEvents from 'stream-events';
 import * as through from 'through2';
-import {codec, Float, Int, Numeric, SpannerDate, Struct} from './codec';
+import {
+  codec,
+  Float,
+  Int,
+  Numeric,
+  PGNumeric,
+  PGJsonb,
+  SpannerDate,
+  Struct,
+} from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
 import {
@@ -32,8 +41,13 @@ import {
   CreateInstanceCallback,
   CreateInstanceResponse,
 } from './instance';
+import {
+  InstanceConfig,
+  CreateInstanceConfigCallback,
+  CreateInstanceConfigResponse,
+} from './instance-config';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
-import {google as instanceAdmin} from '../protos/protos';
+import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
   PagedResponse,
@@ -82,11 +96,27 @@ export interface GetInstanceConfigOptions {
 export type GetInstanceConfigResponse = [IInstanceConfig];
 export type GetInstanceConfigCallback = NormalCallback<IInstanceConfig>;
 
+export type GetInstanceConfigOperationsOptions = PagedOptionsWithFilter;
+export type GetInstanceConfigOperationsResponse = PagedResponse<
+  IOperation,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+>;
+export type GetInstanceConfigOperationsCallback = PagedCallback<
+  IOperation,
+  instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+>;
+
+/**
+ * Session pool configuration options.
+ * @property {boolean} [routeToLeaderEnabled=False] If set to true leader aware routing will be enabled.
+ * Enabling leader aware routing would route all requests in RW/PDML transactions to leader region.
+ */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
   servicePath?: string;
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
+  routeToLeaderEnabled?: boolean;
 }
 export interface RequestConfig {
   client: string;
@@ -102,6 +132,15 @@ export interface CreateInstanceRequest {
   processingUnits?: number;
   displayName?: string;
   labels?: {[k: string]: string} | null;
+  gaxOptions?: CallOptions;
+}
+export interface CreateInstanceConfigRequest {
+  displayName?: string;
+  replicas?: google.spanner.admin.instance.v1.IReplicaInfo[];
+  baseConfig?: string;
+  labels?: {[k: string]: string} | null;
+  etag?: string;
+  validateOnly?: boolean;
   gaxOptions?: CallOptions;
 }
 
@@ -173,9 +212,11 @@ class Spanner extends GrpcService {
   auth: GoogleAuth;
   clients_: Map<string, {}>;
   instances_: Map<string, Instance>;
+  instanceConfigs_: Map<string, InstanceConfig>;
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
+  routeToLeaderEnabled = false;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -185,6 +226,10 @@ class Spanner extends GrpcService {
    * @type {string}
    */
   static COMMIT_TIMESTAMP = 'spanner.commit_timestamp()';
+  static POSTGRESQL =
+    google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
+  static GOOGLE_STANDARD_SQL =
+    google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -272,10 +317,16 @@ class Spanner extends GrpcService {
       packageJson: require('../../package.json'),
     } as {} as GrpcServiceConfig;
     super(config, options);
+
+    if (options.routeToLeaderEnabled === true) {
+      this.routeToLeaderEnabled = true;
+    }
+
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
     this.instances_ = new Map();
+    this.instanceConfigs_ = new Map();
     this.projectIdReplaced_ = false;
     this.projectFormattedName_ = 'projects/' + this.projectId;
     this.resourceHeader_ = {
@@ -336,7 +387,7 @@ class Spanner extends GrpcService {
    * Wrapper around {@link v1.InstanceAdminClient#createInstance}.
    *
    * @see {@link v1.InstanceAdminClient#createInstance}
-   * @see [CreateInstace API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
+   * @see [CreateInstance API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstance)
    *
    * @throws {GoogleError} If a name is not provided.
    * @throws {GoogleError} If a configuration object is not provided.
@@ -575,13 +626,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageToken;
-      delete gaxOpts.pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
     }
 
     this.request(
@@ -660,13 +711,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     return this.requestStream({
@@ -676,6 +727,181 @@ class Spanner extends GrpcService {
       gaxOpts,
       headers: this.resourceHeader_,
     });
+  }
+
+  /**
+   * Config for the new instance config.
+   *
+   * @typedef {object} CreateInstanceConfigRequest
+   * @property {string} [displayName] The name of this instance configuration as
+   *     it appears in the user interface.
+   * @property {google.spanner.admin.instance.v1.IReplicaInfo[]} [replicas] The
+   *     geographic placement of nodes in this instance configuration and their
+   *     replication properties.
+   * @property {string} [baseConfig] Base configuration name,
+   *     e.g. projects/<project_name>/instanceConfigs/nam3 based on which this
+   *     configuration is created.
+   * @property {Object.<string, string>} [labels] Cloud Labels are a flexible
+   *     and lightweight mechanism for organizing cloud resources into groups
+   *     that reflect a customer's organizational needs and deployment
+   *     strategies. Cloud Labels can be used to filter collections of
+   *     resources. They can be used to control how resource metrics are
+   *     aggregated. And they can be used as arguments to policy management
+   *     rules (e.g. route, firewall, load balancing, etc.).
+   * @property {string} [etag] etag is used for optimistic concurrency control
+   *     as a way to help prevent simultaneous updates of a instance config from
+   *     overwriting each other.
+   * @property {boolean} [validateOnly] An option to validate, but not actually
+   *     execute, a request, and provide the same response.
+   */
+  /**
+   * @typedef {array} CreateInstanceConfigResponse
+   * @property {InstanceConfig} 0 The new {@link google.spanner.admin.instance.v1.InstanceConfig}.
+   * @property {google.longrunning.Operation} 1 An operation object that can be
+   *     used to check the status of the request.
+   * @property {google.longrunning.IOperation} 2 The full API response.
+   */
+  /**
+   * @callback CreateInstanceConfigCallback
+   * @param {?Error} err Request error, if any.
+   * @param {InstanceConfig} instanceConfig The new {@link google.spanner.admin.instance.v1.InstanceConfig}.
+   * @param {google.longrunning.Operation} operation An operation object that
+   *     can be used to check the status of the request.
+   * @param {google.longrunning.IOperation} apiResponse The full API response.
+   */
+  /**
+   * Create an instance config.
+   *
+   * Wrapper around {@link v1.InstanceAdminClient#createInstanceConfig}.
+   *
+   * @see {@link v1.InstanceAdminClient#createInstanceConfig}
+   * @see [CreateInstanceConfig API Documentation](https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.CreateInstanceConfig)
+   *
+   * @throws {GoogleError} If a name is not provided.
+   * @throws {GoogleError} If a configuration object is not provided.
+   * @throws {GoogleError} If a base config is not provided in the configuration
+   *                       object.
+   *
+   * @param {string} name The name of the instance config to be created.
+   * @param {CreateInstanceConfigRequest} config Configuration object.
+   * @param {CreateInstanceConfigCallback} [callback] Callback function.
+   * @returns {Promise<CreateInstanceConfigResponse>}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const [baseInstanceConfig] =
+   *     await spanner.getInstanceConfig(baseInstanceConfigId);
+   * const config = {
+   *   baseConfig: baseInstanceConfig.name,
+   *   replicas: baseInstanceConfig.replicas.concat(baseInstanceConfig.optionalReplicas[0])
+   * };
+   *
+   * function callback(err, instance, operation, apiResponse) {
+   *   if (err) {
+   *     // Error handling omitted.
+   *   }
+   *
+   *   operation
+   *     .on('error', function(err) {})
+   *     .on('complete', function() {
+   *       // Instance created successfully.
+   *     });
+   * }
+   *
+   * spanner.createInstanceConfig('custom-new-instance-config', config, callback);
+   *
+   * //-
+   * // If the callback is omitted, we'll return a Promise.
+   * //-
+   * spanner.createInstanceConfig('custom-new-instance-config', config)
+   *   .then(function(data) {
+   *     const instanceConfig = data[0];
+   *     const operation = data[1];
+   *     return operation.promise();
+   *   })
+   *   .then(function() {
+   *     // Instance config created successfully.
+   *   });
+   * ```
+   */
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest
+  ): Promise<CreateInstanceConfigResponse>;
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest,
+    callback: CreateInstanceConfigCallback
+  ): void;
+  createInstanceConfig(
+    name: string,
+    config: CreateInstanceConfigRequest,
+    callback?: CreateInstanceConfigCallback
+  ): void | Promise<CreateInstanceConfigResponse> {
+    if (!name) {
+      throw new GoogleError('A name is required to create an instance config.');
+    }
+    if (!config) {
+      throw new GoogleError(
+        [
+          'A configuration object is required to create an instance config.',
+        ].join('')
+      );
+    }
+    if (!config.baseConfig) {
+      throw new GoogleError(
+        ['Base instance config is required to create an instance config.'].join(
+          ''
+        )
+      );
+    }
+    const formattedName = InstanceConfig.formatName_(this.projectId, name);
+    const displayName = config.displayName || formattedName.split('/').pop();
+    const reqOpts = {
+      parent: this.projectFormattedName_,
+      instanceConfigId: formattedName.split('/').pop(),
+      instanceConfig: extend(
+        {
+          name: formattedName,
+          displayName,
+        },
+        config
+      ),
+      validateOnly: config.validateOnly,
+    };
+
+    if (config.baseConfig!.indexOf('/') === -1) {
+      reqOpts.instanceConfig.baseConfig = `projects/${this.projectId}/instanceConfigs/${config.baseConfig}`;
+    }
+
+    // validateOnly need not be passed in if it is null.
+    if (reqOpts.validateOnly === null || reqOpts.validateOnly === undefined)
+      delete reqOpts.validateOnly;
+
+    // validateOnly and gaxOptions are not fields in InstanceConfig.
+    delete reqOpts.instanceConfig.validateOnly;
+    delete reqOpts.instanceConfig.gaxOptions;
+
+    this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'createInstanceConfig',
+        reqOpts,
+        gaxOpts: config.gaxOptions,
+        headers: this.resourceHeader_,
+      },
+      (err, operation, resp) => {
+        if (err) {
+          callback!(err, null, null, resp);
+          return;
+        }
+        const instanceConfig = this.instanceConfig(formattedName);
+        callback!(null, instanceConfig, operation, resp);
+      }
+    );
   }
 
   /**
@@ -793,13 +1019,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstanceConfigsOptions).pageSize,
+          pageToken: (gaxOpts as GetInstanceConfigsOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstanceConfigsOptions).pageSize;
+      delete (gaxOpts as GetInstanceConfigsOptions).pageToken;
     }
 
     return this.request(
@@ -869,13 +1095,13 @@ class Spanner extends GrpcService {
       reqOpts = extend(
         {},
         {
-          pageSize: gaxOpts.pageSize,
-          pageToken: gaxOpts.pageToken,
+          pageSize: (gaxOpts as GetInstancesOptions).pageSize,
+          pageToken: (gaxOpts as GetInstancesOptions).pageToken,
         },
         reqOpts
       );
-      delete gaxOpts.pageSize;
-      delete gaxOpts.pageToken;
+      delete (gaxOpts as GetInstancesOptions).pageSize;
+      delete (gaxOpts as GetInstancesOptions).pageToken;
     }
 
     delete reqOpts.gaxOptions;
@@ -988,6 +1214,130 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Query object for listing instance config operations.
+   *
+   * @typedef {object} GetInstanceConfigOperationsOptions
+   * @property {string} [filter] An expression for filtering the results of the
+   *     request. Filter can be configured as outlined in
+   *     {@link v1.DatabaseAdminClient#listInstanceConfigOperations}.
+   * @property {number} [pageSize] Maximum number of results per page.
+   * @property {string} [pageToken] A previously-returned page token
+   *     representing part of the larger set of results to view.
+   * @property {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   */
+  /**
+   * @typedef {array} GetInstanceConfigOperationsResponse
+   * @property {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
+   * @property {object} 1 A query object to receive more results.
+   * @property {object} 2 The full API response.
+   */
+  /**
+   * @callback GetInstanceConfigOperationsCallback
+   * @param {?Error} err Request error, if any.
+   * @param {google.longrunning.IOperation[]} 0 Array of {@link IOperation} instances.
+   * @param {object} nextQuery A query object to receive more results.
+   * @param {object} apiResponse The full API response.
+   */
+  /**
+   * List pending and completed instance config operations.
+   *
+   * @see {@link #listOperations}
+   *
+   * @param {GetInstanceConfigOperationsOptions} [options] The query object for
+   *     listing InstanceConfig operations.
+   * @param {gax.CallOptions} [options.gaxOptions] The request configuration
+   *     options, See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @returns {Promise<GetInstanceConfigOperationsResponse>} When resolved,
+   *     contains a paged list of InstanceConfig operations.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const [operations] = await spanner.getInstanceConfigOperations();
+   *
+   * //-
+   * // To manually handle pagination, set autoPaginate:false in gaxOptions.
+   * //-
+   * let pageToken = undefined;
+   * do {
+   *   const [operations, , response] = await spanner.getInstanceConfigOperations({
+   *     pageSize: 3,
+   *     pageToken,
+   *     gaxOptions: {autoPaginate: false},
+   *   });
+   *   operations.forEach(operation => {
+   *     // Do something with operation
+   *   });
+   *   pageToken = response.nextPageToken;
+   * } while (pageToken);
+   * ```
+   */
+  getInstanceConfigOperations(
+    options?: GetInstanceConfigOperationsOptions
+  ): Promise<GetInstanceConfigOperationsResponse>;
+  getInstanceConfigOperations(
+    callback: GetInstanceConfigOperationsCallback
+  ): void;
+  getInstanceConfigOperations(
+    options: GetInstanceConfigOperationsOptions,
+    callback: GetInstanceConfigOperationsCallback
+  ): void;
+  getInstanceConfigOperations(
+    optionsOrCallback?:
+      | GetInstanceConfigOperationsOptions
+      | GetInstanceConfigOperationsCallback,
+    cb?: GetInstanceConfigOperationsCallback
+  ): void | Promise<GetInstanceConfigOperationsResponse> {
+    const callback =
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const options =
+      typeof optionsOrCallback === 'object'
+        ? optionsOrCallback
+        : ({} as GetInstanceConfigOperationsOptions);
+    const gaxOpts = extend(true, {}, options.gaxOptions);
+    let reqOpts = extend({}, options, {
+      parent: this.projectFormattedName_,
+    });
+    delete reqOpts.gaxOptions;
+
+    // Copy over pageSize and pageToken values from gaxOptions.
+    // However, values set on options take precedence.
+    if (gaxOpts) {
+      reqOpts = extend(
+        {},
+        {
+          pageSize: (gaxOpts as GetInstanceConfigOperationsOptions).pageSize,
+          pageToken: (gaxOpts as GetInstanceConfigOperationsOptions).pageToken,
+        },
+        reqOpts
+      );
+      delete (gaxOpts as GetInstanceConfigOperationsOptions).pageSize;
+      delete (gaxOpts as GetInstanceConfigOperationsOptions).pageToken;
+    }
+
+    this.request(
+      {
+        client: 'InstanceAdminClient',
+        method: 'listInstanceConfigOperations',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      },
+      (err, operations, nextPageRequest, ...args) => {
+        const nextQuery = nextPageRequest!
+          ? extend({}, options, nextPageRequest!)
+          : null;
+
+        callback!(err, operations, nextQuery, ...args);
+      }
+    );
+  }
+
+  /**
    * Get a reference to an Instance object.
    *
    * @throws {GoogleError} If a name is not provided.
@@ -1011,6 +1361,34 @@ class Spanner extends GrpcService {
       this.instances_.set(key, new Instance(this, name));
     }
     return this.instances_.get(key)!;
+  }
+
+  /**
+   * Get a reference to an InstanceConfig object.
+   *
+   * @throws {GoogleError} If a name is not provided.
+   *
+   * @param {string} name The name of the instance config.
+   * @returns {InstanceConfig} An InstanceConfig object.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instanceConfig = spanner.instanceConfig('my-instance-config');
+   * ```
+   */
+  instanceConfig(name: string): InstanceConfig {
+    if (!name) {
+      throw new GoogleError(
+        'A name is required to access an InstanceConfig object.'
+      );
+    }
+    const key = name.split('/').pop()!;
+    if (!this.instanceConfigs_.has(key)) {
+      this.instanceConfigs_.set(key, new InstanceConfig(this, name));
+    }
+    return this.instanceConfigs_.get(key)!;
   }
 
   /**
@@ -1275,6 +1653,42 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner pgNumeric object.
+   *
+   * @param {string} value The pgNumeric value as a string.
+   * @returns {PGNumeric}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const pgNumeric = Spanner.pgNumeric("3.141592653");
+   * ```
+   */
+  static pgNumeric(value): PGNumeric {
+    return new codec.PGNumeric(value);
+  }
+
+  /**
+   * Helper function to get a Cloud Spanner pgJsonb object.
+   *
+   * @param {object|string} value The pgJsonb value as a string or object.
+   * @returns {PGJsonb}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const pgJsonb1 = Spanner.pgJsonb({rating: 6});
+   * const pgJsonb2 = Spanner.pgJsonb(`[
+   *         {
+   *           "name": null,
+   *           "open": true
+   *         }]`)
+   * ```
+   */
+  static pgJsonb(value): PGJsonb {
+    return new codec.PGJsonb(value);
+  }
+  /**
    * Helper function to get a Cloud Spanner Struct object.
    *
    * @param {object} value The struct as a JSON object.
@@ -1307,8 +1721,11 @@ promisifyAll(Spanner, {
     'date',
     'float',
     'instance',
+    'instanceConfig',
     'int',
     'numeric',
+    'pgNumeric',
+    'pgJsonb',
     'operation',
     'timestamp',
   ],
@@ -1365,6 +1782,15 @@ export {Spanner};
  * @type {Constructor}
  */
 export {Instance};
+
+/**
+ * {@link InstanceConfig} class.
+ *
+ * @name Spanner.InstanceConfig
+ * @see InstanceConfig
+ * @type {Constructor}
+ */
+export {InstanceConfig};
 
 /**
  * {@link Database} class.
@@ -1451,3 +1877,4 @@ import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};
+export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

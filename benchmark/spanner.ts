@@ -298,7 +298,6 @@ async function burstRead() {
     const database = newTestDatabase({
       min: 100,
       max: 400,
-      writes: 0.2,
       incStep: incStep,
     });
     const pool = database.pool_ as SessionPool;
@@ -335,7 +334,6 @@ async function burstWrite() {
     const database = newTestDatabase({
       min: 100,
       max: 400,
-      writes: 0.2,
       incStep: incStep,
     });
     const pool = database.pool_ as SessionPool;
@@ -352,7 +350,6 @@ async function burstWrite() {
       if (incStep) {
         console.timeEnd(`burstWrite incStep ${incStep}`);
         console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
       }
     } finally {
       await database.close();
@@ -374,7 +371,6 @@ async function burstReadAndWrite() {
     const database = newTestDatabase({
       min: 100,
       max: 400,
-      writes: 0.2,
       incStep: incStep,
     });
     const pool = database.pool_ as SessionPool;
@@ -397,7 +393,6 @@ async function burstReadAndWrite() {
       if (incStep) {
         console.timeEnd(`burstReadAndWrite incStep ${incStep}`);
         console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
       }
     } finally {
       await database.close();
@@ -416,7 +411,6 @@ async function multipleWriteBursts() {
     const database = newTestDatabase({
       min: 100,
       max: 400,
-      writes: 0.2,
       incStep: incStep,
     });
     const pool = database.pool_ as SessionPool;
@@ -436,7 +430,6 @@ async function multipleWriteBursts() {
       if (incStep) {
         console.timeEnd(`multipleWriteBursts incStep ${incStep}`);
         console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
       }
     } finally {
       await database.close();
@@ -449,46 +442,39 @@ async function oneReadTransactionPerSecond() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 100000;
   const NUM_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
-      const database = newTestDatabase({
-        min: minSessions,
-        writes: writeFraction,
-      });
-      const pool = database.pool_ as SessionPool;
-      try {
-        // Execute a batch of write requests to initialize the session pool with only
-        // write sessions. The dynamic scaling of the session pool should automatically
-        // change this into an appropriate number of read sessions as the test runs.
-        await queueWriteOperations(database, pool.options.incStep!, 0);
-        const readPromises = queueReadOperations(
-          database,
-          NUM_TRANSACTIONS,
-          RND_WAIT_TIME_BETWEEN_REQUESTS,
-          0
-        );
-        readPromises.forEach(p =>
-          p.then(t => {
-            console.log(`Time taken: ${t}ms`);
-          })
-        );
-        const t = await Promise.all(readPromises);
-        const max = Math.max(...t);
-        const min = Math.min(...t);
-        const sum = t.reduce((a, b) => a + b, 0);
-        const avg = sum / t.length || 0;
-        const p90 = percentile(t, 0.9);
-        console.log(
-          `oneReadTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
-        );
-        console.log(`Max: ${max}`);
-        console.log(`Min: ${min}`);
-        console.log(`Avg: ${avg}`);
-        console.log(`P90: ${p90}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      } finally {
-        await database.close();
-      }
+    const database = newTestDatabase({
+      min: minSessions,
+    });
+    const pool = database.pool_ as SessionPool;
+    try {
+      // Execute a batch of write requests to initialize the session pool with only
+      // write sessions. The dynamic scaling of the session pool should automatically
+      // change this into an appropriate number of read sessions as the test runs.
+      await queueWriteOperations(database, pool.options.incStep!, 0);
+      const readPromises = queueReadOperations(
+        database,
+        NUM_TRANSACTIONS,
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
+        0
+      );
+      readPromises.forEach(p =>
+        p.then(t => {
+          console.log(`Time taken: ${t}ms`);
+        })
+      );
+      const t = await Promise.all(readPromises);
+      const max = Math.max(...t);
+      const min = Math.min(...t);
+      const sum = t.reduce((a, b) => a + b, 0);
+      const avg = sum / t.length || 0;
+      const p90 = percentile(t, 0.9);
+      console.log(`Max: ${max}`);
+      console.log(`Min: ${min}`);
+      console.log(`Avg: ${avg}`);
+      console.log(`P90: ${p90}`);
+      console.log(`Current session pool size: ${pool.size}`);
+    } finally {
+      await database.close();
     }
   }
 }
@@ -498,43 +484,36 @@ async function oneWriteTransactionPerSecond() {
   const RND_WAIT_TIME_BETWEEN_REQUESTS = 100000;
   const NUM_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
-      const database = newTestDatabase({
-        min: minSessions,
-        writes: writeFraction,
-      });
-      const pool = database.pool_ as SessionPool;
-      try {
-        // Execute one read request to initialize the session pool.
-        await queueReadOperations(database, 1, 0, 0);
-        const writePromises = queueWriteOperations(
-          database,
-          NUM_TRANSACTIONS,
-          RND_WAIT_TIME_BETWEEN_REQUESTS
-        );
-        writePromises.forEach(p =>
-          p.then(t => {
-            console.log(`Time taken: ${t}ms`);
-          })
-        );
-        const t = await Promise.all(writePromises);
-        const max = Math.max(...t);
-        const min = Math.min(...t);
-        const sum = t.reduce((a, b) => a + b, 0);
-        const avg = sum / t.length || 0;
-        const p90 = percentile(t, 0.9);
-        console.log(
-          `oneWriteTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
-        );
-        console.log(`Max: ${max}`);
-        console.log(`Min: ${min}`);
-        console.log(`Avg: ${avg}`);
-        console.log(`P90: ${p90}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      } finally {
-        await database.close();
-      }
+    const database = newTestDatabase({
+      min: minSessions,
+    });
+    const pool = database.pool_ as SessionPool;
+    try {
+      // Execute one read request to initialize the session pool.
+      await queueReadOperations(database, 1, 0, 0);
+      const writePromises = queueWriteOperations(
+        database,
+        NUM_TRANSACTIONS,
+        RND_WAIT_TIME_BETWEEN_REQUESTS
+      );
+      writePromises.forEach(p =>
+        p.then(t => {
+          console.log(`Time taken: ${t}ms`);
+        })
+      );
+      const t = await Promise.all(writePromises);
+      const max = Math.max(...t);
+      const min = Math.min(...t);
+      const sum = t.reduce((a, b) => a + b, 0);
+      const avg = sum / t.length || 0;
+      const p90 = percentile(t, 0.9);
+      console.log(`Max: ${max}`);
+      console.log(`Min: ${min}`);
+      console.log(`Avg: ${avg}`);
+      console.log(`P90: ${p90}`);
+      console.log(`Current session pool size: ${pool.size}`);
+    } finally {
+      await database.close();
     }
   }
 }
@@ -545,52 +524,45 @@ async function oneReadAndOneWriteTransactionPerSecond() {
   const NUM_READ_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   const NUM_WRITE_TRANSACTIONS = RND_WAIT_TIME_BETWEEN_REQUESTS / 1000;
   for (const minSessions of [0, 25]) {
-    for (const writeFraction of [0, 0.2]) {
-      const database = newTestDatabase({
-        min: minSessions,
-        writes: writeFraction,
-      });
-      const pool = database.pool_ as SessionPool;
-      try {
-        const readPromises = queueReadOperations(
-          database,
-          NUM_READ_TRANSACTIONS,
-          RND_WAIT_TIME_BETWEEN_REQUESTS,
-          0
-        );
-        const writePromises = queueWriteOperations(
-          database,
-          NUM_WRITE_TRANSACTIONS,
-          RND_WAIT_TIME_BETWEEN_REQUESTS
-        );
-        readPromises.forEach(p =>
-          p.then(t => {
-            console.log(`Read tx: ${t}ms`);
-          })
-        );
-        writePromises.forEach(p =>
-          p.then(t => {
-            console.log(`Write tx: ${t}ms`);
-          })
-        );
-        const t = await Promise.all(readPromises.concat(writePromises));
-        const max = Math.max(...t);
-        const min = Math.min(...t);
-        const sum = t.reduce((a, b) => a + b, 0);
-        const avg = sum / t.length || 0;
-        const p90 = percentile(t, 0.9);
-        console.log(
-          `oneReadAndOneWriteTransactionPerSecond, min: ${minSessions}, write: ${writeFraction}`
-        );
-        console.log(`Max: ${max}`);
-        console.log(`Min: ${min}`);
-        console.log(`Avg: ${avg}`);
-        console.log(`P90: ${p90}`);
-        console.log(`Current session pool size: ${pool.size}`);
-        console.log(`Current num write sessions: ${pool.writes}`);
-      } finally {
-        await database.close();
-      }
+    const database = newTestDatabase({
+      min: minSessions,
+    });
+    const pool = database.pool_ as SessionPool;
+    try {
+      const readPromises = queueReadOperations(
+        database,
+        NUM_READ_TRANSACTIONS,
+        RND_WAIT_TIME_BETWEEN_REQUESTS,
+        0
+      );
+      const writePromises = queueWriteOperations(
+        database,
+        NUM_WRITE_TRANSACTIONS,
+        RND_WAIT_TIME_BETWEEN_REQUESTS
+      );
+      readPromises.forEach(p =>
+        p.then(t => {
+          console.log(`Read tx: ${t}ms`);
+        })
+      );
+      writePromises.forEach(p =>
+        p.then(t => {
+          console.log(`Write tx: ${t}ms`);
+        })
+      );
+      const t = await Promise.all(readPromises.concat(writePromises));
+      const max = Math.max(...t);
+      const min = Math.min(...t);
+      const sum = t.reduce((a, b) => a + b, 0);
+      const avg = sum / t.length || 0;
+      const p90 = percentile(t, 0.9);
+      console.log(`Max: ${max}`);
+      console.log(`Min: ${min}`);
+      console.log(`Avg: ${avg}`);
+      console.log(`P90: ${p90}`);
+      console.log(`Current session pool size: ${pool.size}`);
+    } finally {
+      await database.close();
     }
   }
 }
@@ -605,7 +577,6 @@ async function steadyIncrease() {
     const database = newTestDatabase({
       min: 100,
       max: 400,
-      writes: 0.2,
       incStep: incStep,
     });
     const pool = database.pool_ as SessionPool;
