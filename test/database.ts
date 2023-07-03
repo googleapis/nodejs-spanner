@@ -28,11 +28,15 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
-import {Instance} from '../src';
+import {Spanner, Instance} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import {google} from '../protos/protos';
+import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
 
@@ -176,11 +180,16 @@ describe('Database', () => {
   // tslint:disable-next-line variable-name
   let DatabaseCached: typeof db.Database;
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+  } as {} as Spanner;
+
   const INSTANCE = {
     request: util.noop,
     requestStream: util.noop,
     formattedName_: 'instance-name',
     databases_: new Map(),
+    parent: SPANNER,
   } as {} as Instance;
 
   const NAME = 'table-name';
@@ -355,7 +364,13 @@ describe('Database', () => {
       assert.strictEqual(reqOpts.database, DATABASE_FORMATTED_NAME);
       assert.strictEqual(reqOpts.sessionCount, count);
       assert.strictEqual(gaxOpts, undefined);
-      assert.deepStrictEqual(headers, database.resourceHeader_);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign(
+          {[LEADER_AWARE_ROUTING_HEADER]: true},
+          database.resourceHeader_
+        )
+      );
     });
 
     it('should accept just a count number', () => {
@@ -452,6 +467,59 @@ describe('Database', () => {
         assert.deepStrictEqual(sessions, fakeSessions);
         assert.strictEqual(resp, response);
         done();
+      });
+    });
+  });
+
+  describe('setMetadata', () => {
+    const METADATA = {
+      needsToBeSnakeCased: true,
+    } as inst.IDatabase;
+    const ORIGINAL_METADATA = extend({}, METADATA);
+
+    it('should make and return the request', () => {
+      const requestReturnValue = {};
+
+      function callback() {}
+
+      database.request = (config, callback_) => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'updateDatabase');
+
+        const expectedReqOpts = extend({}, METADATA, {
+          name: database.formattedName_,
+        });
+
+        assert.deepStrictEqual(config.reqOpts.database, expectedReqOpts);
+        assert.deepStrictEqual(config.reqOpts.updateMask, {
+          paths: ['needs_to_be_snake_cased'],
+        });
+
+        assert.deepStrictEqual(METADATA, ORIGINAL_METADATA);
+        assert.deepStrictEqual(config.gaxOpts, {});
+        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+
+        assert.strictEqual(callback_, callback);
+
+        return requestReturnValue;
+      };
+
+      const returnValue = database.setMetadata(METADATA, callback);
+      assert.strictEqual(returnValue, requestReturnValue);
+    });
+
+    it('should accept gaxOptions', done => {
+      const gaxOptions = {};
+      database.request = config => {
+        assert.strictEqual(config.gaxOpts, gaxOptions);
+        done();
+      };
+      database.setMetadata(METADATA, gaxOptions, assert.ifError);
+    });
+
+    it('should not require a callback', () => {
+      assert.doesNotThrow(() => {
+        database.setMetadata(METADATA);
       });
     });
   });
@@ -1721,7 +1789,13 @@ describe('Database', () => {
           },
         });
         assert.strictEqual(config.gaxOpts, gaxOptions);
-        assert.deepStrictEqual(config.headers, database.resourceHeader_);
+        assert.deepStrictEqual(
+          config.headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            database.resourceHeader_
+          )
+        );
 
         done();
       };

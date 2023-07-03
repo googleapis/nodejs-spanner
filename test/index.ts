@@ -276,6 +276,11 @@ describe('Spanner', () => {
       assert.strictEqual(config.baseUrl, SERVICE_PATH);
     });
 
+    it('should optionally accept routeToLeaderEnabled', () => {
+      const spanner = new Spanner({routeToLeaderEnabled: false});
+      assert.strictEqual(spanner.routeToLeaderEnabled, false);
+    });
+
     it('should set projectFormattedName_', () => {
       assert.strictEqual(
         spanner.projectFormattedName_,
