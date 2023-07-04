@@ -333,7 +333,7 @@ describe('Backup', () => {
         backup = new Backup(INSTANCE, DST_BACKUP, SRC_BACKUP);
       });
 
-      it('should succeed with basic params', done => {
+      it('should make the correct request', done => {
         const timestamp = new google.protobuf.Timestamp();
         timestamp.seconds = new Date(BACKUP_EXPIRE_TIME).getSeconds();
 
@@ -366,7 +366,7 @@ describe('Backup', () => {
         );
       });
 
-      it('should succeed with encryption config', done => {
+      it('should accept an encryption config', done => {
         const encryptionConfig = {
           encryptionType: CopyBackupEncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
           kmsKeyName: 'some/key/path',
@@ -402,7 +402,7 @@ describe('Backup', () => {
         );
       });
 
-      it('should succeed without expire time', done => {
+      it('should accept null expire time', done => {
         const expectedReqOpts = extend(
           {},
           {
