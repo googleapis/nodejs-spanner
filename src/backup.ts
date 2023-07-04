@@ -51,7 +51,7 @@ export type CreateBackupResponse = [
 
 export interface CreateBackupOptions {
   databasePath: string;
-  expireTime: string | number | p.ITimestamp | PreciseDate;
+  expireTime?: string | number | p.ITimestamp | PreciseDate;
   versionTime?: string | number | p.ITimestamp | PreciseDate;
   encryptionConfig?: databaseAdmin.spanner.admin.database.v1.ICreateBackupEncryptionConfig;
   gaxOptions?: CallOptions;
@@ -225,10 +225,14 @@ class Backup {
           backupId: this.id,
           backup: {
             database: options.databasePath,
-            expireTime: Spanner.timestamp(options.expireTime).toStruct(),
             name: this.formattedName_,
           },
         };
+      if ('expireTime' in options) {
+        reqOpts.backup!.expireTime = Spanner.timestamp(
+          options.expireTime
+        ).toStruct();
+      }
       if ('versionTime' in options) {
         reqOpts.backup!.versionTime = Spanner.timestamp(
           options.versionTime

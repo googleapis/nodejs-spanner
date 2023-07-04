@@ -188,6 +188,37 @@ describe('Backup', () => {
       );
     });
 
+    it('should accept null expire time', done => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: INSTANCE_NAME,
+        backupId: BACKUP_NAME,
+        backup: {
+          name: BACKUP_FORMATTED_NAME,
+          database: DATABASE_FORMATTED_NAME,
+        },
+      });
+
+      backup.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'createBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+        },
+        assert.ifError
+      );
+    });
+
     it('should accept gaxOptions and a callback', done => {
       const gaxOptions = {
         timeout: 1000,
