@@ -84,6 +84,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  dataBoostEnabled?: boolean | null;
 }
 
 export interface KeyRange {
@@ -104,6 +105,7 @@ export interface ReadRequest extends RequestOptions {
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  dataBoostEnabled?: boolean | null;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {

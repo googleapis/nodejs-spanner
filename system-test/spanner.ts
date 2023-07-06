@@ -8408,6 +8408,94 @@ describe('Spanner', () => {
         deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
       });
     });
+
+    describe('batch transactions', () => {
+      before(done => {
+        if (!IS_EMULATOR_ENABLED) {
+          DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k998',
+                  str: 'abc',
+                },
+              },
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        } else {
+          done();
+        }
+      });
+
+      it('should create and execute a query partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = "k998"',
+        };
+
+        let row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      it('should create and execute a read partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: false,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        let read_row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createReadPartitions(QUERY, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                read_row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(read_row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
   });
 });
 
