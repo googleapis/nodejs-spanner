@@ -95,7 +95,7 @@ export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
 let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
 
 /**
- * Set timeout for long-running transactions.
+ * Set timeout in milliseconds for long-running transactions.
  * @param {number} [timeout] Timeout for Long Running Transactions.
  */
 export function _setLongRunningTransactionTimeout(timeout: number) {

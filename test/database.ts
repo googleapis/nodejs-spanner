@@ -107,7 +107,6 @@ class FakeSessionPool extends EventEmitter {
   open() {}
   getSession() {}
   release() {}
-  transactionClosed() {}
 }
 
 class FakeTable {
@@ -1576,7 +1575,6 @@ describe('Database', () => {
     let getSessionStub: sinon.SinonStub;
     let snapshotStub: sinon.SinonStub;
     let runStreamStub: sinon.SinonStub;
-    let transactionClosedStub: sinon.SinonStub;
 
     beforeEach(() => {
       fakePool = database.pool_;
@@ -1596,12 +1594,6 @@ describe('Database', () => {
         .callsFake((longRunningTransaction, callback) =>
           callback(null, fakeSession2)
         );
-
-      (
-        sandbox.stub(fakePool, 'transactionClosed') as sinon.SinonStub
-      ).callsFake(_ => {
-        return false;
-      });
 
       snapshotStub = sandbox
         .stub(fakeSession, 'snapshot')

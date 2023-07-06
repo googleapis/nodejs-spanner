@@ -93,20 +93,23 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @name SessionPoolInterface#getSession
    * @param {GetSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getWriteSession
    * @param {GetWriteSessionCallback} callback The callback function.
@@ -117,15 +120,6 @@ export interface SessionPoolInterface extends EventEmitter {
    * @name SessionPoolInterface#release
    * @param {Session} session The session to be released.
    */
-  /**
-   * To be called to check if transaction is closed.
-   *
-   * @name SessionPoolInterface#transactionClosed
-   * @param {Snapshot} transaction Returns true if session for transaction has
-   * been recycled and transaction is closed.
-   * @returns {boolean}
-   */
-  _recycledTransactions: Map<Snapshot, string>;
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
   getSession(
@@ -141,7 +135,6 @@ export interface SessionPoolInterface extends EventEmitter {
     callback: GetSessionCallback
   ): void;
   release(session: Session): void;
-  transactionClosed(transaction?: Snapshot): boolean;
 }
 
 /**
@@ -386,7 +379,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _traces: Map<Session, trace.StackFrame[]>;
   _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
-  _recycledTransactions: Map<Snapshot, string>;
   _lastSessionRecycle: number | null;
 
   /**
@@ -406,20 +398,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     return `${message} \n ${stack.join('\n')}`;
-  }
-
-  /**
-   * Checks is the session for a transaction has been recycled and
-   * transaction has been closed.
-   *
-   * @param {Snapshot} transaction The transaction to be checked.
-   * @return {boolean}
-   */
-  transactionClosed(transaction?: Snapshot): boolean {
-    if (transaction && this._recycledTransactions.has(transaction)) {
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -551,7 +529,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
-    this._recycledTransactions = new Map();
     this._lastSessionRecycle = null;
   }
 
@@ -592,7 +569,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @deprecated Use getSession instead.
    * @param {GetReadSessionCallback} callback The callback function.
    */
@@ -608,7 +586,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read/write session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @deprecated use getSession instead.
    * @param {GetWriteSessionCallback} callback The callback function.
    */
@@ -622,7 +601,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @param {GetSessionCallback} callback The callback function.
    */
   getSession(
@@ -682,6 +662,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     // reset session for next transaction.
+    if (session.txn) {
+      delete session.txn.session;
+    }
     delete session.txn;
     session.transactionLogged = false;
     session.lastUsed = Date.now();
@@ -709,7 +692,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to borrow a session from the pool.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @private
    *
    * @returns {Promise<Session>}
@@ -766,7 +750,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Borrows the first session from the inventory.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @private
    *
    * @return {Session}
@@ -802,7 +787,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Grabs the next available session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @private
    *
    * @returns {Promise<Session>}
@@ -970,7 +956,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to get a session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than 60 minutes.
    * @private
    *
    * @param {number} startTime Timestamp to use when determining timeouts.
@@ -1192,9 +1179,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
             if (this.options.logging) {
               this.database.logger?.log('warn', sessionTrace);
             }
-
-            this._recycledTransactions.set(session.txn!, sessionTrace);
-            session.txn!.session = undefined;
             this.release(session);
             this._lastSessionRecycle = Date.now();
           } else if (this.options.logging) {

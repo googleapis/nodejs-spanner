@@ -6377,10 +6377,6 @@ describe('Spanner', () => {
           await new Promise(r => setTimeout(r, 2000 * 60));
           assert.strictEqual(transaction?.session, undefined);
           assert.strictEqual(session?.txn, undefined);
-          assert.strictEqual(
-            session?.parent.pool_._recycledTransactions.size,
-            1
-          );
 
           const promise = transaction!.run('SELECT 1');
           await assert.rejects(
