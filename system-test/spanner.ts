@@ -2566,6 +2566,12 @@ describe('Spanner', () => {
     });
 
     describe('ForeignKeyDeleteCascadeAction', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
       const fkadc_database_id = generateName('fkadc');
       const fkadc_database_pg_id = generateName('fkadc-pg');
       const fkadc_database = instance.database(fkadc_database_id);
@@ -2631,10 +2637,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should create a database with foreign key delete cascade action', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should create a database with foreign key delete cascade action', async () => {
         await createDatabaseWithFKADC(
           Spanner.POSTGRESQL,
           fkadc_database_pg_id,
@@ -2682,10 +2685,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should alter a database with foreign key delete cascade action', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should alter a database with foreign key delete cascade action', async () => {
         await alterDatabaseWithFKADC(Spanner.POSTGRESQL, fkadc_database_pg);
       });
 
@@ -2719,10 +2719,7 @@ describe('Spanner', () => {
         await insertAndDeleteRowWithFKADC(fkadc_database);
       });
 
-      it('POSTGRESQL should insert a row and then delete with all references', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should insert a row and then delete with all references', async () => {
         await insertAndDeleteRowWithFKADC(fkadc_database_pg);
       });
 
@@ -2746,10 +2743,7 @@ describe('Spanner', () => {
         }
       });
 
-      it('POSTGRESQL should throw error when insert a row without reference', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should throw error when insert a row without reference', async () => {
         try {
           await insertRowErrorWithFKADC(fkadc_database_pg);
         } catch (err) {
@@ -2785,10 +2779,7 @@ describe('Spanner', () => {
         insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database);
       });
 
-      it('POSTGRESQL should throw error when insert and delete a referenced key', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should throw error when insert and delete a referenced key', done => {
         insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database_pg);
       });
 
@@ -2848,10 +2839,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', done => {
         insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
           done,
           fkadc_database_pg
@@ -2884,10 +2872,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should test information schema referential constraints', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
+      it('POSTGRESQL should test information schema referential constraints', done => {
         deleteRuleOnInformationSchemaReferentialConstraints(
           done,
           fkadc_database_pg
