@@ -2214,6 +2214,14 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
+      it('POSTGRESQL should create a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createUserDefinedDatabaseRole(PG_DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
       const grantAccessToRole = async (
         database,
         createRoleQuery,
@@ -2240,6 +2248,18 @@ describe('Spanner', () => {
           DATABASE,
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should grant access to a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await grantAccessToRole(
+          PG_DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE singers TO child'
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2286,6 +2306,19 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
+      it('POSTGRESQL should revoke permissions of a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleRevoked(
+          PG_DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE singers TO orphan',
+          'REVOKE SELECT ON TABLE singers FROM orphan'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
       const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
@@ -2325,13 +2358,22 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessSuccess = (done, database) => {
+      it('POSTGRESQL should drop the user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleDropped(
+          PG_DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const grantAccessSuccess = (done, database, grantPermissionQuery) => {
         const id = 7;
         database.updateSchema(
-          [
-            'CREATE ROLE read_access',
-            'GRANT SELECT ON TABLE Singers TO ROLE read_access',
-          ],
+          ['CREATE ROLE read_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2363,16 +2405,28 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessSuccess(done, DATABASE);
+        grantAccessSuccess(
+          done,
+          DATABASE,
+          'GRANT SELECT ON TABLE Singers TO ROLE read_access'
+        );
       });
 
-      const grantAccessFailure = (done, database) => {
+      it('POSTGRESQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessSuccess(
+          done,
+          PG_DATABASE,
+          'GRANT SELECT ON TABLE singers TO read_access'
+        );
+      });
+
+      const grantAccessFailure = (done, database, grantPermissionQuery) => {
         const id = 8;
         database.updateSchema(
-          [
-            'CREATE ROLE write_access',
-            'GRANT INSERT ON TABLE Singers TO ROLE write_access',
-          ],
+          ['CREATE ROLE write_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2404,7 +2458,22 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessFailure(done, DATABASE);
+        grantAccessFailure(
+          done,
+          DATABASE,
+          'GRANT INSERT ON TABLE Singers TO ROLE write_access'
+        );
+      });
+
+      it('POSTGRESQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessFailure(
+          done,
+          PG_DATABASE,
+          'GRANT INSERT ON TABLE singers TO write_access'
+        );
       });
 
       const listDatabaseRoles = async database => {
@@ -2429,6 +2498,13 @@ describe('Spanner', () => {
           this.skip();
         }
         await listDatabaseRoles(DATABASE);
+      });
+
+      it('POSTGRESQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await listDatabaseRoles(PG_DATABASE);
       });
 
       const getIamPolicy = (done, database) => {
@@ -8280,6 +8356,94 @@ describe('Spanner', () => {
           this.skip();
         }
         deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+      });
+    });
+
+    describe('batch transactions', () => {
+      before(done => {
+        if (!IS_EMULATOR_ENABLED) {
+          DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k998',
+                  str: 'abc',
+                },
+              },
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        } else {
+          done();
+        }
+      });
+
+      it('should create and execute a query partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = "k998"',
+        };
+
+        let row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      it('should create and execute a read partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: false,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        let read_row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createReadPartitions(QUERY, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                read_row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(read_row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
       });
     });
   });
