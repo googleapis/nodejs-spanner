@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.13.0](https://github.com/googleapis/nodejs-spanner/compare/v6.12.0...v6.13.0) (2023-07-21)
+
+
+### Features
+
+* Enable leader aware routing by default. This update contains performance optimisations that will reduce the latency of read/write transactions that originate from a region other than the default leader region. ([87cd5e6](https://github.com/googleapis/nodejs-spanner/commit/87cd5e6ecdf6d888dd0e7fe712b7070c58b32d42))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency yargs to v17 ([#1866](https://github.com/googleapis/nodejs-spanner/issues/1866)) ([24e321f](https://github.com/googleapis/nodejs-spanner/commit/24e321f6327cfdfc191a84bb47d80a156eff5be9))
+
 ## [6.12.0](https://github.com/googleapis/nodejs-spanner/compare/v6.11.0...v6.12.0) (2023-06-19)
 
 
