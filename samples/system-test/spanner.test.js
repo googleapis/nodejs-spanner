@@ -1383,7 +1383,9 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
+      new RegExp(
+        'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
+      )
     );
   });
 
@@ -1397,7 +1399,7 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      'Altered ShoppingCarts table with FKShoppingCartsCustomerName'
+      new RegExp('Altered ShoppingCarts table with FKShoppingCartsCustomerName')
     );
   });
 
@@ -1411,7 +1413,9 @@ describe('Spanner', () => {
     );
     assert.match(
       output,
-      'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
+      new RegExp(
+        'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
+      )
     );
   });
 
