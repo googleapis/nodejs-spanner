@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.14.0](https://github.com/googleapis/nodejs-spanner/compare/v6.13.0...v6.14.0) (2023-07-21)
+
+
+### Features
+
+* Foreign key delete cascade testing, samples ([#1825](https://github.com/googleapis/nodejs-spanner/issues/1825)) ([74a54b0](https://github.com/googleapis/nodejs-spanner/commit/74a54b03f0d73a62edd524fa8d0248aea7ddf344))
+* Set LAR as False ([#1883](https://github.com/googleapis/nodejs-spanner/issues/1883)) ([ed510e8](https://github.com/googleapis/nodejs-spanner/commit/ed510e8545876e188e7bd782b6db80e677c3063c))
+
 ## [6.13.0](https://github.com/googleapis/nodejs-spanner/compare/v6.12.0...v6.13.0) (2023-07-21)
 
 
