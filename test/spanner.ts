@@ -1491,14 +1491,14 @@ describe('Spanner with mock server', () => {
     });
 
     describe('LeaderAwareRouting', () => {
-      let spannerWithLARDisabled: Spanner;
-      let instanceWithLARDisabled: Instance;
+      let spannerWithLAREnabled: Spanner;
+      let instanceWithLAREnabled: Instance;
 
-      function newTestDatabaseWithLARDisabled(
+      function newTestDatabaseWithLAREnabled(
         options?: SessionPoolOptions,
         queryOptions?: IQueryOptions
       ): Database {
-        return instanceWithLARDisabled.database(
+        return instanceWithLAREnabled.database(
           `database-${dbCounter++}`,
           options,
           queryOptions
@@ -1506,18 +1506,18 @@ describe('Spanner with mock server', () => {
       }
 
       before(() => {
-        spannerWithLARDisabled = new Spanner({
+        spannerWithLAREnabled = new Spanner({
           servicePath: 'localhost',
           port,
           sslCreds: grpc.credentials.createInsecure(),
-          routeToLeaderEnabled: false,
+          routeToLeaderEnabled: true,
         });
         // Gets a reference to a Cloud Spanner instance and database
-        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
+        instanceWithLAREnabled = spannerWithLAREnabled.instance('instance');
       });
 
       it('should execute with leader aware routing enabled in a read/write transaction', async () => {
-        const database = newTestDatabase();
+        const database = newTestDatabaseWithLAREnabled();
         await database.runTransactionAsync(async tx => {
           await tx!.runUpdate({
             sql: insertSql,
@@ -1539,7 +1539,7 @@ describe('Spanner with mock server', () => {
       });
 
       it('should execute with leader aware routing disabled in a read/write transaction', async () => {
-        const database = newTestDatabaseWithLARDisabled();
+        const database = newTestDatabase();
         await database.runTransactionAsync(async tx => {
           await tx!.runUpdate({
             sql: insertSql,
