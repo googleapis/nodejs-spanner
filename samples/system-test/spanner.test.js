@@ -1591,7 +1591,9 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp('SingerId: 1, FirstName: Virginia, LastName: Watson')
+        new RegExp(
+          'SingerId: 1, FirstName: Virginia, LastName: Watson, SingerInfo-nationality: Country1'
+        )
       );
     });
 
@@ -1602,7 +1604,9 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp('SingerId: 1, FirstName: Virginia, LastName: Watson')
+        new RegExp(
+          'SingerId: 1, FirstName: Virginia, LastName: Watson, SingerInfo-nationality: Country1'
+        )
       );
     });
   });

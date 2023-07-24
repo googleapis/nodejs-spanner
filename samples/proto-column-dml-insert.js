@@ -75,12 +75,12 @@ function main(
                                      SingerInfo, SingerGenre,
                                      SingerInfoArray,
                                      SingerGenreArray)
-                VALUES (1, 'Virginia', 'Watson', @id1, @id2, @id3, @id4)`,
+                VALUES (1, 'Virginia', 'Watson', @singerInfo, @genre, @singerInfoArray, @genreArray)`,
           params: {
-            id1: protoMessage,
-            id2: genre,
-            id3: [protoMessage],
-            id4: [protoEnum],
+            singerInfo: protoMessage,
+            genre: genre,
+            singerInfoArray: [protoMessage],
+            genreArray: [protoEnum],
           },
         });
 

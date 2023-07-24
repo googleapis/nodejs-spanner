@@ -68,10 +68,32 @@ export interface RowOptions {
    * integer for Proto Enums.
    *
    * @example
-   * To obtain Proto Messages and Proto Enums as JSON objects, the customer needs
-   * to supply a custom parameter. This parameter should include the protobufjs-cli
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
    * generated proto message function and enum object. It encompasses the essential
    * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
    */
   columnsMetadata?: object;
 }

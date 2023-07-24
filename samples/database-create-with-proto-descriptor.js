@@ -41,7 +41,8 @@ function main(
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance and a database. The database does not need to exist.
+  // Gets a reference to a Cloud Spanner instance and a database. The database
+  // will be created and should not exist.
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 

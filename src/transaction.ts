@@ -61,17 +61,39 @@ export interface RequestOptions {
   maxResumeRetries?: number;
   /**
    * An object where column names as keys and custom objects as corresponding
-   * values for deserialization. It's specifically useful for data types like
-   * protobuf where deserialization logic is on user-specific code. When provided,
+   * values for deserialization. This is only needed for proto columns
+   * where deserialization logic is on user-specific code. When provided,
    * the custom object enables deserialization of backend-received column data.
    * If not provided, data remains serialized as buffer for Proto Messages and
    * integer for Proto Enums.
    *
    * @example
-   * To obtain Proto Messages and Proto Enums as JSON objects, the customer needs
-   * to supply a custom parameter. This parameter should include the protobufjs-cli
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
    * generated proto message function and enum object. It encompasses the essential
    * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
    */
   columnsMetadata?: object;
 }

@@ -76,7 +76,7 @@ function main(
       rows.forEach(row => {
         const json = row.toJSON();
         console.log(
-          `SingerId: ${json.singerid}, FirstName: ${json.firstname}, LastName: ${json.lastname}`
+          `SingerId: ${json.SingerId}, FirstName: ${json.FirstName}, LastName: ${json.LastName}, SingerInfo-nationality: ${json.SingerInfo.nationality}`
         );
       });
     } catch (err) {
