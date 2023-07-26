@@ -30,7 +30,7 @@ import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
 import * as winston from 'winston';
-import { _setLongRunningTransactionThreshold } from "../src/common";
+import {_setLongRunningTransactionThreshold} from '../src/common';
 
 let pQueueOverride: typeof PQueue | null = null;
 

@@ -2729,8 +2729,7 @@ class Database extends common.GrpcServiceObject {
 
       transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
-          if (err.code !== grpc.status.ABORTED)
-          {
+          if (err.code !== grpc.status.ABORTED) {
             if (transaction.session) {
               this.pool_.release(session!);
             }

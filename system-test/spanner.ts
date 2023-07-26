@@ -6384,9 +6384,7 @@ describe('Spanner', () => {
           const promise = transaction!.run('SELECT 1');
           await assert.rejects(
             promise,
-            new GoogleError(
-              LONG_RUNNING_TRANSACTION_ERROR_MESSAGE
-            )
+            new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE)
           );
           done();
         });
