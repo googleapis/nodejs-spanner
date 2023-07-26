@@ -37,6 +37,7 @@ import {
   NormalCallback,
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
 } from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
@@ -362,9 +363,7 @@ export class Snapshot extends EventEmitter {
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
     const session = this.session.formattedName_!;
     const options = this._options;
@@ -608,9 +607,7 @@ export class Snapshot extends EventEmitter {
     delete request.requestOptions;
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
@@ -1081,9 +1078,7 @@ export class Snapshot extends EventEmitter {
     let reqOpts;
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
 
     const sanitizeRequest = () => {
@@ -1664,9 +1659,7 @@ export class Transaction extends Dml {
       });
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
 
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
@@ -1837,9 +1830,7 @@ export class Transaction extends Dml {
       'gaxOptions' in options ? (options as CommitOptions).gaxOptions : options;
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
 
     const mutations = this._queuedMutations;
@@ -2201,9 +2192,7 @@ export class Transaction extends Dml {
     }
 
     if (!this.session) {
-      throw new GoogleError(
-        'Transaction has been closed as it was running for more than 60 minutes'
-      );
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
 
     const session = this.session.formattedName_!;

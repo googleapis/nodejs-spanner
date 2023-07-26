@@ -44,7 +44,10 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
-import {_setLongRunningTransactionTimeout} from '../src/common';
+import {
+  _setLongRunningTransactionThreshold,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
+} from '../src/common';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -6190,7 +6193,7 @@ describe('Spanner', () => {
     const table = DATABASE.table(TABLE_NAME);
 
     afterEach(async () => {
-      _setLongRunningTransactionTimeout(1000 * 60 * 60);
+      _setLongRunningTransactionThreshold(1000 * 60 * 60);
     });
 
     it('should insert and query a row', done => {
@@ -6362,7 +6365,7 @@ describe('Spanner', () => {
         databaseRole: null,
       };
       const database = instance.database(DATABASE.formattedName_, options);
-      _setLongRunningTransactionTimeout(1000 * 60);
+      _setLongRunningTransactionThreshold(1000 * 60);
 
       database.getSnapshot(async (err, transaction) => {
         if (err) {
@@ -6382,7 +6385,7 @@ describe('Spanner', () => {
           await assert.rejects(
             promise,
             new GoogleError(
-              'Transaction has been closed as it was running for more than 60 minutes'
+              LONG_RUNNING_TRANSACTION_ERROR_MESSAGE
             )
           );
           done();

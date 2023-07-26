@@ -90,21 +90,33 @@ export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
 }
 
 /*!
- * Timeout value for long-running transactions
+ * Timeout value for long-running transactions in milliseconds.
  */
-let LONG_RUNNING_TRANSACTION_TIMEOUT: number = 1000 * 60 * 60;
+let LONG_RUNNING_TRANSACTION_THRESHOLD: number = 1000 * 60 * 60;
 
 /**
  * Set timeout in milliseconds for long-running transactions.
  * @param {number} [timeout] Timeout for Long Running Transactions.
  */
-export function _setLongRunningTransactionTimeout(timeout: number) {
-  LONG_RUNNING_TRANSACTION_TIMEOUT = timeout;
+export function _setLongRunningTransactionThreshold(timeout: number) {
+  LONG_RUNNING_TRANSACTION_THRESHOLD = timeout;
 }
 
 /**
- * Get timeout for long-running transactions.
+ * Get timeout for long-running transactions in milliseconds.
  */
-export function getLongRunningTransactionTimeout() {
-  return LONG_RUNNING_TRANSACTION_TIMEOUT;
+export function getLongRunningTransactionThreshold() {
+  return LONG_RUNNING_TRANSACTION_THRESHOLD;
 }
+
+/*!
+ * Timeout value in millisecond for cleanup of sessions
+ */
+export const SESSION_CLEANUP_TIMEOUT: number = 1000 * 60 * 60;
+
+/**
+ * Error message thrown when transaction running longer than expected thresholds is recycled.
+ */
+export const LONG_RUNNING_TRANSACTION_ERROR_MESSAGE =
+  'Transaction has been closed as it was running for more than expected thresholds. ' +
+  'If transaction is expected to run long, run as batch or partitioned DML';

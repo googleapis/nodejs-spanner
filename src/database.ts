@@ -789,7 +789,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    // createBatchTransaction is a long-running transaction which may take longer than 60 minutes
+    // createBatchTransaction is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, null, undefined);
@@ -1982,7 +1982,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    // Queries on transactions is a not a long-running transaction and should take less than 60 minutes
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session) => {
       if (err) {
         callback!(err as ServiceError);
@@ -2062,7 +2062,7 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    // Queries on transactions is a not a long-running transaction and should take less than 60 minutes
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
@@ -2699,7 +2699,7 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    // runPartitionedUpdate is a long-running transaction which may take longer than 60 minutes
+    // runPartitionedUpdate is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, 0);
@@ -2880,7 +2880,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    // runStream is a long-running transaction which may take longer than 60 minutes
+    // runStream is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(false, (err, session) => {
       if (err) {
         proxyStream.destroy(err);
@@ -3037,7 +3037,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    // runTransaction is a not a long-running transaction and should take less than 60 minutes
+    // runTransaction is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
