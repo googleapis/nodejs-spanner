@@ -288,6 +288,21 @@ function updateUsingDmlWithStruct(instanceId, databaseId, projectId) {
         params: {
           name: nameStruct,
         },
+        types: {
+          name: {
+            type: 'struct',
+            fields: [
+              {
+                name: 'FirstName',
+                type: 'string',
+              },
+              {
+                name: 'LastName',
+                type: 'string',
+              },
+            ],
+          },
+        },
       });
 
       console.log(`Successfully updated ${rowCount} record.`);

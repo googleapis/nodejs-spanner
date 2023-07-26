@@ -5154,6 +5154,9 @@ describe('Spanner', () => {
               params: {
                 v: 'abc',
               },
+              types: {
+                v: 'string',
+              },
             };
             stringQuery(done, DATABASE, query, 'abc');
           });
@@ -5207,6 +5210,12 @@ describe('Spanner', () => {
               sql: 'SELECT @v',
               params: {
                 v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'string',
+                },
               },
             };
 
@@ -5660,6 +5669,21 @@ describe('Spanner', () => {
                 }),
                 p4: Spanner.int(10),
               },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
             };
 
             DATABASE.run(query, (err, rows) => {
@@ -5714,6 +5738,23 @@ describe('Spanner', () => {
                     nestedf: 'bob',
                   }),
                 }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'structf',
+                      type: 'struct',
+                      fields: [
+                        {
+                          name: 'nestedf',
+                          type: 'string',
+                        },
+                      ],
+                    },
+                  ],
+                },
               },
             };
 
@@ -5886,6 +5927,21 @@ describe('Spanner', () => {
                   userf: 'bob',
                 }),
               },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
             };
 
             DATABASE.run(query, (err, rows) => {
@@ -5906,6 +5962,21 @@ describe('Spanner', () => {
                   userf: 'bob',
                   threadf: Spanner.int(1),
                 }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
               },
             };
 
