@@ -1536,6 +1536,10 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
+        new RegExp('Created Seq sequence and Customers table')
+      );
+      assert.match(
+        output,
         new RegExp('Successfully inserted 3 record into the Customers table.')
       );
     });
@@ -1852,7 +1856,11 @@ describe('Spanner', () => {
     // pg_create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node pg-sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Created Seq sequence and Customers table')
       );
       assert.match(
         output,
