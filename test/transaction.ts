@@ -749,7 +749,7 @@ describe('Transaction', () => {
 
         assert.throws(
           () => snapshot.runStream(QUERY),
-          /Transaction has been closed as it was running for more than 60 minutes/
+          /Transaction has been closed as it was running for more than expected thresholds. If transaction is expected to run long, run as batch or partitioned DML/
         );
         done();
       });

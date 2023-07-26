@@ -30,6 +30,7 @@ import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
 import * as winston from 'winston';
+import {_setLongRunningTransactionThreshold} from '../src/common';
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -584,6 +585,7 @@ describe('SessionPool', () => {
       inventory.borrowed.add(session);
       session.transactionLogged = true;
       session.longRunningTransaction = true;
+      session.nullTxn = true;
 
       sessionPool.release(session);
       assert.strictEqual(session.transactionLogged, false);
@@ -596,6 +598,7 @@ describe('SessionPool', () => {
       sessionPool._release = noop;
       inventory.borrowed.add(session);
       session.lastUsed = null!;
+      session.nullTxn = true;
 
       sessionPool.release(session);
       assert(isAround(session.lastUsed, Date.now()));
@@ -616,6 +619,7 @@ describe('SessionPool', () => {
           .withArgs(fakeSession)
           .callsFake(() => done());
 
+        fakeSession.nullTxn = true;
         sessionPool.release(fakeSession);
       });
     });
@@ -1450,15 +1454,6 @@ describe('SessionPool', () => {
     });
   });
 
-  describe('transactionClosed', () => {
-    it('should return true when transaction is closed', () => {
-      const fakeTxn = new FakeTransaction() as unknown as Transaction;
-      assert.strictEqual(sessionPool.transactionClosed(fakeTxn), false);
-      sessionPool._recycledTransactions.set(fakeTxn, 'fake stack-trace');
-      assert.strictEqual(sessionPool.transactionClosed(fakeTxn), true);
-    });
-  });
-
   describe('_deleteLongRunningTransactions', () => {
     it('should stop cleanup of long running transactions after 60 minutes', async () => {
       sandbox.stub(Date, 'now').callsFake(() => {
@@ -1490,13 +1485,14 @@ describe('SessionPool', () => {
       sessionPool._traces.set(session, trace);
       session.lastUsed = 100000;
       session.longRunningTransaction = false;
+      sessionPool.options.logging = true;
 
       await sessionPool._deleteLongRunningTransactions();
-      assert.strictEqual(formatTraceStub.callCount, 2);
+      assert.strictEqual(formatTraceStub.callCount, 1);
       assert.strictEqual(session.transactionLogged, true);
       // deleteLongRunningTransactions should not print stack trace a second time
       await sessionPool._deleteLongRunningTransactions();
-      assert.strictEqual(formatTraceStub.callCount, 3);
+      assert.strictEqual(formatTraceStub.callCount, 1);
     });
 
     it('should close inactive transaction', async () => {
@@ -1507,24 +1503,19 @@ describe('SessionPool', () => {
         return 'fake-trace';
       });
       sandbox.stub(Date, 'now').callsFake(() => {
-        return 100000 + 60 * 60 * 1000 + 10;
+        return 10000 + 60 * 60 * 1000 + 10;
       });
       sessionPool._traces.set(session, trace);
       const releaseStub = sandbox.stub(sessionPool, 'release');
-      sessionPool._lastSessionRecycle = 100000 + 50 * 60 * 1000;
+      sessionPool._lastSessionRecycle = 12000;
       sessionPool.options.closeInactiveTransactions = true;
       sessionPool.options.logging = false;
-      session.lastUsed = 100000;
+      session.lastUsed = 10000;
       session.longRunningTransaction = false;
       session.txn = new FakeTransaction() as unknown as Transaction;
-      session.txn.session = session;
+      _setLongRunningTransactionThreshold(1000);
 
       await sessionPool._deleteLongRunningTransactions();
-      assert.strictEqual(session.txn?.session, undefined);
-      assert.strictEqual(
-        sessionPool._recycledTransactions.has(session.txn!),
-        true
-      );
       assert.strictEqual(session.txn?.session, undefined);
       assert.strictEqual(releaseStub.callCount, 1);
     });

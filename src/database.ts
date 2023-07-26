@@ -789,6 +789,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
+    // createBatchTransaction is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, null, undefined);
@@ -1051,10 +1052,9 @@ class Database extends common.GrpcServiceObject {
   private _releaseOnEnd(session: Session, transaction: Snapshot) {
     transaction.once('end', () => {
       try {
-        if (this.pool_.transactionClosed(transaction)) {
-          return;
+        if (transaction.session) {
+          this.pool_.release(session);
         }
-        this.pool_.release(session);
       } catch (e) {
         this.emit('error', e);
       }
@@ -1982,6 +1982,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session) => {
       if (err) {
         callback!(err as ServiceError);
@@ -1995,10 +1996,14 @@ class Database extends common.GrpcServiceObject {
         if (err) {
           if (isSessionNotFoundError(err)) {
             session!.lastError = err;
-            this.pool_.release(session!);
+            if (snapshot.session) {
+              this.pool_.release(session!);
+            }
             this.getSnapshot(options, callback!);
           } else {
-            this.pool_.release(session!);
+            if (snapshot.session) {
+              this.pool_.release(session!);
+            }
             callback!(err);
           }
           return;
@@ -2057,6 +2062,7 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
@@ -2693,6 +2699,7 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
+    // runPartitionedUpdate is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, 0);
@@ -2713,7 +2720,9 @@ class Database extends common.GrpcServiceObject {
 
     transaction.begin(err => {
       if (err) {
-        this.pool_.release(session!);
+        if (transaction.session) {
+          this.pool_.release(session!);
+        }
         callback!(err, 0);
         return;
       }
@@ -2721,13 +2730,17 @@ class Database extends common.GrpcServiceObject {
       transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
           if (err.code !== grpc.status.ABORTED) {
-            this.pool_.release(session!);
+            if (transaction.session) {
+              this.pool_.release(session!);
+            }
             callback!(err, 0);
             return;
           }
           this._runPartitionedUpdate(session, query, callback);
         } else {
-          this.pool_.release(session!);
+          if (transaction.session) {
+            this.pool_.release(session!);
+          }
           callback!(null, updateCount);
           return;
         }
@@ -2866,6 +2879,7 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
+    // runStream is a long-running transaction which may take longer than expected thresholds
     this.pool_.getSession(false, (err, session) => {
       if (err) {
         proxyStream.destroy(err);
@@ -3022,6 +3036,7 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
+    // runTransaction is a not a long-running transaction and should take less than expected thresholds
     this.pool_.getSession(false, (err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
@@ -3032,6 +3047,7 @@ class Database extends common.GrpcServiceObject {
         return;
       }
       if (transaction instanceof Transaction) {
+        session!.txn = transaction;
         if (options.optimisticLock) {
           transaction!.useOptimisticLock();
         }
@@ -3046,11 +3062,15 @@ class Database extends common.GrpcServiceObject {
 
         runner.run().then(release, err => {
           if (isSessionNotFoundError(err)) {
-            release();
+            if (transaction.session) {
+              release();
+            }
             this.runTransaction(options, runFn!);
           } else {
             setImmediate(runFn!, err);
-            release();
+            if (transaction.session) {
+              release();
+            }
           }
         });
       }
@@ -3160,7 +3180,9 @@ class Database extends common.GrpcServiceObject {
         try {
           return await runner.run();
         } finally {
-          this.pool_.release(session);
+          if (transaction.session) {
+            this.pool_.release(session);
+          }
         }
       } catch (e) {
         if (!isSessionNotFoundError(e as ServiceError)) {

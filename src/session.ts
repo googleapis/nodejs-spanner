@@ -115,6 +115,7 @@ export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
   txn?: Transaction | Snapshot | null;
+  nullTxn: boolean;
   lastUsed?: number;
   longRunningTransaction?: boolean;
   lastError?: grpc.ServiceError;
@@ -272,6 +273,7 @@ export class Session extends common.GrpcServiceObject {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
     this.transactionLogged = false;
+    this.nullTxn = false;
   }
   /**
    * Delete a session.

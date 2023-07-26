@@ -23,7 +23,11 @@ import {Session} from './session';
 import {Snapshot, Transaction} from './transaction';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
-import {getLongRunningTransactionTimeout} from './common';
+import {
+  getLongRunningTransactionThreshold,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
+  SESSION_CLEANUP_TIMEOUT,
+} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -93,20 +97,23 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @name SessionPoolInterface#getSession
    * @param {GetSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getWriteSession
    * @param {GetWriteSessionCallback} callback The callback function.
@@ -117,15 +124,6 @@ export interface SessionPoolInterface extends EventEmitter {
    * @name SessionPoolInterface#release
    * @param {Session} session The session to be released.
    */
-  /**
-   * To be called to check if transaction is closed.
-   *
-   * @name SessionPoolInterface#transactionClosed
-   * @param {Snapshot} transaction Returns true if session for transaction has
-   * been recycled and transaction is closed.
-   * @returns {boolean}
-   */
-  _recycledTransactions: Map<Snapshot, string>;
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
   getSession(
@@ -141,7 +139,6 @@ export interface SessionPoolInterface extends EventEmitter {
     callback: GetSessionCallback
   ): void;
   release(session: Session): void;
-  transactionClosed(transaction?: Snapshot): boolean;
 }
 
 /**
@@ -171,7 +168,7 @@ export interface SessionPoolInterface extends EventEmitter {
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
  * @property {boolean} [closeInactiveTransactions=false] Close inactive transactions
- *     running for longer than 60 minutes which may cause session leaks.
+ *     running for longer than expected thresholds which may cause session leaks.
  * @property {boolean} [logging=true] Log information related to session pool usage.
  */
 export interface SessionPoolOptions {
@@ -210,6 +207,8 @@ const DEFAULTS: SessionPoolOptions = {
   logging: true,
   databaseRole: null,
 };
+
+const USED_SESSIONS_RATIO_THRESHOLD = 0.95;
 
 /**
  * Error to be thrown when attempting to release unknown resources.
@@ -386,7 +385,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _traces: Map<Session, trace.StackFrame[]>;
   _longRunningTransactionHandle?: NodeJS.Timer;
   _ongoingTransactionDeletion: boolean;
-  _recycledTransactions: Map<Snapshot, string>;
   _lastSessionRecycle: number | null;
 
   /**
@@ -406,20 +404,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     return `${message} \n ${stack.join('\n')}`;
-  }
-
-  /**
-   * Checks is the session for a transaction has been recycled and
-   * transaction has been closed.
-   *
-   * @param {Snapshot} transaction The transaction to be checked.
-   * @return {boolean}
-   */
-  transactionClosed(transaction?: Snapshot): boolean {
-    if (transaction && this._recycledTransactions.has(transaction)) {
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -551,7 +535,6 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
-    this._recycledTransactions = new Map();
     this._lastSessionRecycle = null;
   }
 
@@ -592,7 +575,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @param {GetReadSessionCallback} callback The callback function.
    */
@@ -608,7 +592,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read/write session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated use getSession instead.
    * @param {GetWriteSessionCallback} callback The callback function.
    */
@@ -622,7 +607,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @param {GetSessionCallback} callback The callback function.
    */
   getSession(
@@ -682,6 +668,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     }
 
     // reset session for next transaction.
+    if (session.txn) {
+      delete session.txn.session;
+    }
     delete session.txn;
     session.transactionLogged = false;
     session.lastUsed = Date.now();
@@ -709,7 +698,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to borrow a session from the pool.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @returns {Promise<Session>}
@@ -766,7 +756,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Borrows the first session from the inventory.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @return {Session}
@@ -782,15 +773,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // Check if more than 95% of the pool is exhausted and if cleanup is required.
     if (
       (this.options.closeInactiveTransactions || this.options.logging) &&
-      this.borrowed / maxSessions >= 0.95
+      this.borrowed / maxSessions >= USED_SESSIONS_RATIO_THRESHOLD
     ) {
       this._startCleaningLongRunningSessions();
     }
 
     // Log if entire session pool is exhausted.
-    if (this.options.logging && this.borrowed / maxSessions === 1.0) {
+    if (this.options.logging && this.borrowed === maxSessions) {
       this.database.logger?.log(
-        'info',
+        'warn',
         '100% of the session pool is exhausted.' +
           'Increase max sessions in Session Pool Options as per requirement.'
       );
@@ -802,7 +793,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Grabs the next available session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @returns {Promise<Session>}
@@ -970,7 +962,8 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to get a session.
    *
-   * @param {boolean} longRunningTransaction Is transaction long-running.
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @param {number} startTime Timestamp to use when determining timeouts.
@@ -1167,7 +1160,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     // Stop cleanup after 60 minutes until triggered again unless a session has
     // been recycled in the last 60 minutes.
-    if (Date.now() - this._lastSessionRecycle! > 60 * 60 * 1000) {
+    if (Date.now() - this._lastSessionRecycle! > SESSION_CLEANUP_TIMEOUT) {
       this._stopCleaningLongRunningSessions();
       this._lastSessionRecycle = null;
       this._ongoingTransactionDeletion = false;
@@ -1182,29 +1175,26 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
           !session.longRunningTransaction &&
           diff > longRunningTransactionTimeout
         ) {
-          let sessionTrace = SessionPool.formatTrace(
-            this._traces.get(session) || [],
-            'Long running transaction! Transaction has been closed as it was running for ' +
-              'more than 60 minutes. For long running transactions use batch or partitioned transactions.'
-          );
           if (this.options.closeInactiveTransactions) {
             // Recycle session if closeInactiveTransactions is true and log if logging is true.
             if (this.options.logging) {
+              const sessionTrace = SessionPool.formatTrace(
+                this._traces.get(session) || [],
+                LONG_RUNNING_TRANSACTION_ERROR_MESSAGE
+              );
               this.database.logger?.log('warn', sessionTrace);
             }
-
-            this._recycledTransactions.set(session.txn!, sessionTrace);
-            session.txn!.session = undefined;
             this.release(session);
             this._lastSessionRecycle = Date.now();
           } else if (this.options.logging) {
             // If only logging is true, mark session as logged so that
             // we don't log the same transaction multiple times.
             if (!session.transactionLogged) {
-              sessionTrace = SessionPool.formatTrace(
+              const sessionTrace = SessionPool.formatTrace(
                 this._traces.get(session) || [],
                 'Transaction has been running for longer than 60 minutes and might be causing a leak. ' +
-                  'Enable closeInactiveTransactions in Session Pool Options to automatically clean such transactions.'
+                  'Enable closeInactiveTransactions in Session Pool Options to automatically clean such transactions ' +
+                  'or, if transaction is expected to run long, run as batch or partitioned DML.'
               );
               session.transactionLogged = true;
               this.database.logger?.log('warn', sessionTrace);
@@ -1238,7 +1228,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // If on releasing this session, pool is less than 95% exhausted then stop the cleanup.
     if (
       this.options.closeInactiveTransactions &&
-      this.borrowed / maxSessions < 0.95
+      this.borrowed / maxSessions < USED_SESSIONS_RATIO_THRESHOLD
     ) {
       this._stopCleaningLongRunningSessions();
     }
@@ -1283,13 +1273,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _startCleaningLongRunningSessions(): void {
     if (this._longRunningTransactionHandle) return;
     if (this.options.logging) {
-      this.database.logger?.log('info', '95% of the session pool is exhausted');
+      this.database.logger?.log(
+        'warn',
+        `${USED_SESSIONS_RATIO_THRESHOLD} of the session pool is exhausted`
+      );
     }
     this._lastSessionRecycle = Date.now();
     this._longRunningTransactionHandle = setInterval(
       () =>
-        this._deleteLongRunningTransactions(getLongRunningTransactionTimeout()),
-      120000
+        this._deleteLongRunningTransactions(
+          getLongRunningTransactionThreshold()
+        ),
+      1000 * 60 * 2 // Background task runs once every 2 minutes.
     );
     this._longRunningTransactionHandle.unref();
   }
