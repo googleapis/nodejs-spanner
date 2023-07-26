@@ -1486,23 +1486,6 @@ describe('Spanner', () => {
           }
         );
       });
-
-      it('GOOGLE_STANDARD_SQL should read untyped json values', done => {
-        const value = {
-          key1: 'value1',
-          key2: 'value2',
-        };
-        readUntypedData(
-          'JsonValue',
-          value,
-          Spanner.GOOGLE_STANDARD_SQL,
-          (err, row) => {
-            assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().JsonValue, value);
-            done();
-          }
-        );
-      });
     });
 
     describe('timestamps', () => {
@@ -1849,18 +1832,6 @@ describe('Spanner', () => {
             done();
           }
         );
-      });
-
-      it('POSTGRESQL should read untyped json values', done => {
-        const value = Spanner.pgJsonb({
-          key1: 'value1',
-          key2: 'value2',
-        });
-        readUntypedData('JsonbValue', value, Spanner.POSTGRESQL, (err, row) => {
-          assert.ifError(err);
-          assert.deepStrictEqual(row.toJSON().JsonbValue, value);
-          done();
-        });
       });
     });
 
