@@ -4,6 +4,61 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [6.14.0](https://github.com/googleapis/nodejs-spanner/compare/v6.13.0...v6.14.0) (2023-07-21)
+
+
+### Features
+
+* Foreign key delete cascade testing, samples ([#1825](https://github.com/googleapis/nodejs-spanner/issues/1825)) ([74a54b0](https://github.com/googleapis/nodejs-spanner/commit/74a54b03f0d73a62edd524fa8d0248aea7ddf344))
+* Set LAR as False ([#1883](https://github.com/googleapis/nodejs-spanner/issues/1883)) ([ed510e8](https://github.com/googleapis/nodejs-spanner/commit/ed510e8545876e188e7bd782b6db80e677c3063c))
+
+## [6.13.0](https://github.com/googleapis/nodejs-spanner/compare/v6.12.0...v6.13.0) (2023-07-21)
+
+
+### Features
+
+* Enable leader aware routing by default. This update contains performance optimisations that will reduce the latency of read/write transactions that originate from a region other than the default leader region. ([87cd5e6](https://github.com/googleapis/nodejs-spanner/commit/87cd5e6ecdf6d888dd0e7fe712b7070c58b32d42))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency yargs to v17 ([#1866](https://github.com/googleapis/nodejs-spanner/issues/1866)) ([24e321f](https://github.com/googleapis/nodejs-spanner/commit/24e321f6327cfdfc191a84bb47d80a156eff5be9))
+
+## [6.12.0](https://github.com/googleapis/nodejs-spanner/compare/v6.11.0...v6.12.0) (2023-06-19)
+
+
+### Features
+
+* Databoostenabled for Query and Read partitions ([#1784](https://github.com/googleapis/nodejs-spanner/issues/1784)) ([66ff70c](https://github.com/googleapis/nodejs-spanner/commit/66ff70cd377d5e3f60a6796bc36bab3a39337f31))
+
+## [6.11.0](https://github.com/googleapis/nodejs-spanner/compare/v6.10.1...v6.11.0) (2023-06-06)
+
+
+### Features
+
+* **spanner:** Add DdlStatementActionInfo and add actions to UpdateDatabaseDdlMetadata ([#1860](https://github.com/googleapis/nodejs-spanner/issues/1860)) ([3e86f36](https://github.com/googleapis/nodejs-spanner/commit/3e86f369b927e3bf0a2046bd13d0b6a39a9bb076))
+* Testing for fgac in pg ([#1811](https://github.com/googleapis/nodejs-spanner/issues/1811)) ([c48945f](https://github.com/googleapis/nodejs-spanner/commit/c48945f536685d6e4ee4097cfac7d5f57853553e))
+
+## [6.10.1](https://github.com/googleapis/nodejs-spanner/compare/v6.10.0...v6.10.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* Set database admin and instance as having handwritten layers (republish docs) ([3e3e624](https://github.com/googleapis/nodejs-spanner/commit/3e3e624187013d62a5ff479386fb8961f279b5ca))
+
+## [6.10.0](https://github.com/googleapis/nodejs-spanner/compare/v6.9.0...v6.10.0) (2023-05-17)
+
+
+### Features
+
+* Add support for UpdateDatabase ([#1802](https://github.com/googleapis/nodejs-spanner/issues/1802)) ([f4fbe71](https://github.com/googleapis/nodejs-spanner/commit/f4fbe71d819fde9a237f25b03af228b27cf58689))
+* Add support for UpdateDatabase in Cloud Spanner ([#1848](https://github.com/googleapis/nodejs-spanner/issues/1848)) ([dd9d505](https://github.com/googleapis/nodejs-spanner/commit/dd9d505e1480b9f45f0f4a09b0abca8282d5fceb))
+
+
+### Bug Fixes
+
+* Set grpc useragent ([#1847](https://github.com/googleapis/nodejs-spanner/issues/1847)) ([021e54e](https://github.com/googleapis/nodejs-spanner/commit/021e54ef469d7d95bae64c687b65489cbfc56cfa))
+
 ## [6.9.0](https://github.com/googleapis/nodejs-spanner/compare/v6.8.0...v6.9.0) (2023-04-26)
 
 

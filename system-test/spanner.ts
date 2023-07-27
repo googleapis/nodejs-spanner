@@ -86,7 +86,7 @@ describe('Spanner', () => {
     : spanner.instance(generateName('instance'));
 
   const INSTANCE_CONFIG = {
-    config: 'regional-us-west2',
+    config: 'regional-us-central1',
     nodes: 1,
     labels: {
       [LABEL]: 'true',
@@ -100,6 +100,9 @@ describe('Spanner', () => {
   const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
   const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = instance.database(generateName('database'), {incStep: 1});
+  const DATABASE_DROP_PROTECTION = instance.database(generateName('database'), {
+    incStep: 1,
+  });
   const TABLE_NAME = 'Singers';
   const PG_DATABASE = instance.database(generateName('pg-db'), {incStep: 1});
 
@@ -119,7 +122,7 @@ describe('Spanner', () => {
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
-    const [, googleSqlOperation] = await DATABASE.create({
+    const [, googleSqlOperation1] = await DATABASE.create({
       schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
@@ -127,8 +130,19 @@ describe('Spanner', () => {
           ) PRIMARY KEY(SingerId)`,
       gaxOptions: GAX_OPTIONS,
     });
-    await googleSqlOperation.promise();
+    await googleSqlOperation1.promise();
     RESOURCES_TO_CLEAN.push(DATABASE);
+
+    const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
+      schema: `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+      gaxOptions: GAX_OPTIONS,
+    });
+    await googleSqlOperation2.promise();
+    RESOURCES_TO_CLEAN.push(DATABASE_DROP_PROTECTION);
 
     if (!IS_EMULATOR_ENABLED) {
       const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
@@ -1973,6 +1987,10 @@ describe('Spanner', () => {
       instance.getDatabases((err, databases) => {
         assert.ifError(err);
         assert(databases!.length > 0);
+        // check if enableDropProtection is populated for databases.
+        databases!.map(db => {
+          assert.notStrictEqual(db.metadata.enableDropProtection, null);
+        });
         done();
       });
     });
@@ -2139,6 +2157,36 @@ describe('Spanner', () => {
       await listDatabaseOperation(PG_DATABASE);
     });
 
+    it('enable_drop_protection should be disabled by default', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [databaseMetadata] = await DATABASE_DROP_PROTECTION.getMetadata();
+      assert.strictEqual(databaseMetadata!.enableDropProtection, false);
+    });
+
+    it('enable_drop_protection on database', async function () {
+      if (IS_EMULATOR_ENABLED) {
+        this.skip();
+      }
+      const [operation1] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: true,
+      });
+      await operation1.promise();
+
+      try {
+        await DATABASE_DROP_PROTECTION.delete();
+        assert.ok(false);
+      } catch (err) {
+        assert.ok(true);
+      }
+
+      const [operation2] = await DATABASE_DROP_PROTECTION.setMetadata({
+        enableDropProtection: false,
+      });
+      await operation2.promise();
+    });
+
     describe('FineGrainedAccessControl', () => {
       before(function () {
         if (SKIP_FGAC_TESTS === 'true') {
@@ -2163,6 +2211,14 @@ describe('Spanner', () => {
           this.skip();
         }
         await createUserDefinedDatabaseRole(DATABASE, 'CREATE ROLE parent');
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should create a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await createUserDefinedDatabaseRole(PG_DATABASE, 'CREATE ROLE parent');
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
@@ -2192,6 +2248,18 @@ describe('Spanner', () => {
           DATABASE,
           'CREATE ROLE child',
           'GRANT SELECT ON TABLE Singers TO ROLE child'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      it('POSTGRESQL should grant access to a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await grantAccessToRole(
+          PG_DATABASE,
+          'CREATE ROLE child',
+          'GRANT SELECT ON TABLE singers TO child'
         );
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
@@ -2238,6 +2306,19 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
+      it('POSTGRESQL should revoke permissions of a user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleRevoked(
+          PG_DATABASE,
+          'CREATE ROLE orphan',
+          'GRANT SELECT ON TABLE singers TO orphan',
+          'REVOKE SELECT ON TABLE singers FROM orphan'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
       const userDefinedDatabaseRoleDropped = async (
         database,
         createRoleQuery,
@@ -2277,13 +2358,22 @@ describe('Spanner', () => {
         await new Promise(resolve => setTimeout(resolve, 60000));
       });
 
-      const grantAccessSuccess = (done, database) => {
+      it('POSTGRESQL should drop the user defined role', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await userDefinedDatabaseRoleDropped(
+          PG_DATABASE,
+          'CREATE ROLE new_parent',
+          'DROP ROLE new_parent'
+        );
+        await new Promise(resolve => setTimeout(resolve, 60000));
+      });
+
+      const grantAccessSuccess = (done, database, grantPermissionQuery) => {
         const id = 7;
         database.updateSchema(
-          [
-            'CREATE ROLE read_access',
-            'GRANT SELECT ON TABLE Singers TO ROLE read_access',
-          ],
+          ['CREATE ROLE read_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2315,16 +2405,28 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessSuccess(done, DATABASE);
+        grantAccessSuccess(
+          done,
+          DATABASE,
+          'GRANT SELECT ON TABLE Singers TO ROLE read_access'
+        );
       });
 
-      const grantAccessFailure = (done, database) => {
+      it('POSTGRESQL should run query with access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessSuccess(
+          done,
+          PG_DATABASE,
+          'GRANT SELECT ON TABLE singers TO read_access'
+        );
+      });
+
+      const grantAccessFailure = (done, database, grantPermissionQuery) => {
         const id = 8;
         database.updateSchema(
-          [
-            'CREATE ROLE write_access',
-            'GRANT INSERT ON TABLE Singers TO ROLE write_access',
-          ],
+          ['CREATE ROLE write_access', grantPermissionQuery],
           execAfterOperationComplete(async err => {
             assert.ifError(err);
             const table = database.table('Singers');
@@ -2356,7 +2458,22 @@ describe('Spanner', () => {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        grantAccessFailure(done, DATABASE);
+        grantAccessFailure(
+          done,
+          DATABASE,
+          'GRANT INSERT ON TABLE Singers TO ROLE write_access'
+        );
+      });
+
+      it('POSTGRESQL should fail run query due to no access granted', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        grantAccessFailure(
+          done,
+          PG_DATABASE,
+          'GRANT INSERT ON TABLE singers TO write_access'
+        );
       });
 
       const listDatabaseRoles = async database => {
@@ -2381,6 +2498,13 @@ describe('Spanner', () => {
           this.skip();
         }
         await listDatabaseRoles(DATABASE);
+      });
+
+      it('POSTGRESQL should list database roles', async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        await listDatabaseRoles(PG_DATABASE);
       });
 
       const getIamPolicy = (done, database) => {
@@ -2438,6 +2562,321 @@ describe('Spanner', () => {
           this.skip();
         }
         await setIamPolicy(PG_DATABASE);
+      });
+    });
+
+    describe('ForeignKeyDeleteCascadeAction', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
+      const fkadc_database_id = generateName('fkadc');
+      const fkadc_database_pg_id = generateName('fkadc-pg');
+      const fkadc_database = instance.database(fkadc_database_id);
+      const fkadc_database_pg = instance.database(fkadc_database_pg_id);
+
+      const fkadc_schema = [
+        `CREATE TABLE Customers (
+            CustomerId INT64,
+            CustomerName STRING(62) NOT NULL
+            ) PRIMARY KEY (CustomerId)`,
+        `CREATE TABLE ShoppingCarts (
+            CartId INT64 NOT NULL,
+            CustomerId INT64 NOT NULL,
+            CustomerName STRING(62) NOT NULL,
+            CONSTRAINT FKShoppingCartsCustomerId FOREIGN KEY (CustomerId)
+            REFERENCES Customers (CustomerId) ON DELETE CASCADE,    
+          ) PRIMARY KEY (CartId)`,
+      ];
+      const fkadc_pg_schema = [
+        `CREATE TABLE Customers (
+            CustomerId BIGINT,
+            CustomerName VARCHAR(62) NOT NULL,
+            PRIMARY KEY (CustomerId)
+         ) `,
+        `CREATE TABLE ShoppingCarts (
+            CartId BIGINT,
+            CustomerId BIGINT NOT NULL,
+            CustomerName VARCHAR(62) NOT NULL,
+            CONSTRAINT "FKShoppingCartsCustomerId" FOREIGN KEY (CustomerId)
+            REFERENCES Customers (CustomerId) ON DELETE CASCADE,
+            PRIMARY KEY (CartId)
+          )`,
+      ];
+
+      const createDatabaseWithFKADC = async (
+        dialect,
+        database_id,
+        database_schema
+      ) => {
+        const [database, operation] = await instance.createDatabase(
+          database_id,
+          {databaseDialect: dialect}
+        );
+        await operation.promise();
+
+        const [operationUpdateDDL] = await database.updateSchema(
+          database_schema
+        );
+        await operationUpdateDDL.promise();
+
+        const [schema] = await database.getSchema();
+        assert.strictEqual(
+          schema.filter(x => x.includes('FKShoppingCartsCustomerId')).length,
+          1
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should create a database with foreign key delete cascade action', async () => {
+        await createDatabaseWithFKADC(
+          Spanner.GOOGLE_STANDARD_SQL,
+          fkadc_database_id,
+          fkadc_schema
+        );
+      });
+
+      it('POSTGRESQL should create a database with foreign key delete cascade action', async () => {
+        await createDatabaseWithFKADC(
+          Spanner.POSTGRESQL,
+          fkadc_database_pg_id,
+          fkadc_pg_schema
+        );
+      });
+
+      const alterDatabaseWithFKADC = async (dialect, database) => {
+        const constraint_name =
+          dialect === Spanner.POSTGRESQL
+            ? '"FKShoppingCartsCustomerName"'
+            : 'FKShoppingCartsCustomerName';
+
+        const ddl_statements_add_constraints = [
+          `ALTER TABLE ShoppingCarts ADD CONSTRAINT ${constraint_name} FOREIGN KEY (CustomerName) REFERENCES Customers(CustomerName) ON DELETE CASCADE`,
+        ];
+        const [operationAddConstraint] = await database.updateSchema(
+          ddl_statements_add_constraints
+        );
+        await operationAddConstraint.promise();
+        const [schema] = await database.getSchema();
+        assert.strictEqual(
+          schema.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
+          1
+        );
+
+        const ddl_statements_drop_constraints = [
+          'ALTER TABLE ShoppingCarts DROP CONSTRAINT FKShoppingCartsCustomerName',
+        ];
+        const [operationDropConstraint] = await database.updateSchema(
+          ddl_statements_drop_constraints
+        );
+        await operationDropConstraint.promise();
+        const [schema1] = await database.getSchema();
+        assert.strictEqual(
+          schema1.filter(x => x.includes('FKShoppingCartsCustomerName')).length,
+          0
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should alter a database with foreign key delete cascade action', async () => {
+        await alterDatabaseWithFKADC(
+          Spanner.GOOGLE_STANDARD_SQL,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should alter a database with foreign key delete cascade action', async () => {
+        await alterDatabaseWithFKADC(Spanner.POSTGRESQL, fkadc_database_pg);
+      });
+
+      const insertAndDeleteRowWithFKADC = async database => {
+        const customersTable = database.table('Customers');
+        await customersTable.insert({
+          CustomerId: 1,
+          CustomerName: 'Marc',
+        });
+
+        const cartsTable = database.table('ShoppingCarts');
+        await cartsTable.insert({
+          CartId: 1,
+          CustomerId: 1,
+          CustomerName: 'Marc',
+        });
+
+        const [rows] = await cartsTable.read({
+          columns: ['CartId', 'CustomerId'],
+        });
+        assert.strictEqual(rows.length, 1);
+
+        await customersTable.deleteRows([1]);
+        const [rows1] = await cartsTable.read({
+          columns: ['CartId', 'CustomerId'],
+        });
+        assert.strictEqual(rows1.length, 0);
+      };
+
+      it('GOOGLE_STANDARD_SQL should insert a row and then delete with all references', async () => {
+        await insertAndDeleteRowWithFKADC(fkadc_database);
+      });
+
+      it('POSTGRESQL should insert a row and then delete with all references', async () => {
+        await insertAndDeleteRowWithFKADC(fkadc_database_pg);
+      });
+
+      const insertRowErrorWithFKADC = async database => {
+        const cartsTable = database.table('ShoppingCarts');
+        await cartsTable.insert({
+          CartId: 2,
+          CustomerId: 2,
+          CustomerName: 'Jack',
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert a row without reference', async () => {
+        try {
+          await insertRowErrorWithFKADC(fkadc_database);
+        } catch (err) {
+          assert.match(
+            (err as grpc.ServiceError).message,
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `ShoppingCarts`\./
+          );
+        }
+      });
+
+      it('POSTGRESQL should throw error when insert a row without reference', async () => {
+        try {
+          await insertRowErrorWithFKADC(fkadc_database_pg);
+        } catch (err) {
+          assert.match(
+            (err as grpc.ServiceError).message,
+            /Foreign key constraint `FKShoppingCartsCustomerId` is violated on table `shoppingcarts`\./
+          );
+        }
+      });
+
+      const insertAndDeleteInSameTransactionErrorWithFKADC = (
+        done,
+        database
+      ) => {
+        database.runTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.insert('Customers', {
+            CustomerId: 2,
+            CustomerName: 'John',
+          });
+          transaction!.deleteRows('Customers', [2]);
+          transaction!.commit(err => {
+            assert.match(
+              (err as grpc.ServiceError).message.toLowerCase(),
+              /9 failed_precondition: cannot write a value for the referenced column `customers.customerid` and delete it in the same transaction\./
+            );
+            done();
+          });
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert and delete a referenced key', done => {
+        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database);
+      });
+
+      it('POSTGRESQL should throw error when insert and delete a referenced key', done => {
+        insertAndDeleteInSameTransactionErrorWithFKADC(done, fkadc_database_pg);
+      });
+
+      const insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC = (
+        done,
+        database
+      ) => {
+        const customersTable = database.table('Customers');
+        const cartsTable = database.table('ShoppingCarts');
+        customersTable.insert(
+          [
+            {
+              CustomerId: 2,
+              CustomerName: 'Marc',
+            },
+            {
+              CustomerId: 3,
+              CustomerName: 'John',
+            },
+          ],
+          err => {
+            assert.ifError(err);
+            cartsTable.insert(
+              {
+                CartId: 2,
+                CustomerId: 2,
+                CustomerName: 'Marc',
+              },
+              err => {
+                assert.ifError(err);
+                database.runTransaction((err, transaction) => {
+                  assert.ifError(err);
+                  transaction!.update('ShoppingCarts', {
+                    CartId: 2,
+                    CustomerId: 3,
+                    CustomerName: 'John',
+                  });
+                  transaction!.deleteRows('Customers', [2]);
+                  transaction!.commit(err => {
+                    assert.match(
+                      (err as grpc.ServiceError).message.toLowerCase(),
+                      /9 failed_precondition: cannot modify a row in the table `shoppingcarts` because a referential action is deleting it in the same transaction\./
+                    );
+                    done();
+                  });
+                });
+              }
+            );
+          }
+        );
+      };
+
+      it('GOOGLE_STANDARD_SQL should throw error when insert a referencing key and delete a referenced key', done => {
+        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
+          done,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should throw error when insert a referencing key and delete a referenced key', done => {
+        insertReferencingKeyAndDeleteReferencedKeyErrorWithFKADC(
+          done,
+          fkadc_database_pg
+        );
+      });
+
+      const deleteRuleOnInformationSchemaReferentialConstraints = (
+        done,
+        database
+      ) => {
+        database.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+
+          transaction!.run(
+            "SELECT DELETE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME = 'FKShoppingCartsCustomerId'",
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value, 'CASCADE');
+              transaction!.end();
+              done();
+            }
+          );
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should test information schema referential constraints', done => {
+        deleteRuleOnInformationSchemaReferentialConstraints(
+          done,
+          fkadc_database
+        );
+      });
+
+      it('POSTGRESQL should test information schema referential constraints', done => {
+        deleteRuleOnInformationSchemaReferentialConstraints(
+          done,
+          fkadc_database_pg
+        );
       });
     });
   });
@@ -8232,6 +8671,94 @@ describe('Spanner', () => {
           this.skip();
         }
         deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+      });
+    });
+
+    describe('batch transactions', () => {
+      before(done => {
+        if (!IS_EMULATOR_ENABLED) {
+          DATABASE.runTransaction((err, transaction) => {
+            assert.ifError(err);
+
+            transaction!.runUpdate(
+              {
+                sql:
+                  'INSERT INTO ' +
+                  TABLE_NAME +
+                  ' (Key, StringValue) VALUES(@key, @str)',
+                params: {
+                  key: 'k998',
+                  str: 'abc',
+                },
+              },
+              err => {
+                assert.ifError(err);
+                transaction!.commit(done);
+              }
+            );
+          });
+        } else {
+          done();
+        }
+      });
+
+      it('should create and execute a query partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const selectQuery = {
+          sql: 'SELECT * FROM TxnTable where Key = "k998"',
+        };
+
+        let row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createQueryPartitions(selectQuery, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      it('should create and execute a read partition', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const key = 'k998';
+        const QUERY = {
+          table: googleSqlTable.name,
+          // Set databoostenabled to true for enabling serveless analytics.
+          dataBoostEnabled: false,
+          keys: [key],
+          columns: ['Key'],
+        };
+
+        let read_row_count = 0;
+        DATABASE.createBatchTransaction((err, transaction) => {
+          assert.ifError(err);
+          transaction!.createReadPartitions(QUERY, (err, partitions) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(partitions.length, 1);
+            partitions.forEach(partition => {
+              transaction!.execute(partition, (err, results) => {
+                assert.ifError(err);
+                read_row_count += results.map(row => row.toJSON()).length;
+                assert.deepStrictEqual(read_row_count, 1);
+                transaction!.close();
+                done();
+              });
+            });
+          });
+        });
       });
     });
   });

@@ -35,6 +35,7 @@ and automatic, synchronous replication for high availability.
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
+  * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
@@ -97,6 +98,9 @@ and automatic, synchronous replication for high availability.
   * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
   * [Struct](#struct)
+  * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
+  * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
+  * [Drops a foreign key constraint with delete cascade action](#drops-a-foreign-key-constraint-with-delete-cascade-action)
   * [Timestamp](#timestamp)
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
@@ -466,6 +470,23 @@ __Usage:__
 
 
 `node database-update-default-leader.js <INSTANCE_ID> <DATABASE_ID> <DEFAULT_LEADER> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Updates a Cloud Spanner Database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-update.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-update.js,samples/README.md)
+
+__Usage:__
+
+
+`node database-update.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1520,6 +1541,57 @@ __Usage:__
 
 
 `node samples/struct.js`
+
+
+-----
+
+
+
+
+### Alters a table with foreign key delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-alter-with-foreign-key-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-alter-with-foreign-key-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-alter-with-foreign-key-delete-cascade.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a table with foreign key delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-create-with-foreign-key-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-create-with-foreign-key-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-create-with-foreign-key-delete-cascade.js.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a foreign key constraint with delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-drop-foreign-key-constraint-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-drop-foreign-key-constraint-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-drop-foreign-key-constraint-delete-cascade.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
