@@ -1168,7 +1168,7 @@ class Database extends common.GrpcServiceObject {
    * database.enableLogging(loggingOptions);
    * ```
    */
-  enableLogging(loggingOptions?: winston.LoggerOptions): winston.Logger {
+  enableLogging(loggingOptions?: winston.LoggerOptions) {
     let updateLogger = false;
     if (loggingOptions !== null && typeof loggingOptions === 'object') {
       updateLogger = true;
@@ -1186,7 +1186,6 @@ class Database extends common.GrpcServiceObject {
       this.logger = winston.createLogger(loggingOptions);
     }
     this.loggingEnabled = true;
-    return this.logger;
   }
 
   /**

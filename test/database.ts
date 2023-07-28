@@ -3009,7 +3009,8 @@ describe('Database', () => {
 
       it('should create logger on enableLogging', done => {
         assert.strictEqual(database.logger, undefined);
-        const logger = database.enableLogging();
+        database.enableLogging();
+        const logger = database.logger;
         compareLoggers(logger, expectedTransports, expectedFormat);
         done();
       });
@@ -3037,7 +3038,8 @@ describe('Database', () => {
         });
         database.enableLogging(LOGGING_OBJECT);
         database.disableLogging();
-        const logger = database.enableLogging();
+        database.enableLogging();
+        const logger = database.logger;
         compareLoggers(logger, expectedTransports, expectedFormat);
         done();
       });
