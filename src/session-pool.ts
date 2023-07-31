@@ -25,6 +25,7 @@ import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 import {
   getLongRunningTransactionThreshold,
+  getLongRunningBackgroundTaskTimer,
   LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
   SESSION_CLEANUP_TIMEOUT,
 } from './common';
@@ -1279,12 +1280,15 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       );
     }
     this._lastSessionRecycle = Date.now();
+    if (!this._ongoingTransactionDeletion) {
+      this._deleteLongRunningTransactions(getLongRunningTransactionThreshold());
+    }
     this._longRunningTransactionHandle = setInterval(
       () =>
         this._deleteLongRunningTransactions(
           getLongRunningTransactionThreshold()
         ),
-      1000 * 60 * 2 // Background task runs once every 2 minutes.
+      getLongRunningBackgroundTaskTimer()
     );
     this._longRunningTransactionHandle.unref();
   }

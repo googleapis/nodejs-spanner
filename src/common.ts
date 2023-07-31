@@ -110,6 +110,26 @@ export function getLongRunningTransactionThreshold() {
 }
 
 /*!
+ * period after which background cleanup task runs in milliseconds.
+ */
+let LONG_RUNNING_BACKGROUND_TASK_TIMER: number = 1000 * 60 * 2;
+
+/**
+ * Set timer in milliseconds for long-running transactions background task.
+ * @param {number} [timeout] Timeout for Long Running Transactions.
+ */
+export function _setLongRunningBackgroundTaskTimer(timeout: number) {
+  LONG_RUNNING_BACKGROUND_TASK_TIMER = timeout;
+}
+
+/**
+ * Get timer in milliseconds for long-running transactions background task.
+ */
+export function getLongRunningBackgroundTaskTimer() {
+  return LONG_RUNNING_BACKGROUND_TASK_TIMER;
+}
+
+/*!
  * Timeout value in millisecond for cleanup of sessions
  */
 export const SESSION_CLEANUP_TIMEOUT: number = 1000 * 60 * 60;
