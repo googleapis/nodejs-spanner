@@ -6685,7 +6685,6 @@ describe('Spanner', () => {
       _setLongRunningTransactionThreshold(1000 * 2);
       _setLongRunningBackgroundTaskTimer(1000);
 
-
       database.getSnapshot(async (err, transaction) => {
         if (err) {
           console.error(err);
