@@ -1443,10 +1443,16 @@ describe('SessionPool', () => {
     it('should set an interval to clean long running transactions', done => {
       const expectedInterval = 120000;
       const clock = sandbox.useFakeTimers();
+      let callCount = 0;
 
       sandbox
         .stub(sessionPool, '_deleteLongRunningTransactions')
-        .callsFake(async () => done());
+        .callsFake(async () => {
+          callCount++;
+          if (callCount === 2) {
+            done();
+          }
+        });
       sessionPool.options.logging = false;
 
       sessionPool._startCleaningLongRunningSessions();
