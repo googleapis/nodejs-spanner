@@ -52,7 +52,7 @@ export type ExistsInstanceConfigCallback = NormalCallback<boolean>;
 export type CreateInstanceConfigResponse = [
   InstanceConfig,
   GaxOperation,
-  IOperation
+  IOperation,
 ];
 export type SetInstanceConfigMetadataResponse = [GaxOperation, IOperation];
 export type DeleteInstanceConfigResponse = [instanceAdmin.protobuf.IEmpty];
