@@ -1423,7 +1423,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped bytes values', function (done){
+      it('GOOGLE_STANDARD_SQL should read untyped bytes values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1439,7 +1439,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped bytes values', function(done) {
+      it('POSTGRESQL should read untyped bytes values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1633,7 +1633,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', function(done) {
+      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1653,7 +1653,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped timestamp values', function(done) {
+      it('POSTGRESQL should read untyped timestamp values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1779,7 +1779,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped date values', function(done) {
+      it('GOOGLE_STANDARD_SQL should read untyped date values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -1798,7 +1798,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped date values', function(done) {
+      it('POSTGRESQL should read untyped date values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
