@@ -799,7 +799,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped int64 values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'IntValue',
           '5',
@@ -812,7 +815,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped int64 values', done => {
+      it('POSTGRESQL should read untyped int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData('IntValue', '5', Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntValue, 5);
@@ -968,7 +974,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped float64 values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'FloatValue',
           5.6,
@@ -981,7 +990,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped float64 values', done => {
+      it('POSTGRESQL should read untyped float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData('FloatValue', 5.6, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatValue, 5.6);
@@ -1139,7 +1151,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped numeric values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'NumericValue',
           '5.623',
@@ -1155,7 +1170,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped numeric values', done => {
+      it('POSTGRESQL should read untyped numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'NumericValue',
           '5.623',
@@ -1272,7 +1290,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped string values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'StringValue',
           'hello',
@@ -1285,7 +1306,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped string values', done => {
+      it('POSTGRESQL should read untyped string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'StringValue',
           'hello',
@@ -1399,7 +1423,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped bytes values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped bytes values', function (done){
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'BytesValue',
           Buffer.from('b'),
@@ -1412,7 +1439,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped bytes values', done => {
+      it('POSTGRESQL should read untyped bytes values', function(done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'BytesValue',
           Buffer.from('b'),
@@ -1603,7 +1633,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', function(done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'TimestampValue',
           '2014-09-27T12:30:00.45Z',
@@ -1620,7 +1653,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped timestamp values', done => {
+      it('POSTGRESQL should read untyped timestamp values', function(done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'TimestampValue',
           '2014-09-27T12:30:00.45Z',
@@ -1743,7 +1779,10 @@ describe('Spanner', () => {
         });
       });
 
-      it('GOOGLE_STANDARD_SQL should read untyped date values', done => {
+      it('GOOGLE_STANDARD_SQL should read untyped date values', function(done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'DateValue',
           '2014-09-27',
@@ -1759,7 +1798,10 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read untyped date values', done => {
+      it('POSTGRESQL should read untyped date values', function(done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         readUntypedData(
           'DateValue',
           '2014-09-27',
