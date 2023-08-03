@@ -68,17 +68,16 @@ async function main(instanceId, databaseId, projectId) {
           sql: "INSERT INTO Customers (CustomerName) VALUES ('Alice'), ('David'), ('Marc') THEN RETURN CustomerId",
         });
 
-        const rowCount = Math.floor(stats[stats.rowCount]);
-        console.log(
-          `Successfully inserted ${rowCount} record into the Customers table.`
-        );
         rows.forEach(row => {
           console.log(
-            `CustomerId: ${
-              row.toJSON({wrapNumbers: true}).CustomerId.value
-            } CustomerName: ${row.toJSON().CustomerName}`
+            `Inserted customer record with CustomerId: ${
+              row.toJSON({wrapNumbers: true}).customerid.value
+            }`
           );
         });
+
+        const rowCount = Math.floor(stats[stats.rowCount]);
+        console.log(`Number of customer records inserted is: ${rowCount}`);
 
         await transaction.commit();
       } catch (err) {

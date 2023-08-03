@@ -53,7 +53,7 @@ async function main(instanceId, databaseId, projectId) {
       await operation.promise();
 
       console.log(
-        'Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value.'
+        'Created Seq sequence and Customers table, where the key column CustomerId uses the sequence as a default value'
       );
     } catch (err) {
       console.error('ERROR:', err);
@@ -68,15 +68,16 @@ async function main(instanceId, databaseId, projectId) {
           sql: "INSERT INTO Customers (CustomerName) VALUES ('Alice'), ('David'), ('Marc') RETURNING CustomerId",
         });
 
-        const rowCount = Math.floor(stats[stats.rowCount]);
-        console.log(
-          `Successfully inserted ${rowCount} record into the Customers table.`
-        );
         rows.forEach(row => {
           console.log(
-            `CustomerId: ${row.toJSON({wrapNumbers: true}).customerid.value}`
+            `Inserted customer record with CustomerId: ${
+              row.toJSON({wrapNumbers: true}).customerid.value
+            }`
           );
         });
+
+        const rowCount = Math.floor(stats[stats.rowCount]);
+        console.log(`Number of customer records inserted is: ${rowCount}`);
 
         await transaction.commit();
       } catch (err) {

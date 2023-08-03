@@ -60,6 +60,7 @@ const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
 const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
 const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
 const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
+const SEQUENCE_DATABASE_ID = `test-seq-database-${CURRENT_TIME}-r`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
@@ -1348,6 +1349,67 @@ describe('Spanner', () => {
     assert.include(output, 'Earliest version time:');
   });
 
+  describe('sequence', () => {
+    before(async () => {
+      const instance = spanner.instance(INSTANCE_ID);
+      const database = instance.database(SEQUENCE_DATABASE_ID);
+      const [, operation_seq] = await database.create();
+      await operation_seq.promise();
+    });
+
+    after(async () => {
+      await spanner
+        .instance(INSTANCE_ID)
+        .database(SEQUENCE_DATABASE_ID)
+        .delete();
+    });
+
+    // create_sequence
+    it('should create a sequence', async () => {
+      const output = execSync(
+        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp('Created Seq sequence and Customers table')
+      );
+      assert.match(
+        output,
+        new RegExp('Number of customer records inserted is: 3')
+      );
+    });
+
+    // alter_sequence
+    it('should alter a sequence', async () => {
+      const output = execSync(
+        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
+        )
+      );
+      assert.match(
+        output,
+        new RegExp('Number of customer records inserted is: 3')
+      );
+    });
+
+    // drop_sequence
+    it('should drop a sequence', async () => {
+      const output = execSync(
+        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
+        )
+      );
+    });
+  });
+
   describe('leader options', () => {
     before(async () => {
       const instance = spanner.instance(SAMPLE_INSTANCE_ID);
@@ -1527,51 +1589,6 @@ describe('Spanner', () => {
         )
       );
       assert.include(output, 'CREATE TABLE Singers');
-    });
-
-    // create_sequence
-    it('should create a sequence', async () => {
-      const output = execSync(
-        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
-      );
-      assert.match(
-        output,
-        new RegExp('Created Seq sequence and Customers table')
-      );
-      assert.match(
-        output,
-        new RegExp('Successfully inserted 3 record into the Customers table.')
-      );
-    });
-
-    // alter_sequence
-    it('should alter a sequence', async () => {
-      const output = execSync(
-        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
-      );
-      assert.match(
-        output,
-        new RegExp(
-          'Altered Seq sequence to skip an inclusive range between 1000 and 5000000.'
-        )
-      );
-      assert.match(
-        output,
-        new RegExp('Successfully inserted 3 record into the Customers table.')
-      );
-    });
-
-    // drop_sequence
-    it('should drop a sequence', async () => {
-      const output = execSync(
-        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
-      );
-      assert.match(
-        output,
-        new RegExp(
-          'Altered Customers table to drop DEFAULT from CustomerId column and dropped the Seq sequence.'
-        )
-      );
     });
   });
 
@@ -1864,7 +1881,7 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp('Successfully inserted 3 record into the Customers table.')
+        new RegExp('Number of customer records inserted is: 3')
       );
     });
 
@@ -1881,7 +1898,7 @@ describe('Spanner', () => {
       );
       assert.match(
         output,
-        new RegExp('Successfully inserted 3 record into the Customers table.')
+        new RegExp('Number of customer records inserted is: 3')
       );
     });
 
