@@ -46,7 +46,7 @@ import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetad
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 import {
   _setLongRunningTransactionThreshold,
-  _setLongRunningBackgroundTaskTimer,
+  _setLongRunningBackgroundTaskFrequency,
   LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
 } from '../src/common';
 
@@ -6510,7 +6510,7 @@ describe('Spanner', () => {
 
     afterEach(async () => {
       _setLongRunningTransactionThreshold(1000 * 60 * 60);
-      _setLongRunningBackgroundTaskTimer(2 * 60 * 1000);
+      _setLongRunningBackgroundTaskFrequency(2 * 60 * 1000);
     });
 
     it('should insert and query a row', done => {
@@ -6683,7 +6683,7 @@ describe('Spanner', () => {
       };
       const database = instance.database(DATABASE.formattedName_, options);
       _setLongRunningTransactionThreshold(1000 * 2);
-      _setLongRunningBackgroundTaskTimer(1000);
+      _setLongRunningBackgroundTaskFrequency(1000);
 
       database.getSnapshot(async (err, transaction) => {
         if (err) {

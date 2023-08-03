@@ -25,10 +25,11 @@ import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
 import {
   getLongRunningTransactionThreshold,
-  getLongRunningBackgroundTaskTimer,
+  getLongRunningBackgroundTaskFrequency,
   LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
   SESSION_CLEANUP_TIMEOUT,
 } from './common';
+import {types} from 'protobufjs';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -127,8 +128,13 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
+  getSession(callback: GetSessionCallback): void;
   getSession(
     longRunningTransaction: boolean,
+    callback: GetSessionCallback
+  ): void;
+  getSession(
+    longRunningTransactionOrCallback: boolean | GetSessionCallback,
     callback: GetSessionCallback
   ): void;
   getReadSession(
@@ -613,11 +619,20 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {GetSessionCallback} callback The callback function.
    */
   getSession(
-    longRunningTransaction: boolean,
-    callback: GetSessionCallback
+    longRunningTransactionOrCallback: boolean | GetSessionCallback,
+    cb?: GetSessionCallback
   ): void {
+    const callback =
+      typeof longRunningTransactionOrCallback === 'boolean'
+        ? cb
+        : longRunningTransactionOrCallback;
+    const longRunningTransaction =
+      typeof longRunningTransactionOrCallback === 'boolean' &&
+      longRunningTransactionOrCallback
+        ? longRunningTransactionOrCallback
+        : false;
     this._acquire(longRunningTransaction).then(
-      session => callback(null, session, session.txn!),
+      session => callback!(null, session, session.txn!),
       callback
     );
   }
@@ -1288,7 +1303,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         this._deleteLongRunningTransactions(
           getLongRunningTransactionThreshold()
         ),
-      getLongRunningBackgroundTaskTimer()
+      getLongRunningBackgroundTaskFrequency()
     );
     this._longRunningTransactionHandle.unref();
   }

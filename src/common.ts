@@ -112,21 +112,21 @@ export function getLongRunningTransactionThreshold() {
 /*!
  * period after which background cleanup task runs in milliseconds.
  */
-let LONG_RUNNING_BACKGROUND_TASK_TIMER: number = 1000 * 60 * 2;
+let LONG_RUNNING_BACKGROUND_TASK_FREQUENCY: number = 1000 * 60 * 2;
 
 /**
- * Set timer in milliseconds for long-running transactions background task.
+ * Set frequency in milliseconds for long-running transactions background task.
  * @param {number} [timeout] Timeout for Long Running Transactions.
  */
-export function _setLongRunningBackgroundTaskTimer(timeout: number) {
-  LONG_RUNNING_BACKGROUND_TASK_TIMER = timeout;
+export function _setLongRunningBackgroundTaskFrequency(timeout: number) {
+  LONG_RUNNING_BACKGROUND_TASK_FREQUENCY = timeout;
 }
 
 /**
- * Get timer in milliseconds for long-running transactions background task.
+ * Get frequency in milliseconds for long-running transactions background task.
  */
-export function getLongRunningBackgroundTaskTimer() {
-  return LONG_RUNNING_BACKGROUND_TASK_TIMER;
+export function getLongRunningBackgroundTaskFrequency() {
+  return LONG_RUNNING_BACKGROUND_TASK_FREQUENCY;
 }
 
 /*!
