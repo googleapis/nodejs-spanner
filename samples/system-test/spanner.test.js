@@ -1374,7 +1374,6 @@ describe('Spanner', () => {
     assert.include(output, 'Earliest version time:');
   });
 
-
   it('should create a table with foreign key delete cascade', async () => {
     const output = execSync(
       `${createTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
@@ -1480,6 +1479,7 @@ describe('Spanner', () => {
         )
       );
     });
+  });
 
   describe('leader options', () => {
     before(async () => {
