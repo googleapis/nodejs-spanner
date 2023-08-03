@@ -29,7 +29,6 @@ import {
   LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
   SESSION_CLEANUP_TIMEOUT,
 } from './common';
-import {types} from 'protobufjs';
 
 /**
  * @callback SessionPoolCloseCallback
