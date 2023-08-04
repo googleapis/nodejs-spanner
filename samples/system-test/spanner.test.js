@@ -1438,7 +1438,7 @@ describe('Spanner', () => {
     // create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node sequence-create.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node sequence-create.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1453,7 +1453,7 @@ describe('Spanner', () => {
     // alter_sequence
     it('should alter a sequence', async () => {
       const output = execSync(
-        `node sequence-alter.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node sequence-alter.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1470,7 +1470,7 @@ describe('Spanner', () => {
     // drop_sequence
     it('should drop a sequence', async () => {
       const output = execSync(
-        `node sequence-drop.js "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+        `node sequence-drop.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
