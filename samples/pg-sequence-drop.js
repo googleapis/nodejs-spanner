@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Drops a sequence in PostgreSQL database table.
+//  title: Drops a sequence in PostgreSQL database.
 //  usage: node pg-sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
