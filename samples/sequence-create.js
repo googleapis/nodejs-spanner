@@ -71,7 +71,7 @@ async function main(instanceId, databaseId, projectId) {
         rows.forEach(row => {
           console.log(
             `Inserted customer record with CustomerId: ${
-              row.toJSON({wrapNumbers: true}).customerid.value
+              row.toJSON({wrapNumbers: true}).CustomerId.value
             }`
           );
         });
