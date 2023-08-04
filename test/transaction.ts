@@ -24,7 +24,10 @@ import * as sinon from 'sinon';
 
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import {
   BatchUpdateOptions,
@@ -37,20 +40,26 @@ import {error} from 'is';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
-  const CLIENT: {directedReadOptions: {} | null} = {
-    directedReadOptions: null,
-  };
-  const INSTANCE = {parent: CLIENT};
-  const PARENT = {
-    formattedName_: 'formatted-database-name',
-    parent: INSTANCE,
-  };
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+    directedReadOptions: null,
+  };
+
+  const INSTANCE = {
+    parent: SPANNER,
+  };
+
+  const DATABASE = {
+    formattedName_: 'formatted-database-name',
+    parent: INSTANCE,
+  };
+
   const SESSION = {
-    parent: PARENT,
+    parent: DATABASE,
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
@@ -1133,10 +1142,11 @@ describe('Transaction', () => {
       });
 
       it('should guess missing param types', () => {
-        const fakeParams = {a: 'foo', b: 3};
+        const fakeParams = {a: true, b: 3};
         const fakeTypes = {b: 'number'};
-        const fakeMissingType = {type: 'string'};
-        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
+        const fakeMissingType = {type: 'boolean'};
+        const expectedMissingType = {code: google.spanner.v1.TypeCode.BOOL};
+        const expectedKnownType = {code: google.spanner.v1.TypeCode.INT64};
 
         sandbox
           .stub(codec, 'getType')
@@ -1145,15 +1155,17 @@ describe('Transaction', () => {
 
         sandbox
           .stub(codec, 'createTypeObject')
+          .withArgs('number')
+          .returns(expectedKnownType as google.spanner.v1.Type)
           .withArgs(fakeMissingType)
-          .returns(expectedType as google.spanner.v1.Type);
+          .returns(expectedMissingType as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
           types: fakeTypes,
         });
 
-        assert.strictEqual(paramTypes.a, expectedType);
+        assert.strictEqual(paramTypes.a, expectedMissingType);
       });
     });
   });
@@ -1290,17 +1302,17 @@ describe('Transaction', () => {
 
       const OBJ_STATEMENTS = [
         {
-          sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+          sql: 'INSERT INTO TxnTable (Key, BoolValue) VALUES(@key, @bool)',
           params: {
-            key: 'k999',
-            str: 'abc',
+            key: 999,
+            bool: true,
           },
         },
         {
-          sql: 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+          sql: 'UPDATE TxnTable t SET t.BoolValue = @bool WHERE t.Key = @key',
           params: {
-            key: 'k999',
-            str: 'abcd',
+            key: 999,
+            bool: false,
           },
         },
       ];
@@ -1310,26 +1322,26 @@ describe('Transaction', () => {
           sql: OBJ_STATEMENTS[0].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[0].params.key},
-              str: {stringValue: OBJ_STATEMENTS[0].params.str},
+              key: {stringValue: OBJ_STATEMENTS[0].params.key.toString()},
+              bool: {boolValue: OBJ_STATEMENTS[0].params.bool},
             },
           },
           paramTypes: {
-            key: {code: 'STRING'},
-            str: {code: 'STRING'},
+            key: {code: 'INT64'},
+            bool: {code: 'BOOL'},
           },
         },
         {
           sql: OBJ_STATEMENTS[1].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[1].params.key},
-              str: {stringValue: OBJ_STATEMENTS[1].params.str},
+              key: {stringValue: OBJ_STATEMENTS[1].params.key.toString()},
+              bool: {boolValue: OBJ_STATEMENTS[1].params.bool},
             },
           },
           paramTypes: {
-            key: {code: 'STRING'},
-            str: {code: 'STRING'},
+            key: {code: 'INT64'},
+            bool: {code: 'BOOL'},
           },
         },
       ];
@@ -1426,7 +1438,13 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
         assert.strictEqual(reqOpts.seqno, 1);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should encode sql string statements', () => {
@@ -1556,7 +1574,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {
@@ -1597,7 +1621,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
     });
 
@@ -1615,7 +1645,13 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions as CallOptions', done => {
@@ -1984,7 +2020,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {
@@ -2144,6 +2186,27 @@ describe('Transaction', () => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
       });
 
+      it('should send the correct options', done => {
+        const QUERY: ExecuteSqlRequest = {
+          sql: 'SELET * FROM `MyTable`',
+        };
+
+        transaction.requestStream = config => {
+          assert.strictEqual(config.client, 'SpannerClient');
+          assert.strictEqual(config.method, 'executeStreamingSql');
+          assert.deepStrictEqual(
+            config.headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.resourceHeader_
+            )
+          );
+          done();
+        };
+
+        transaction.runStream(QUERY);
+      });
+
       it('should set transaction tag when not `singleUse`', done => {
         const QUERY: ExecuteSqlRequest = {
           sql: 'SELET * FROM `MyTable`',
@@ -2169,6 +2232,23 @@ describe('Transaction', () => {
     describe('createReadStream', () => {
       before(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should send the correct options', () => {
+        const TABLE = 'my-table-123';
+        transaction.createReadStream(TABLE);
+
+        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'streamingRead');
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should set transaction tag if not `singleUse`', () => {
@@ -2228,9 +2308,16 @@ describe('Transaction', () => {
         pdml.begin();
 
         const expectedOptions = {partitionedDml: {}};
-        const {reqOpts} = stub.lastCall.args[0];
+        const {reqOpts, headers} = stub.lastCall.args[0];
 
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            pdml.resourceHeader_
+          )
+        );
       });
     });
 

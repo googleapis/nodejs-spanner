@@ -826,6 +826,12 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1079,6 +1085,12 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1776,6 +1788,12 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned query and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1856,6 +1874,12 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
    *   Directed read options for this request.
+   * @param {boolean} request.dataBoostEnabled
+   *   If this is for a partitioned read and this field is set to `true`, the
+   *   request will be executed via Spanner independent compute resources.
+   *
+   *   If the field is set to `true` but the request does not set
+   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}

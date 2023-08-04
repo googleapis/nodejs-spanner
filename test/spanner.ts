@@ -50,7 +50,10 @@ import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -958,7 +961,6 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
         assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
         assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
-        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
         assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
         assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
         assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
@@ -1483,6 +1485,72 @@ describe('Spanner with mock server', () => {
                 .then(() => done());
             })
             .catch(done);
+        });
+      });
+    });
+
+    describe('LeaderAwareRouting', () => {
+      let spannerWithLARDisabled: Spanner;
+      let instanceWithLARDisabled: Instance;
+
+      function newTestDatabaseWithLARDisabled(
+        options?: SessionPoolOptions,
+        queryOptions?: IQueryOptions
+      ): Database {
+        return instanceWithLARDisabled.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
+      }
+
+      before(() => {
+        spannerWithLARDisabled = new Spanner({
+          servicePath: 'localhost',
+          port,
+          sslCreds: grpc.credentials.createInsecure(),
+          routeToLeaderEnabled: false,
+        });
+        // Gets a reference to a Cloud Spanner instance and database
+        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
+      });
+
+      it('should execute with leader aware routing enabled in a read/write transaction', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        let metadataCountWithLAREnabled = 0;
+        spannerMock.getMetadata().forEach(metadata => {
+          if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+            metadataCountWithLAREnabled++;
+            assert.strictEqual(
+              metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+              'true'
+            );
+          }
+        });
+        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
+      });
+
+      it('should execute with leader aware routing disabled in a read/write transaction', async () => {
+        const database = newTestDatabaseWithLARDisabled();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+            undefined
+          );
         });
       });
     });
@@ -2937,6 +3005,34 @@ describe('Spanner with mock server', () => {
       await database.close();
     });
 
+    it('should retry on internal error', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+
+      const [updated] = await database.runTransactionAsync(
+        (transaction): Promise<number[]> => {
+          transaction.begin();
+          return transaction.runUpdate(insertSql).then(updateCount => {
+            if (!attempts) {
+              spannerMock.setExecutionTime(
+                spannerMock.commit,
+                SimulatedExecutionTime.ofError({
+                  code: grpc.status.INTERNAL,
+                  message: 'Received RST_STREAM',
+                } as MockError)
+              );
+            }
+            attempts++;
+            return transaction.commit().then(() => updateCount);
+          });
+        }
+      );
+      assert.strictEqual(updated, 1);
+      assert.strictEqual(attempts, 2);
+
+      await database.close();
+    });
+
     describe('batch-readonly-transaction', () => {
       it('should use session from pool', async () => {
         const database = newTestDatabase({min: 0, incStep: 1});
@@ -3353,6 +3449,30 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should throw error if begin transaction fails on blind commit', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
     });
   });
 
