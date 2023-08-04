@@ -5969,21 +5969,6 @@ describe('Spanner', () => {
                   threadf: Spanner.int(1),
                 }),
               },
-              types: {
-                structParam: {
-                  type: 'struct',
-                  fields: [
-                    {
-                      name: 'userf',
-                      type: 'string',
-                    },
-                    {
-                      name: 'threadf',
-                      type: 'int64',
-                    },
-                  ],
-                },
-              },
             };
 
             DATABASE.run(query, (err, rows) => {
