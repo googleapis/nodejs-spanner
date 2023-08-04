@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Creates sequence in database table.
+//  title: Creates sequence in GoogleSQL database.
 //  usage: node sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';

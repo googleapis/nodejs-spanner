@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Creates sequence in PostgreSQL database table.
+//  title: Creates sequence in PostgreSQL database.
 //  usage: node pg-sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
