@@ -5965,9 +5965,24 @@ describe('Spanner', () => {
               sql: 'SELECT @structParam=STRUCT<threadf INT64, userf STRING>(1, "bob")',
               params: {
                 structParam: Spanner.struct({
-                  userf: 'bob',
                   threadf: Spanner.int(1),
+                  userf: 'bob',
                 }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                  ],
+                },
               },
             };
 
