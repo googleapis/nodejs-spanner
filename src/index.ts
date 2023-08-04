@@ -260,12 +260,6 @@ class Spanner extends GrpcService {
   }
 
   constructor(options?: SpannerOptions) {
-    let directedReadOptions: google.spanner.v1.IDirectedReadOptions | null =
-      null;
-    if (options && options.directedReadOptions) {
-      directedReadOptions = options?.directedReadOptions;
-      delete options?.directedReadOptions;
-    }
     const scopes: Array<{}> = [];
     const clientClasses = [
       v1.DatabaseAdminClient,
@@ -292,6 +286,9 @@ class Spanner extends GrpcService {
       },
       options || {}
     ) as {} as SpannerOptions;
+
+    const directedReadOptions: google.spanner.v1.IDirectedReadOptions | null = options.directedReadOptions ? options.directedReadOptions:null;
+    delete options.directedReadOptions;
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -1529,6 +1526,7 @@ class Spanner extends GrpcService {
   /**
    * Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
    * Indicates which replicas or regions should be used for non-transactional reads or queries.
+   * DirectedReadOptions won't be set for readWrite transactions or partitioned dml requests".
    *
    * @throws {GoogleError} If both includeReplicas and excludeReplicas are set
    * @throws {GoogleError} If more than 10 includeReplicas and excludeReplicas are provided
