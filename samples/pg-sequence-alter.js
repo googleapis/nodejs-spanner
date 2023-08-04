@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Alters a sequence in a PostgreSQL database table.
+//  title: Alters a sequence in a PostgreSQL database.
 //  usage: node pg-sequence-alter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
