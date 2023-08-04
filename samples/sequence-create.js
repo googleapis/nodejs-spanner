@@ -42,7 +42,7 @@ async function main(instanceId, databaseId, projectId) {
 
     const request = [
       "CREATE SEQUENCE Seq OPTIONS (sequence_kind = 'bit_reversed_positive')",
-      "CREATE TABLE Customers (CustomerId INT64 DEFAULT (GET_NEXT_SEQUENCE_VALUE(Sequence Seq)), CustomerName STRING(1024)) PRIMARY KEY (CustomerId)",
+      'CREATE TABLE Customers (CustomerId INT64 DEFAULT (GET_NEXT_SEQUENCE_VALUE(Sequence Seq)), CustomerName STRING(1024)) PRIMARY KEY (CustomerId)',
     ];
 
     // Creates a new table with sequence
