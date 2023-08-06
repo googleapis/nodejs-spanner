@@ -47,7 +47,8 @@
     "benchwrapper": "node bin/benchwrapper.js",
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
-    "compile-protos": "compileProtos src"
+    "compile-protos": "compileProtos src",
+    "coverage": "c8 report --check-coverage"
   },
   "dependencies": {
     "@google-cloud/common": "^4.0.0",
