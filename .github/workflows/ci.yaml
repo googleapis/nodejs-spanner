@@ -66,7 +66,6 @@ jobs:
         with:
           node-version: 14
       - run: npm install
-      - run: npm test
+      - run: npm run coverage
         env:
           MOCHA_THROW_DEPRECATION: false
-      - run: npm run coverage
