@@ -48,7 +48,7 @@
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
     "compile-protos": "compileProtos src",
-    "coverage": "mocha build/test build/test/common && c8 report --check-coverage"
+    "coverage": "c8 mocha build/test build/test/common && c8 report --check-coverage"
   },
   "dependencies": {
     "@google-cloud/common": "^4.0.0",
