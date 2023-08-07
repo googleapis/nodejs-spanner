@@ -1411,6 +1411,25 @@ export class DatabaseAdminClient {
    *   Google default encryption.
    * @param {google.spanner.admin.database.v1.DatabaseDialect} [request.databaseDialect]
    *   Optional. The dialect of the Cloud Spanner Database.
+   * @param {Buffer} [request.protoDescriptors]
+   *   Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
+   *   'extra_statements' above.
+   *   Contains a protobuf-serialized
+   *   [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   *   To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   *   run `protoc` with --include_imports and --descriptor_set_out. For example,
+   *   to generate for moon/shot/app.proto, run
+   *   """
+   *   $protoc  --proto_path=/app_path --proto_path=/lib_path \
+   *            --include_imports \
+   *            --descriptor_set_out=descriptors.data \
+   *            moon/shot/app.proto
+   *   """
+   *   For more details, see protobuffer [self
+   *   description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   *   (--
+   *   TODO(b/236424835) remove visibility check before launch.
+   *   --)
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1577,6 +1596,25 @@ export class DatabaseAdminClient {
    *   underscore. If the named operation already exists,
    *   {@link google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} returns
    *   `ALREADY_EXISTS`.
+   * @param {Buffer} [request.protoDescriptors]
+   *   Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
+   *   'extra_statements' above.
+   *   Contains a protobuf-serialized
+   *   [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   *   To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   *   run `protoc` with --include_imports and --descriptor_set_out. For example,
+   *   to generate for moon/shot/app.proto, run
+   *   """
+   *   $protoc  --proto_path=/app_path --proto_path=/lib_path \
+   *            --include_imports \
+   *            --descriptor_set_out=descriptors.data \
+   *            moon/shot/app.proto
+   *   """
+   *   For more details, see protobuffer [self
+   *   description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
+   *   (--
+   *   TODO(b/236424835) remove visibility check before launch.
+   *   --)
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.

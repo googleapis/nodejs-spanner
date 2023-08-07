@@ -8733,6 +8733,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest databaseDialect */
                         databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
+
+                        /** CreateDatabaseRequest protoDescriptors */
+                        protoDescriptors?: (Uint8Array|string|null);
                     }
 
                     /** Represents a CreateDatabaseRequest. */
@@ -8758,6 +8761,9 @@ export namespace google {
 
                         /** CreateDatabaseRequest databaseDialect. */
                         public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
+
+                        /** CreateDatabaseRequest protoDescriptors. */
+                        public protoDescriptors: (Uint8Array|string);
 
                         /**
                          * Creates a new CreateDatabaseRequest instance using the specified properties.
@@ -9042,6 +9048,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlRequest operationId */
                         operationId?: (string|null);
+
+                        /** UpdateDatabaseDdlRequest protoDescriptors */
+                        protoDescriptors?: (Uint8Array|string|null);
                     }
 
                     /** Represents an UpdateDatabaseDdlRequest. */
@@ -9061,6 +9070,9 @@ export namespace google {
 
                         /** UpdateDatabaseDdlRequest operationId. */
                         public operationId: string;
+
+                        /** UpdateDatabaseDdlRequest protoDescriptors. */
+                        public protoDescriptors: (Uint8Array|string);
 
                         /**
                          * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
@@ -9460,6 +9472,9 @@ export namespace google {
 
                         /** GetDatabaseDdlResponse statements */
                         statements?: (string[]|null);
+
+                        /** GetDatabaseDdlResponse protoDescriptors */
+                        protoDescriptors?: (Uint8Array|string|null);
                     }
 
                     /** Represents a GetDatabaseDdlResponse. */
@@ -9473,6 +9488,9 @@ export namespace google {
 
                         /** GetDatabaseDdlResponse statements. */
                         public statements: string[];
+
+                        /** GetDatabaseDdlResponse protoDescriptors. */
+                        public protoDescriptors: (Uint8Array|string);
 
                         /**
                          * Creates a new GetDatabaseDdlResponse instance using the specified properties.
@@ -15737,6 +15755,9 @@ export namespace google {
 
                 /** Type typeAnnotation */
                 typeAnnotation?: (google.spanner.v1.TypeAnnotationCode|keyof typeof google.spanner.v1.TypeAnnotationCode|null);
+
+                /** Type protoTypeFqn */
+                protoTypeFqn?: (string|null);
             }
 
             /** Represents a Type. */
@@ -15759,6 +15780,9 @@ export namespace google {
 
                 /** Type typeAnnotation. */
                 public typeAnnotation: (google.spanner.v1.TypeAnnotationCode|keyof typeof google.spanner.v1.TypeAnnotationCode);
+
+                /** Type protoTypeFqn. */
+                public protoTypeFqn: string;
 
                 /**
                  * Creates a new Type instance using the specified properties.
@@ -16054,7 +16078,9 @@ export namespace google {
                 ARRAY = 8,
                 STRUCT = 9,
                 NUMERIC = 10,
-                JSON = 11
+                JSON = 11,
+                PROTO = 13,
+                ENUM = 14
             }
 
             /** TypeAnnotationCode enum. */
