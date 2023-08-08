@@ -1898,7 +1898,9 @@ describe('v1.SpannerClient', () => {
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
-      const stream = client.executeStreamingSql(request);
+      const stream = client.executeStreamingSql(request, {
+        retryRequestOptions: {noResponseRetries: 0},
+      });
       const promise = new Promise((resolve, reject) => {
         stream.on(
           'data',
@@ -2018,7 +2020,9 @@ describe('v1.SpannerClient', () => {
       request.session = defaultValue1;
       const expectedError = new Error('The client has already been closed.');
       client.close();
-      const stream = client.streamingRead(request);
+      const stream = client.streamingRead(request, {
+        retryRequestOptions: {noResponseRetries: 0},
+      });
       const promise = new Promise((resolve, reject) => {
         stream.on(
           'data',
