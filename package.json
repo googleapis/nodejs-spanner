@@ -51,7 +51,7 @@
     "coverage": "c8 mocha build/test build/test/common && c8 report --check-coverage"
   },
   "dependencies": {
-    "@google-cloud/common": "^4.0.0",
+    "@google-cloud/common": "^5.0.0",
     "@google-cloud/precise-date": "^3.0.0",
     "@google-cloud/projectify": "^3.0.0",
     "@google-cloud/promisify": "^3.0.0",
