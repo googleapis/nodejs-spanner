@@ -133,6 +133,7 @@ class FakeTransactionRunner {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     fakeTransactionRunner = this;
   }
   async run(): Promise<void> {}
@@ -144,6 +145,7 @@ class FakeAsyncTransactionRunner<T extends {}> {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     fakeAsyncTransactionRunner = this;
   }
   async run(): Promise<T> {

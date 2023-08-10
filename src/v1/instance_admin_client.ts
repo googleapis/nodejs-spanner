@@ -504,7 +504,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getInstanceConfig(
@@ -553,7 +553,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IGetInstanceConfigRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -619,7 +619,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   deleteInstanceConfig(
@@ -668,7 +668,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IDeleteInstanceConfigRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -717,7 +717,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstance,
       protos.google.spanner.admin.instance.v1.IGetInstanceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getInstance(
@@ -763,7 +763,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstance,
       protos.google.spanner.admin.instance.v1.IGetInstanceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -820,7 +820,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   deleteInstance(
@@ -869,7 +869,7 @@ export class InstanceAdminClient {
         | protos.google.spanner.admin.instance.v1.IDeleteInstanceRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -928,7 +928,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   setIamPolicy(
@@ -966,7 +966,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1017,7 +1017,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getIamPolicy(
@@ -1055,7 +1055,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1109,7 +1109,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   testIamPermissions(
@@ -1147,7 +1147,7 @@ export class InstanceAdminClient {
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1251,7 +1251,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createInstanceConfig(
@@ -1304,7 +1304,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.ICreateInstanceConfigMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1443,7 +1443,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   updateInstanceConfig(
@@ -1496,7 +1496,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.IUpdateInstanceConfigMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1618,7 +1618,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createInstance(
@@ -1671,7 +1671,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.ICreateInstanceMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1800,7 +1800,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   updateInstance(
@@ -1853,7 +1853,7 @@ export class InstanceAdminClient {
         protos.google.spanner.admin.instance.v1.IUpdateInstanceMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1944,7 +1944,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig[],
       protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse,
     ]
   >;
   listInstanceConfigs(
@@ -1990,7 +1990,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstanceConfig[],
       protos.google.spanner.admin.instance.v1.IListInstanceConfigsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigsResponse,
     ]
   > | void {
     request = request || {};
@@ -2203,7 +2203,7 @@ export class InstanceAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse,
     ]
   >;
   listInstanceConfigOperations(
@@ -2249,7 +2249,7 @@ export class InstanceAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
+      protos.google.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse,
     ]
   > | void {
     request = request || {};
@@ -2519,7 +2519,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstance[],
       protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      protos.google.spanner.admin.instance.v1.IListInstancesResponse,
     ]
   >;
   listInstances(
@@ -2565,7 +2565,7 @@ export class InstanceAdminClient {
     [
       protos.google.spanner.admin.instance.v1.IInstance[],
       protos.google.spanner.admin.instance.v1.IListInstancesRequest | null,
-      protos.google.spanner.admin.instance.v1.IListInstancesResponse
+      protos.google.spanner.admin.instance.v1.IListInstancesResponse,
     ]
   > | void {
     request = request || {};
