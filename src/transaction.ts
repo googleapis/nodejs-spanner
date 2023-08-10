@@ -1338,11 +1338,8 @@ export class Snapshot extends EventEmitter {
         "DirectedReadOptions can't be set for readWrite transactions or partitioned dml requests"
       );
     }
-    if (
-      !directedReadOptions &&
-      this.session.parent.parent.parent.directedReadOptions
-    ) {
-      return this.session.parent.parent.parent.directedReadOptions;
+    if (!directedReadOptions && this._getSpanner().directedReadOptions) {
+      return this._getSpanner().directedReadOptions;
     }
     Spanner._verifyDirectedReadOptions(directedReadOptions);
     return directedReadOptions;

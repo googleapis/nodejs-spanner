@@ -294,7 +294,8 @@ class Spanner extends GrpcService {
       options || {}
     ) as {} as SpannerOptions;
 
-    const directedReadOptions: google.spanner.v1.IDirectedReadOptions | null = options.directedReadOptions ? options.directedReadOptions:null;
+    const directedReadOptions: google.spanner.v1.IDirectedReadOptions | null =
+      options.directedReadOptions ? options.directedReadOptions : null;
     delete options.directedReadOptions;
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (

@@ -29,6 +29,7 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import DirectedReadOptions = google.spanner.v1.DirectedReadOptions;
 import {
   BatchUpdateOptions,
   ExecuteSqlRequest,
@@ -36,7 +37,6 @@ import {
 } from '../src/transaction';
 import {GoogleError, grpc} from 'google-gax';
 import {TransactionType} from '../src';
-import {error} from 'is';
 
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
@@ -46,7 +46,7 @@ describe('Transaction', () => {
 
   const SPANNER = {
     routeToLeaderEnabled: true,
-    directedReadOptions: null,
+    directedReadOptions: {},
   };
 
   const INSTANCE = {
@@ -264,7 +264,8 @@ describe('Transaction', () => {
       beforeEach(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
         SESSION.parent.parent.parent = {
-          directedReadOptions: null,
+          directedReadOptions: {},
+          routeToLeaderEnabled: true,
         };
       });
 
@@ -331,7 +332,7 @@ describe('Transaction', () => {
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
-          directedReadOptions: undefined,
+          directedReadOptions: {},
         };
 
         sandbox
@@ -347,7 +348,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
-      it('should accept directedReadOptions', () => {
+      it('should accept include replica directedReadOptions', () => {
         const id = 'transaction-id-123';
         const fakeRequest = {
           directedReadOptions: fakeDirectedReadOptions,
@@ -371,10 +372,46 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
+      it('should accept exclude replica directedReadOptions', () => {
+        const id = 'transaction-id-123';
+        const fakeExcludeReplicaDirectedReadOptions = {
+          excludeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-west1',
+                type: TransactionType.READ_ONLY,
+              },
+            ],
+          },
+        };
+
+        const fakeRequest = {
+          directedReadOptions: fakeExcludeReplicaDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeExcludeReplicaDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
       it('should accept directedReadOptions set for client', () => {
         const id = 'transaction-id-123';
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
+          routeToLeaderEnabled: true,
         };
 
         const expectedRequest = {
@@ -412,6 +449,7 @@ describe('Transaction', () => {
 
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
+          routeToLeaderEnabled: true,
         };
 
         const expectedRequest = {
@@ -633,7 +671,8 @@ describe('Transaction', () => {
       beforeEach(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
         SESSION.parent.parent.parent = {
-          directedReadOptions: null,
+          directedReadOptions: {},
+          routeToLeaderEnabled: true,
         };
       });
 
@@ -706,7 +745,7 @@ describe('Transaction', () => {
           seqno: 1,
           queryOptions: {},
           resumeToken: undefined,
-          directedReadOptions: undefined,
+          directedReadOptions: {},
         };
 
         sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
@@ -753,6 +792,7 @@ describe('Transaction', () => {
         const id = 'transaction-id-123';
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
+          routeToLeaderEnabled: true,
         };
 
         const expectedRequest = {
@@ -793,6 +833,7 @@ describe('Transaction', () => {
 
         SESSION.parent.parent.parent = {
           directedReadOptions: fakeDirectedReadOptions,
+          routeToLeaderEnabled: true,
         };
 
         const expectedRequest = {
