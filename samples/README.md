@@ -86,6 +86,9 @@ and automatic, synchronous replication for high availability.
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
   * [Execute a query with parameters on a Spanner PostgreSQL database.](#execute-a-query-with-parameters-on-a-spanner-postgresql-database.)
   * [Query the information schema metadata in a Spanner PostgreSQL database.](#query-the-information-schema-metadata-in-a-spanner-postgresql-database.)
+  * [Alters a sequence in a PostgreSQL database.](#alters-a-sequence-in-a-postgresql-database.)
+  * [Creates sequence in PostgreSQL database.](#creates-sequence-in-postgresql-database.)
+  * [Drops a sequence in PostgreSQL database.](#drops-a-sequence-in-postgresql-database.)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
@@ -97,6 +100,9 @@ and automatic, synchronous replication for high availability.
   * [Query data with RPC Priority](#query-data-with-rpc-priority)
   * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
+  * [Alters a sequence in a GoogleSQL database.](#alters-a-sequence-in-a-googlesql-database.)
+  * [Creates sequence in GoogleSQL database.](#creates-sequence-in-googlesql-database.)
+  * [Drops a sequence in GoogleSQL database.](#drops-a-sequence-in-googlesql-database.)
   * [Struct](#struct)
   * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
   * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
@@ -1344,6 +1350,57 @@ __Usage:__
 
 
 
+### Alters a sequence in a PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-alter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-alter.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-alter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates sequence in PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a sequence in PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-drop.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-drop.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Queryoptions
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/queryoptions.js).
@@ -1524,6 +1581,57 @@ __Usage:__
 
 
 `node samples/schema.js`
+
+
+-----
+
+
+
+
+### Alters a sequence in a GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-alter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-alter.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-alter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates sequence in GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a sequence in GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-drop.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-drop.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
