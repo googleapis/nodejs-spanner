@@ -117,7 +117,7 @@ type CreateBatchTransactionCallback = ResourceCallback<
 
 type CreateBatchTransactionResponse = [
   BatchTransaction,
-  google.spanner.v1.ITransaction | google.spanner.v1.ISession
+  google.spanner.v1.ITransaction | google.spanner.v1.ISession,
 ];
 type DatabaseResponse = [Database, r.Response];
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
@@ -145,7 +145,7 @@ export type UpdateSchemaCallback = ResourceCallback<
 
 export type UpdateSchemaResponse = [
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  databaseAdmin.longrunning.IOperation,
 ];
 
 type PoolRequestCallback = RequestCallback<Session>;
@@ -186,7 +186,7 @@ type GetSchemaCallback = RequestCallback<
 >;
 type GetSchemaResponse = [
   string[],
-  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse,
 ];
 type GetIamPolicyResponse = IPolicy;
 type GetIamPolicyCallback = RequestCallback<IPolicy>;
@@ -210,7 +210,7 @@ type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
 export type CreateSessionResponse = [
   Session,
-  spannerClient.spanner.v1.ISession
+  spannerClient.spanner.v1.ISession,
 ];
 
 export interface CreateSessionOptions {
@@ -235,7 +235,7 @@ export interface BatchCreateSessionsOptions extends CreateSessionOptions {
 
 export type BatchCreateSessionsResponse = [
   Session[],
-  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse,
 ];
 
 export type BatchCreateSessionsCallback = ResourceCallback<
@@ -256,7 +256,7 @@ export type RestoreDatabaseCallback = LongRunningCallback<Database>;
 export type RestoreDatabaseResponse = [
   Database,
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  databaseAdmin.longrunning.IOperation,
 ];
 
 export type GetRestoreInfoCallback = NormalCallback<IRestoreInfoTranslatedEnum>;

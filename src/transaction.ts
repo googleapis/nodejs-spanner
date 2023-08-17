@@ -116,7 +116,7 @@ export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
 export type BatchUpdateResponse = [
   number[],
-  spannerClient.spanner.v1.ExecuteBatchDmlResponse
+  spannerClient.spanner.v1.ExecuteBatchDmlResponse,
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
@@ -128,7 +128,7 @@ export type ReadResponse = [Rows];
 export type RunResponse = [
   Rows,
   spannerClient.spanner.v1.ResultSetStats,
-  spannerClient.spanner.v1.ResultSetMetadata
+  spannerClient.spanner.v1.ResultSetMetadata,
 ];
 export type RunUpdateResponse = [number];
 
