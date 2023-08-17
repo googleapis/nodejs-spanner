@@ -3212,11 +3212,17 @@ describe('Spanner with mock server', () => {
       // Verify that we have 2 ExecuteSqlRequests. The first one should use inline-begin. The second one should use a
       // transaction ID.
       const firstExecuteSqlRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteSqlRequest).sql == insertSql && (val as v1.ExecuteSqlRequest).transaction?.begin
+        return (
+          (val as v1.ExecuteSqlRequest).sql == insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.begin
+        );
       }) as v1.ExecuteSqlRequest;
       assert.ok(firstExecuteSqlRequest.transaction?.begin?.readWrite);
       const secondExecuteSqlRequest = spannerMock.getRequests().find(val => {
-        return (val as v1.ExecuteSqlRequest).sql == insertSql && (val as v1.ExecuteSqlRequest).transaction?.id
+        return (
+          (val as v1.ExecuteSqlRequest).sql == insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.id
+        );
       }) as v1.ExecuteSqlRequest;
       assert.ok(secondExecuteSqlRequest.transaction?.id);
       // Verify that we have a BeginTransaction request for the retry.
@@ -3225,9 +3231,12 @@ describe('Spanner with mock server', () => {
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
       // Verify that we have a single Commit request, and that the Commit request contains only one mutation.
-      assert.strictEqual(1, spannerMock.getRequests().filter(val => {
-        return (val as v1.CommitRequest).mutations;
-      }).length);
+      assert.strictEqual(
+        1,
+        spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).mutations;
+        }).length
+      );
       const commitRequest = spannerMock.getRequests().find(val => {
         return (val as v1.CommitRequest).mutations;
       }) as v1.CommitRequest;
