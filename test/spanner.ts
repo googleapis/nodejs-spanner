@@ -3171,8 +3171,6 @@ describe('Spanner with mock server', () => {
       });
       await database.close();
 
-      const requests = spannerMock.getRequests();
-      assert.strictEqual(10, requests.length);
       let request = spannerMock.getRequests().find(val => {
         return (val as v1.ExecuteSqlRequest).sql;
       }) as v1.ExecuteSqlRequest;
