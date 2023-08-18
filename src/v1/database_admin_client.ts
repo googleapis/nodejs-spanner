@@ -546,7 +546,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabase,
       protos.google.spanner.admin.database.v1.IGetDatabaseRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getDatabase(
@@ -592,7 +592,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabase,
       protos.google.spanner.admin.database.v1.IGetDatabaseRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -639,7 +639,7 @@ export class DatabaseAdminClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.spanner.admin.database.v1.IDropDatabaseRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   dropDatabase(
@@ -685,7 +685,7 @@ export class DatabaseAdminClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.spanner.admin.database.v1.IDropDatabaseRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -735,7 +735,7 @@ export class DatabaseAdminClient {
         | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getDatabaseDdl(
@@ -784,7 +784,7 @@ export class DatabaseAdminClient {
         | protos.google.spanner.admin.database.v1.IGetDatabaseDdlRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -845,7 +845,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   setIamPolicy(
@@ -883,7 +883,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.ISetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -937,7 +937,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getIamPolicy(
@@ -975,7 +975,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.IPolicy,
       protos.google.iam.v1.IGetIamPolicyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1033,7 +1033,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   testIamPermissions(
@@ -1071,7 +1071,7 @@ export class DatabaseAdminClient {
     [
       protos.google.iam.v1.ITestIamPermissionsResponse,
       protos.google.iam.v1.ITestIamPermissionsRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1116,7 +1116,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup,
       protos.google.spanner.admin.database.v1.IGetBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getBackup(
@@ -1162,7 +1162,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup,
       protos.google.spanner.admin.database.v1.IGetBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1214,7 +1214,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup,
       protos.google.spanner.admin.database.v1.IUpdateBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   updateBackup(
@@ -1260,7 +1260,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup,
       protos.google.spanner.admin.database.v1.IUpdateBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1305,7 +1305,7 @@ export class DatabaseAdminClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.spanner.admin.database.v1.IDeleteBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   deleteBackup(
@@ -1351,7 +1351,7 @@ export class DatabaseAdminClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.spanner.admin.database.v1.IDeleteBackupRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1425,7 +1425,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createDatabase(
@@ -1478,7 +1478,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICreateDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1599,7 +1599,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   updateDatabase(
@@ -1652,7 +1652,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IUpdateDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1761,7 +1761,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   updateDatabaseDdl(
@@ -1814,7 +1814,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IUpdateDatabaseDdlMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -1923,7 +1923,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createBackup(
@@ -1976,7 +1976,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICreateBackupMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -2092,7 +2092,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICopyBackupMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   copyBackup(
@@ -2145,7 +2145,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.ICopyBackupMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -2261,7 +2261,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   restoreDatabase(
@@ -2314,7 +2314,7 @@ export class DatabaseAdminClient {
         protos.google.spanner.admin.database.v1.IRestoreDatabaseMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -2403,7 +2403,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
       protos.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabasesResponse
+      protos.google.spanner.admin.database.v1.IListDatabasesResponse,
     ]
   >;
   listDatabases(
@@ -2449,7 +2449,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabase[],
       protos.google.spanner.admin.database.v1.IListDatabasesRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabasesResponse
+      protos.google.spanner.admin.database.v1.IListDatabasesResponse,
     ]
   > | void {
     request = request || {};
@@ -2641,7 +2641,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup[],
       protos.google.spanner.admin.database.v1.IListBackupsRequest | null,
-      protos.google.spanner.admin.database.v1.IListBackupsResponse
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
     ]
   >;
   listBackups(
@@ -2687,7 +2687,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IBackup[],
       protos.google.spanner.admin.database.v1.IListBackupsRequest | null,
-      protos.google.spanner.admin.database.v1.IListBackupsResponse
+      protos.google.spanner.admin.database.v1.IListBackupsResponse,
     ]
   > | void {
     request = request || {};
@@ -2965,7 +2965,7 @@ export class DatabaseAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse,
     ]
   >;
   listDatabaseOperations(
@@ -3011,7 +3011,7 @@ export class DatabaseAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.database.v1.IListDatabaseOperationsRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse
+      protos.google.spanner.admin.database.v1.IListDatabaseOperationsResponse,
     ]
   > | void {
     request = request || {};
@@ -3333,7 +3333,7 @@ export class DatabaseAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.database.v1.IListBackupOperationsRequest | null,
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
     ]
   >;
   listBackupOperations(
@@ -3379,7 +3379,7 @@ export class DatabaseAdminClient {
     [
       protos.google.longrunning.IOperation[],
       protos.google.spanner.admin.database.v1.IListBackupOperationsRequest | null,
-      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse
+      protos.google.spanner.admin.database.v1.IListBackupOperationsResponse,
     ]
   > | void {
     request = request || {};
@@ -3669,7 +3669,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabaseRole[],
       protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse,
     ]
   >;
   listDatabaseRoles(
@@ -3715,7 +3715,7 @@ export class DatabaseAdminClient {
     [
       protos.google.spanner.admin.database.v1.IDatabaseRole[],
       protos.google.spanner.admin.database.v1.IListDatabaseRolesRequest | null,
-      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse
+      protos.google.spanner.admin.database.v1.IListDatabaseRolesResponse,
     ]
   > | void {
     request = request || {};

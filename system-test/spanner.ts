@@ -8791,7 +8791,7 @@ describe('Spanner', () => {
         const QUERY = {
           table: googleSqlTable.name,
           // Set databoostenabled to true for enabling serveless analytics.
-          dataBoostEnabled: false,
+          dataBoostEnabled: true,
           keys: [key],
           columns: ['Key'],
         };
