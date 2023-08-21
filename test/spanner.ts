@@ -4220,9 +4220,8 @@ describe('Spanner with mock server', () => {
       const dbSpecificQuery: GetDatabaseOperationsOptions = {
         filter: dbSpecificFilter,
       };
-      const [operations1] = await instance.getDatabaseOperations(
-        dbSpecificQuery
-      );
+      const [operations1] =
+        await instance.getDatabaseOperations(dbSpecificQuery);
 
       const database = instance.database('test-database');
       const [operations2] = await database.getOperations();
