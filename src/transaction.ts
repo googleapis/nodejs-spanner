@@ -1343,7 +1343,6 @@ export class Snapshot extends EventEmitter {
   }
 
   _releaseWaitingRequests() {
-    this._inlineBeginStarted = false;
     while (this._waitingRequests.length > 0) {
         const request = this._waitingRequests.shift();
         request?.();
