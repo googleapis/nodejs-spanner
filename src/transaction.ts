@@ -223,7 +223,7 @@ export type CommitCallback =
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
-  protected _idWaiter: Readable;
+  protected _waitingRequests: Array<() => void>;
   protected _inlineBeginStarted;
   protected _useInRunner = false;
   id?: Uint8Array | string;
@@ -299,9 +299,7 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
-    this._idWaiter = new Readable({
-      read() {},
-    });
+    this._waitingRequests = []
     this._inlineBeginStarted = false;
   }
 
@@ -1306,7 +1304,7 @@ export class Snapshot extends EventEmitter {
       this.readTimestampProto = readTimestamp;
       this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
     }
-    this._idWaiter.emit('notify');
+    this._releaseWaitingRequests();
   }
 
   /**
@@ -1326,12 +1324,30 @@ export class Snapshot extends EventEmitter {
       this._inlineBeginStarted = true;
       return makeRequest;
     }
-    return (resumeToken?: ResumeToken): Readable =>
-      this._idWaiter.once('notify', () =>
+
+    // Queue subsequent requests.
+    return (resumeToken?: ResumeToken): Readable => {
+      const streamProxy = new Readable({
+          read() {
+          }
+      });
+
+      this._waitingRequests.push(() => {
         makeRequest(resumeToken)
-          .on('data', chunk => this._idWaiter.emit('data', chunk))
-          .once('end', () => this._idWaiter.emit('end'))
-      );
+        .on('data', (chunk) => streamProxy.emit('data', chunk))
+        .on('end', () => streamProxy.emit('end'));
+      });
+
+      return streamProxy;
+    };
+  }
+
+  _releaseWaitingRequests() {
+    this._inlineBeginStarted = false;
+    while (this._waitingRequests.length > 0) {
+        const request = this._waitingRequests.shift();
+        request?.();
+    }
   }
 
   /**
