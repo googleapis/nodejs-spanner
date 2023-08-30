@@ -101,7 +101,7 @@ export interface ReadRequest extends RequestOptions {
   keys?: string[] | string[][];
   ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
-  limit?: number | Long | null;
+  limit?: number | Long | string | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
