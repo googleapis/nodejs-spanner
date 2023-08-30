@@ -3296,6 +3296,40 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should handle parallel request with inline begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount3 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        await Promise.all([rowCount1, rowCount2, rowCount3]);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, selectSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
     it('should use beginTransaction on retry', async () => {
       const database = newTestDatabase();
       let attempts = 0;
