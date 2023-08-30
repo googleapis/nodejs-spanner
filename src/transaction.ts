@@ -299,7 +299,7 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
-    this._waitingRequests = []
+    this._waitingRequests = [];
     this._inlineBeginStarted = false;
   }
 
@@ -1328,14 +1328,13 @@ export class Snapshot extends EventEmitter {
     // Queue subsequent requests.
     return (resumeToken?: ResumeToken): Readable => {
       const streamProxy = new Readable({
-          read() {
-          }
+        read() {},
       });
 
       this._waitingRequests.push(() => {
         makeRequest(resumeToken)
-        .on('data', (chunk) => streamProxy.emit('data', chunk))
-        .on('end', () => streamProxy.emit('end'));
+          .on('data', chunk => streamProxy.emit('data', chunk))
+          .on('end', () => streamProxy.emit('end'));
       });
 
       return streamProxy;
@@ -1344,8 +1343,8 @@ export class Snapshot extends EventEmitter {
 
   _releaseWaitingRequests() {
     while (this._waitingRequests.length > 0) {
-        const request = this._waitingRequests.shift();
-        request?.();
+      const request = this._waitingRequests.shift();
+      request?.();
     }
   }
 
