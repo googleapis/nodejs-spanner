@@ -4,6 +4,22 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.0.0](https://github.com/googleapis/nodejs-spanner/compare/v6.16.0...v7.0.0) (2023-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to Node 14 ([#1890](https://github.com/googleapis/nodejs-spanner/issues/1890))
+
+### Bug Fixes
+
+* Idwaiter with multiple requests ([#1910](https://github.com/googleapis/nodejs-spanner/issues/1910)) ([83dd1f8](https://github.com/googleapis/nodejs-spanner/commit/83dd1f8201d07898bd3ddff9e339dfbcef7d7ace))
+
+
+### Miscellaneous Chores
+
+* Upgrade to Node 14 ([#1890](https://github.com/googleapis/nodejs-spanner/issues/1890)) ([0024772](https://github.com/googleapis/nodejs-spanner/commit/0024772b750de404cd44771e320fe89cd430f064))
+
 ## [6.16.0](https://github.com/googleapis/nodejs-spanner/compare/v6.15.0...v6.16.0) (2023-08-07)
 
 
