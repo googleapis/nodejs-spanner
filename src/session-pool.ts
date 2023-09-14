@@ -1314,7 +1314,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _stopCleaningLongRunningSessions(): void {
     if (this._longRunningTransactionHandle)
-      clearInterval(this._longRunningTransactionHandle);
+      clearInterval(this._longRunningTransactionHandle as any);
     this._longRunningTransactionHandle = undefined;
     this._lastSessionRecycle = null;
   }
