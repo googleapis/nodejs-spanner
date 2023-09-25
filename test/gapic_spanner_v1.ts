@@ -2038,6 +2038,128 @@ describe('v1.SpannerClient', () => {
     });
   });
 
+  describe('batchWrite', () => {
+    it('invokes batchWrite without error', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchWriteRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteResponse()
+      );
+      client.innerApiCalls.batchWrite =
+        stubServerStreamingCall(expectedResponse);
+      const stream = client.batchWrite(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.BatchWriteResponse) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes batchWrite with error', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchWriteRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.batchWrite = stubServerStreamingCall(
+        undefined,
+        expectedError
+      );
+      const stream = client.batchWrite(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.BatchWriteResponse) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      const actualRequest = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes batchWrite with closed client', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchWriteRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      const stream = client.batchWrite(request, {
+        retryRequestOptions: {noResponseRetries: 0},
+      });
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.BatchWriteResponse) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+    });
+  });
+
   describe('listSessions', () => {
     it('invokes listSessions without error', async () => {
       const client = new spannerModule.v1.SpannerClient({

@@ -210,6 +210,10 @@ export class SpannerClient {
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback
       ),
+      batchWrite: new this._gaxModule.StreamDescriptor(
+        this._gaxModule.StreamType.SERVER_STREAMING,
+        !!opts.fallback
+      ),
     };
 
     // Put together the default options sent with requests.
@@ -277,6 +281,7 @@ export class SpannerClient {
       'rollback',
       'partitionQuery',
       'partitionRead',
+      'batchWrite',
     ];
     for (const methodName of spannerStubMethods) {
       const callPromise = this.spannerStub.then(
@@ -1879,6 +1884,54 @@ export class SpannerClient {
       });
     this.initialize();
     return this.innerApiCalls.streamingRead(request, options);
+  }
+
+  /**
+   * Batches the supplied mutation groups in a collection of efficient
+   * transactions. All mutations in a group are committed atomically. However,
+   * mutations across groups can be committed non-atomically in an unspecified
+   * order and thus, they must be independent of each other. Partial failure is
+   * possible, i.e., some groups may have been committed successfully, while
+   * some may have failed. The results of individual batches are streamed into
+   * the response as the batches are applied.
+   *
+   * BatchWrite requests are not replay protected, meaning that each mutation
+   * group may be applied more than once. Replays of non-idempotent mutations
+   * may have undesirable effects. For example, replays of an insert mutation
+   * may produce an already exists error or if you use generated or commit
+   * timestamp-based keys, it may result in additional rows being added to the
+   * mutation's table. We recommend structuring your mutation groups to be
+   * idempotent to avoid this issue.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the batch request is to be run.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
+   * @param {number[]} request.mutationGroups
+   *   Required. The groups of mutations to be applied.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits {@link protos.google.spanner.v1.BatchWriteResponse|BatchWriteResponse} on 'data' event.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
+   *   for more details and examples.
+   */
+  batchWrite(
+    request?: protos.google.spanner.v1.IBatchWriteRequest,
+    options?: CallOptions
+  ): gax.CancellableStream {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.batchWrite(request, options);
   }
 
   /**

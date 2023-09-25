@@ -16704,6 +16704,20 @@ export namespace google {
                  * @returns Promise
                  */
                 public partitionRead(request: google.spanner.v1.IPartitionReadRequest): Promise<google.spanner.v1.PartitionResponse>;
+
+                /**
+                 * Calls BatchWrite.
+                 * @param request BatchWriteRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and BatchWriteResponse
+                 */
+                public batchWrite(request: google.spanner.v1.IBatchWriteRequest, callback: google.spanner.v1.Spanner.BatchWriteCallback): void;
+
+                /**
+                 * Calls BatchWrite.
+                 * @param request BatchWriteRequest message or plain object
+                 * @returns Promise
+                 */
+                public batchWrite(request: google.spanner.v1.IBatchWriteRequest): Promise<google.spanner.v1.BatchWriteResponse>;
             }
 
             namespace Spanner {
@@ -16812,6 +16826,13 @@ export namespace google {
                  * @param [response] PartitionResponse
                  */
                 type PartitionReadCallback = (error: (Error|null), response?: google.spanner.v1.PartitionResponse) => void;
+
+                /**
+                 * Callback as used by {@link google.spanner.v1.Spanner|batchWrite}.
+                 * @param error Error, if any
+                 * @param [response] BatchWriteResponse
+                 */
+                type BatchWriteCallback = (error: (Error|null), response?: google.spanner.v1.BatchWriteResponse) => void;
             }
 
             /** Properties of a CreateSessionRequest. */
@@ -19444,6 +19465,324 @@ export namespace google {
 
                 /**
                  * Gets the default type url for RollbackRequest
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a BatchWriteRequest. */
+            interface IBatchWriteRequest {
+
+                /** BatchWriteRequest session */
+                session?: (string|null);
+
+                /** BatchWriteRequest requestOptions */
+                requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** BatchWriteRequest mutationGroups */
+                mutationGroups?: (google.spanner.v1.BatchWriteRequest.IMutationGroup[]|null);
+            }
+
+            /** Represents a BatchWriteRequest. */
+            class BatchWriteRequest implements IBatchWriteRequest {
+
+                /**
+                 * Constructs a new BatchWriteRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IBatchWriteRequest);
+
+                /** BatchWriteRequest session. */
+                public session: string;
+
+                /** BatchWriteRequest requestOptions. */
+                public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** BatchWriteRequest mutationGroups. */
+                public mutationGroups: google.spanner.v1.BatchWriteRequest.IMutationGroup[];
+
+                /**
+                 * Creates a new BatchWriteRequest instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BatchWriteRequest instance
+                 */
+                public static create(properties?: google.spanner.v1.IBatchWriteRequest): google.spanner.v1.BatchWriteRequest;
+
+                /**
+                 * Encodes the specified BatchWriteRequest message. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.verify|verify} messages.
+                 * @param message BatchWriteRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IBatchWriteRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchWriteRequest message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.verify|verify} messages.
+                 * @param message BatchWriteRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IBatchWriteRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchWriteRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchWriteRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.BatchWriteRequest;
+
+                /**
+                 * Decodes a BatchWriteRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchWriteRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.BatchWriteRequest;
+
+                /**
+                 * Verifies a BatchWriteRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchWriteRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchWriteRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.BatchWriteRequest;
+
+                /**
+                 * Creates a plain object from a BatchWriteRequest message. Also converts values to other types if specified.
+                 * @param message BatchWriteRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.BatchWriteRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchWriteRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for BatchWriteRequest
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace BatchWriteRequest {
+
+                /** Properties of a MutationGroup. */
+                interface IMutationGroup {
+
+                    /** MutationGroup mutations */
+                    mutations?: (google.spanner.v1.IMutation[]|null);
+                }
+
+                /** Represents a MutationGroup. */
+                class MutationGroup implements IMutationGroup {
+
+                    /**
+                     * Constructs a new MutationGroup.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.BatchWriteRequest.IMutationGroup);
+
+                    /** MutationGroup mutations. */
+                    public mutations: google.spanner.v1.IMutation[];
+
+                    /**
+                     * Creates a new MutationGroup instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns MutationGroup instance
+                     */
+                    public static create(properties?: google.spanner.v1.BatchWriteRequest.IMutationGroup): google.spanner.v1.BatchWriteRequest.MutationGroup;
+
+                    /**
+                     * Encodes the specified MutationGroup message. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.MutationGroup.verify|verify} messages.
+                     * @param message MutationGroup message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.BatchWriteRequest.IMutationGroup, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified MutationGroup message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.MutationGroup.verify|verify} messages.
+                     * @param message MutationGroup message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.BatchWriteRequest.IMutationGroup, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a MutationGroup message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns MutationGroup
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.BatchWriteRequest.MutationGroup;
+
+                    /**
+                     * Decodes a MutationGroup message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns MutationGroup
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.BatchWriteRequest.MutationGroup;
+
+                    /**
+                     * Verifies a MutationGroup message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a MutationGroup message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns MutationGroup
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.BatchWriteRequest.MutationGroup;
+
+                    /**
+                     * Creates a plain object from a MutationGroup message. Also converts values to other types if specified.
+                     * @param message MutationGroup
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.BatchWriteRequest.MutationGroup, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this MutationGroup to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for MutationGroup
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+            }
+
+            /** Properties of a BatchWriteResponse. */
+            interface IBatchWriteResponse {
+
+                /** BatchWriteResponse indexes */
+                indexes?: (number[]|null);
+
+                /** BatchWriteResponse status */
+                status?: (google.rpc.IStatus|null);
+
+                /** BatchWriteResponse commitTimestamp */
+                commitTimestamp?: (google.protobuf.ITimestamp|null);
+            }
+
+            /** Represents a BatchWriteResponse. */
+            class BatchWriteResponse implements IBatchWriteResponse {
+
+                /**
+                 * Constructs a new BatchWriteResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IBatchWriteResponse);
+
+                /** BatchWriteResponse indexes. */
+                public indexes: number[];
+
+                /** BatchWriteResponse status. */
+                public status?: (google.rpc.IStatus|null);
+
+                /** BatchWriteResponse commitTimestamp. */
+                public commitTimestamp?: (google.protobuf.ITimestamp|null);
+
+                /**
+                 * Creates a new BatchWriteResponse instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BatchWriteResponse instance
+                 */
+                public static create(properties?: google.spanner.v1.IBatchWriteResponse): google.spanner.v1.BatchWriteResponse;
+
+                /**
+                 * Encodes the specified BatchWriteResponse message. Does not implicitly {@link google.spanner.v1.BatchWriteResponse.verify|verify} messages.
+                 * @param message BatchWriteResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IBatchWriteResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchWriteResponse message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteResponse.verify|verify} messages.
+                 * @param message BatchWriteResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IBatchWriteResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchWriteResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchWriteResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.BatchWriteResponse;
+
+                /**
+                 * Decodes a BatchWriteResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchWriteResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.BatchWriteResponse;
+
+                /**
+                 * Verifies a BatchWriteResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchWriteResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchWriteResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.BatchWriteResponse;
+
+                /**
+                 * Creates a plain object from a BatchWriteResponse message. Also converts values to other types if specified.
+                 * @param message BatchWriteResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.BatchWriteResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchWriteResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for BatchWriteResponse
                  * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                  * @returns The default type url
                  */
