@@ -99,7 +99,7 @@
     "concat-stream": "^2.0.0",
     "dedent": "^0.7.0",
     "execa": "^5.0.0",
-    "gapic-tools": "^0.1.8",
+    "gapic-tools": "^0.2.0",
     "gts": "^5.0.0",
     "jsdoc": "^4.0.0",
     "jsdoc-fresh": "^2.0.0",
