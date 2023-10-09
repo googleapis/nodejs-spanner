@@ -93,8 +93,7 @@ export class SpannerClient {
    *     API remote host.
    * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
    *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean | "rest"} [options.fallback] - Use HTTP fallback mode.
-   *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
+   * @param {boolean} [options.fallback] - Use HTTP/1.1 REST mode.
    *     For more information, please check the
    *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
    * @param {gax} [gaxInstance]: loaded instance of `google-gax`. Useful if you
@@ -102,7 +101,7 @@ export class SpannerClient {
    *     HTTP implementation. Load only fallback version and pass it to the constructor:
    *     ```
    *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
-   *     const client = new SpannerClient({fallback: 'rest'}, gax);
+   *     const client = new SpannerClient({fallback: true}, gax);
    *     ```
    */
   constructor(
@@ -168,7 +167,7 @@ export class SpannerClient {
     }
     if (!opts.fallback) {
       clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
-    } else if (opts.fallback === 'rest') {
+    } else {
       clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
@@ -205,11 +204,15 @@ export class SpannerClient {
     this.descriptors.stream = {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
-        opts.fallback === 'rest'
+        !!opts.fallback
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
-        opts.fallback === 'rest'
+        !!opts.fallback
+      ),
+      batchWrite: new this._gaxModule.StreamDescriptor(
+        this._gaxModule.StreamType.SERVER_STREAMING,
+        !!opts.fallback
       ),
     };
 
@@ -278,6 +281,7 @@ export class SpannerClient {
       'rollback',
       'partitionQuery',
       'partitionRead',
+      'batchWrite',
     ];
     for (const methodName of spannerStubMethods) {
       const callPromise = this.spannerStub.then(
@@ -409,9 +413,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.Session | Session}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.Session|Session}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   createSession(
@@ -497,13 +500,12 @@ export class SpannerClient {
    *   The API may return fewer than the requested number of sessions. If a
    *   specific number of sessions are desired, the client can make additional
    *   calls to BatchCreateSessions (adjusting
-   *   {@link google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count} as necessary).
+   *   {@link protos.google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count} as necessary).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.BatchCreateSessionsResponse | BatchCreateSessionsResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.BatchCreateSessionsResponse|BatchCreateSessionsResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   batchCreateSessions(
@@ -586,9 +588,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.Session | Session}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.Session|Session}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   getSession(
@@ -669,9 +670,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   deleteSession(
@@ -748,10 +748,10 @@ export class SpannerClient {
    *
    * Operations inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
+   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more details.
    *
    * Larger result sets can be fetched in streaming fashion by calling
-   * {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} instead.
+   * {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} instead.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -787,23 +787,23 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
-   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   definition of {@link protos.google.spanner.v1.Type|Type} for more information
    *   about SQL types.
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
    *   enables the new SQL statement execution to resume where the last one left
    *   off. The rest of the request parameters must exactly match the
    *   request that yielded this token.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
    *   Used to control the amount of debugging information returned in
-   *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
-   *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
@@ -833,9 +833,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.ResultSet | ResultSet}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.ResultSet|ResultSet}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   executeSql(
@@ -907,10 +906,10 @@ export class SpannerClient {
   /**
    * Executes a batch of SQL DML statements. This method allows many statements
    * to be run with lower latency than submitting them sequentially with
-   * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.
    *
    * Statements are executed in sequential order. A request can succeed even if
-   * a statement fails. The {@link google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status} field in the
+   * a statement fails. The {@link protos.google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status} field in the
    * response provides information about the statement that failed. Clients must
    * inspect this field to determine whether an error occurred.
    *
@@ -948,9 +947,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.ExecuteBatchDmlResponse | ExecuteBatchDmlResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.ExecuteBatchDmlResponse|ExecuteBatchDmlResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   executeBatchDml(
@@ -1022,17 +1020,17 @@ export class SpannerClient {
   /**
    * Reads rows from the database using key lookups and scans, as a
    * simple key/value style alternative to
-   * {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be used to
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be used to
    * return a result set larger than 10 MiB; if the read matches more
    * data than that, the read fails with a `FAILED_PRECONDITION`
    * error.
    *
    * Reads inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See {@link google.spanner.v1.Transaction|Transaction} for more details.
+   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more details.
    *
    * Larger result sets can be yielded in streaming fashion by calling
-   * {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} instead.
+   * {@link protos.google.spanner.v1.Spanner.StreamingRead|StreamingRead} instead.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1044,21 +1042,21 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.ReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further information.
    * @param {string[]} request.columns
-   *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
+   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
    *   this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
-   *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
-   *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
+   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index}
+   *   is present. If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names
+   *   index keys in {@link protos.google.spanner.v1.ReadRequest.index|index}.
    *
-   *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
-   *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
-   *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
+   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
+   *   in table primary key order (if {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
    *   empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
@@ -1070,7 +1068,7 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
    *   enables the new read to resume where the last read left off. The
    *   rest of the request parameters must exactly match the request
    *   that yielded this token.
@@ -1090,9 +1088,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.ResultSet | ResultSet}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.ResultSet|ResultSet}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   read(
@@ -1163,8 +1160,8 @@ export class SpannerClient {
   }
   /**
    * Begins a new transaction. This step can often be skipped:
-   * {@link google.spanner.v1.Spanner.Read|Read}, {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
-   * {@link google.spanner.v1.Spanner.Commit|Commit} can begin a new transaction as a
+   * {@link protos.google.spanner.v1.Spanner.Read|Read}, {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
+   * {@link protos.google.spanner.v1.Spanner.Commit|Commit} can begin a new transaction as a
    * side-effect.
    *
    * @param {Object} request
@@ -1182,9 +1179,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.Transaction | Transaction}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.Transaction|Transaction}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   beginTransaction(
@@ -1283,24 +1279,23 @@ export class SpannerClient {
    *   instance, due to retries in the application, or in the
    *   transport library), it is possible that the mutations are
    *   executed more than once. If this is undesirable, use
-   *   {@link google.spanner.v1.Spanner.BeginTransaction|BeginTransaction} and
-   *   {@link google.spanner.v1.Spanner.Commit|Commit} instead.
+   *   {@link protos.google.spanner.v1.Spanner.BeginTransaction|BeginTransaction} and
+   *   {@link protos.google.spanner.v1.Spanner.Commit|Commit} instead.
    * @param {number[]} request.mutations
    *   The mutations to be executed when this transaction commits. All
    *   mutations are applied atomically, in the order they appear in
    *   this list.
    * @param {boolean} request.returnCommitStats
    *   If `true`, then statistics related to the transaction will be included in
-   *   the {@link google.spanner.v1.CommitResponse.commit_stats|CommitResponse}. Default value is
+   *   the {@link protos.google.spanner.v1.CommitResponse.commit_stats|CommitResponse}. Default value is
    *   `false`.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.CommitResponse | CommitResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.CommitResponse|CommitResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   commit(
@@ -1372,7 +1367,7 @@ export class SpannerClient {
   /**
    * Rolls back a transaction, releasing any locks it holds. It is a good
    * idea to call this for any transaction that includes one or more
-   * {@link google.spanner.v1.Spanner.Read|Read} or {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and
+   * {@link protos.google.spanner.v1.Spanner.Read|Read} or {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and
    * ultimately decides not to commit.
    *
    * `Rollback` returns `OK` if it successfully aborts the transaction, the
@@ -1388,9 +1383,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.protobuf.Empty | Empty}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   rollback(
@@ -1462,7 +1456,7 @@ export class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a query
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to specify a subset
+   * by {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to specify a subset
    * of the query result to read.  The same session and read-only transaction
    * must be used by the PartitionQueryRequest used to create the
    * partition tokens and the ExecuteSqlRequests that use the partition tokens.
@@ -1488,7 +1482,7 @@ export class SpannerClient {
    *   then unions all results.
    *
    *   This must not contain DML commands, such as INSERT, UPDATE, or
-   *   DELETE. Use {@link google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
+   *   DELETE. Use {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
    *   PartitionedDml transaction for large, partition-friendly DML operations.
    * @param {google.protobuf.Struct} request.params
    *   Parameter names and values that bind to placeholders in the SQL string.
@@ -1506,20 +1500,19 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in {@link protos.google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL query parameters. See the
-   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   definition of {@link protos.google.spanner.v1.Type|Type} for more information
    *   about SQL types.
    * @param {google.spanner.v1.PartitionOptions} request.partitionOptions
    *   Additional options that affect how many partitions are created.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.PartitionResponse | PartitionResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.PartitionResponse|PartitionResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   partitionQuery(
@@ -1591,7 +1584,7 @@ export class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a read
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by {@link google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a subset of the read
+   * by {@link protos.google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a subset of the read
    * result to read.  The same session and read-only transaction must be used by
    * the PartitionReadRequest used to create the partition tokens and the
    * ReadRequests that use the partition tokens.  There are no ordering
@@ -1613,17 +1606,17 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link google.spanner.v1.PartitionReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link google.spanner.v1.PartitionReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.PartitionReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} for further information.
    * @param {string[]} request.columns
-   *   The columns of {@link google.spanner.v1.PartitionReadRequest.table|table} to be returned for each row matching
+   *   The columns of {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be returned for each row matching
    *   this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.PartitionReadRequest.index|index}
-   *   is present. If {@link google.spanner.v1.PartitionReadRequest.index|index} is present, then {@link google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
-   *   index keys in {@link google.spanner.v1.PartitionReadRequest.index|index}.
+   *   primary keys of the rows in {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.PartitionReadRequest.index|index}
+   *   is present. If {@link protos.google.spanner.v1.PartitionReadRequest.index|index} is present, then {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
+   *   index keys in {@link protos.google.spanner.v1.PartitionReadRequest.index|index}.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -1632,9 +1625,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.spanner.v1.PartitionResponse | PartitionResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.spanner.v1.PartitionResponse|PartitionResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    */
   partitionRead(
@@ -1705,8 +1697,8 @@ export class SpannerClient {
   }
 
   /**
-   * Like {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the result
-   * set as a stream. Unlike {@link google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there
+   * Like {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the result
+   * set as a stream. Unlike {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there
    * is no limit on the size of the returned result set. However, no
    * individual row in the result set can exceed 100 MiB, and no
    * column value can exceed 10 MiB.
@@ -1745,23 +1737,23 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
-   *   definition of {@link google.spanner.v1.Type|Type} for more information
+   *   definition of {@link protos.google.spanner.v1.Type|Type} for more information
    *   about SQL types.
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
    *   enables the new SQL statement execution to resume where the last one left
    *   off. The rest of the request parameters must exactly match the
    *   request that yielded this token.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
    *   Used to control the amount of debugging information returned in
-   *   {@link google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
-   *   be set to {@link google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
@@ -1791,9 +1783,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits {@link google.spanner.v1.PartialResultSet | PartialResultSet} on 'data' event.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
+   *   An object stream which emits {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} on 'data' event.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
    *   for more details and examples.
    */
   executeStreamingSql(
@@ -1813,8 +1804,8 @@ export class SpannerClient {
   }
 
   /**
-   * Like {@link google.spanner.v1.Spanner.Read|Read}, except returns the result set as a
-   * stream. Unlike {@link google.spanner.v1.Spanner.Read|Read}, there is no limit on the
+   * Like {@link protos.google.spanner.v1.Spanner.Read|Read}, except returns the result set as a
+   * stream. Unlike {@link protos.google.spanner.v1.Spanner.Read|Read}, there is no limit on the
    * size of the returned result set. However, no individual row in
    * the result set can exceed 100 MiB, and no column value can exceed
    * 10 MiB.
@@ -1829,21 +1820,21 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link google.spanner.v1.ReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link google.spanner.v1.ReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is
+   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.ReadRequest.key_set|key_set}
+   *   and sorting result rows. See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further information.
    * @param {string[]} request.columns
-   *   Required. The columns of {@link google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
+   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
    *   this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link google.spanner.v1.ReadRequest.index|index}
-   *   is present. If {@link google.spanner.v1.ReadRequest.index|index} is present, then {@link google.spanner.v1.ReadRequest.key_set|key_set} instead names
-   *   index keys in {@link google.spanner.v1.ReadRequest.index|index}.
+   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index}
+   *   is present. If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names
+   *   index keys in {@link protos.google.spanner.v1.ReadRequest.index|index}.
    *
-   *   If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
-   *   in table primary key order (if {@link google.spanner.v1.ReadRequest.index|index} is empty) or index key order
-   *   (if {@link google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
+   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
+   *   in table primary key order (if {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
    *   empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
@@ -1855,7 +1846,7 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   {@link google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
    *   enables the new read to resume where the last read left off. The
    *   rest of the request parameters must exactly match the request
    *   that yielded this token.
@@ -1875,9 +1866,8 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits {@link google.spanner.v1.PartialResultSet | PartialResultSet} on 'data' event.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
+   *   An object stream which emits {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} on 'data' event.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
    *   for more details and examples.
    */
   streamingRead(
@@ -1897,6 +1887,54 @@ export class SpannerClient {
   }
 
   /**
+   * Batches the supplied mutation groups in a collection of efficient
+   * transactions. All mutations in a group are committed atomically. However,
+   * mutations across groups can be committed non-atomically in an unspecified
+   * order and thus, they must be independent of each other. Partial failure is
+   * possible, i.e., some groups may have been committed successfully, while
+   * some may have failed. The results of individual batches are streamed into
+   * the response as the batches are applied.
+   *
+   * BatchWrite requests are not replay protected, meaning that each mutation
+   * group may be applied more than once. Replays of non-idempotent mutations
+   * may have undesirable effects. For example, replays of an insert mutation
+   * may produce an already exists error or if you use generated or commit
+   * timestamp-based keys, it may result in additional rows being added to the
+   * mutation's table. We recommend structuring your mutation groups to be
+   * idempotent to avoid this issue.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.session
+   *   Required. The session in which the batch request is to be run.
+   * @param {google.spanner.v1.RequestOptions} request.requestOptions
+   *   Common options for this request.
+   * @param {number[]} request.mutationGroups
+   *   Required. The groups of mutations to be applied.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits {@link protos.google.spanner.v1.BatchWriteResponse|BatchWriteResponse} on 'data' event.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
+   *   for more details and examples.
+   */
+  batchWrite(
+    request?: protos.google.spanner.v1.IBatchWriteRequest,
+    options?: CallOptions
+  ): gax.CancellableStream {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        session: request.session ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.batchWrite(request, options);
+  }
+
+  /**
    * Lists all sessions in a given database.
    *
    * @param {Object} request
@@ -1908,8 +1946,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
-   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -1924,14 +1962,13 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of {@link google.spanner.v1.Session | Session}.
+   *   The first element of the array is Array of {@link protos.google.spanner.v1.Session|Session}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
    *   We recommend using `listSessionsAsync()`
    *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    */
   listSessions(
@@ -2012,8 +2049,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
-   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -2028,13 +2065,12 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing {@link google.spanner.v1.Session | Session} on 'data' event.
+   *   An object stream which emits an object representing {@link protos.google.spanner.v1.Session|Session} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `listSessionsAsync()`
    *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    */
   listSessionsStream(
@@ -2072,8 +2108,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
-   *   {@link google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
    *   case insensitive. The fields eligible for filtering are:
@@ -2088,12 +2124,11 @@ export class SpannerClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
-   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
    *   When you iterate the returned iterable, each element will be an object representing
-   *   {@link google.spanner.v1.Session | Session}. The API will be called under the hood as needed, once per the page,
+   *   {@link protos.google.spanner.v1.Session|Session}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    */
   listSessionsAsync(
