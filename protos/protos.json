@@ -4769,6 +4769,27 @@
                           }
                         }
                       ]
+                    },
+                    "BatchWrite": {
+                      "requestType": "BatchWriteRequest",
+                      "responseType": "BatchWriteResponse",
+                      "responseStream": true,
+                      "options": {
+                        "(google.api.http).post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:batchWrite",
+                        "(google.api.http).body": "*",
+                        "(google.api.method_signature)": "session,mutation_groups"
+                      },
+                      "parsedOptions": [
+                        {
+                          "(google.api.http)": {
+                            "post": "/v1/{session=projects/*/instances/*/databases/*/sessions/*}:batchWrite",
+                            "body": "*"
+                          }
+                        },
+                        {
+                          "(google.api.method_signature)": "session,mutation_groups"
+                        }
+                      ]
                     }
                   }
                 },
@@ -5356,6 +5377,61 @@
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
                       }
+                    }
+                  }
+                },
+                "BatchWriteRequest": {
+                  "fields": {
+                    "session": {
+                      "type": "string",
+                      "id": 1,
+                      "options": {
+                        "(google.api.field_behavior)": "REQUIRED",
+                        "(google.api.resource_reference).type": "spanner.googleapis.com/Session"
+                      }
+                    },
+                    "requestOptions": {
+                      "type": "RequestOptions",
+                      "id": 3
+                    },
+                    "mutationGroups": {
+                      "rule": "repeated",
+                      "type": "MutationGroup",
+                      "id": 4,
+                      "options": {
+                        "(google.api.field_behavior)": "REQUIRED"
+                      }
+                    }
+                  },
+                  "nested": {
+                    "MutationGroup": {
+                      "fields": {
+                        "mutations": {
+                          "rule": "repeated",
+                          "type": "Mutation",
+                          "id": 1,
+                          "options": {
+                            "(google.api.field_behavior)": "REQUIRED"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "BatchWriteResponse": {
+                  "fields": {
+                    "indexes": {
+                      "rule": "repeated",
+                      "type": "int32",
+                      "id": 1
+                    },
+                    "status": {
+                      "type": "google.rpc.Status",
+                      "id": 2
+                    },
+                    "commitTimestamp": {
+                      "type": "google.protobuf.Timestamp",
+                      "id": 3
                     }
                   }
                 }

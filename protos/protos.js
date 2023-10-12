@@ -43333,6 +43333,39 @@
                      * @variation 2
                      */
     
+                    /**
+                     * Callback as used by {@link google.spanner.v1.Spanner|batchWrite}.
+                     * @memberof google.spanner.v1.Spanner
+                     * @typedef BatchWriteCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {google.spanner.v1.BatchWriteResponse} [response] BatchWriteResponse
+                     */
+    
+                    /**
+                     * Calls BatchWrite.
+                     * @function batchWrite
+                     * @memberof google.spanner.v1.Spanner
+                     * @instance
+                     * @param {google.spanner.v1.IBatchWriteRequest} request BatchWriteRequest message or plain object
+                     * @param {google.spanner.v1.Spanner.BatchWriteCallback} callback Node-style callback called with the error, if any, and BatchWriteResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Spanner.prototype.batchWrite = function batchWrite(request, callback) {
+                        return this.rpcCall(batchWrite, $root.google.spanner.v1.BatchWriteRequest, $root.google.spanner.v1.BatchWriteResponse, request, callback);
+                    }, "name", { value: "BatchWrite" });
+    
+                    /**
+                     * Calls BatchWrite.
+                     * @function batchWrite
+                     * @memberof google.spanner.v1.Spanner
+                     * @instance
+                     * @param {google.spanner.v1.IBatchWriteRequest} request BatchWriteRequest message or plain object
+                     * @returns {Promise<google.spanner.v1.BatchWriteResponse>} Promise
+                     * @variation 2
+                     */
+    
                     return Spanner;
                 })();
     
@@ -50168,6 +50201,792 @@
                     };
     
                     return RollbackRequest;
+                })();
+    
+                v1.BatchWriteRequest = (function() {
+    
+                    /**
+                     * Properties of a BatchWriteRequest.
+                     * @memberof google.spanner.v1
+                     * @interface IBatchWriteRequest
+                     * @property {string|null} [session] BatchWriteRequest session
+                     * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] BatchWriteRequest requestOptions
+                     * @property {Array.<google.spanner.v1.BatchWriteRequest.IMutationGroup>|null} [mutationGroups] BatchWriteRequest mutationGroups
+                     */
+    
+                    /**
+                     * Constructs a new BatchWriteRequest.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a BatchWriteRequest.
+                     * @implements IBatchWriteRequest
+                     * @constructor
+                     * @param {google.spanner.v1.IBatchWriteRequest=} [properties] Properties to set
+                     */
+                    function BatchWriteRequest(properties) {
+                        this.mutationGroups = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * BatchWriteRequest session.
+                     * @member {string} session
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @instance
+                     */
+                    BatchWriteRequest.prototype.session = "";
+    
+                    /**
+                     * BatchWriteRequest requestOptions.
+                     * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @instance
+                     */
+                    BatchWriteRequest.prototype.requestOptions = null;
+    
+                    /**
+                     * BatchWriteRequest mutationGroups.
+                     * @member {Array.<google.spanner.v1.BatchWriteRequest.IMutationGroup>} mutationGroups
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @instance
+                     */
+                    BatchWriteRequest.prototype.mutationGroups = $util.emptyArray;
+    
+                    /**
+                     * Creates a new BatchWriteRequest instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteRequest=} [properties] Properties to set
+                     * @returns {google.spanner.v1.BatchWriteRequest} BatchWriteRequest instance
+                     */
+                    BatchWriteRequest.create = function create(properties) {
+                        return new BatchWriteRequest(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified BatchWriteRequest message. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteRequest} message BatchWriteRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    BatchWriteRequest.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.session != null && Object.hasOwnProperty.call(message, "session"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.session);
+                        if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
+                            $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        if (message.mutationGroups != null && message.mutationGroups.length)
+                            for (var i = 0; i < message.mutationGroups.length; ++i)
+                                $root.google.spanner.v1.BatchWriteRequest.MutationGroup.encode(message.mutationGroups[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified BatchWriteRequest message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteRequest} message BatchWriteRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    BatchWriteRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a BatchWriteRequest message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.BatchWriteRequest} BatchWriteRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    BatchWriteRequest.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.BatchWriteRequest();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    message.session = reader.string();
+                                    break;
+                                }
+                            case 3: {
+                                    message.requestOptions = $root.google.spanner.v1.RequestOptions.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 4: {
+                                    if (!(message.mutationGroups && message.mutationGroups.length))
+                                        message.mutationGroups = [];
+                                    message.mutationGroups.push($root.google.spanner.v1.BatchWriteRequest.MutationGroup.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a BatchWriteRequest message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.BatchWriteRequest} BatchWriteRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    BatchWriteRequest.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a BatchWriteRequest message.
+                     * @function verify
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    BatchWriteRequest.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.session != null && message.hasOwnProperty("session"))
+                            if (!$util.isString(message.session))
+                                return "session: string expected";
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
+                            var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
+                            if (error)
+                                return "requestOptions." + error;
+                        }
+                        if (message.mutationGroups != null && message.hasOwnProperty("mutationGroups")) {
+                            if (!Array.isArray(message.mutationGroups))
+                                return "mutationGroups: array expected";
+                            for (var i = 0; i < message.mutationGroups.length; ++i) {
+                                var error = $root.google.spanner.v1.BatchWriteRequest.MutationGroup.verify(message.mutationGroups[i]);
+                                if (error)
+                                    return "mutationGroups." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a BatchWriteRequest message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.BatchWriteRequest} BatchWriteRequest
+                     */
+                    BatchWriteRequest.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.BatchWriteRequest)
+                            return object;
+                        var message = new $root.google.spanner.v1.BatchWriteRequest();
+                        if (object.session != null)
+                            message.session = String(object.session);
+                        if (object.requestOptions != null) {
+                            if (typeof object.requestOptions !== "object")
+                                throw TypeError(".google.spanner.v1.BatchWriteRequest.requestOptions: object expected");
+                            message.requestOptions = $root.google.spanner.v1.RequestOptions.fromObject(object.requestOptions);
+                        }
+                        if (object.mutationGroups) {
+                            if (!Array.isArray(object.mutationGroups))
+                                throw TypeError(".google.spanner.v1.BatchWriteRequest.mutationGroups: array expected");
+                            message.mutationGroups = [];
+                            for (var i = 0; i < object.mutationGroups.length; ++i) {
+                                if (typeof object.mutationGroups[i] !== "object")
+                                    throw TypeError(".google.spanner.v1.BatchWriteRequest.mutationGroups: object expected");
+                                message.mutationGroups[i] = $root.google.spanner.v1.BatchWriteRequest.MutationGroup.fromObject(object.mutationGroups[i]);
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a BatchWriteRequest message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {google.spanner.v1.BatchWriteRequest} message BatchWriteRequest
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    BatchWriteRequest.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.mutationGroups = [];
+                        if (options.defaults) {
+                            object.session = "";
+                            object.requestOptions = null;
+                        }
+                        if (message.session != null && message.hasOwnProperty("session"))
+                            object.session = message.session;
+                        if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
+                            object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
+                        if (message.mutationGroups && message.mutationGroups.length) {
+                            object.mutationGroups = [];
+                            for (var j = 0; j < message.mutationGroups.length; ++j)
+                                object.mutationGroups[j] = $root.google.spanner.v1.BatchWriteRequest.MutationGroup.toObject(message.mutationGroups[j], options);
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this BatchWriteRequest to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    BatchWriteRequest.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for BatchWriteRequest
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BatchWriteRequest.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.BatchWriteRequest";
+                    };
+    
+                    BatchWriteRequest.MutationGroup = (function() {
+    
+                        /**
+                         * Properties of a MutationGroup.
+                         * @memberof google.spanner.v1.BatchWriteRequest
+                         * @interface IMutationGroup
+                         * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] MutationGroup mutations
+                         */
+    
+                        /**
+                         * Constructs a new MutationGroup.
+                         * @memberof google.spanner.v1.BatchWriteRequest
+                         * @classdesc Represents a MutationGroup.
+                         * @implements IMutationGroup
+                         * @constructor
+                         * @param {google.spanner.v1.BatchWriteRequest.IMutationGroup=} [properties] Properties to set
+                         */
+                        function MutationGroup(properties) {
+                            this.mutations = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * MutationGroup mutations.
+                         * @member {Array.<google.spanner.v1.IMutation>} mutations
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @instance
+                         */
+                        MutationGroup.prototype.mutations = $util.emptyArray;
+    
+                        /**
+                         * Creates a new MutationGroup instance using the specified properties.
+                         * @function create
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {google.spanner.v1.BatchWriteRequest.IMutationGroup=} [properties] Properties to set
+                         * @returns {google.spanner.v1.BatchWriteRequest.MutationGroup} MutationGroup instance
+                         */
+                        MutationGroup.create = function create(properties) {
+                            return new MutationGroup(properties);
+                        };
+    
+                        /**
+                         * Encodes the specified MutationGroup message. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.MutationGroup.verify|verify} messages.
+                         * @function encode
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {google.spanner.v1.BatchWriteRequest.IMutationGroup} message MutationGroup message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        MutationGroup.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.mutations != null && message.mutations.length)
+                                for (var i = 0; i < message.mutations.length; ++i)
+                                    $root.google.spanner.v1.Mutation.encode(message.mutations[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified MutationGroup message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteRequest.MutationGroup.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {google.spanner.v1.BatchWriteRequest.IMutationGroup} message MutationGroup message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        MutationGroup.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a MutationGroup message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {google.spanner.v1.BatchWriteRequest.MutationGroup} MutationGroup
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        MutationGroup.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.BatchWriteRequest.MutationGroup();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1: {
+                                        if (!(message.mutations && message.mutations.length))
+                                            message.mutations = [];
+                                        message.mutations.push($root.google.spanner.v1.Mutation.decode(reader, reader.uint32()));
+                                        break;
+                                    }
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a MutationGroup message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {google.spanner.v1.BatchWriteRequest.MutationGroup} MutationGroup
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        MutationGroup.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a MutationGroup message.
+                         * @function verify
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        MutationGroup.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.mutations != null && message.hasOwnProperty("mutations")) {
+                                if (!Array.isArray(message.mutations))
+                                    return "mutations: array expected";
+                                for (var i = 0; i < message.mutations.length; ++i) {
+                                    var error = $root.google.spanner.v1.Mutation.verify(message.mutations[i]);
+                                    if (error)
+                                        return "mutations." + error;
+                                }
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a MutationGroup message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {google.spanner.v1.BatchWriteRequest.MutationGroup} MutationGroup
+                         */
+                        MutationGroup.fromObject = function fromObject(object) {
+                            if (object instanceof $root.google.spanner.v1.BatchWriteRequest.MutationGroup)
+                                return object;
+                            var message = new $root.google.spanner.v1.BatchWriteRequest.MutationGroup();
+                            if (object.mutations) {
+                                if (!Array.isArray(object.mutations))
+                                    throw TypeError(".google.spanner.v1.BatchWriteRequest.MutationGroup.mutations: array expected");
+                                message.mutations = [];
+                                for (var i = 0; i < object.mutations.length; ++i) {
+                                    if (typeof object.mutations[i] !== "object")
+                                        throw TypeError(".google.spanner.v1.BatchWriteRequest.MutationGroup.mutations: object expected");
+                                    message.mutations[i] = $root.google.spanner.v1.Mutation.fromObject(object.mutations[i]);
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a MutationGroup message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {google.spanner.v1.BatchWriteRequest.MutationGroup} message MutationGroup
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        MutationGroup.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults)
+                                object.mutations = [];
+                            if (message.mutations && message.mutations.length) {
+                                object.mutations = [];
+                                for (var j = 0; j < message.mutations.length; ++j)
+                                    object.mutations[j] = $root.google.spanner.v1.Mutation.toObject(message.mutations[j], options);
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this MutationGroup to JSON.
+                         * @function toJSON
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        MutationGroup.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        /**
+                         * Gets the default type url for MutationGroup
+                         * @function getTypeUrl
+                         * @memberof google.spanner.v1.BatchWriteRequest.MutationGroup
+                         * @static
+                         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns {string} The default type url
+                         */
+                        MutationGroup.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                            if (typeUrlPrefix === undefined) {
+                                typeUrlPrefix = "type.googleapis.com";
+                            }
+                            return typeUrlPrefix + "/google.spanner.v1.BatchWriteRequest.MutationGroup";
+                        };
+    
+                        return MutationGroup;
+                    })();
+    
+                    return BatchWriteRequest;
+                })();
+    
+                v1.BatchWriteResponse = (function() {
+    
+                    /**
+                     * Properties of a BatchWriteResponse.
+                     * @memberof google.spanner.v1
+                     * @interface IBatchWriteResponse
+                     * @property {Array.<number>|null} [indexes] BatchWriteResponse indexes
+                     * @property {google.rpc.IStatus|null} [status] BatchWriteResponse status
+                     * @property {google.protobuf.ITimestamp|null} [commitTimestamp] BatchWriteResponse commitTimestamp
+                     */
+    
+                    /**
+                     * Constructs a new BatchWriteResponse.
+                     * @memberof google.spanner.v1
+                     * @classdesc Represents a BatchWriteResponse.
+                     * @implements IBatchWriteResponse
+                     * @constructor
+                     * @param {google.spanner.v1.IBatchWriteResponse=} [properties] Properties to set
+                     */
+                    function BatchWriteResponse(properties) {
+                        this.indexes = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * BatchWriteResponse indexes.
+                     * @member {Array.<number>} indexes
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @instance
+                     */
+                    BatchWriteResponse.prototype.indexes = $util.emptyArray;
+    
+                    /**
+                     * BatchWriteResponse status.
+                     * @member {google.rpc.IStatus|null|undefined} status
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @instance
+                     */
+                    BatchWriteResponse.prototype.status = null;
+    
+                    /**
+                     * BatchWriteResponse commitTimestamp.
+                     * @member {google.protobuf.ITimestamp|null|undefined} commitTimestamp
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @instance
+                     */
+                    BatchWriteResponse.prototype.commitTimestamp = null;
+    
+                    /**
+                     * Creates a new BatchWriteResponse instance using the specified properties.
+                     * @function create
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteResponse=} [properties] Properties to set
+                     * @returns {google.spanner.v1.BatchWriteResponse} BatchWriteResponse instance
+                     */
+                    BatchWriteResponse.create = function create(properties) {
+                        return new BatchWriteResponse(properties);
+                    };
+    
+                    /**
+                     * Encodes the specified BatchWriteResponse message. Does not implicitly {@link google.spanner.v1.BatchWriteResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteResponse} message BatchWriteResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    BatchWriteResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.indexes != null && message.indexes.length) {
+                            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+                            for (var i = 0; i < message.indexes.length; ++i)
+                                writer.int32(message.indexes[i]);
+                            writer.ldelim();
+                        }
+                        if (message.status != null && Object.hasOwnProperty.call(message, "status"))
+                            $root.google.rpc.Status.encode(message.status, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        if (message.commitTimestamp != null && Object.hasOwnProperty.call(message, "commitTimestamp"))
+                            $root.google.protobuf.Timestamp.encode(message.commitTimestamp, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified BatchWriteResponse message, length delimited. Does not implicitly {@link google.spanner.v1.BatchWriteResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {google.spanner.v1.IBatchWriteResponse} message BatchWriteResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    BatchWriteResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a BatchWriteResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {google.spanner.v1.BatchWriteResponse} BatchWriteResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    BatchWriteResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.v1.BatchWriteResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1: {
+                                    if (!(message.indexes && message.indexes.length))
+                                        message.indexes = [];
+                                    if ((tag & 7) === 2) {
+                                        var end2 = reader.uint32() + reader.pos;
+                                        while (reader.pos < end2)
+                                            message.indexes.push(reader.int32());
+                                    } else
+                                        message.indexes.push(reader.int32());
+                                    break;
+                                }
+                            case 2: {
+                                    message.status = $root.google.rpc.Status.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 3: {
+                                    message.commitTimestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a BatchWriteResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {google.spanner.v1.BatchWriteResponse} BatchWriteResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    BatchWriteResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a BatchWriteResponse message.
+                     * @function verify
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    BatchWriteResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.indexes != null && message.hasOwnProperty("indexes")) {
+                            if (!Array.isArray(message.indexes))
+                                return "indexes: array expected";
+                            for (var i = 0; i < message.indexes.length; ++i)
+                                if (!$util.isInteger(message.indexes[i]))
+                                    return "indexes: integer[] expected";
+                        }
+                        if (message.status != null && message.hasOwnProperty("status")) {
+                            var error = $root.google.rpc.Status.verify(message.status);
+                            if (error)
+                                return "status." + error;
+                        }
+                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp")) {
+                            var error = $root.google.protobuf.Timestamp.verify(message.commitTimestamp);
+                            if (error)
+                                return "commitTimestamp." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a BatchWriteResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {google.spanner.v1.BatchWriteResponse} BatchWriteResponse
+                     */
+                    BatchWriteResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.google.spanner.v1.BatchWriteResponse)
+                            return object;
+                        var message = new $root.google.spanner.v1.BatchWriteResponse();
+                        if (object.indexes) {
+                            if (!Array.isArray(object.indexes))
+                                throw TypeError(".google.spanner.v1.BatchWriteResponse.indexes: array expected");
+                            message.indexes = [];
+                            for (var i = 0; i < object.indexes.length; ++i)
+                                message.indexes[i] = object.indexes[i] | 0;
+                        }
+                        if (object.status != null) {
+                            if (typeof object.status !== "object")
+                                throw TypeError(".google.spanner.v1.BatchWriteResponse.status: object expected");
+                            message.status = $root.google.rpc.Status.fromObject(object.status);
+                        }
+                        if (object.commitTimestamp != null) {
+                            if (typeof object.commitTimestamp !== "object")
+                                throw TypeError(".google.spanner.v1.BatchWriteResponse.commitTimestamp: object expected");
+                            message.commitTimestamp = $root.google.protobuf.Timestamp.fromObject(object.commitTimestamp);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a BatchWriteResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {google.spanner.v1.BatchWriteResponse} message BatchWriteResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    BatchWriteResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.indexes = [];
+                        if (options.defaults) {
+                            object.status = null;
+                            object.commitTimestamp = null;
+                        }
+                        if (message.indexes && message.indexes.length) {
+                            object.indexes = [];
+                            for (var j = 0; j < message.indexes.length; ++j)
+                                object.indexes[j] = message.indexes[j];
+                        }
+                        if (message.status != null && message.hasOwnProperty("status"))
+                            object.status = $root.google.rpc.Status.toObject(message.status, options);
+                        if (message.commitTimestamp != null && message.hasOwnProperty("commitTimestamp"))
+                            object.commitTimestamp = $root.google.protobuf.Timestamp.toObject(message.commitTimestamp, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this BatchWriteResponse to JSON.
+                     * @function toJSON
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    BatchWriteResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    /**
+                     * Gets the default type url for BatchWriteResponse
+                     * @function getTypeUrl
+                     * @memberof google.spanner.v1.BatchWriteResponse
+                     * @static
+                     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns {string} The default type url
+                     */
+                    BatchWriteResponse.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                        if (typeUrlPrefix === undefined) {
+                            typeUrlPrefix = "type.googleapis.com";
+                        }
+                        return typeUrlPrefix + "/google.spanner.v1.BatchWriteResponse";
+                    };
+    
+                    return BatchWriteResponse;
                 })();
     
                 return v1;
