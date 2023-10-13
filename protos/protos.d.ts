@@ -12181,6 +12181,336 @@ export namespace google {
                         }
                     }
 
+                    /** Properties of an AutoscalingConfig. */
+                    interface IAutoscalingConfig {
+
+                        /** AutoscalingConfig autoscalingLimits */
+                        autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                        /** AutoscalingConfig autoscalingTargets */
+                        autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+                    }
+
+                    /** Represents an AutoscalingConfig. */
+                    class AutoscalingConfig implements IAutoscalingConfig {
+
+                        /**
+                         * Constructs a new AutoscalingConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IAutoscalingConfig);
+
+                        /** AutoscalingConfig autoscalingLimits. */
+                        public autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                        /** AutoscalingConfig autoscalingTargets. */
+                        public autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /**
+                         * Creates a new AutoscalingConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AutoscalingConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IAutoscalingConfig): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Encodes the specified AutoscalingConfig message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                         * @param message AutoscalingConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IAutoscalingConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AutoscalingConfig message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                         * @param message AutoscalingConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IAutoscalingConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AutoscalingConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AutoscalingConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Decodes an AutoscalingConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AutoscalingConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Verifies an AutoscalingConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AutoscalingConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AutoscalingConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Creates a plain object from an AutoscalingConfig message. Also converts values to other types if specified.
+                         * @param message AutoscalingConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AutoscalingConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AutoscalingConfig
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace AutoscalingConfig {
+
+                        /** Properties of an AutoscalingLimits. */
+                        interface IAutoscalingLimits {
+
+                            /** AutoscalingLimits minNodes */
+                            minNodes?: (number|null);
+
+                            /** AutoscalingLimits minProcessingUnits */
+                            minProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits maxNodes */
+                            maxNodes?: (number|null);
+
+                            /** AutoscalingLimits maxProcessingUnits */
+                            maxProcessingUnits?: (number|null);
+                        }
+
+                        /** Represents an AutoscalingLimits. */
+                        class AutoscalingLimits implements IAutoscalingLimits {
+
+                            /**
+                             * Constructs a new AutoscalingLimits.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits);
+
+                            /** AutoscalingLimits minNodes. */
+                            public minNodes?: (number|null);
+
+                            /** AutoscalingLimits minProcessingUnits. */
+                            public minProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits maxNodes. */
+                            public maxNodes?: (number|null);
+
+                            /** AutoscalingLimits maxProcessingUnits. */
+                            public maxProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits minLimit. */
+                            public minLimit?: ("minNodes"|"minProcessingUnits");
+
+                            /** AutoscalingLimits maxLimit. */
+                            public maxLimit?: ("maxNodes"|"maxProcessingUnits");
+
+                            /**
+                             * Creates a new AutoscalingLimits instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AutoscalingLimits instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Encodes the specified AutoscalingLimits message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                             * @param message AutoscalingLimits message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AutoscalingLimits message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                             * @param message AutoscalingLimits message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AutoscalingLimits message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AutoscalingLimits
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Decodes an AutoscalingLimits message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AutoscalingLimits
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Verifies an AutoscalingLimits message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AutoscalingLimits message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AutoscalingLimits
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Creates a plain object from an AutoscalingLimits message. Also converts values to other types if specified.
+                             * @param message AutoscalingLimits
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AutoscalingLimits to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AutoscalingLimits
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+
+                        /** Properties of an AutoscalingTargets. */
+                        interface IAutoscalingTargets {
+
+                            /** AutoscalingTargets highPriorityCpuUtilizationPercent */
+                            highPriorityCpuUtilizationPercent?: (number|null);
+
+                            /** AutoscalingTargets storageUtilizationPercent */
+                            storageUtilizationPercent?: (number|null);
+                        }
+
+                        /** Represents an AutoscalingTargets. */
+                        class AutoscalingTargets implements IAutoscalingTargets {
+
+                            /**
+                             * Constructs a new AutoscalingTargets.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets);
+
+                            /** AutoscalingTargets highPriorityCpuUtilizationPercent. */
+                            public highPriorityCpuUtilizationPercent: number;
+
+                            /** AutoscalingTargets storageUtilizationPercent. */
+                            public storageUtilizationPercent: number;
+
+                            /**
+                             * Creates a new AutoscalingTargets instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AutoscalingTargets instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Encodes the specified AutoscalingTargets message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                             * @param message AutoscalingTargets message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AutoscalingTargets message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                             * @param message AutoscalingTargets message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AutoscalingTargets message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AutoscalingTargets
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Decodes an AutoscalingTargets message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AutoscalingTargets
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Verifies an AutoscalingTargets message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AutoscalingTargets message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AutoscalingTargets
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Creates a plain object from an AutoscalingTargets message. Also converts values to other types if specified.
+                             * @param message AutoscalingTargets
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AutoscalingTargets to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AutoscalingTargets
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+                    }
+
                     /** Properties of an Instance. */
                     interface IInstance {
 
@@ -12198,6 +12528,9 @@ export namespace google {
 
                         /** Instance processingUnits */
                         processingUnits?: (number|null);
+
+                        /** Instance autoscalingConfig */
+                        autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
                         /** Instance state */
                         state?: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State|null);
@@ -12238,6 +12571,9 @@ export namespace google {
 
                         /** Instance processingUnits. */
                         public processingUnits: number;
+
+                        /** Instance autoscalingConfig. */
+                        public autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
                         /** Instance state. */
                         public state: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State);

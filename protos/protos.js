@@ -30841,6 +30841,787 @@
                             return InstanceConfig;
                         })();
     
+                        v1.AutoscalingConfig = (function() {
+    
+                            /**
+                             * Properties of an AutoscalingConfig.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @interface IAutoscalingConfig
+                             * @property {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null} [autoscalingLimits] AutoscalingConfig autoscalingLimits
+                             * @property {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null} [autoscalingTargets] AutoscalingConfig autoscalingTargets
+                             */
+    
+                            /**
+                             * Constructs a new AutoscalingConfig.
+                             * @memberof google.spanner.admin.instance.v1
+                             * @classdesc Represents an AutoscalingConfig.
+                             * @implements IAutoscalingConfig
+                             * @constructor
+                             * @param {google.spanner.admin.instance.v1.IAutoscalingConfig=} [properties] Properties to set
+                             */
+                            function AutoscalingConfig(properties) {
+                                if (properties)
+                                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                        if (properties[keys[i]] != null)
+                                            this[keys[i]] = properties[keys[i]];
+                            }
+    
+                            /**
+                             * AutoscalingConfig autoscalingLimits.
+                             * @member {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null|undefined} autoscalingLimits
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @instance
+                             */
+                            AutoscalingConfig.prototype.autoscalingLimits = null;
+    
+                            /**
+                             * AutoscalingConfig autoscalingTargets.
+                             * @member {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null|undefined} autoscalingTargets
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @instance
+                             */
+                            AutoscalingConfig.prototype.autoscalingTargets = null;
+    
+                            /**
+                             * Creates a new AutoscalingConfig instance using the specified properties.
+                             * @function create
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IAutoscalingConfig=} [properties] Properties to set
+                             * @returns {google.spanner.admin.instance.v1.AutoscalingConfig} AutoscalingConfig instance
+                             */
+                            AutoscalingConfig.create = function create(properties) {
+                                return new AutoscalingConfig(properties);
+                            };
+    
+                            /**
+                             * Encodes the specified AutoscalingConfig message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                             * @function encode
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IAutoscalingConfig} message AutoscalingConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AutoscalingConfig.encode = function encode(message, writer) {
+                                if (!writer)
+                                    writer = $Writer.create();
+                                if (message.autoscalingLimits != null && Object.hasOwnProperty.call(message, "autoscalingLimits"))
+                                    $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.encode(message.autoscalingLimits, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                                if (message.autoscalingTargets != null && Object.hasOwnProperty.call(message, "autoscalingTargets"))
+                                    $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.encode(message.autoscalingTargets, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                                return writer;
+                            };
+    
+                            /**
+                             * Encodes the specified AutoscalingConfig message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                             * @function encodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.IAutoscalingConfig} message AutoscalingConfig message or plain object to encode
+                             * @param {$protobuf.Writer} [writer] Writer to encode to
+                             * @returns {$protobuf.Writer} Writer
+                             */
+                            AutoscalingConfig.encodeDelimited = function encodeDelimited(message, writer) {
+                                return this.encode(message, writer).ldelim();
+                            };
+    
+                            /**
+                             * Decodes an AutoscalingConfig message from the specified reader or buffer.
+                             * @function decode
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @param {number} [length] Message length if known beforehand
+                             * @returns {google.spanner.admin.instance.v1.AutoscalingConfig} AutoscalingConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AutoscalingConfig.decode = function decode(reader, length) {
+                                if (!(reader instanceof $Reader))
+                                    reader = $Reader.create(reader);
+                                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig();
+                                while (reader.pos < end) {
+                                    var tag = reader.uint32();
+                                    switch (tag >>> 3) {
+                                    case 1: {
+                                            message.autoscalingLimits = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.autoscalingTargets = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.decode(reader, reader.uint32());
+                                            break;
+                                        }
+                                    default:
+                                        reader.skipType(tag & 7);
+                                        break;
+                                    }
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Decodes an AutoscalingConfig message from the specified reader or buffer, length delimited.
+                             * @function decodeDelimited
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                             * @returns {google.spanner.admin.instance.v1.AutoscalingConfig} AutoscalingConfig
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            AutoscalingConfig.decodeDelimited = function decodeDelimited(reader) {
+                                if (!(reader instanceof $Reader))
+                                    reader = new $Reader(reader);
+                                return this.decode(reader, reader.uint32());
+                            };
+    
+                            /**
+                             * Verifies an AutoscalingConfig message.
+                             * @function verify
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {Object.<string,*>} message Plain object to verify
+                             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                             */
+                            AutoscalingConfig.verify = function verify(message) {
+                                if (typeof message !== "object" || message === null)
+                                    return "object expected";
+                                if (message.autoscalingLimits != null && message.hasOwnProperty("autoscalingLimits")) {
+                                    var error = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify(message.autoscalingLimits);
+                                    if (error)
+                                        return "autoscalingLimits." + error;
+                                }
+                                if (message.autoscalingTargets != null && message.hasOwnProperty("autoscalingTargets")) {
+                                    var error = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify(message.autoscalingTargets);
+                                    if (error)
+                                        return "autoscalingTargets." + error;
+                                }
+                                return null;
+                            };
+    
+                            /**
+                             * Creates an AutoscalingConfig message from a plain object. Also converts values to their respective internal types.
+                             * @function fromObject
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {Object.<string,*>} object Plain object
+                             * @returns {google.spanner.admin.instance.v1.AutoscalingConfig} AutoscalingConfig
+                             */
+                            AutoscalingConfig.fromObject = function fromObject(object) {
+                                if (object instanceof $root.google.spanner.admin.instance.v1.AutoscalingConfig)
+                                    return object;
+                                var message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig();
+                                if (object.autoscalingLimits != null) {
+                                    if (typeof object.autoscalingLimits !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.AutoscalingConfig.autoscalingLimits: object expected");
+                                    message.autoscalingLimits = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.fromObject(object.autoscalingLimits);
+                                }
+                                if (object.autoscalingTargets != null) {
+                                    if (typeof object.autoscalingTargets !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.AutoscalingConfig.autoscalingTargets: object expected");
+                                    message.autoscalingTargets = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.fromObject(object.autoscalingTargets);
+                                }
+                                return message;
+                            };
+    
+                            /**
+                             * Creates a plain object from an AutoscalingConfig message. Also converts values to other types if specified.
+                             * @function toObject
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {google.spanner.admin.instance.v1.AutoscalingConfig} message AutoscalingConfig
+                             * @param {$protobuf.IConversionOptions} [options] Conversion options
+                             * @returns {Object.<string,*>} Plain object
+                             */
+                            AutoscalingConfig.toObject = function toObject(message, options) {
+                                if (!options)
+                                    options = {};
+                                var object = {};
+                                if (options.defaults) {
+                                    object.autoscalingLimits = null;
+                                    object.autoscalingTargets = null;
+                                }
+                                if (message.autoscalingLimits != null && message.hasOwnProperty("autoscalingLimits"))
+                                    object.autoscalingLimits = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.toObject(message.autoscalingLimits, options);
+                                if (message.autoscalingTargets != null && message.hasOwnProperty("autoscalingTargets"))
+                                    object.autoscalingTargets = $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.toObject(message.autoscalingTargets, options);
+                                return object;
+                            };
+    
+                            /**
+                             * Converts this AutoscalingConfig to JSON.
+                             * @function toJSON
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @instance
+                             * @returns {Object.<string,*>} JSON object
+                             */
+                            AutoscalingConfig.prototype.toJSON = function toJSON() {
+                                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                            };
+    
+                            /**
+                             * Gets the default type url for AutoscalingConfig
+                             * @function getTypeUrl
+                             * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                             * @static
+                             * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns {string} The default type url
+                             */
+                            AutoscalingConfig.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                if (typeUrlPrefix === undefined) {
+                                    typeUrlPrefix = "type.googleapis.com";
+                                }
+                                return typeUrlPrefix + "/google.spanner.admin.instance.v1.AutoscalingConfig";
+                            };
+    
+                            AutoscalingConfig.AutoscalingLimits = (function() {
+    
+                                /**
+                                 * Properties of an AutoscalingLimits.
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                                 * @interface IAutoscalingLimits
+                                 * @property {number|null} [minNodes] AutoscalingLimits minNodes
+                                 * @property {number|null} [minProcessingUnits] AutoscalingLimits minProcessingUnits
+                                 * @property {number|null} [maxNodes] AutoscalingLimits maxNodes
+                                 * @property {number|null} [maxProcessingUnits] AutoscalingLimits maxProcessingUnits
+                                 */
+    
+                                /**
+                                 * Constructs a new AutoscalingLimits.
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                                 * @classdesc Represents an AutoscalingLimits.
+                                 * @implements IAutoscalingLimits
+                                 * @constructor
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits=} [properties] Properties to set
+                                 */
+                                function AutoscalingLimits(properties) {
+                                    if (properties)
+                                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                            if (properties[keys[i]] != null)
+                                                this[keys[i]] = properties[keys[i]];
+                                }
+    
+                                /**
+                                 * AutoscalingLimits minNodes.
+                                 * @member {number|null|undefined} minNodes
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                AutoscalingLimits.prototype.minNodes = null;
+    
+                                /**
+                                 * AutoscalingLimits minProcessingUnits.
+                                 * @member {number|null|undefined} minProcessingUnits
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                AutoscalingLimits.prototype.minProcessingUnits = null;
+    
+                                /**
+                                 * AutoscalingLimits maxNodes.
+                                 * @member {number|null|undefined} maxNodes
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                AutoscalingLimits.prototype.maxNodes = null;
+    
+                                /**
+                                 * AutoscalingLimits maxProcessingUnits.
+                                 * @member {number|null|undefined} maxProcessingUnits
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                AutoscalingLimits.prototype.maxProcessingUnits = null;
+    
+                                // OneOf field names bound to virtual getters and setters
+                                var $oneOfFields;
+    
+                                /**
+                                 * AutoscalingLimits minLimit.
+                                 * @member {"minNodes"|"minProcessingUnits"|undefined} minLimit
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                Object.defineProperty(AutoscalingLimits.prototype, "minLimit", {
+                                    get: $util.oneOfGetter($oneOfFields = ["minNodes", "minProcessingUnits"]),
+                                    set: $util.oneOfSetter($oneOfFields)
+                                });
+    
+                                /**
+                                 * AutoscalingLimits maxLimit.
+                                 * @member {"maxNodes"|"maxProcessingUnits"|undefined} maxLimit
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 */
+                                Object.defineProperty(AutoscalingLimits.prototype, "maxLimit", {
+                                    get: $util.oneOfGetter($oneOfFields = ["maxNodes", "maxProcessingUnits"]),
+                                    set: $util.oneOfSetter($oneOfFields)
+                                });
+    
+                                /**
+                                 * Creates a new AutoscalingLimits instance using the specified properties.
+                                 * @function create
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits=} [properties] Properties to set
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits} AutoscalingLimits instance
+                                 */
+                                AutoscalingLimits.create = function create(properties) {
+                                    return new AutoscalingLimits(properties);
+                                };
+    
+                                /**
+                                 * Encodes the specified AutoscalingLimits message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                                 * @function encode
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits} message AutoscalingLimits message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                AutoscalingLimits.encode = function encode(message, writer) {
+                                    if (!writer)
+                                        writer = $Writer.create();
+                                    if (message.minNodes != null && Object.hasOwnProperty.call(message, "minNodes"))
+                                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.minNodes);
+                                    if (message.minProcessingUnits != null && Object.hasOwnProperty.call(message, "minProcessingUnits"))
+                                        writer.uint32(/* id 2, wireType 0 =*/16).int32(message.minProcessingUnits);
+                                    if (message.maxNodes != null && Object.hasOwnProperty.call(message, "maxNodes"))
+                                        writer.uint32(/* id 3, wireType 0 =*/24).int32(message.maxNodes);
+                                    if (message.maxProcessingUnits != null && Object.hasOwnProperty.call(message, "maxProcessingUnits"))
+                                        writer.uint32(/* id 4, wireType 0 =*/32).int32(message.maxProcessingUnits);
+                                    return writer;
+                                };
+    
+                                /**
+                                 * Encodes the specified AutoscalingLimits message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                                 * @function encodeDelimited
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits} message AutoscalingLimits message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                AutoscalingLimits.encodeDelimited = function encodeDelimited(message, writer) {
+                                    return this.encode(message, writer).ldelim();
+                                };
+    
+                                /**
+                                 * Decodes an AutoscalingLimits message from the specified reader or buffer.
+                                 * @function decode
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @param {number} [length] Message length if known beforehand
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits} AutoscalingLimits
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                AutoscalingLimits.decode = function decode(reader, length) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = $Reader.create(reader);
+                                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits();
+                                    while (reader.pos < end) {
+                                        var tag = reader.uint32();
+                                        switch (tag >>> 3) {
+                                        case 1: {
+                                                message.minNodes = reader.int32();
+                                                break;
+                                            }
+                                        case 2: {
+                                                message.minProcessingUnits = reader.int32();
+                                                break;
+                                            }
+                                        case 3: {
+                                                message.maxNodes = reader.int32();
+                                                break;
+                                            }
+                                        case 4: {
+                                                message.maxProcessingUnits = reader.int32();
+                                                break;
+                                            }
+                                        default:
+                                            reader.skipType(tag & 7);
+                                            break;
+                                        }
+                                    }
+                                    return message;
+                                };
+    
+                                /**
+                                 * Decodes an AutoscalingLimits message from the specified reader or buffer, length delimited.
+                                 * @function decodeDelimited
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits} AutoscalingLimits
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                AutoscalingLimits.decodeDelimited = function decodeDelimited(reader) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = new $Reader(reader);
+                                    return this.decode(reader, reader.uint32());
+                                };
+    
+                                /**
+                                 * Verifies an AutoscalingLimits message.
+                                 * @function verify
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {Object.<string,*>} message Plain object to verify
+                                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                                 */
+                                AutoscalingLimits.verify = function verify(message) {
+                                    if (typeof message !== "object" || message === null)
+                                        return "object expected";
+                                    var properties = {};
+                                    if (message.minNodes != null && message.hasOwnProperty("minNodes")) {
+                                        properties.minLimit = 1;
+                                        if (!$util.isInteger(message.minNodes))
+                                            return "minNodes: integer expected";
+                                    }
+                                    if (message.minProcessingUnits != null && message.hasOwnProperty("minProcessingUnits")) {
+                                        if (properties.minLimit === 1)
+                                            return "minLimit: multiple values";
+                                        properties.minLimit = 1;
+                                        if (!$util.isInteger(message.minProcessingUnits))
+                                            return "minProcessingUnits: integer expected";
+                                    }
+                                    if (message.maxNodes != null && message.hasOwnProperty("maxNodes")) {
+                                        properties.maxLimit = 1;
+                                        if (!$util.isInteger(message.maxNodes))
+                                            return "maxNodes: integer expected";
+                                    }
+                                    if (message.maxProcessingUnits != null && message.hasOwnProperty("maxProcessingUnits")) {
+                                        if (properties.maxLimit === 1)
+                                            return "maxLimit: multiple values";
+                                        properties.maxLimit = 1;
+                                        if (!$util.isInteger(message.maxProcessingUnits))
+                                            return "maxProcessingUnits: integer expected";
+                                    }
+                                    return null;
+                                };
+    
+                                /**
+                                 * Creates an AutoscalingLimits message from a plain object. Also converts values to their respective internal types.
+                                 * @function fromObject
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {Object.<string,*>} object Plain object
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits} AutoscalingLimits
+                                 */
+                                AutoscalingLimits.fromObject = function fromObject(object) {
+                                    if (object instanceof $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits)
+                                        return object;
+                                    var message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits();
+                                    if (object.minNodes != null)
+                                        message.minNodes = object.minNodes | 0;
+                                    if (object.minProcessingUnits != null)
+                                        message.minProcessingUnits = object.minProcessingUnits | 0;
+                                    if (object.maxNodes != null)
+                                        message.maxNodes = object.maxNodes | 0;
+                                    if (object.maxProcessingUnits != null)
+                                        message.maxProcessingUnits = object.maxProcessingUnits | 0;
+                                    return message;
+                                };
+    
+                                /**
+                                 * Creates a plain object from an AutoscalingLimits message. Also converts values to other types if specified.
+                                 * @function toObject
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits} message AutoscalingLimits
+                                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                                 * @returns {Object.<string,*>} Plain object
+                                 */
+                                AutoscalingLimits.toObject = function toObject(message, options) {
+                                    if (!options)
+                                        options = {};
+                                    var object = {};
+                                    if (message.minNodes != null && message.hasOwnProperty("minNodes")) {
+                                        object.minNodes = message.minNodes;
+                                        if (options.oneofs)
+                                            object.minLimit = "minNodes";
+                                    }
+                                    if (message.minProcessingUnits != null && message.hasOwnProperty("minProcessingUnits")) {
+                                        object.minProcessingUnits = message.minProcessingUnits;
+                                        if (options.oneofs)
+                                            object.minLimit = "minProcessingUnits";
+                                    }
+                                    if (message.maxNodes != null && message.hasOwnProperty("maxNodes")) {
+                                        object.maxNodes = message.maxNodes;
+                                        if (options.oneofs)
+                                            object.maxLimit = "maxNodes";
+                                    }
+                                    if (message.maxProcessingUnits != null && message.hasOwnProperty("maxProcessingUnits")) {
+                                        object.maxProcessingUnits = message.maxProcessingUnits;
+                                        if (options.oneofs)
+                                            object.maxLimit = "maxProcessingUnits";
+                                    }
+                                    return object;
+                                };
+    
+                                /**
+                                 * Converts this AutoscalingLimits to JSON.
+                                 * @function toJSON
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @instance
+                                 * @returns {Object.<string,*>} JSON object
+                                 */
+                                AutoscalingLimits.prototype.toJSON = function toJSON() {
+                                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                                };
+    
+                                /**
+                                 * Gets the default type url for AutoscalingLimits
+                                 * @function getTypeUrl
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits
+                                 * @static
+                                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                                 * @returns {string} The default type url
+                                 */
+                                AutoscalingLimits.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                    if (typeUrlPrefix === undefined) {
+                                        typeUrlPrefix = "type.googleapis.com";
+                                    }
+                                    return typeUrlPrefix + "/google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits";
+                                };
+    
+                                return AutoscalingLimits;
+                            })();
+    
+                            AutoscalingConfig.AutoscalingTargets = (function() {
+    
+                                /**
+                                 * Properties of an AutoscalingTargets.
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                                 * @interface IAutoscalingTargets
+                                 * @property {number|null} [highPriorityCpuUtilizationPercent] AutoscalingTargets highPriorityCpuUtilizationPercent
+                                 * @property {number|null} [storageUtilizationPercent] AutoscalingTargets storageUtilizationPercent
+                                 */
+    
+                                /**
+                                 * Constructs a new AutoscalingTargets.
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig
+                                 * @classdesc Represents an AutoscalingTargets.
+                                 * @implements IAutoscalingTargets
+                                 * @constructor
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets=} [properties] Properties to set
+                                 */
+                                function AutoscalingTargets(properties) {
+                                    if (properties)
+                                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                            if (properties[keys[i]] != null)
+                                                this[keys[i]] = properties[keys[i]];
+                                }
+    
+                                /**
+                                 * AutoscalingTargets highPriorityCpuUtilizationPercent.
+                                 * @member {number} highPriorityCpuUtilizationPercent
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @instance
+                                 */
+                                AutoscalingTargets.prototype.highPriorityCpuUtilizationPercent = 0;
+    
+                                /**
+                                 * AutoscalingTargets storageUtilizationPercent.
+                                 * @member {number} storageUtilizationPercent
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @instance
+                                 */
+                                AutoscalingTargets.prototype.storageUtilizationPercent = 0;
+    
+                                /**
+                                 * Creates a new AutoscalingTargets instance using the specified properties.
+                                 * @function create
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets=} [properties] Properties to set
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets} AutoscalingTargets instance
+                                 */
+                                AutoscalingTargets.create = function create(properties) {
+                                    return new AutoscalingTargets(properties);
+                                };
+    
+                                /**
+                                 * Encodes the specified AutoscalingTargets message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                                 * @function encode
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets} message AutoscalingTargets message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                AutoscalingTargets.encode = function encode(message, writer) {
+                                    if (!writer)
+                                        writer = $Writer.create();
+                                    if (message.highPriorityCpuUtilizationPercent != null && Object.hasOwnProperty.call(message, "highPriorityCpuUtilizationPercent"))
+                                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.highPriorityCpuUtilizationPercent);
+                                    if (message.storageUtilizationPercent != null && Object.hasOwnProperty.call(message, "storageUtilizationPercent"))
+                                        writer.uint32(/* id 2, wireType 0 =*/16).int32(message.storageUtilizationPercent);
+                                    return writer;
+                                };
+    
+                                /**
+                                 * Encodes the specified AutoscalingTargets message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                                 * @function encodeDelimited
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets} message AutoscalingTargets message or plain object to encode
+                                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                                 * @returns {$protobuf.Writer} Writer
+                                 */
+                                AutoscalingTargets.encodeDelimited = function encodeDelimited(message, writer) {
+                                    return this.encode(message, writer).ldelim();
+                                };
+    
+                                /**
+                                 * Decodes an AutoscalingTargets message from the specified reader or buffer.
+                                 * @function decode
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @param {number} [length] Message length if known beforehand
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets} AutoscalingTargets
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                AutoscalingTargets.decode = function decode(reader, length) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = $Reader.create(reader);
+                                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets();
+                                    while (reader.pos < end) {
+                                        var tag = reader.uint32();
+                                        switch (tag >>> 3) {
+                                        case 1: {
+                                                message.highPriorityCpuUtilizationPercent = reader.int32();
+                                                break;
+                                            }
+                                        case 2: {
+                                                message.storageUtilizationPercent = reader.int32();
+                                                break;
+                                            }
+                                        default:
+                                            reader.skipType(tag & 7);
+                                            break;
+                                        }
+                                    }
+                                    return message;
+                                };
+    
+                                /**
+                                 * Decodes an AutoscalingTargets message from the specified reader or buffer, length delimited.
+                                 * @function decodeDelimited
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets} AutoscalingTargets
+                                 * @throws {Error} If the payload is not a reader or valid buffer
+                                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                                 */
+                                AutoscalingTargets.decodeDelimited = function decodeDelimited(reader) {
+                                    if (!(reader instanceof $Reader))
+                                        reader = new $Reader(reader);
+                                    return this.decode(reader, reader.uint32());
+                                };
+    
+                                /**
+                                 * Verifies an AutoscalingTargets message.
+                                 * @function verify
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {Object.<string,*>} message Plain object to verify
+                                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                                 */
+                                AutoscalingTargets.verify = function verify(message) {
+                                    if (typeof message !== "object" || message === null)
+                                        return "object expected";
+                                    if (message.highPriorityCpuUtilizationPercent != null && message.hasOwnProperty("highPriorityCpuUtilizationPercent"))
+                                        if (!$util.isInteger(message.highPriorityCpuUtilizationPercent))
+                                            return "highPriorityCpuUtilizationPercent: integer expected";
+                                    if (message.storageUtilizationPercent != null && message.hasOwnProperty("storageUtilizationPercent"))
+                                        if (!$util.isInteger(message.storageUtilizationPercent))
+                                            return "storageUtilizationPercent: integer expected";
+                                    return null;
+                                };
+    
+                                /**
+                                 * Creates an AutoscalingTargets message from a plain object. Also converts values to their respective internal types.
+                                 * @function fromObject
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {Object.<string,*>} object Plain object
+                                 * @returns {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets} AutoscalingTargets
+                                 */
+                                AutoscalingTargets.fromObject = function fromObject(object) {
+                                    if (object instanceof $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets)
+                                        return object;
+                                    var message = new $root.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets();
+                                    if (object.highPriorityCpuUtilizationPercent != null)
+                                        message.highPriorityCpuUtilizationPercent = object.highPriorityCpuUtilizationPercent | 0;
+                                    if (object.storageUtilizationPercent != null)
+                                        message.storageUtilizationPercent = object.storageUtilizationPercent | 0;
+                                    return message;
+                                };
+    
+                                /**
+                                 * Creates a plain object from an AutoscalingTargets message. Also converts values to other types if specified.
+                                 * @function toObject
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets} message AutoscalingTargets
+                                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                                 * @returns {Object.<string,*>} Plain object
+                                 */
+                                AutoscalingTargets.toObject = function toObject(message, options) {
+                                    if (!options)
+                                        options = {};
+                                    var object = {};
+                                    if (options.defaults) {
+                                        object.highPriorityCpuUtilizationPercent = 0;
+                                        object.storageUtilizationPercent = 0;
+                                    }
+                                    if (message.highPriorityCpuUtilizationPercent != null && message.hasOwnProperty("highPriorityCpuUtilizationPercent"))
+                                        object.highPriorityCpuUtilizationPercent = message.highPriorityCpuUtilizationPercent;
+                                    if (message.storageUtilizationPercent != null && message.hasOwnProperty("storageUtilizationPercent"))
+                                        object.storageUtilizationPercent = message.storageUtilizationPercent;
+                                    return object;
+                                };
+    
+                                /**
+                                 * Converts this AutoscalingTargets to JSON.
+                                 * @function toJSON
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @instance
+                                 * @returns {Object.<string,*>} JSON object
+                                 */
+                                AutoscalingTargets.prototype.toJSON = function toJSON() {
+                                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                                };
+    
+                                /**
+                                 * Gets the default type url for AutoscalingTargets
+                                 * @function getTypeUrl
+                                 * @memberof google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets
+                                 * @static
+                                 * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                                 * @returns {string} The default type url
+                                 */
+                                AutoscalingTargets.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+                                    if (typeUrlPrefix === undefined) {
+                                        typeUrlPrefix = "type.googleapis.com";
+                                    }
+                                    return typeUrlPrefix + "/google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets";
+                                };
+    
+                                return AutoscalingTargets;
+                            })();
+    
+                            return AutoscalingConfig;
+                        })();
+    
                         v1.Instance = (function() {
     
                             /**
@@ -30852,6 +31633,7 @@
                              * @property {string|null} [displayName] Instance displayName
                              * @property {number|null} [nodeCount] Instance nodeCount
                              * @property {number|null} [processingUnits] Instance processingUnits
+                             * @property {google.spanner.admin.instance.v1.IAutoscalingConfig|null} [autoscalingConfig] Instance autoscalingConfig
                              * @property {google.spanner.admin.instance.v1.Instance.State|null} [state] Instance state
                              * @property {Object.<string,string>|null} [labels] Instance labels
                              * @property {Array.<string>|null} [endpointUris] Instance endpointUris
@@ -30915,6 +31697,14 @@
                              * @instance
                              */
                             Instance.prototype.processingUnits = 0;
+    
+                            /**
+                             * Instance autoscalingConfig.
+                             * @member {google.spanner.admin.instance.v1.IAutoscalingConfig|null|undefined} autoscalingConfig
+                             * @memberof google.spanner.admin.instance.v1.Instance
+                             * @instance
+                             */
+                            Instance.prototype.autoscalingConfig = null;
     
                             /**
                              * Instance state.
@@ -31002,6 +31792,8 @@
                                     $root.google.protobuf.Timestamp.encode(message.createTime, writer.uint32(/* id 11, wireType 2 =*/90).fork()).ldelim();
                                 if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
                                     $root.google.protobuf.Timestamp.encode(message.updateTime, writer.uint32(/* id 12, wireType 2 =*/98).fork()).ldelim();
+                                if (message.autoscalingConfig != null && Object.hasOwnProperty.call(message, "autoscalingConfig"))
+                                    $root.google.spanner.admin.instance.v1.AutoscalingConfig.encode(message.autoscalingConfig, writer.uint32(/* id 17, wireType 2 =*/138).fork()).ldelim();
                                 return writer;
                             };
     
@@ -31054,6 +31846,10 @@
                                         }
                                     case 9: {
                                             message.processingUnits = reader.int32();
+                                            break;
+                                        }
+                                    case 17: {
+                                            message.autoscalingConfig = $root.google.spanner.admin.instance.v1.AutoscalingConfig.decode(reader, reader.uint32());
                                             break;
                                         }
                                     case 6: {
@@ -31147,6 +31943,11 @@
                                 if (message.processingUnits != null && message.hasOwnProperty("processingUnits"))
                                     if (!$util.isInteger(message.processingUnits))
                                         return "processingUnits: integer expected";
+                                if (message.autoscalingConfig != null && message.hasOwnProperty("autoscalingConfig")) {
+                                    var error = $root.google.spanner.admin.instance.v1.AutoscalingConfig.verify(message.autoscalingConfig);
+                                    if (error)
+                                        return "autoscalingConfig." + error;
+                                }
                                 if (message.state != null && message.hasOwnProperty("state"))
                                     switch (message.state) {
                                     default:
@@ -31206,6 +32007,11 @@
                                     message.nodeCount = object.nodeCount | 0;
                                 if (object.processingUnits != null)
                                     message.processingUnits = object.processingUnits | 0;
+                                if (object.autoscalingConfig != null) {
+                                    if (typeof object.autoscalingConfig !== "object")
+                                        throw TypeError(".google.spanner.admin.instance.v1.Instance.autoscalingConfig: object expected");
+                                    message.autoscalingConfig = $root.google.spanner.admin.instance.v1.AutoscalingConfig.fromObject(object.autoscalingConfig);
+                                }
                                 switch (object.state) {
                                 default:
                                     if (typeof object.state === "number") {
@@ -31279,6 +32085,7 @@
                                     object.processingUnits = 0;
                                     object.createTime = null;
                                     object.updateTime = null;
+                                    object.autoscalingConfig = null;
                                 }
                                 if (message.name != null && message.hasOwnProperty("name"))
                                     object.name = message.name;
@@ -31307,6 +32114,8 @@
                                     object.createTime = $root.google.protobuf.Timestamp.toObject(message.createTime, options);
                                 if (message.updateTime != null && message.hasOwnProperty("updateTime"))
                                     object.updateTime = $root.google.protobuf.Timestamp.toObject(message.updateTime, options);
+                                if (message.autoscalingConfig != null && message.hasOwnProperty("autoscalingConfig"))
+                                    object.autoscalingConfig = $root.google.spanner.admin.instance.v1.AutoscalingConfig.toObject(message.autoscalingConfig, options);
                                 return object;
                             };
     
