@@ -3552,6 +3552,78 @@
                             }
                           }
                         },
+                        "AutoscalingConfig": {
+                          "fields": {
+                            "autoscalingLimits": {
+                              "type": "AutoscalingLimits",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "autoscalingTargets": {
+                              "type": "AutoscalingTargets",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "AutoscalingLimits": {
+                              "oneofs": {
+                                "minLimit": {
+                                  "oneof": [
+                                    "minNodes",
+                                    "minProcessingUnits"
+                                  ]
+                                },
+                                "maxLimit": {
+                                  "oneof": [
+                                    "maxNodes",
+                                    "maxProcessingUnits"
+                                  ]
+                                }
+                              },
+                              "fields": {
+                                "minNodes": {
+                                  "type": "int32",
+                                  "id": 1
+                                },
+                                "minProcessingUnits": {
+                                  "type": "int32",
+                                  "id": 2
+                                },
+                                "maxNodes": {
+                                  "type": "int32",
+                                  "id": 3
+                                },
+                                "maxProcessingUnits": {
+                                  "type": "int32",
+                                  "id": 4
+                                }
+                              }
+                            },
+                            "AutoscalingTargets": {
+                              "fields": {
+                                "highPriorityCpuUtilizationPercent": {
+                                  "type": "int32",
+                                  "id": 1,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                },
+                                "storageUtilizationPercent": {
+                                  "type": "int32",
+                                  "id": 2,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
                         "Instance": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/Instance",
@@ -3587,6 +3659,13 @@
                             "processingUnits": {
                               "type": "int32",
                               "id": 9
+                            },
+                            "autoscalingConfig": {
+                              "type": "AutoscalingConfig",
+                              "id": 17,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
                             },
                             "state": {
                               "type": "State",
