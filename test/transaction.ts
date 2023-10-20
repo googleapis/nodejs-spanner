@@ -586,7 +586,6 @@ describe('Transaction', () => {
         const fakeQuery = Object.assign({}, QUERY, {
           params: {a: 'b'},
           types: {a: 'string'},
-          seqno: 1,
           queryOptions: {},
         });
 
@@ -597,7 +596,6 @@ describe('Transaction', () => {
           sql: QUERY.sql,
           params: fakeParams,
           paramTypes: fakeParamTypes,
-          seqno: 1,
           queryOptions: {},
           resumeToken: undefined,
         };

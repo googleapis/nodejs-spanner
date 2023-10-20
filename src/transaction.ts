@@ -82,7 +82,6 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   resumeToken?: ResumeToken;
   queryMode?: spannerClient.spanner.v1.ExecuteSqlRequest.QueryMode;
   partitionToken?: Uint8Array | string;
-  seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
@@ -969,7 +968,6 @@ export class Snapshot extends EventEmitter {
    *     execution statistics for the SQL statement that
    *     produced this result set.
    * @property {string} partitionToken The partition token.
-   * @property {number} seqno The Sequence number.
    * @property {string} sql The SQL string.
    * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
