@@ -17299,7 +17299,8 @@ export namespace google {
             enum TypeAnnotationCode {
                 TYPE_ANNOTATION_CODE_UNSPECIFIED = 0,
                 PG_NUMERIC = 2,
-                PG_JSONB = 3
+                PG_JSONB = 3,
+                PG_OID = 4
             }
 
             /** Represents a Spanner */

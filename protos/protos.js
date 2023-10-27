@@ -42944,6 +42944,7 @@
                             case 0:
                             case 2:
                             case 3:
+                            case 4:
                                 break;
                             }
                         return null;
@@ -43045,6 +43046,10 @@
                         case "PG_JSONB":
                         case 3:
                             message.typeAnnotation = 3;
+                            break;
+                        case "PG_OID":
+                        case 4:
+                            message.typeAnnotation = 4;
                             break;
                         }
                         return message;
@@ -43606,12 +43611,14 @@
                  * @property {number} TYPE_ANNOTATION_CODE_UNSPECIFIED=0 TYPE_ANNOTATION_CODE_UNSPECIFIED value
                  * @property {number} PG_NUMERIC=2 PG_NUMERIC value
                  * @property {number} PG_JSONB=3 PG_JSONB value
+                 * @property {number} PG_OID=4 PG_OID value
                  */
                 v1.TypeAnnotationCode = (function() {
                     var valuesById = {}, values = Object.create(valuesById);
                     values[valuesById[0] = "TYPE_ANNOTATION_CODE_UNSPECIFIED"] = 0;
                     values[valuesById[2] = "PG_NUMERIC"] = 2;
                     values[valuesById[3] = "PG_JSONB"] = 3;
+                    values[valuesById[4] = "PG_OID"] = 4;
                     return values;
                 })();
     
