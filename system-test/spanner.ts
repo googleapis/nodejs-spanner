@@ -4716,7 +4716,7 @@ describe('Spanner', () => {
               },
               types: {
                 v: 'pgOid',
-              }
+              },
             };
             oidQuery(done, PG_DATABASE, query, '1234');
           });

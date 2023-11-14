@@ -221,7 +221,6 @@ describe('codec', () => {
     });
   });
 
-
   describe('Numeric', () => {
     it('should store value as a string', () => {
       const value = '8.01911';

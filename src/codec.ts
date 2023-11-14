@@ -268,7 +268,6 @@ export class PGOid extends WrappedNumber {
   }
 }
 
-
 /**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
@@ -770,8 +769,7 @@ function createTypeObject(
   } else if (friendlyType.type === 'jsonb') {
     type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_JSONB;
   } else if (friendlyType.type === 'pgOid') {
-    type.typeAnnotation =
-      spannerClient.spanner.v1.TypeAnnotationCode.PG_OID;
+    type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_OID;
   }
   return type;
 }
