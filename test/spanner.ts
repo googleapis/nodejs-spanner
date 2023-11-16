@@ -3199,7 +3199,7 @@ describe('Spanner with mock server', () => {
       let attempts = 0;
       await database.runTransactionAsync(async tx => {
         attempts++;
-        if (attempts == 1) {
+        if (attempts === 1) {
           spannerMock.abortTransaction(tx);
         }
         tx!.insert('foo', {id: 1, value: 'One'});
@@ -3213,14 +3213,14 @@ describe('Spanner with mock server', () => {
       // transaction ID.
       const firstExecuteSqlRequest = spannerMock.getRequests().find(val => {
         return (
-          (val as v1.ExecuteSqlRequest).sql == insertSql &&
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
           (val as v1.ExecuteSqlRequest).transaction?.begin
         );
       }) as v1.ExecuteSqlRequest;
       assert.ok(firstExecuteSqlRequest.transaction?.begin?.readWrite);
       const secondExecuteSqlRequest = spannerMock.getRequests().find(val => {
         return (
-          (val as v1.ExecuteSqlRequest).sql == insertSql &&
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
           (val as v1.ExecuteSqlRequest).transaction?.id
         );
       }) as v1.ExecuteSqlRequest;
