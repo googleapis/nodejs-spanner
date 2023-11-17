@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@google-cloud/common": "^5.0.0",
-    "@google-cloud/precise-date": "^3.0.0",
+    "@google-cloud/precise-date": "^4.0.0",
     "@google-cloud/projectify": "^4.0.0",
     "@google-cloud/promisify": "^4.0.0",
     "@grpc/proto-loader": "^0.7.0",
