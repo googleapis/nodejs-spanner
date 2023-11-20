@@ -4569,7 +4569,8 @@
                   "values": {
                     "TYPE_ANNOTATION_CODE_UNSPECIFIED": 0,
                     "PG_NUMERIC": 2,
-                    "PG_JSONB": 3
+                    "PG_JSONB": 3,
+                    "PG_OID": 4
                   }
                 },
                 "Spanner": {
@@ -5048,6 +5049,71 @@
                     }
                   }
                 },
+                "DirectedReadOptions": {
+                  "oneofs": {
+                    "replicas": {
+                      "oneof": [
+                        "includeReplicas",
+                        "excludeReplicas"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "includeReplicas": {
+                      "type": "IncludeReplicas",
+                      "id": 1
+                    },
+                    "excludeReplicas": {
+                      "type": "ExcludeReplicas",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "ReplicaSelection": {
+                      "fields": {
+                        "location": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "Type",
+                          "id": 2
+                        }
+                      },
+                      "nested": {
+                        "Type": {
+                          "values": {
+                            "TYPE_UNSPECIFIED": 0,
+                            "READ_WRITE": 1,
+                            "READ_ONLY": 2
+                          }
+                        }
+                      }
+                    },
+                    "IncludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        },
+                        "autoFailoverDisabled": {
+                          "type": "bool",
+                          "id": 2
+                        }
+                      }
+                    },
+                    "ExcludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        }
+                      }
+                    }
+                  }
+                },
                 "ExecuteSqlRequest": {
                   "fields": {
                     "session": {
@@ -5101,6 +5167,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedReadOptions": {
+                      "type": "DirectedReadOptions",
+                      "id": 15
                     },
                     "dataBoostEnabled": {
                       "type": "bool",
@@ -5369,6 +5439,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedReadOptions": {
+                      "type": "DirectedReadOptions",
+                      "id": 14
                     },
                     "dataBoostEnabled": {
                       "type": "bool",
