@@ -84,6 +84,7 @@ describe('SessionPool', () => {
       getColumnNumber: sandbox.stub().returns('13'),
       getTypeName: sandbox.stub().returns('type'),
       isNative: sandbox.stub().returns(false),
+      isConstructor: sandbox.stub().returns(false),
     };
   };
 
