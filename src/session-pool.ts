@@ -1275,9 +1275,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @private
    */
   _stopHouseKeeping(): void {
-    clearInterval(this._pingHandle);
-    clearInterval(this._evictHandle);
-    clearInterval(this._longRunningTransactionHandle);
+    clearInterval(this._pingHandle as any);
+    clearInterval(this._evictHandle as any);
+    clearInterval(this._longRunningTransactionHandle as any);
   }
 
   /**
@@ -1314,7 +1314,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    */
   _stopCleaningLongRunningSessions(): void {
     if (this._longRunningTransactionHandle)
-      clearInterval(this._longRunningTransactionHandle);
+      clearInterval(this._longRunningTransactionHandle as any);
     this._longRunningTransactionHandle = undefined;
     this._lastSessionRecycle = null;
   }

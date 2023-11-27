@@ -37,7 +37,7 @@ export type Key = string | string[];
 export type CreateTableResponse = [
   Table,
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  databaseAdmin.longrunning.IOperation,
 ];
 export type CreateTableCallback = LongRunningCallback<Table>;
 

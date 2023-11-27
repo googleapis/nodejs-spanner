@@ -163,9 +163,8 @@ describe('Spanner', () => {
          PRIMARY KEY (SingerId)
        );`,
       ];
-      const [postgreSqlOperationUpdateDDL] = await pg_database.updateSchema(
-        schema
-      );
+      const [postgreSqlOperationUpdateDDL] =
+        await pg_database.updateSchema(schema);
       await postgreSqlOperationUpdateDDL.promise();
       RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
@@ -2622,9 +2621,8 @@ describe('Spanner', () => {
         );
         await operation.promise();
 
-        const [operationUpdateDDL] = await database.updateSchema(
-          database_schema
-        );
+        const [operationUpdateDDL] =
+          await database.updateSchema(database_schema);
         await operationUpdateDDL.promise();
 
         const [schema] = await database.getSchema();
@@ -8791,7 +8789,7 @@ describe('Spanner', () => {
         const QUERY = {
           table: googleSqlTable.name,
           // Set databoostenabled to true for enabling serveless analytics.
-          dataBoostEnabled: false,
+          dataBoostEnabled: true,
           keys: [key],
           columns: ['Key'],
         };
