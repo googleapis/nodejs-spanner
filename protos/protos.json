@@ -3552,6 +3552,78 @@
                             }
                           }
                         },
+                        "AutoscalingConfig": {
+                          "fields": {
+                            "autoscalingLimits": {
+                              "type": "AutoscalingLimits",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "autoscalingTargets": {
+                              "type": "AutoscalingTargets",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          },
+                          "nested": {
+                            "AutoscalingLimits": {
+                              "oneofs": {
+                                "minLimit": {
+                                  "oneof": [
+                                    "minNodes",
+                                    "minProcessingUnits"
+                                  ]
+                                },
+                                "maxLimit": {
+                                  "oneof": [
+                                    "maxNodes",
+                                    "maxProcessingUnits"
+                                  ]
+                                }
+                              },
+                              "fields": {
+                                "minNodes": {
+                                  "type": "int32",
+                                  "id": 1
+                                },
+                                "minProcessingUnits": {
+                                  "type": "int32",
+                                  "id": 2
+                                },
+                                "maxNodes": {
+                                  "type": "int32",
+                                  "id": 3
+                                },
+                                "maxProcessingUnits": {
+                                  "type": "int32",
+                                  "id": 4
+                                }
+                              }
+                            },
+                            "AutoscalingTargets": {
+                              "fields": {
+                                "highPriorityCpuUtilizationPercent": {
+                                  "type": "int32",
+                                  "id": 1,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                },
+                                "storageUtilizationPercent": {
+                                  "type": "int32",
+                                  "id": 2,
+                                  "options": {
+                                    "(google.api.field_behavior)": "REQUIRED"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
                         "Instance": {
                           "options": {
                             "(google.api.resource).type": "spanner.googleapis.com/Instance",
@@ -3587,6 +3659,13 @@
                             "processingUnits": {
                               "type": "int32",
                               "id": 9
+                            },
+                            "autoscalingConfig": {
+                              "type": "AutoscalingConfig",
+                              "id": 17,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
                             },
                             "state": {
                               "type": "State",
@@ -4490,7 +4569,8 @@
                   "values": {
                     "TYPE_ANNOTATION_CODE_UNSPECIFIED": 0,
                     "PG_NUMERIC": 2,
-                    "PG_JSONB": 3
+                    "PG_JSONB": 3,
+                    "PG_OID": 4
                   }
                 },
                 "Spanner": {
@@ -4969,6 +5049,71 @@
                     }
                   }
                 },
+                "DirectedReadOptions": {
+                  "oneofs": {
+                    "replicas": {
+                      "oneof": [
+                        "includeReplicas",
+                        "excludeReplicas"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "includeReplicas": {
+                      "type": "IncludeReplicas",
+                      "id": 1
+                    },
+                    "excludeReplicas": {
+                      "type": "ExcludeReplicas",
+                      "id": 2
+                    }
+                  },
+                  "nested": {
+                    "ReplicaSelection": {
+                      "fields": {
+                        "location": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "type": {
+                          "type": "Type",
+                          "id": 2
+                        }
+                      },
+                      "nested": {
+                        "Type": {
+                          "values": {
+                            "TYPE_UNSPECIFIED": 0,
+                            "READ_WRITE": 1,
+                            "READ_ONLY": 2
+                          }
+                        }
+                      }
+                    },
+                    "IncludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        },
+                        "autoFailoverDisabled": {
+                          "type": "bool",
+                          "id": 2
+                        }
+                      }
+                    },
+                    "ExcludeReplicas": {
+                      "fields": {
+                        "replicaSelections": {
+                          "rule": "repeated",
+                          "type": "ReplicaSelection",
+                          "id": 1
+                        }
+                      }
+                    }
+                  }
+                },
                 "ExecuteSqlRequest": {
                   "fields": {
                     "session": {
@@ -5022,6 +5167,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedReadOptions": {
+                      "type": "DirectedReadOptions",
+                      "id": 15
                     },
                     "dataBoostEnabled": {
                       "type": "bool",
@@ -5290,6 +5439,10 @@
                     "requestOptions": {
                       "type": "RequestOptions",
                       "id": 11
+                    },
+                    "directedReadOptions": {
+                      "type": "DirectedReadOptions",
+                      "id": 14
                     },
                     "dataBoostEnabled": {
                       "type": "bool",

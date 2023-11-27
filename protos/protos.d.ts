@@ -12181,6 +12181,336 @@ export namespace google {
                         }
                     }
 
+                    /** Properties of an AutoscalingConfig. */
+                    interface IAutoscalingConfig {
+
+                        /** AutoscalingConfig autoscalingLimits */
+                        autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                        /** AutoscalingConfig autoscalingTargets */
+                        autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+                    }
+
+                    /** Represents an AutoscalingConfig. */
+                    class AutoscalingConfig implements IAutoscalingConfig {
+
+                        /**
+                         * Constructs a new AutoscalingConfig.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IAutoscalingConfig);
+
+                        /** AutoscalingConfig autoscalingLimits. */
+                        public autoscalingLimits?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits|null);
+
+                        /** AutoscalingConfig autoscalingTargets. */
+                        public autoscalingTargets?: (google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets|null);
+
+                        /**
+                         * Creates a new AutoscalingConfig instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns AutoscalingConfig instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IAutoscalingConfig): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Encodes the specified AutoscalingConfig message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                         * @param message AutoscalingConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IAutoscalingConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified AutoscalingConfig message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.verify|verify} messages.
+                         * @param message AutoscalingConfig message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IAutoscalingConfig, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an AutoscalingConfig message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns AutoscalingConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Decodes an AutoscalingConfig message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns AutoscalingConfig
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Verifies an AutoscalingConfig message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an AutoscalingConfig message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns AutoscalingConfig
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig;
+
+                        /**
+                         * Creates a plain object from an AutoscalingConfig message. Also converts values to other types if specified.
+                         * @param message AutoscalingConfig
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this AutoscalingConfig to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for AutoscalingConfig
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace AutoscalingConfig {
+
+                        /** Properties of an AutoscalingLimits. */
+                        interface IAutoscalingLimits {
+
+                            /** AutoscalingLimits minNodes */
+                            minNodes?: (number|null);
+
+                            /** AutoscalingLimits minProcessingUnits */
+                            minProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits maxNodes */
+                            maxNodes?: (number|null);
+
+                            /** AutoscalingLimits maxProcessingUnits */
+                            maxProcessingUnits?: (number|null);
+                        }
+
+                        /** Represents an AutoscalingLimits. */
+                        class AutoscalingLimits implements IAutoscalingLimits {
+
+                            /**
+                             * Constructs a new AutoscalingLimits.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits);
+
+                            /** AutoscalingLimits minNodes. */
+                            public minNodes?: (number|null);
+
+                            /** AutoscalingLimits minProcessingUnits. */
+                            public minProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits maxNodes. */
+                            public maxNodes?: (number|null);
+
+                            /** AutoscalingLimits maxProcessingUnits. */
+                            public maxProcessingUnits?: (number|null);
+
+                            /** AutoscalingLimits minLimit. */
+                            public minLimit?: ("minNodes"|"minProcessingUnits");
+
+                            /** AutoscalingLimits maxLimit. */
+                            public maxLimit?: ("maxNodes"|"maxProcessingUnits");
+
+                            /**
+                             * Creates a new AutoscalingLimits instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AutoscalingLimits instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Encodes the specified AutoscalingLimits message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                             * @param message AutoscalingLimits message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AutoscalingLimits message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.verify|verify} messages.
+                             * @param message AutoscalingLimits message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingLimits, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AutoscalingLimits message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AutoscalingLimits
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Decodes an AutoscalingLimits message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AutoscalingLimits
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Verifies an AutoscalingLimits message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AutoscalingLimits message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AutoscalingLimits
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits;
+
+                            /**
+                             * Creates a plain object from an AutoscalingLimits message. Also converts values to other types if specified.
+                             * @param message AutoscalingLimits
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AutoscalingLimits to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AutoscalingLimits
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+
+                        /** Properties of an AutoscalingTargets. */
+                        interface IAutoscalingTargets {
+
+                            /** AutoscalingTargets highPriorityCpuUtilizationPercent */
+                            highPriorityCpuUtilizationPercent?: (number|null);
+
+                            /** AutoscalingTargets storageUtilizationPercent */
+                            storageUtilizationPercent?: (number|null);
+                        }
+
+                        /** Represents an AutoscalingTargets. */
+                        class AutoscalingTargets implements IAutoscalingTargets {
+
+                            /**
+                             * Constructs a new AutoscalingTargets.
+                             * @param [properties] Properties to set
+                             */
+                            constructor(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets);
+
+                            /** AutoscalingTargets highPriorityCpuUtilizationPercent. */
+                            public highPriorityCpuUtilizationPercent: number;
+
+                            /** AutoscalingTargets storageUtilizationPercent. */
+                            public storageUtilizationPercent: number;
+
+                            /**
+                             * Creates a new AutoscalingTargets instance using the specified properties.
+                             * @param [properties] Properties to set
+                             * @returns AutoscalingTargets instance
+                             */
+                            public static create(properties?: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Encodes the specified AutoscalingTargets message. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                             * @param message AutoscalingTargets message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encode(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Encodes the specified AutoscalingTargets message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.verify|verify} messages.
+                             * @param message AutoscalingTargets message or plain object to encode
+                             * @param [writer] Writer to encode to
+                             * @returns Writer
+                             */
+                            public static encodeDelimited(message: google.spanner.admin.instance.v1.AutoscalingConfig.IAutoscalingTargets, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                            /**
+                             * Decodes an AutoscalingTargets message from the specified reader or buffer.
+                             * @param reader Reader or buffer to decode from
+                             * @param [length] Message length if known beforehand
+                             * @returns AutoscalingTargets
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Decodes an AutoscalingTargets message from the specified reader or buffer, length delimited.
+                             * @param reader Reader or buffer to decode from
+                             * @returns AutoscalingTargets
+                             * @throws {Error} If the payload is not a reader or valid buffer
+                             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                             */
+                            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Verifies an AutoscalingTargets message.
+                             * @param message Plain object to verify
+                             * @returns `null` if valid, otherwise the reason why it is not
+                             */
+                            public static verify(message: { [k: string]: any }): (string|null);
+
+                            /**
+                             * Creates an AutoscalingTargets message from a plain object. Also converts values to their respective internal types.
+                             * @param object Plain object
+                             * @returns AutoscalingTargets
+                             */
+                            public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets;
+
+                            /**
+                             * Creates a plain object from an AutoscalingTargets message. Also converts values to other types if specified.
+                             * @param message AutoscalingTargets
+                             * @param [options] Conversion options
+                             * @returns Plain object
+                             */
+                            public static toObject(message: google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                            /**
+                             * Converts this AutoscalingTargets to JSON.
+                             * @returns JSON object
+                             */
+                            public toJSON(): { [k: string]: any };
+
+                            /**
+                             * Gets the default type url for AutoscalingTargets
+                             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                             * @returns The default type url
+                             */
+                            public static getTypeUrl(typeUrlPrefix?: string): string;
+                        }
+                    }
+
                     /** Properties of an Instance. */
                     interface IInstance {
 
@@ -12198,6 +12528,9 @@ export namespace google {
 
                         /** Instance processingUnits */
                         processingUnits?: (number|null);
+
+                        /** Instance autoscalingConfig */
+                        autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
                         /** Instance state */
                         state?: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State|null);
@@ -12238,6 +12571,9 @@ export namespace google {
 
                         /** Instance processingUnits. */
                         public processingUnits: number;
+
+                        /** Instance autoscalingConfig. */
+                        public autoscalingConfig?: (google.spanner.admin.instance.v1.IAutoscalingConfig|null);
 
                         /** Instance state. */
                         public state: (google.spanner.admin.instance.v1.Instance.State|keyof typeof google.spanner.admin.instance.v1.Instance.State);
@@ -16963,7 +17299,8 @@ export namespace google {
             enum TypeAnnotationCode {
                 TYPE_ANNOTATION_CODE_UNSPECIFIED = 0,
                 PG_NUMERIC = 2,
-                PG_JSONB = 3
+                PG_JSONB = 3,
+                PG_OID = 4
             }
 
             /** Represents a Spanner */
@@ -18288,6 +18625,428 @@ export namespace google {
                 }
             }
 
+            /** Properties of a DirectedReadOptions. */
+            interface IDirectedReadOptions {
+
+                /** DirectedReadOptions includeReplicas */
+                includeReplicas?: (google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null);
+
+                /** DirectedReadOptions excludeReplicas */
+                excludeReplicas?: (google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null);
+            }
+
+            /** Represents a DirectedReadOptions. */
+            class DirectedReadOptions implements IDirectedReadOptions {
+
+                /**
+                 * Constructs a new DirectedReadOptions.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: google.spanner.v1.IDirectedReadOptions);
+
+                /** DirectedReadOptions includeReplicas. */
+                public includeReplicas?: (google.spanner.v1.DirectedReadOptions.IIncludeReplicas|null);
+
+                /** DirectedReadOptions excludeReplicas. */
+                public excludeReplicas?: (google.spanner.v1.DirectedReadOptions.IExcludeReplicas|null);
+
+                /** DirectedReadOptions replicas. */
+                public replicas?: ("includeReplicas"|"excludeReplicas");
+
+                /**
+                 * Creates a new DirectedReadOptions instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns DirectedReadOptions instance
+                 */
+                public static create(properties?: google.spanner.v1.IDirectedReadOptions): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Encodes the specified DirectedReadOptions message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                 * @param message DirectedReadOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: google.spanner.v1.IDirectedReadOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified DirectedReadOptions message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.verify|verify} messages.
+                 * @param message DirectedReadOptions message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: google.spanner.v1.IDirectedReadOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DirectedReadOptions message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns DirectedReadOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Decodes a DirectedReadOptions message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns DirectedReadOptions
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Verifies a DirectedReadOptions message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a DirectedReadOptions message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns DirectedReadOptions
+                 */
+                public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions;
+
+                /**
+                 * Creates a plain object from a DirectedReadOptions message. Also converts values to other types if specified.
+                 * @param message DirectedReadOptions
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: google.spanner.v1.DirectedReadOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this DirectedReadOptions to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+
+                /**
+                 * Gets the default type url for DirectedReadOptions
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace DirectedReadOptions {
+
+                /** Properties of a ReplicaSelection. */
+                interface IReplicaSelection {
+
+                    /** ReplicaSelection location */
+                    location?: (string|null);
+
+                    /** ReplicaSelection type */
+                    type?: (google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|keyof typeof google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|null);
+                }
+
+                /** Represents a ReplicaSelection. */
+                class ReplicaSelection implements IReplicaSelection {
+
+                    /**
+                     * Constructs a new ReplicaSelection.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IReplicaSelection);
+
+                    /** ReplicaSelection location. */
+                    public location: string;
+
+                    /** ReplicaSelection type. */
+                    public type: (google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type|keyof typeof google.spanner.v1.DirectedReadOptions.ReplicaSelection.Type);
+
+                    /**
+                     * Creates a new ReplicaSelection instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ReplicaSelection instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IReplicaSelection): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Encodes the specified ReplicaSelection message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                     * @param message ReplicaSelection message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ReplicaSelection message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ReplicaSelection.verify|verify} messages.
+                     * @param message ReplicaSelection message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IReplicaSelection, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ReplicaSelection message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ReplicaSelection
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Decodes a ReplicaSelection message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ReplicaSelection
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Verifies a ReplicaSelection message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ReplicaSelection message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ReplicaSelection
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.ReplicaSelection;
+
+                    /**
+                     * Creates a plain object from a ReplicaSelection message. Also converts values to other types if specified.
+                     * @param message ReplicaSelection
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.ReplicaSelection, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ReplicaSelection to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ReplicaSelection
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                namespace ReplicaSelection {
+
+                    /** Type enum. */
+                    enum Type {
+                        TYPE_UNSPECIFIED = 0,
+                        READ_WRITE = 1,
+                        READ_ONLY = 2
+                    }
+                }
+
+                /** Properties of an IncludeReplicas. */
+                interface IIncludeReplicas {
+
+                    /** IncludeReplicas replicaSelections */
+                    replicaSelections?: (google.spanner.v1.DirectedReadOptions.IReplicaSelection[]|null);
+
+                    /** IncludeReplicas autoFailoverDisabled */
+                    autoFailoverDisabled?: (boolean|null);
+                }
+
+                /** Represents an IncludeReplicas. */
+                class IncludeReplicas implements IIncludeReplicas {
+
+                    /**
+                     * Constructs a new IncludeReplicas.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IIncludeReplicas);
+
+                    /** IncludeReplicas replicaSelections. */
+                    public replicaSelections: google.spanner.v1.DirectedReadOptions.IReplicaSelection[];
+
+                    /** IncludeReplicas autoFailoverDisabled. */
+                    public autoFailoverDisabled: boolean;
+
+                    /**
+                     * Creates a new IncludeReplicas instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns IncludeReplicas instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IIncludeReplicas): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Encodes the specified IncludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                     * @param message IncludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IIncludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified IncludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.IncludeReplicas.verify|verify} messages.
+                     * @param message IncludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IIncludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an IncludeReplicas message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns IncludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Decodes an IncludeReplicas message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns IncludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Verifies an IncludeReplicas message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an IncludeReplicas message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns IncludeReplicas
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.IncludeReplicas;
+
+                    /**
+                     * Creates a plain object from an IncludeReplicas message. Also converts values to other types if specified.
+                     * @param message IncludeReplicas
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.IncludeReplicas, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this IncludeReplicas to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for IncludeReplicas
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of an ExcludeReplicas. */
+                interface IExcludeReplicas {
+
+                    /** ExcludeReplicas replicaSelections */
+                    replicaSelections?: (google.spanner.v1.DirectedReadOptions.IReplicaSelection[]|null);
+                }
+
+                /** Represents an ExcludeReplicas. */
+                class ExcludeReplicas implements IExcludeReplicas {
+
+                    /**
+                     * Constructs a new ExcludeReplicas.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.v1.DirectedReadOptions.IExcludeReplicas);
+
+                    /** ExcludeReplicas replicaSelections. */
+                    public replicaSelections: google.spanner.v1.DirectedReadOptions.IReplicaSelection[];
+
+                    /**
+                     * Creates a new ExcludeReplicas instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns ExcludeReplicas instance
+                     */
+                    public static create(properties?: google.spanner.v1.DirectedReadOptions.IExcludeReplicas): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Encodes the specified ExcludeReplicas message. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                     * @param message ExcludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.v1.DirectedReadOptions.IExcludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ExcludeReplicas message, length delimited. Does not implicitly {@link google.spanner.v1.DirectedReadOptions.ExcludeReplicas.verify|verify} messages.
+                     * @param message ExcludeReplicas message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.v1.DirectedReadOptions.IExcludeReplicas, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an ExcludeReplicas message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ExcludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Decodes an ExcludeReplicas message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ExcludeReplicas
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Verifies an ExcludeReplicas message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an ExcludeReplicas message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ExcludeReplicas
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.v1.DirectedReadOptions.ExcludeReplicas;
+
+                    /**
+                     * Creates a plain object from an ExcludeReplicas message. Also converts values to other types if specified.
+                     * @param message ExcludeReplicas
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.v1.DirectedReadOptions.ExcludeReplicas, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ExcludeReplicas to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for ExcludeReplicas
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+            }
+
             /** Properties of an ExecuteSqlRequest. */
             interface IExecuteSqlRequest {
 
@@ -18323,6 +19082,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest directedReadOptions */
+                directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /** ExecuteSqlRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
@@ -18369,6 +19131,9 @@ export namespace google {
 
                 /** ExecuteSqlRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ExecuteSqlRequest directedReadOptions. */
+                public directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /** ExecuteSqlRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;
@@ -19496,6 +20261,9 @@ export namespace google {
                 /** ReadRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
+                /** ReadRequest directedReadOptions */
+                directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
+
                 /** ReadRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
             }
@@ -19538,6 +20306,9 @@ export namespace google {
 
                 /** ReadRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
+
+                /** ReadRequest directedReadOptions. */
+                public directedReadOptions?: (google.spanner.v1.IDirectedReadOptions|null);
 
                 /** ReadRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;

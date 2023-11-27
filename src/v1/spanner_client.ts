@@ -500,7 +500,8 @@ export class SpannerClient {
    *   The API may return fewer than the requested number of sessions. If a
    *   specific number of sessions are desired, the client can make additional
    *   calls to BatchCreateSessions (adjusting
-   *   {@link protos.google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count} as necessary).
+   *   {@link protos.google.spanner.v1.BatchCreateSessionsRequest.session_count|session_count}
+   *   as necessary).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -748,10 +749,12 @@ export class SpannerClient {
    *
    * Operations inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more details.
+   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more
+   * details.
    *
    * Larger result sets can be fetched in streaming fashion by calling
-   * {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} instead.
+   * {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql}
+   * instead.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -787,7 +790,8 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -796,14 +800,17 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
-   *   enables the new SQL statement execution to resume where the last one left
-   *   off. The rest of the request parameters must exactly match the
-   *   request that yielded this token.
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the
+   *   interruption. Doing this enables the new SQL statement execution to resume
+   *   where the last one left off. The rest of the request parameters must
+   *   exactly match the request that yielded this token.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
    *   Used to control the amount of debugging information returned in
-   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
-   *   be set to {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is
+   *   set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
@@ -824,12 +831,14 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {boolean} request.dataBoostEnabled
    *   If this is for a partitioned query and this field is set to `true`, the
-   *   request will be executed via Spanner independent compute resources.
+   *   request is executed with Spanner Data Boost independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
-   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -909,9 +918,10 @@ export class SpannerClient {
    * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.
    *
    * Statements are executed in sequential order. A request can succeed even if
-   * a statement fails. The {@link protos.google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status} field in the
-   * response provides information about the statement that failed. Clients must
-   * inspect this field to determine whether an error occurred.
+   * a statement fails. The
+   * {@link protos.google.spanner.v1.ExecuteBatchDmlResponse.status|ExecuteBatchDmlResponse.status}
+   * field in the response provides information about the statement that failed.
+   * Clients must inspect this field to determine whether an error occurred.
    *
    * Execution stops after the first failed statement; the remaining statements
    * are not executed.
@@ -927,16 +937,16 @@ export class SpannerClient {
    *   caller must either supply an existing transaction ID or begin a new
    *   transaction.
    * @param {number[]} request.statements
-   *   Required. The list of statements to execute in this batch. Statements are executed
-   *   serially, such that the effects of statement `i` are visible to statement
-   *   `i+1`. Each statement must be a DML statement. Execution stops at the
-   *   first failed statement; the remaining statements are not executed.
+   *   Required. The list of statements to execute in this batch. Statements are
+   *   executed serially, such that the effects of statement `i` are visible to
+   *   statement `i+1`. Each statement must be a DML statement. Execution stops at
+   *   the first failed statement; the remaining statements are not executed.
    *
    *   Callers must provide at least one statement.
    * @param {number} request.seqno
-   *   Required. A per-transaction sequence number used to identify this request. This field
-   *   makes each request idempotent such that if the request is received multiple
-   *   times, at most one will succeed.
+   *   Required. A per-transaction sequence number used to identify this request.
+   *   This field makes each request idempotent such that if the request is
+   *   received multiple times, at most one will succeed.
    *
    *   The sequence number must be monotonically increasing within the
    *   transaction. If a request arrives for the first time with an out-of-order
@@ -1020,14 +1030,15 @@ export class SpannerClient {
   /**
    * Reads rows from the database using key lookups and scans, as a
    * simple key/value style alternative to
-   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be used to
-   * return a result set larger than 10 MiB; if the read matches more
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}.  This method cannot be
+   * used to return a result set larger than 10 MiB; if the read matches more
    * data than that, the read fails with a `FAILED_PRECONDITION`
    * error.
    *
    * Reads inside read-write transactions might return `ABORTED`. If
    * this occurs, the application should restart the transaction from
-   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more details.
+   * the beginning. See {@link protos.google.spanner.v1.Transaction|Transaction} for more
+   * details.
    *
    * Larger result sets can be yielded in streaming fashion by calling
    * {@link protos.google.spanner.v1.Spanner.StreamingRead|StreamingRead} instead.
@@ -1042,22 +1053,29 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.ReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on
+   *   {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is used instead of
+   *   the table primary key when interpreting
+   *   {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} and sorting result rows.
+   *   See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further
+   *   information.
    * @param {string[]} request.columns
-   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
-   *   this request.
+   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be
+   *   returned for each row matching this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index}
-   *   is present. If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names
-   *   index keys in {@link protos.google.spanner.v1.ReadRequest.index|index}.
+   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to
+   *   be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index} is present.
+   *   If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then
+   *   {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names index keys
+   *   in {@link protos.google.spanner.v1.ReadRequest.index|index}.
    *
-   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
-   *   in table primary key order (if {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
-   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
-   *   empty, rows will be yielded in an unspecified order.
+   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token}
+   *   field is empty, rows are yielded in table primary key order (if
+   *   {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the
+   *   {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is
+   *   not empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -1068,9 +1086,9 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
-   *   enables the new read to resume where the last read left off. The
-   *   rest of the request parameters must exactly match the request
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the
+   *   interruption. Doing this enables the new read to resume where the last read
+   *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
@@ -1079,12 +1097,14 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {boolean} request.dataBoostEnabled
    *   If this is for a partitioned read and this field is set to `true`, the
-   *   request will be executed via Spanner independent compute resources.
+   *   request is executed with Spanner Data Boost independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
-   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1160,7 +1180,8 @@ export class SpannerClient {
   }
   /**
    * Begins a new transaction. This step can often be skipped:
-   * {@link protos.google.spanner.v1.Spanner.Read|Read}, {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
+   * {@link protos.google.spanner.v1.Spanner.Read|Read},
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} and
    * {@link protos.google.spanner.v1.Spanner.Commit|Commit} can begin a new transaction as a
    * side-effect.
    *
@@ -1287,8 +1308,8 @@ export class SpannerClient {
    *   this list.
    * @param {boolean} request.returnCommitStats
    *   If `true`, then statistics related to the transaction will be included in
-   *   the {@link protos.google.spanner.v1.CommitResponse.commit_stats|CommitResponse}. Default value is
-   *   `false`.
+   *   the {@link protos.google.spanner.v1.CommitResponse.commit_stats|CommitResponse}.
+   *   Default value is `false`.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {object} [options]
@@ -1367,8 +1388,9 @@ export class SpannerClient {
   /**
    * Rolls back a transaction, releasing any locks it holds. It is a good
    * idea to call this for any transaction that includes one or more
-   * {@link protos.google.spanner.v1.Spanner.Read|Read} or {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and
-   * ultimately decides not to commit.
+   * {@link protos.google.spanner.v1.Spanner.Read|Read} or
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql} requests and ultimately
+   * decides not to commit.
    *
    * `Rollback` returns `OK` if it successfully aborts the transaction, the
    * transaction was already aborted, or the transaction is not
@@ -1456,10 +1478,11 @@ export class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a query
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to specify a subset
-   * of the query result to read.  The same session and read-only transaction
-   * must be used by the PartitionQueryRequest used to create the
-   * partition tokens and the ExecuteSqlRequests that use the partition tokens.
+   * by {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} to
+   * specify a subset of the query result to read.  The same session and
+   * read-only transaction must be used by the PartitionQueryRequest used to
+   * create the partition tokens and the ExecuteSqlRequests that use the
+   * partition tokens.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1474,15 +1497,16 @@ export class SpannerClient {
    *   Read only snapshot transactions are supported, read/write and single use
    *   transactions are not.
    * @param {string} request.sql
-   *   Required. The query request to generate partitions for. The request will fail if
-   *   the query is not root partitionable. The query plan of a root
-   *   partitionable query has a single distributed union operator. A distributed
-   *   union operator conceptually divides one or more tables into multiple
-   *   splits, remotely evaluates a subquery independently on each split, and
-   *   then unions all results.
+   *   Required. The query request to generate partitions for. The request will
+   *   fail if the query is not root partitionable. For a query to be root
+   *   partitionable, it needs to satisfy a few conditions. For example, the first
+   *   operator in the query execution plan must be a distributed union operator.
+   *   For more information about other conditions, see [Read data in
+   *   parallel](https://cloud.google.com/spanner/docs/reads#read_data_in_parallel).
    *
-   *   This must not contain DML commands, such as INSERT, UPDATE, or
-   *   DELETE. Use {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
+   *   The query request must not contain DML commands, such as INSERT, UPDATE, or
+   *   DELETE. Use
+   *   {@link protos.google.spanner.v1.Spanner.ExecuteStreamingSql|ExecuteStreamingSql} with a
    *   PartitionedDml transaction for large, partition-friendly DML operations.
    * @param {google.protobuf.Struct} request.params
    *   Parameter names and values that bind to placeholders in the SQL string.
@@ -1500,7 +1524,8 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link protos.google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in
+   *   {@link protos.google.spanner.v1.PartitionQueryRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL query parameters. See the
@@ -1584,12 +1609,13 @@ export class SpannerClient {
   /**
    * Creates a set of partition tokens that can be used to execute a read
    * operation in parallel.  Each of the returned partition tokens can be used
-   * by {@link protos.google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a subset of the read
-   * result to read.  The same session and read-only transaction must be used by
-   * the PartitionReadRequest used to create the partition tokens and the
-   * ReadRequests that use the partition tokens.  There are no ordering
-   * guarantees on rows returned among the returned partition tokens, or even
-   * within each individual StreamingRead call issued with a partition_token.
+   * by {@link protos.google.spanner.v1.Spanner.StreamingRead|StreamingRead} to specify a
+   * subset of the read result to read.  The same session and read-only
+   * transaction must be used by the PartitionReadRequest used to create the
+   * partition tokens and the ReadRequests that use the partition tokens.  There
+   * are no ordering guarantees on rows returned among the returned partition
+   * tokens, or even within each individual StreamingRead call issued with a
+   * partition_token.
    *
    * Partition tokens become invalid when the session used to create them
    * is deleted, is idle for too long, begins a new transaction, or becomes too
@@ -1606,16 +1632,22 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.PartitionReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.table|table}. This index is used
+   *   instead of the table primary key when interpreting
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} and sorting
+   *   result rows. See {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set}
+   *   for further information.
    * @param {string[]} request.columns
-   *   The columns of {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be returned for each row matching
-   *   this request.
+   *   The columns of {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be
+   *   returned for each row matching this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.PartitionReadRequest.index|index}
-   *   is present. If {@link protos.google.spanner.v1.PartitionReadRequest.index|index} is present, then {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
+   *   primary keys of the rows in
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.table|table} to be yielded, unless
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.index|index} is present. If
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.index|index} is present, then
+   *   {@link protos.google.spanner.v1.PartitionReadRequest.key_set|key_set} instead names
    *   index keys in {@link protos.google.spanner.v1.PartitionReadRequest.index|index}.
    *
    *   It is not an error for the `key_set` to name rows that do not
@@ -1697,11 +1729,11 @@ export class SpannerClient {
   }
 
   /**
-   * Like {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the result
-   * set as a stream. Unlike {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there
-   * is no limit on the size of the returned result set. However, no
-   * individual row in the result set can exceed 100 MiB, and no
-   * column value can exceed 10 MiB.
+   * Like {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, except returns the
+   * result set as a stream. Unlike
+   * {@link protos.google.spanner.v1.Spanner.ExecuteSql|ExecuteSql}, there is no limit on
+   * the size of the returned result set. However, no individual row in the
+   * result set can exceed 100 MiB, and no column value can exceed 10 MiB.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1737,7 +1769,8 @@ export class SpannerClient {
    * @param {number[]} request.paramTypes
    *   It is not always possible for Cloud Spanner to infer the right SQL type
    *   from a JSON value.  For example, values of type `BYTES` and values
-   *   of type `STRING` both appear in {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
+   *   of type `STRING` both appear in
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.params|params} as JSON strings.
    *
    *   In these cases, `param_types` can be used to specify the exact
    *   SQL type for some or all of the SQL statement parameters. See the
@@ -1746,14 +1779,17 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted SQL statement
    *   execution, `resume_token` should be copied from the last
-   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
-   *   enables the new SQL statement execution to resume where the last one left
-   *   off. The rest of the request parameters must exactly match the
-   *   request that yielded this token.
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the
+   *   interruption. Doing this enables the new SQL statement execution to resume
+   *   where the last one left off. The rest of the request parameters must
+   *   exactly match the request that yielded this token.
    * @param {google.spanner.v1.ExecuteSqlRequest.QueryMode} request.queryMode
    *   Used to control the amount of debugging information returned in
-   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
-   *   be set to {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
+   *   {@link protos.google.spanner.v1.ResultSetStats|ResultSetStats}. If
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.partition_token|partition_token} is
+   *   set, {@link protos.google.spanner.v1.ExecuteSqlRequest.query_mode|query_mode} can only
+   *   be set to
+   *   {@link protos.google.spanner.v1.ExecuteSqlRequest.QueryMode.NORMAL|QueryMode.NORMAL}.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
    *   previously created using PartitionQuery().  There must be an exact
@@ -1774,12 +1810,14 @@ export class SpannerClient {
    *   Query optimizer configuration to use for the given query.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {boolean} request.dataBoostEnabled
    *   If this is for a partitioned query and this field is set to `true`, the
-   *   request will be executed via Spanner independent compute resources.
+   *   request is executed with Spanner Data Boost independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
-   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1804,9 +1842,9 @@ export class SpannerClient {
   }
 
   /**
-   * Like {@link protos.google.spanner.v1.Spanner.Read|Read}, except returns the result set as a
-   * stream. Unlike {@link protos.google.spanner.v1.Spanner.Read|Read}, there is no limit on the
-   * size of the returned result set. However, no individual row in
+   * Like {@link protos.google.spanner.v1.Spanner.Read|Read}, except returns the result set
+   * as a stream. Unlike {@link protos.google.spanner.v1.Spanner.Read|Read}, there is no
+   * limit on the size of the returned result set. However, no individual row in
    * the result set can exceed 100 MiB, and no column value can exceed
    * 10 MiB.
    *
@@ -1820,22 +1858,29 @@ export class SpannerClient {
    * @param {string} request.table
    *   Required. The name of the table in the database to be read.
    * @param {string} request.index
-   *   If non-empty, the name of an index on {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is
-   *   used instead of the table primary key when interpreting {@link protos.google.spanner.v1.ReadRequest.key_set|key_set}
-   *   and sorting result rows. See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further information.
+   *   If non-empty, the name of an index on
+   *   {@link protos.google.spanner.v1.ReadRequest.table|table}. This index is used instead of
+   *   the table primary key when interpreting
+   *   {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} and sorting result rows.
+   *   See {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} for further
+   *   information.
    * @param {string[]} request.columns
-   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be returned for each row matching
-   *   this request.
+   *   Required. The columns of {@link protos.google.spanner.v1.ReadRequest.table|table} to be
+   *   returned for each row matching this request.
    * @param {google.spanner.v1.KeySet} request.keySet
    *   Required. `key_set` identifies the rows to be yielded. `key_set` names the
-   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index}
-   *   is present. If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names
-   *   index keys in {@link protos.google.spanner.v1.ReadRequest.index|index}.
+   *   primary keys of the rows in {@link protos.google.spanner.v1.ReadRequest.table|table} to
+   *   be yielded, unless {@link protos.google.spanner.v1.ReadRequest.index|index} is present.
+   *   If {@link protos.google.spanner.v1.ReadRequest.index|index} is present, then
+   *   {@link protos.google.spanner.v1.ReadRequest.key_set|key_set} instead names index keys
+   *   in {@link protos.google.spanner.v1.ReadRequest.index|index}.
    *
-   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is empty, rows are yielded
-   *   in table primary key order (if {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
-   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is not
-   *   empty, rows will be yielded in an unspecified order.
+   *   If the {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token}
+   *   field is empty, rows are yielded in table primary key order (if
+   *   {@link protos.google.spanner.v1.ReadRequest.index|index} is empty) or index key order
+   *   (if {@link protos.google.spanner.v1.ReadRequest.index|index} is non-empty).  If the
+   *   {@link protos.google.spanner.v1.ReadRequest.partition_token|partition_token} field is
+   *   not empty, rows will be yielded in an unspecified order.
    *
    *   It is not an error for the `key_set` to name rows that do not
    *   exist in the database. Read yields nothing for nonexistent rows.
@@ -1846,9 +1891,9 @@ export class SpannerClient {
    * @param {Buffer} request.resumeToken
    *   If this request is resuming a previously interrupted read,
    *   `resume_token` should be copied from the last
-   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the interruption. Doing this
-   *   enables the new read to resume where the last read left off. The
-   *   rest of the request parameters must exactly match the request
+   *   {@link protos.google.spanner.v1.PartialResultSet|PartialResultSet} yielded before the
+   *   interruption. Doing this enables the new read to resume where the last read
+   *   left off. The rest of the request parameters must exactly match the request
    *   that yielded this token.
    * @param {Buffer} request.partitionToken
    *   If present, results will be restricted to the specified partition
@@ -1857,12 +1902,14 @@ export class SpannerClient {
    *   PartitionReadRequest message used to create this partition_token.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
+   * @param {google.spanner.v1.DirectedReadOptions} request.directedReadOptions
+   *   Directed read options for this request.
    * @param {boolean} request.dataBoostEnabled
    *   If this is for a partitioned read and this field is set to `true`, the
-   *   request will be executed via Spanner independent compute resources.
+   *   request is executed with Spanner Data Boost independent compute resources.
    *
    *   If the field is set to `true` but the request does not set
-   *   `partition_token`, the API will return an `INVALID_ARGUMENT` error.
+   *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -1946,7 +1993,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token}
+   *   from a previous
    *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
@@ -2049,7 +2097,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token}
+   *   from a previous
    *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
@@ -2108,7 +2157,8 @@ export class SpannerClient {
    *   to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token} from a previous
+   *   {@link protos.google.spanner.v1.ListSessionsResponse.next_page_token|next_page_token}
+   *   from a previous
    *   {@link protos.google.spanner.v1.ListSessionsResponse|ListSessionsResponse}.
    * @param {string} request.filter
    *   An expression for filtering the results of the request. Filter rules are
