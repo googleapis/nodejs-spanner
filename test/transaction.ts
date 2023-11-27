@@ -61,6 +61,7 @@ describe('Transaction', () => {
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
+    lastUsed: 0,
   };
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
@@ -751,6 +752,15 @@ describe('Transaction', () => {
           () => snapshot.runStream(QUERY),
           /Transaction has been closed as it was running for more than expected thresholds. If transaction is expected to run long, run as batch or partitioned DML/
         );
+        done();
+      });
+
+      it('should update value of lastUsed', done => {
+        sandbox.stub(Date, 'now').callsFake(() => {
+          return 10;
+        });
+        snapshot.runStream(QUERY);
+        assert.equal(snapshot.session.lastUsed, 10);
         done();
       });
     });

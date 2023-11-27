@@ -365,6 +365,7 @@ export class Snapshot extends EventEmitter {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+    this.session.lastUsed = Date.now();
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
@@ -609,6 +610,8 @@ export class Snapshot extends EventEmitter {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+
+    this.session.lastUsed = Date.now();
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -1080,6 +1083,7 @@ export class Snapshot extends EventEmitter {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+    this.session.lastUsed = Date.now();
 
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
@@ -1661,6 +1665,7 @@ export class Transaction extends Dml {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+    this.session.lastUsed = Date.now();
 
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
     if (this.id) {
