@@ -1855,6 +1855,7 @@ export class Transaction extends Dml {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+    this.session.lastUsed = Date.now();
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -2217,6 +2218,7 @@ export class Transaction extends Dml {
     if (!this.session) {
       throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
     }
+    this.session.lastUsed = Date.now();
 
     const session = this.session.formattedName_!;
     const transactionId = this.id;
