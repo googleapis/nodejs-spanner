@@ -212,6 +212,9 @@ export class MockInstanceAdmin {
       processingUnits: call.request!.instance
         ? call.request!.instance.processingUnits
         : undefined,
+      autoscalingConfig: call.request!.instance
+        ? call.request!.instance.autoscalingConfig
+        : undefined,
       labels: call.request!.instance
         ? call.request!.instance.labels
         : undefined,

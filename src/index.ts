@@ -130,6 +130,7 @@ export interface CreateInstanceRequest {
   config?: string;
   nodes?: number;
   processingUnits?: number;
+  autoscalingConfig?: google.spanner.admin.instance.v1.IAutoscalingConfig;
   displayName?: string;
   labels?: {[k: string]: string} | null;
   gaxOptions?: CallOptions;
@@ -468,17 +469,21 @@ class Spanner extends GrpcService {
           displayName,
           nodeCount: config.nodes,
           processingUnits: config.processingUnits,
+          autoscalingConfig: config.autoscalingConfig,
         },
         config
       ),
     };
-
     if (reqOpts.instance.nodeCount && reqOpts.instance.processingUnits) {
       throw new GoogleError(
         ['Only one of nodeCount or processingUnits can be specified.'].join('')
       );
     }
-    if (!reqOpts.instance.nodeCount && !reqOpts.instance.processingUnits) {
+    if (
+      !reqOpts.instance.nodeCount &&
+      !reqOpts.instance.processingUnits &&
+      !reqOpts.instance.autoscalingConfig
+    ) {
       // If neither nodes nor processingUnits are specified, default to a
       // nodeCount of 1.
       reqOpts.instance.nodeCount = 1;
@@ -490,6 +495,7 @@ class Spanner extends GrpcService {
     if (config.config!.indexOf('/') === -1) {
       reqOpts.instance.config = `projects/${this.projectId}/instanceConfigs/${config.config}`;
     }
+
     this.request(
       {
         client: 'InstanceAdminClient',

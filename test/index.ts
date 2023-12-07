@@ -625,6 +625,7 @@ describe('Spanner', () => {
             name: PATH,
             displayName: NAME,
             nodeCount: 1,
+            autoscalingConfig: undefined,
             processingUnits: undefined,
             config: `projects/project-id/instanceConfigs/${CONFIG.config}`,
           },
@@ -666,6 +667,38 @@ describe('Spanner', () => {
           processingUnits
         );
         assert.strictEqual(config.reqOpts.instance.nodeCount, undefined);
+        done();
+      };
+
+      spanner.createInstance(NAME, config, assert.ifError);
+    });
+    it('should create an instance with autoscaling configurations', done => {
+      const autoscalingConfig =
+        spnr.protos.google.spanner.admin.instance.v1.AutoscalingConfig.create({
+          autoscalingLimits:
+            spnr.protos.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.create(
+              {
+                minNodes: 1,
+                maxNodes: 2,
+              }
+            ),
+          autoscalingTargets:
+            spnr.protos.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.create(
+              {
+                highPriorityCpuUtilizationPercent: 65,
+                storageUtilizationPercent: 95,
+              }
+            ),
+        });
+      const config = Object.assign({}, CONFIG, {autoscalingConfig});
+
+      spanner.request = config => {
+        assert.strictEqual(
+          config.reqOpts.instance.autoscalingConfig,
+          autoscalingConfig
+        );
+        assert.strictEqual(config.reqOpts.instance.nodeCount, undefined);
+        assert.strictEqual(config.reqOpts.instance.processingUnits, undefined);
         done();
       };
 

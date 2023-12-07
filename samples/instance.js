@@ -60,6 +60,10 @@ const {
   createInstanceWithProcessingUnits,
 } = require('./instance-with-processing-units');
 
+const {
+  createInstanceWithAutoscalingConfig,
+} = require('./instance-with-autoscaling-config');
+
 require('yargs')
   .demand(1)
   .command(
@@ -77,6 +81,16 @@ require('yargs')
   )
   .example(
     'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+  )
+  .command(
+    'createInstanceWithAutoscalingConfig <instanceName> <projectId>',
+    'Creates an example instance in a Cloud Spanner instance with autoscaling configs.',
+    {},
+    opts =>
+      createInstanceWithAutoscalingConfig(opts.instanceName, opts.projectId)
+  )
+  .example(
+    'node $0 createInstanceWithAutoscalingConfig "my-instance" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()

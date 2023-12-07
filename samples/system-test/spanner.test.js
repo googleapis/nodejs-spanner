@@ -296,6 +296,34 @@ describe('Spanner', () => {
     });
   });
 
+  // create_instance_with_autoscaling_units
+  it('should create an example instance with autoscaling configs', async () => {
+    const output = execSync(
+      `${instanceCmd} createInstanceWithAutoscalingConfig "${SAMPLE_INSTANCE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Waiting for operation on ${SAMPLE_INSTANCE_ID} to complete...`
+      )
+    );
+    assert.match(output, new RegExp(`Created instance ${SAMPLE_INSTANCE_ID}.`));
+    assert.match(
+      output,
+      new RegExp(
+        `Autoscaling configurations of ${SAMPLE_INSTANCE_ID} are:  ` +
+          '\n' +
+          'Min nodes: 1 nodes.' +
+          '\n' +
+          'Max nodes: 2 nodes.' +
+          '\n' +
+          'High priority cpu utilization percent: 65.' +
+          '\n' +
+          'Storage utilization percent: 95.'
+      )
+    );
+  });
+
   // check that base instance was created
   it('should have created an instance', async () => {
     const [exists] = await instance.exists();

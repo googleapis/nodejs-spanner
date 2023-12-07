@@ -4248,6 +4248,63 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(createdInstance.nodeCount, 0);
     });
 
+    it('should create an example instance with autoscaling configs', async () => {
+      const autoscalingConfig =
+        google.spanner.admin.instance.v1.AutoscalingConfig.create({
+          autoscalingLimits:
+            google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.create(
+              {
+                minNodes: 1,
+                maxNodes: 2,
+              }
+            ),
+          autoscalingTargets:
+            google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingTargets.create(
+              {
+                highPriorityCpuUtilizationPercent: 65,
+                storageUtilizationPercent: 95,
+              }
+            ),
+        });
+      const [createdInstance] = await spanner
+        .createInstance('new-instance', {
+          config: 'test-instance-config',
+          autoscalingConfig: autoscalingConfig,
+        })
+        .then(data => {
+          const operation = data[1];
+          return operation.promise() as Promise<
+            [Instance, CreateInstanceMetadata, object]
+          >;
+        })
+        .then(response => {
+          return response;
+        });
+      assert.strictEqual(
+        createdInstance.name,
+        `projects/${spanner.projectId}/instances/new-instance`
+      );
+      assert.strictEqual(
+        createdInstance.autoscalingConfig.autoscalingLimits.minNodes,
+        1
+      );
+      assert.strictEqual(
+        createdInstance.autoscalingConfig.autoscalingLimits.maxNodes,
+        2
+      );
+      assert.strictEqual(
+        createdInstance.autoscalingConfig.autoscalingTargets
+          .highPriorityCpuUtilizationPercent,
+        65
+      );
+      assert.strictEqual(
+        createdInstance.autoscalingConfig.autoscalingTargets
+          .storageUtilizationPercent,
+        95
+      );
+      assert.strictEqual(createdInstance.nodeCount, 0);
+    });
+
     it('should update an instance', async () => {
       const instance = spanner.instance(mockInstanceAdmin.PROD_INSTANCE_NAME);
       const [updatedInstance] = await instance
