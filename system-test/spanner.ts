@@ -30,6 +30,7 @@ import {
   Instance,
   InstanceConfig,
   Session,
+  protos,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -8669,6 +8670,39 @@ describe('Spanner', () => {
           this.skip();
         }
         deadlineErrorInsteadOfAbort(done, PG_DATABASE, postgreSqlTable);
+      });
+
+      it('GOOGLE_STANDARD_SQL should throw error when directedReadOptions at query level is set with read-write transactions', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const directedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                type: protos.google.spanner.v1.DirectedReadOptions
+                  .ReplicaSelection.Type.READ_WRITE,
+              },
+            ],
+            autoFailover: true,
+          },
+        };
+
+        DATABASE.runTransaction((err, transaction) => {
+          const expectedErrorMessage =
+            'Directed reads can only be performed in a read-only transaction.';
+          transaction!.run(
+            {
+              sql: `SELECT * FROM ${googleSqlTable.name}`,
+              directedReadOptions: directedReadOptionsForRequest,
+            },
+            err => {
+              assert.strictEqual(err?.details, expectedErrorMessage);
+            }
+          );
+          transaction!.end();
+          done();
+        });
       });
     });
 

@@ -43,6 +43,7 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
+import IDirectedReadOptions = google.spanner.v1.IDirectedReadOptions;
 import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
@@ -86,6 +87,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: IDirectedReadOptions | null;
 }
 
 export interface KeyRange {
@@ -107,6 +109,7 @@ export interface ReadRequest extends RequestOptions {
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: IDirectedReadOptions | null;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -426,6 +429,15 @@ export class Snapshot extends EventEmitter {
    *     rows whose first key columns exactly match.
    */
   /**
+   * Object for Directed Read Options.
+   *
+   * @typedef {object} IDirectedReadOptions
+   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
+   *     ReplicaSelection which indicates the order in which replicas should be considered.
+   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
+   *     ReplicaSelection that should be excluded from serving requests.
+   */
+  /**
    * Read request options. This includes all standard ReadRequest options as
    * well as several convenience properties.
    *
@@ -457,6 +469,8 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
+   * @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -591,6 +605,10 @@ export class Snapshot extends EventEmitter {
       transaction.singleUse = this._options;
     }
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      request.directedReadOptions
+    );
+
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -600,6 +618,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.directedReadOptions;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -610,6 +629,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
@@ -957,6 +977,15 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
+   * Object for Directed Read Options.
+   *
+   * @typedef {object} IDirectedReadOptions
+   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
+   *     ReplicaSelection which indicates the order in which replicas should be considered.
+   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
+   *     ReplicaSelection that should be excluded from serving requests.
+   */
+  /**
    * ExecuteSql request options. This includes all standard ExecuteSqlRequest
    * options as well as several convenience properties.
    *
@@ -993,6 +1022,8 @@ export class Snapshot extends EventEmitter {
    *     that it is not ready for any more data. Increase this value if you
    *     experience 'Stream is still not ready to receive data' errors as a
    *     result of a slow writer in your receiving stream.
+   *  @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1068,6 +1099,10 @@ export class Snapshot extends EventEmitter {
       query;
     let reqOpts;
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      query.directedReadOptions
+    );
+
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1085,6 +1120,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.directedReadOptions;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1094,6 +1130,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         params,
         paramTypes,
@@ -1286,6 +1323,25 @@ export class Snapshot extends EventEmitter {
     }
 
     return {params, paramTypes};
+  }
+
+  /**
+   * Get directed read options
+   * @private
+   * @param {google.spanner.v1.IDirectedReadOptions} directedReadOptions Request directedReadOptions object.
+   */
+  protected _getDirectedReadOptions(
+    directedReadOptions: IDirectedReadOptions | null | undefined
+  ) {
+    if (
+      !directedReadOptions &&
+      this._getSpanner().directedReadOptions &&
+      this._options.readOnly
+    ) {
+      return this._getSpanner().directedReadOptions;
+    }
+
+    return directedReadOptions;
   }
 
   /**

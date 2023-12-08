@@ -22,6 +22,7 @@ import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
+import {protos} from '../src';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
 import {
@@ -29,6 +30,7 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import DirectedReadOptions = google.spanner.v1.DirectedReadOptions;
 import {
   BatchUpdateOptions,
   ExecuteSqlRequest,
@@ -45,6 +47,7 @@ describe('Transaction', () => {
 
   const SPANNER = {
     routeToLeaderEnabled: true,
+    directedReadOptions: {},
   };
 
   const INSTANCE = {
@@ -65,6 +68,19 @@ describe('Transaction', () => {
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
+
+  const fakeDirectedReadOptions = {
+    includeReplicas: {
+      replicaSelections: [
+        {
+          location: 'us-west1',
+          type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+            .Type.READ_ONLY,
+        },
+      ],
+      autoFailover: true,
+    },
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
@@ -304,6 +320,7 @@ describe('Transaction', () => {
           keys: ['a', 'b', 'c'],
           ranges: [{}, {}],
           columns: ['name'],
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         const expectedRequest = {
@@ -314,6 +331,7 @@ describe('Transaction', () => {
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         sandbox
@@ -391,6 +409,70 @@ describe('Transaction', () => {
         const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
 
         assert.deepStrictEqual(options, fakeOptions);
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set for client when passed', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
+          },
+        };
+
+        const fakeRequest = {
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
       });
     });
 
@@ -588,6 +670,7 @@ describe('Transaction', () => {
           types: {a: 'string'},
           seqno: 1,
           queryOptions: {},
+          directedReadOptions: fakeDirectedReadOptions,
         });
 
         const expectedRequest = {
@@ -600,6 +683,7 @@ describe('Transaction', () => {
           seqno: 1,
           queryOptions: {},
           resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
@@ -741,6 +825,102 @@ describe('Transaction', () => {
           done();
         });
         assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        const fakeParams = {b: 'a'};
+        const fakeParamTypes = {b: 'number'};
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: 'b'},
+          types: {a: 'string'},
+          seqno: 1,
+          queryOptions: {},
+        });
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+        });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set for client when passed', () => {
+        const id = 'transaction-id-123';
+        const fakeParams = {b: 'a'};
+        const fakeParamTypes = {b: 'number'};
+
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
+          },
+        };
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: 'b'},
+          types: {a: 'string'},
+          seqno: 1,
+          queryOptions: {},
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        });
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+        });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
       });
     });
 
