@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Runs an execute sql request with directed read options
-//  usage: node directed-read.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node directed-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 

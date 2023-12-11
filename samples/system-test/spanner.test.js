@@ -1989,7 +1989,7 @@ describe('Spanner', () => {
     // directed_read_transaction
     it('should run read-only transaction with directed read options set', async () => {
       const output = execSync(
-        `node directed-read.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+        `node directed-reads.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
       );
       console.log(output);
       assert.match(
