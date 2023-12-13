@@ -20518,6 +20518,9 @@ export namespace google {
                 /** CommitRequest returnCommitStats */
                 returnCommitStats?: (boolean|null);
 
+                /** CommitRequest maxCommitDelay */
+                maxCommitDelay?: (google.protobuf.IDuration|null);
+
                 /** CommitRequest requestOptions */
                 requestOptions?: (google.spanner.v1.IRequestOptions|null);
             }
@@ -20546,11 +20549,17 @@ export namespace google {
                 /** CommitRequest returnCommitStats. */
                 public returnCommitStats: boolean;
 
+                /** CommitRequest maxCommitDelay. */
+                public maxCommitDelay?: (google.protobuf.IDuration|null);
+
                 /** CommitRequest requestOptions. */
                 public requestOptions?: (google.spanner.v1.IRequestOptions|null);
 
                 /** CommitRequest transaction. */
                 public transaction?: ("transactionId"|"singleUseTransaction");
+
+                /** CommitRequest _maxCommitDelay. */
+                public _maxCommitDelay?: "maxCommitDelay";
 
                 /**
                  * Creates a new CommitRequest instance using the specified properties.

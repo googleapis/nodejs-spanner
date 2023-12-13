@@ -22,6 +22,7 @@ import "google/api/annotations.proto";
 import "google/api/client.proto";
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -1162,6 +1163,8 @@ message CommitRequest {
   // the [CommitResponse][google.spanner.v1.CommitResponse.commit_stats].
   // Default value is `false`.
   bool return_commit_stats = 5;
+
+  optional google.protobuf.Duration max_commit_delay = 8;
 
   // Common options for this request.
   RequestOptions request_options = 6;

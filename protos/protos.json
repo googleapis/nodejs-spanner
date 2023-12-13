@@ -5480,6 +5480,11 @@
                         "transactionId",
                         "singleUseTransaction"
                       ]
+                    },
+                    "_maxCommitDelay": {
+                      "oneof": [
+                        "maxCommitDelay"
+                      ]
                     }
                   },
                   "fields": {
@@ -5507,6 +5512,13 @@
                     "returnCommitStats": {
                       "type": "bool",
                       "id": 5
+                    },
+                    "maxCommitDelay": {
+                      "type": "google.protobuf.Duration",
+                      "id": 8,
+                      "options": {
+                        "proto3_optional": true
+                      }
                     },
                     "requestOptions": {
                       "type": "RequestOptions",

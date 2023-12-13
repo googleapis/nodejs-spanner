@@ -1310,6 +1310,7 @@ export class SpannerClient {
    *   If `true`, then statistics related to the transaction will be included in
    *   the {@link protos.google.spanner.v1.CommitResponse.commit_stats|CommitResponse}.
    *   Default value is `false`.
+   * @param {google.protobuf.Duration} request.maxCommitDelay
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {object} [options]

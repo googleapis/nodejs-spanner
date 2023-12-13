@@ -51471,6 +51471,7 @@
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
                      * @property {boolean|null} [returnCommitStats] CommitRequest returnCommitStats
+                     * @property {google.protobuf.IDuration|null} [maxCommitDelay] CommitRequest maxCommitDelay
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] CommitRequest requestOptions
                      */
     
@@ -51531,6 +51532,14 @@
                     CommitRequest.prototype.returnCommitStats = false;
     
                     /**
+                     * CommitRequest maxCommitDelay.
+                     * @member {google.protobuf.IDuration|null|undefined} maxCommitDelay
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    CommitRequest.prototype.maxCommitDelay = null;
+    
+                    /**
                      * CommitRequest requestOptions.
                      * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
                      * @memberof google.spanner.v1.CommitRequest
@@ -51549,6 +51558,17 @@
                      */
                     Object.defineProperty(CommitRequest.prototype, "transaction", {
                         get: $util.oneOfGetter($oneOfFields = ["transactionId", "singleUseTransaction"]),
+                        set: $util.oneOfSetter($oneOfFields)
+                    });
+    
+                    /**
+                     * CommitRequest _maxCommitDelay.
+                     * @member {"maxCommitDelay"|undefined} _maxCommitDelay
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    Object.defineProperty(CommitRequest.prototype, "_maxCommitDelay", {
+                        get: $util.oneOfGetter($oneOfFields = ["maxCommitDelay"]),
                         set: $util.oneOfSetter($oneOfFields)
                     });
     
@@ -51589,6 +51609,8 @@
                             writer.uint32(/* id 5, wireType 0 =*/40).bool(message.returnCommitStats);
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                        if (message.maxCommitDelay != null && Object.hasOwnProperty.call(message, "maxCommitDelay"))
+                            $root.google.protobuf.Duration.encode(message.maxCommitDelay, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                         return writer;
                     };
     
@@ -51643,6 +51665,10 @@
                                 }
                             case 5: {
                                     message.returnCommitStats = reader.bool();
+                                    break;
+                                }
+                            case 8: {
+                                    message.maxCommitDelay = $root.google.protobuf.Duration.decode(reader, reader.uint32());
                                     break;
                                 }
                             case 6: {
@@ -51715,6 +51741,14 @@
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             if (typeof message.returnCommitStats !== "boolean")
                                 return "returnCommitStats: boolean expected";
+                        if (message.maxCommitDelay != null && message.hasOwnProperty("maxCommitDelay")) {
+                            properties._maxCommitDelay = 1;
+                            {
+                                var error = $root.google.protobuf.Duration.verify(message.maxCommitDelay);
+                                if (error)
+                                    return "maxCommitDelay." + error;
+                            }
+                        }
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
                             var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
                             if (error)
@@ -51759,6 +51793,11 @@
                         }
                         if (object.returnCommitStats != null)
                             message.returnCommitStats = Boolean(object.returnCommitStats);
+                        if (object.maxCommitDelay != null) {
+                            if (typeof object.maxCommitDelay !== "object")
+                                throw TypeError(".google.spanner.v1.CommitRequest.maxCommitDelay: object expected");
+                            message.maxCommitDelay = $root.google.protobuf.Duration.fromObject(object.maxCommitDelay);
+                        }
                         if (object.requestOptions != null) {
                             if (typeof object.requestOptions !== "object")
                                 throw TypeError(".google.spanner.v1.CommitRequest.requestOptions: object expected");
@@ -51808,6 +51847,11 @@
                             object.returnCommitStats = message.returnCommitStats;
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
+                        if (message.maxCommitDelay != null && message.hasOwnProperty("maxCommitDelay")) {
+                            object.maxCommitDelay = $root.google.protobuf.Duration.toObject(message.maxCommitDelay, options);
+                            if (options.oneofs)
+                                object._maxCommitDelay = "maxCommitDelay";
+                        }
                         return object;
                     };
     
