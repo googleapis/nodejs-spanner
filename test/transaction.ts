@@ -962,11 +962,10 @@ describe('Transaction', () => {
       });
 
       it('should guess missing param types', () => {
-        const fakeParams = {a: true, b: 3};
+        const fakeParams = {a: 'foo', b: 3};
         const fakeTypes = {b: 'number'};
-        const fakeMissingType = {type: 'boolean'};
-        const expectedMissingType = {code: google.spanner.v1.TypeCode.BOOL};
-        const expectedKnownType = {code: google.spanner.v1.TypeCode.INT64};
+        const fakeMissingType = {type: 'string'};
+        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
 
         sandbox
           .stub(codec, 'getType')
@@ -975,17 +974,15 @@ describe('Transaction', () => {
 
         sandbox
           .stub(codec, 'createTypeObject')
-          .withArgs('number')
-          .returns(expectedKnownType as google.spanner.v1.Type)
           .withArgs(fakeMissingType)
-          .returns(expectedMissingType as google.spanner.v1.Type);
+          .returns(expectedType as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
           types: fakeTypes,
         });
 
-        assert.strictEqual(paramTypes.a, expectedMissingType);
+        assert.strictEqual(paramTypes.a, expectedType);
       });
     });
   });
@@ -1112,17 +1109,17 @@ describe('Transaction', () => {
 
       const OBJ_STATEMENTS = [
         {
-          sql: 'INSERT INTO TxnTable (Key, BoolValue) VALUES(@key, @bool)',
+          sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
           params: {
-            key: 999,
-            bool: true,
+            key: 'k999',
+            str: 'abc',
           },
         },
         {
-          sql: 'UPDATE TxnTable t SET t.BoolValue = @bool WHERE t.Key = @key',
+          sql: 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
           params: {
-            key: 999,
-            bool: false,
+            key: 'k999',
+            str: 'abcd',
           },
         },
       ];
@@ -1132,26 +1129,26 @@ describe('Transaction', () => {
           sql: OBJ_STATEMENTS[0].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[0].params.key.toString()},
-              bool: {boolValue: OBJ_STATEMENTS[0].params.bool},
+              key: {stringValue: OBJ_STATEMENTS[0].params.key},
+              str: {stringValue: OBJ_STATEMENTS[0].params.str},
             },
           },
           paramTypes: {
-            key: {code: 'INT64'},
-            bool: {code: 'BOOL'},
+            key: {code: 'STRING'},
+            str: {code: 'STRING'},
           },
         },
         {
           sql: OBJ_STATEMENTS[1].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[1].params.key.toString()},
-              bool: {boolValue: OBJ_STATEMENTS[1].params.bool},
+              key: {stringValue: OBJ_STATEMENTS[1].params.key},
+              str: {stringValue: OBJ_STATEMENTS[1].params.str},
             },
           },
           paramTypes: {
-            key: {code: 'INT64'},
-            bool: {code: 'BOOL'},
+            key: {code: 'STRING'},
+            str: {code: 'STRING'},
           },
         },
       ];

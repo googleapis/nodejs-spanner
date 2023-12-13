@@ -597,6 +597,10 @@ function getType(value: Value): Type {
     return {type: 'bool'};
   }
 
+  if (is.string(value)) {
+    return {type: 'string'};
+  }
+
   if (Buffer.isBuffer(value)) {
     return {type: 'bytes'};
   }
@@ -639,7 +643,6 @@ function getType(value: Value): Type {
     return {type: 'json'};
   }
 
-  // String type is also returned as unspecified to allow untyped parameters
   return {type: 'unspecified'};
 }
 
