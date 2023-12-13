@@ -122,6 +122,7 @@ export abstract class Runner<T> {
     this.session = session;
     this.transaction = transaction;
     this.transaction.useInRunner();
+    this.session.txn = transaction;
 
     const defaults = {timeout: 3600000};
 

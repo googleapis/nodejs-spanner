@@ -29,6 +29,8 @@ import {Session} from '../src/session';
 import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
+import * as winston from 'winston';
+import {_setLongRunningTransactionThreshold} from '../src/common';
 
 let pQueueOverride: typeof PQueue | null = null;
 
@@ -40,6 +42,7 @@ FakePQueue.default = FakePQueue;
 
 class FakeTransaction {
   options;
+  session?;
   constructor(options?) {
     this.options = options;
   }
@@ -59,6 +62,7 @@ describe('SessionPool', () => {
   const DATABASE = {
     batchCreateSessions: noop,
     databaseRole: 'parent_role',
+    enableLogging: noop,
   } as unknown as Database;
 
   const sandbox = sinon.createSandbox();
@@ -120,8 +124,11 @@ describe('SessionPool', () => {
     it('should return a trace with the method name', () => {
       (stackFrame.getFunctionName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${stackFrame.getMethodName()} (${file})`;
-      const actual = SessionPool.formatTrace(fakeTrace);
+      const expected = `Session leak detected! \n     at ${stackFrame.getMethodName()} (${file})`;
+      const actual = SessionPool.formatTrace(
+        fakeTrace,
+        'Session leak detected!'
+      );
 
       assert.strictEqual(expected, actual);
     });
@@ -129,8 +136,11 @@ describe('SessionPool', () => {
     it('should return a trace with the function name', () => {
       (stackFrame.getMethodName as sinon.SinonStub).returns(undefined);
 
-      const expected = `Session leak detected!\n    at ${stackFrame.getFunctionName()} (${file})`;
-      const actual = SessionPool.formatTrace(fakeTrace);
+      const expected = `Session leak detected! \n     at ${stackFrame.getFunctionName()} (${file})`;
+      const actual = SessionPool.formatTrace(
+        fakeTrace,
+        'Session leak detected!'
+      );
 
       assert.strictEqual(expected, actual);
     });
@@ -214,6 +224,11 @@ describe('SessionPool', () => {
         assert.strictEqual(sessionPool.options.min, 25);
         assert.strictEqual(sessionPool.options.max, 100);
         assert.strictEqual(sessionPool.options.maxIdle, 1);
+        assert.strictEqual(sessionPool.options.logging, true);
+        assert.strictEqual(
+          sessionPool.options.closeInactiveTransactions,
+          false
+        );
       });
 
       it('should not override user options', () => {
@@ -229,6 +244,20 @@ describe('SessionPool', () => {
       it('should use default value of Database for databaseRole', () => {
         sessionPool = new SessionPool(DATABASE);
         assert.strictEqual(sessionPool.options.databaseRole, 'parent_role');
+      });
+
+      it('should create logger', () => {
+        const db = {
+          batchCreateSessions: noop,
+          databaseRole: 'parent_role',
+          logger: undefined,
+          enableLogging: () => {
+            db.logger = winston.createLogger();
+          },
+        } as unknown as Database;
+        assert.strictEqual(db.logger, undefined);
+        sessionPool = new SessionPool(db);
+        assert.notStrictEqual(db.logger, undefined);
       });
 
       describe('min and max', () => {
@@ -372,7 +401,7 @@ describe('SessionPool', () => {
 
       sandbox.stub(sessionPool, '_acquire').resolves(fakeSession);
 
-      sessionPool.getSession((err, session) => {
+      sessionPool.getSession(true, (err, session) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeSession);
         done();
@@ -384,7 +413,7 @@ describe('SessionPool', () => {
 
       sandbox.stub(sessionPool, '_acquire').rejects(error);
 
-      sessionPool.getSession(err => {
+      sessionPool.getSession(true, err => {
         assert.strictEqual(err, error);
         done();
       });
@@ -398,7 +427,7 @@ describe('SessionPool', () => {
 
       sandbox.stub(sessionPool, '_acquire').resolves(fakeSession);
 
-      sessionPool.getSession((err, session, txn) => {
+      sessionPool.getSession(true, (err, session, txn) => {
         assert.ifError(err);
         assert.strictEqual(session, fakeSession);
         assert.strictEqual(txn, fakeTxn);
@@ -550,12 +579,27 @@ describe('SessionPool', () => {
       assert.strictEqual(session.txn, undefined);
     });
 
+    it('should unset transactionLogged and longRunningTransaction for any old transactions', () => {
+      const session = createSession();
+
+      sessionPool._release = noop;
+      inventory.borrowed.add(session);
+      session.transactionLogged = true;
+      session.longRunningTransaction = true;
+      session.nullTxn = true;
+
+      sessionPool.release(session);
+      assert.strictEqual(session.transactionLogged, false);
+      assert.strictEqual(session.longRunningTransaction, false);
+    });
+
     it('should update the lastUsed timestamp', () => {
       const session = createSession();
 
       sessionPool._release = noop;
       inventory.borrowed.add(session);
       session.lastUsed = null!;
+      session.nullTxn = true;
 
       sessionPool.release(session);
       assert(isAround(session.lastUsed, Date.now()));
@@ -576,6 +620,7 @@ describe('SessionPool', () => {
           .withArgs(fakeSession)
           .callsFake(() => done());
 
+        fakeSession.nullTxn = true;
         sessionPool.release(fakeSession);
       });
     });
@@ -591,7 +636,7 @@ describe('SessionPool', () => {
       sessionPool.isOpen = false;
 
       try {
-        await sessionPool._acquire();
+        await sessionPool._acquire(true);
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
@@ -609,7 +654,7 @@ describe('SessionPool', () => {
       };
 
       try {
-        await sessionPool._acquire();
+        await sessionPool._acquire(true);
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
@@ -626,7 +671,7 @@ describe('SessionPool', () => {
       const stub = sandbox
         .stub(sessionPool, '_getSession')
         .resolves(fakeSession);
-      const session = await sessionPool._acquire();
+      const session = await sessionPool._acquire(true);
       const [startTime] = stub.getCall(0).args;
 
       assert(isAround(startTime, now));
@@ -646,7 +691,7 @@ describe('SessionPool', () => {
       stub.onFirstCall().resolves(badSession);
       stub.onSecondCall().resolves(goodSession);
 
-      const session = await sessionPool._acquire();
+      const session = await sessionPool._acquire(true);
 
       assert.strictEqual(session, goodSession);
       assert.strictEqual(sessionPool.size, 1);
@@ -661,9 +706,9 @@ describe('SessionPool', () => {
       sandbox.stub(sessionPool, '_getSession').resolves(fakeSession);
       sandbox.stub(fakeStackTrace, 'get').returns(fakeTrace);
 
-      await sessionPool._acquire();
+      await sessionPool._acquire(true);
 
-      const trace = sessionPool._traces.get(id);
+      const trace = sessionPool._traces.get(fakeSession);
       assert.strictEqual(trace, fakeTrace);
     });
 
@@ -675,7 +720,7 @@ describe('SessionPool', () => {
         .stub(sessionPool, '_prepareTransaction')
         .withArgs(fakeSession);
 
-      const session = await sessionPool._acquire();
+      const session = await sessionPool._acquire(true);
 
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(prepStub.callCount, 1);
@@ -703,10 +748,37 @@ describe('SessionPool', () => {
       inventory.sessions.push(fakeSession1);
       inventory.sessions.push(fakeSession2);
 
-      let session = sessionPool._borrowFrom();
+      let session = sessionPool._borrowFrom(true);
       assert.strictEqual(session, fakeSession2);
-      session = sessionPool._borrowFrom();
+      session = sessionPool._borrowFrom(true);
       assert.strictEqual(session, fakeSession1);
+    });
+
+    it('should set lastUsed and longRunningTransaction', () => {
+      const fakeSession = createSession();
+
+      inventory.sessions.push(fakeSession);
+
+      const session = sessionPool._borrowFrom(true);
+      assert.notStrictEqual(session.lastUsed, undefined);
+      assert.strictEqual(session.longRunningTransaction, true);
+    });
+
+    it('should call _startCleaningLongRunningSessions', () => {
+      const startCleaningLongRunningSessionsStub = (
+        sandbox.stub(
+          sessionPool,
+          '_startCleaningLongRunningSessions'
+        ) as sinon.SinonStub
+      ).callsFake(() => {});
+      sessionPool.options.max = 1;
+      sessionPool.options.closeInactiveTransactions = true;
+      const fakeSession = createSession();
+      inventory.sessions.push(fakeSession);
+
+      sessionPool._borrowFrom(true);
+
+      assert.strictEqual(startCleaningLongRunningSessionsStub.callCount, 1);
     });
   });
 
@@ -717,7 +789,7 @@ describe('SessionPool', () => {
       inventory.sessions.push(fakeSession);
       sandbox.stub(sessionPool, '_borrowFrom').returns(fakeSession);
 
-      const session = sessionPool._borrowNextAvailableSession();
+      const session = sessionPool._borrowNextAvailableSession(true);
 
       assert.strictEqual(session, fakeSession);
     });
@@ -992,8 +1064,8 @@ describe('SessionPool', () => {
       stub.withArgs(trace1).returns(formatted1);
       stub.withArgs(trace2).returns(formatted2);
 
-      sessionPool._traces.set('a', trace1);
-      sessionPool._traces.set('b', trace2);
+      sessionPool._traces.set(createSession('a'), trace1);
+      sessionPool._traces.set(createSession('b'), trace2);
 
       const leaks = sessionPool._getLeaks();
 
@@ -1021,7 +1093,7 @@ describe('SessionPool', () => {
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
 
-      const session = await sessionPool._getSession(startTime);
+      const session = await sessionPool._getSession(startTime, true);
       assert.strictEqual(session, fakeSession);
     });
 
@@ -1029,7 +1101,7 @@ describe('SessionPool', () => {
       sessionPool.options.fail = true;
 
       try {
-        await sessionPool._getSession(startTime);
+        await sessionPool._getSession(startTime, true);
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
@@ -1043,7 +1115,7 @@ describe('SessionPool', () => {
       setTimeout(() => sessionPool.emit('close'), 100);
 
       try {
-        await sessionPool._getSession(startTime);
+        await sessionPool._getSession(startTime, true);
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(
@@ -1061,7 +1133,7 @@ describe('SessionPool', () => {
         .returns(fakeSession);
       setTimeout(() => sessionPool.emit('session-available'), 100);
 
-      const session = await sessionPool._getSession(startTime);
+      const session = await sessionPool._getSession(startTime, true);
       assert.strictEqual(session, fakeSession);
     });
 
@@ -1070,7 +1142,7 @@ describe('SessionPool', () => {
       const timeout = (sessionPool.options.acquireTimeout = 100);
 
       try {
-        await sessionPool._getSession(startTime);
+        await sessionPool._getSession(startTime, true);
         shouldNotBeCalled();
       } catch (e) {
         assert(isAround(timeout, end()));
@@ -1098,7 +1170,7 @@ describe('SessionPool', () => {
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
 
-      const session = await sessionPool._getSession(startTime);
+      const session = await sessionPool._getSession(startTime, true);
 
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(stub.callCount, 1);
@@ -1122,7 +1194,7 @@ describe('SessionPool', () => {
         .stub(sessionPool, '_borrowNextAvailableSession')
         .returns(fakeSession);
 
-      const session = await sessionPool._getSession(startTime);
+      const session = await sessionPool._getSession(startTime, true);
 
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(stub.callCount, 1);
@@ -1141,7 +1213,7 @@ describe('SessionPool', () => {
         .returns(fakeSession);
       setTimeout(() => sessionPool.emit('session-available'), 100);
 
-      const session = await sessionPool._getSession(startTime);
+      const session = await sessionPool._getSession(startTime, true);
       assert.strictEqual(session, fakeSession);
       assert.strictEqual(stub.callCount, 0);
     });
@@ -1153,7 +1225,7 @@ describe('SessionPool', () => {
       sandbox.stub(sessionPool, '_createSessions').rejects(error);
 
       try {
-        await sessionPool._getSession(startTime);
+        await sessionPool._getSession(startTime, true);
         shouldNotBeCalled();
       } catch (e) {
         assert.strictEqual(e, error);
@@ -1163,7 +1235,7 @@ describe('SessionPool', () => {
     it('should remove the available listener on error', async () => {
       sessionPool.options.acquireTimeout = 100;
 
-      const promise = sessionPool._getSession(startTime);
+      const promise = sessionPool._getSession(startTime, true);
 
       assert.strictEqual(sessionPool.listenerCount('session-available'), 1);
 
@@ -1302,10 +1374,23 @@ describe('SessionPool', () => {
       const id = 'abc';
       const fakeSession = createSession(id);
 
-      sessionPool._traces.set(id, []);
+      sessionPool._traces.set(createSession(id), []);
       sessionPool._release(fakeSession);
 
-      assert.strictEqual(sessionPool._traces.has(id), false);
+      assert.strictEqual(sessionPool._traces.has(createSession(id)), false);
+    });
+
+    it('should call _stopCleaningLongRunningSessions', () => {
+      const fakeSession = createSession('id');
+
+      inventory.borrowed.add(fakeSession);
+      const stopCleaningLongRunningSessionsStub = sandbox.stub(
+        sessionPool,
+        '_stopCleaningLongRunningSessions'
+      );
+      sessionPool.options.closeInactiveTransactions = true;
+      sessionPool._release(fakeSession);
+      assert.strictEqual(stopCleaningLongRunningSessionsStub.callCount, 1);
     });
   });
 
@@ -1337,8 +1422,13 @@ describe('SessionPool', () => {
     it('should clear the intervals', () => {
       sessionPool._pingHandle = setTimeout(noop, 1);
       sessionPool._evictHandle = setTimeout(noop, 1);
+      sessionPool._longRunningTransactionHandle = setTimeout(noop, 1);
 
-      const fakeHandles = [sessionPool._pingHandle, sessionPool._evictHandle];
+      const fakeHandles = [
+        sessionPool._pingHandle,
+        sessionPool._evictHandle,
+        sessionPool._longRunningTransactionHandle,
+      ];
       const stub = sandbox.stub(global, 'clearInterval');
 
       sessionPool._stopHouseKeeping();
@@ -1347,6 +1437,94 @@ describe('SessionPool', () => {
         const [handle] = stub.getCall(i).args;
         assert.strictEqual(handle, fakeHandle);
       });
+    });
+  });
+
+  describe('_startCleaningLongRunningSessions', () => {
+    it('should set an interval to clean long running transactions', done => {
+      const expectedInterval = 120000;
+      const clock = sandbox.useFakeTimers();
+      let callCount = 0;
+
+      sandbox
+        .stub(sessionPool, '_deleteLongRunningTransactions')
+        .callsFake(async () => {
+          callCount++;
+          if (callCount === 2) {
+            done();
+          }
+        });
+      sessionPool.options.logging = false;
+
+      sessionPool._startCleaningLongRunningSessions();
+      clock.tick(expectedInterval);
+    });
+  });
+
+  describe('_deleteLongRunningTransactions', () => {
+    it('should stop cleanup of long running transactions after 60 minutes', async () => {
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 100000 + 60 * 60 * 1000 + 10;
+      });
+
+      const stopCleaningLongRunningSessionsStub = sandbox
+        .stub(sessionPool, '_stopCleaningLongRunningSessions')
+        .callsFake(() => {});
+      sessionPool._lastSessionRecycle = 100000;
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(stopCleaningLongRunningSessionsStub.callCount, 1);
+    });
+
+    it('should log once if logging is enabled and closeInactiveTransactions is disabled', async () => {
+      const trace = [createStackFrame()];
+      const session = createSession('a');
+
+      const formatTraceStub = sandbox
+        .stub(SessionPool, 'formatTrace')
+        .callsFake(() => {
+          return 'fake-trace';
+        });
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 100000 + 60 * 60 * 1000 + 10;
+      });
+      sessionPool._lastSessionRecycle = 100000 + 50 * 60 * 1000;
+      sessionPool._traces.set(session, trace);
+      session.lastUsed = 100000;
+      session.longRunningTransaction = false;
+      sessionPool.options.logging = true;
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(formatTraceStub.callCount, 1);
+      assert.strictEqual(session.transactionLogged, true);
+      // deleteLongRunningTransactions should not print stack trace a second time
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(formatTraceStub.callCount, 1);
+    });
+
+    it('should close inactive transaction', async () => {
+      const session = createSession('a');
+      const trace = [createStackFrame()];
+
+      sandbox.stub(SessionPool, 'formatTrace').callsFake(() => {
+        return 'fake-trace';
+      });
+      sandbox.stub(Date, 'now').callsFake(() => {
+        return 10000 + 60 * 60 * 1000 + 10;
+      });
+      sessionPool._traces.set(session, trace);
+      const releaseStub = sandbox.stub(sessionPool, 'release');
+      sessionPool._lastSessionRecycle = 12000;
+      sessionPool.options.closeInactiveTransactions = true;
+      sessionPool.options.logging = false;
+      session.lastUsed = 10000;
+      session.longRunningTransaction = false;
+      session.txn = new FakeTransaction() as unknown as Transaction;
+      _setLongRunningTransactionThreshold(1000);
+
+      await sessionPool._deleteLongRunningTransactions();
+      assert.strictEqual(session.txn?.session, undefined);
+      assert.strictEqual(releaseStub.callCount, 1);
     });
   });
 });

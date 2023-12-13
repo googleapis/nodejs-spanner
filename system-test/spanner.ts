@@ -16,7 +16,7 @@
 
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import * as assert from 'assert';
-import {describe, it, before, after, beforeEach} from 'mocha';
+import {describe, it, before, after, beforeEach, afterEach} from 'mocha';
 import pLimit = require('p-limit');
 import concat = require('concat-stream');
 import * as crypto from 'crypto';
@@ -39,11 +39,16 @@ import {
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
-import {grpc, CallOptions} from 'google-gax';
+import {grpc, CallOptions, GoogleError} from 'google-gax';
 import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import {
+  _setLongRunningTransactionThreshold,
+  _setLongRunningBackgroundTaskFrequency,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
+} from '../src/common';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -6501,6 +6506,11 @@ describe('Spanner', () => {
   describe('SessionPool', () => {
     const table = DATABASE.table(TABLE_NAME);
 
+    afterEach(async () => {
+      _setLongRunningTransactionThreshold(1000 * 60 * 60);
+      _setLongRunningBackgroundTaskFrequency(2 * 60 * 1000);
+    });
+
     it('should insert and query a row', done => {
       const id = generateName('id');
       const name = generateName('name');
@@ -6651,6 +6661,50 @@ describe('Spanner', () => {
           );
         }
       );
+    });
+
+    it('should close inactive transactions', done => {
+      const options = {
+        acquireTimeout: Infinity,
+        concurrency: Infinity,
+        fail: false,
+        idlesAfter: 10,
+        keepAlive: 30,
+        labels: {},
+        max: 1,
+        maxIdle: 1,
+        min: 1,
+        incStep: 1,
+        closeInactiveTransactions: true,
+        logging: false,
+        databaseRole: null,
+      };
+      const database = instance.database(DATABASE.formattedName_, options);
+      _setLongRunningTransactionThreshold(1000 * 2);
+      _setLongRunningBackgroundTaskFrequency(1000);
+
+      database.getSnapshot(async (err, transaction) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+
+        transaction!.run('SELECT 1', async (err, rows) => {
+          const session = transaction!.session;
+          assert.ifError(err);
+          assert.strictEqual(rows.length, 1);
+          await new Promise(r => setTimeout(r, 1000 * 5));
+          assert.strictEqual(transaction?.session, undefined);
+          assert.strictEqual(session?.txn, undefined);
+
+          const promise = transaction!.run('SELECT 1');
+          await assert.rejects(
+            promise,
+            new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE)
+          );
+          done();
+        });
+      });
     });
   });
 

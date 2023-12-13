@@ -88,3 +88,55 @@ export const LEADER_AWARE_ROUTING_HEADER = 'x-goog-spanner-route-to-leader';
 export function addLeaderAwareRoutingHeader(headers: {[k: string]: string}) {
   headers[LEADER_AWARE_ROUTING_HEADER] = 'true';
 }
+
+/*!
+ * Timeout value for long-running transactions in milliseconds.
+ */
+let LONG_RUNNING_TRANSACTION_THRESHOLD: number = 1000 * 60 * 60;
+
+/**
+ * Set timeout in milliseconds for long-running transactions.
+ * @param {number} [timeout] Timeout for Long Running Transactions.
+ */
+export function _setLongRunningTransactionThreshold(timeout: number) {
+  LONG_RUNNING_TRANSACTION_THRESHOLD = timeout;
+}
+
+/**
+ * Get timeout for long-running transactions in milliseconds.
+ */
+export function getLongRunningTransactionThreshold() {
+  return LONG_RUNNING_TRANSACTION_THRESHOLD;
+}
+
+/*!
+ * period after which background cleanup task runs in milliseconds.
+ */
+let LONG_RUNNING_BACKGROUND_TASK_FREQUENCY: number = 1000 * 60 * 2;
+
+/**
+ * Set frequency in milliseconds for long-running transactions background task.
+ * @param {number} [timeout] Timeout for Long Running Transactions.
+ */
+export function _setLongRunningBackgroundTaskFrequency(timeout: number) {
+  LONG_RUNNING_BACKGROUND_TASK_FREQUENCY = timeout;
+}
+
+/**
+ * Get frequency in milliseconds for long-running transactions background task.
+ */
+export function getLongRunningBackgroundTaskFrequency() {
+  return LONG_RUNNING_BACKGROUND_TASK_FREQUENCY;
+}
+
+/*!
+ * Timeout value in millisecond for cleanup of sessions
+ */
+export const SESSION_CLEANUP_TIMEOUT: number = 1000 * 60 * 60;
+
+/**
+ * Error message thrown when transaction running longer than expected thresholds is recycled.
+ */
+export const LONG_RUNNING_TRANSACTION_ERROR_MESSAGE =
+  'Transaction has been closed as it was running for more than expected thresholds. ' +
+  'If transaction is expected to run long, run as batch or partitioned DML';

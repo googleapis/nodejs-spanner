@@ -92,6 +92,7 @@ import {PreciseDate} from '@google-cloud/precise-date';
 import {EnumKey, RequestConfig, TranslateEnumKeys, Spanner} from '.';
 import arrify = require('arrify');
 import {ServiceError} from 'google-gax';
+import winston = require('winston');
 import IPolicy = google.iam.v1.IPolicy;
 import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
@@ -304,6 +305,8 @@ class Database extends common.GrpcServiceObject {
   queryOptions_?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions;
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
+  logger?: winston.Logger;
+  private loggingEnabled: boolean;
   databaseRole?: string | null;
   constructor(
     instance: Instance,
@@ -427,6 +430,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
+    this.loggingEnabled = false;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -785,12 +789,15 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getSession((err, session) => {
+    // createBatchTransaction is a long-running transaction which may take longer than expected thresholds
+    this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, null, undefined);
         return;
       }
       const transaction = this.batchTransaction({session: session!}, options);
+      session!.txn = transaction;
+
       this._releaseOnEnd(session!, transaction);
       transaction.begin((err, resp) => {
         if (err) {
@@ -1045,7 +1052,9 @@ class Database extends common.GrpcServiceObject {
   private _releaseOnEnd(session: Session, transaction: Snapshot) {
     transaction.once('end', () => {
       try {
-        this.pool_.release(session);
+        if (transaction.session) {
+          this.pool_.release(session);
+        }
       } catch (e) {
         this.emit('error', e);
       }
@@ -1127,6 +1136,58 @@ class Database extends common.GrpcServiceObject {
       );
     });
   }
+  /**
+   * Disables logging.
+   */
+  disableLogging(): void {
+    this.loggingEnabled = false;
+  }
+  /**
+   * Enables logging or updates Logger.
+   *
+   * @method Database#enableLogging
+   * @param {winston.LoggerOptions} [loggingOptions] options for logging
+   * including transports, levels, formatting , etc. By default, the values are
+   * logged to console.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   *
+   * loggingOptions = {
+   *         transports: [new winston.transports.Console()],
+   *         format: winston.format.combine(
+   *           winston.format.colorize(),
+   *           winston.format.simple()
+   *         ),
+   *       }
+   * database.enableLogging(loggingOptions);
+   * ```
+   */
+  enableLogging(loggingOptions?: winston.LoggerOptions) {
+    let updateLogger = false;
+    if (loggingOptions !== null && typeof loggingOptions === 'object') {
+      updateLogger = true;
+      loggingOptions = loggingOptions as winston.LoggerOptions;
+    } else {
+      loggingOptions = {
+        transports: [new winston.transports.Console()],
+        format: winston.format.combine(
+          winston.format.colorize(),
+          winston.format.simple()
+        ),
+      };
+    }
+    if (!this.logger || updateLogger) {
+      this.logger = winston.createLogger(loggingOptions);
+    }
+    this.loggingEnabled = true;
+  }
+
   /**
    * @typedef {array} DatabaseExistsResponse
    * @property {boolean} 0 Whether the {@link Database} exists.
@@ -1920,22 +1981,28 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as TimestampBounds)
         : {};
 
-    this.pool_.getSession((err, session) => {
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
+    this.pool_.getSession(false, (err, session) => {
       if (err) {
         callback!(err as ServiceError);
         return;
       }
 
       const snapshot = session!.snapshot(options, this.queryOptions_);
+      session!.txn = snapshot;
 
       snapshot.begin(err => {
         if (err) {
           if (isSessionNotFoundError(err)) {
             session!.lastError = err;
-            this.pool_.release(session!);
+            if (snapshot.session) {
+              this.pool_.release(session!);
+            }
             this.getSnapshot(options, callback!);
           } else {
-            this.pool_.release(session!);
+            if (snapshot.session) {
+              this.pool_.release(session!);
+            }
             callback!(err);
           }
           return;
@@ -1994,11 +2061,19 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    this.pool_.getSession((err, session, transaction) => {
+    // Queries on transactions is a not a long-running transaction and should take less than expected thresholds
+    this.pool_.getSession(false, (err, session, transaction) => {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
+        session!.txn = transaction;
       }
-      callback!(err as grpc.ServiceError | null, transaction);
+      if (
+        transaction instanceof Transaction ||
+        transaction === null ||
+        transaction === undefined
+      ) {
+        callback!(err as grpc.ServiceError | null, transaction);
+      }
     });
   }
 
@@ -2218,7 +2293,7 @@ class Database extends common.GrpcServiceObject {
     callback?: PoolRequestCallback
   ): void | Promise<Session> {
     const pool = this.pool_;
-    pool.getSession((err, session) => {
+    pool.getSession(false, (err, session) => {
       if (err) {
         callback!(err as ServiceError, null);
         return;
@@ -2263,7 +2338,7 @@ class Database extends common.GrpcServiceObject {
       }
     }
     waitForSessionStream.on('reading', () => {
-      pool.getSession((err, session_) => {
+      pool.getSession(false, (err, session_) => {
         if (err) {
           destroyStream(err as ServiceError);
           return;
@@ -2623,7 +2698,8 @@ class Database extends common.GrpcServiceObject {
     query: string | ExecuteSqlRequest,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
-    this.pool_.getSession((err, session) => {
+    // runPartitionedUpdate is a long-running transaction which may take longer than expected thresholds
+    this.pool_.getSession(true, (err, session) => {
       if (err) {
         callback!(err as ServiceError, 0);
         return;
@@ -2639,10 +2715,13 @@ class Database extends common.GrpcServiceObject {
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
+    session.txn = transaction;
 
     transaction.begin(err => {
       if (err) {
-        this.pool_.release(session!);
+        if (transaction.session) {
+          this.pool_.release(session!);
+        }
         callback!(err, 0);
         return;
       }
@@ -2650,13 +2729,17 @@ class Database extends common.GrpcServiceObject {
       transaction.runUpdate(query, (err, updateCount) => {
         if (err) {
           if (err.code !== grpc.status.ABORTED) {
-            this.pool_.release(session!);
+            if (transaction.session) {
+              this.pool_.release(session!);
+            }
             callback!(err, 0);
             return;
           }
           this._runPartitionedUpdate(session, query, callback);
         } else {
-          this.pool_.release(session!);
+          if (transaction.session) {
+            this.pool_.release(session!);
+          }
           callback!(null, updateCount);
           return;
         }
@@ -2795,13 +2878,15 @@ class Database extends common.GrpcServiceObject {
   ): PartialResultStream {
     const proxyStream: Transform = through.obj();
 
-    this.pool_.getSession((err, session) => {
+    // runStream is a long-running transaction which may take longer than expected thresholds
+    this.pool_.getSession(false, (err, session) => {
       if (err) {
         proxyStream.destroy(err);
         return;
       }
 
       const snapshot = session!.snapshot(options, this.queryOptions_);
+      session!.txn = snapshot;
 
       this._releaseOnEnd(session!, snapshot);
 
@@ -2950,7 +3035,8 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrRunFn as RunTransactionOptions)
         : {};
 
-    this.pool_.getSession((err, session?, transaction?) => {
+    // runTransaction is a not a long-running transaction and should take less than expected thresholds
+    this.pool_.getSession(false, (err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.runTransaction(options, runFn!);
         return;
@@ -2959,27 +3045,34 @@ class Database extends common.GrpcServiceObject {
         runFn!(err as grpc.ServiceError);
         return;
       }
-      if (options.optimisticLock) {
-        transaction!.useOptimisticLock();
-      }
-
-      const release = this.pool_.release.bind(this.pool_, session!);
-      const runner = new TransactionRunner(
-        session!,
-        transaction!,
-        runFn!,
-        options
-      );
-
-      runner.run().then(release, err => {
-        if (isSessionNotFoundError(err)) {
-          release();
-          this.runTransaction(options, runFn!);
-        } else {
-          setImmediate(runFn!, err);
-          release();
+      if (transaction instanceof Transaction) {
+        session!.txn = transaction;
+        if (options.optimisticLock) {
+          transaction!.useOptimisticLock();
         }
-      });
+
+        const release = this.pool_.release.bind(this.pool_, session!);
+        const runner = new TransactionRunner(
+          session!,
+          transaction!,
+          runFn!,
+          options
+        );
+
+        runner.run().then(release, err => {
+          if (isSessionNotFoundError(err)) {
+            if (transaction.session) {
+              release();
+            }
+            this.runTransaction(options, runFn!);
+          } else {
+            setImmediate(runFn!, err);
+            if (transaction.session) {
+              release();
+            }
+          }
+        });
+      }
     });
   }
 
@@ -3068,7 +3161,7 @@ class Database extends common.GrpcServiceObject {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        const [session, transaction] = await promisify(getSession)();
+        const [session, transaction] = await promisify(getSession)(false);
         transaction.requestOptions = Object.assign(
           transaction.requestOptions || {},
           options.requestOptions
@@ -3086,7 +3179,9 @@ class Database extends common.GrpcServiceObject {
         try {
           return await runner.run();
         } finally {
-          this.pool_.release(session);
+          if (transaction.session) {
+            this.pool_.release(session);
+          }
         }
       } catch (e) {
         if (!isSessionNotFoundError(e as ServiceError)) {

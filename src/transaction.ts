@@ -38,6 +38,7 @@ import {
   NormalCallback,
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
 } from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
@@ -234,7 +235,7 @@ export class Snapshot extends EventEmitter {
   readTimestampProto?: spannerClient.protobuf.ITimestamp;
   request: (config: {}, callback: Function) => void;
   requestStream: (config: {}) => Readable;
-  session: Session;
+  session?: Session;
   queryOptions?: IQueryOptions;
   resourceHeader_: {[k: string]: string};
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
@@ -360,6 +361,10 @@ export class Snapshot extends EventEmitter {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+    this.session.lastUsed = Date.now();
     const session = this.session.formattedName_!;
     const options = this._options;
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
@@ -600,6 +605,12 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+
+    this.session.lastUsed = Date.now();
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -1068,6 +1079,11 @@ export class Snapshot extends EventEmitter {
       query;
     let reqOpts;
 
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+    this.session.lastUsed = Date.now();
+
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1087,7 +1103,7 @@ export class Snapshot extends EventEmitter {
       delete query.types;
 
       reqOpts = Object.assign(query, {
-        session: this.session.formattedName_!,
+        session: this.session!.formattedName_!,
         seqno: this._seqno++,
         requestOptions: this.configureTagOptions(
           typeof transaction.singleUse !== 'undefined',
@@ -1357,7 +1373,7 @@ export class Snapshot extends EventEmitter {
    * @returns {Spanner}
    */
   protected _getSpanner(): Spanner {
-    return this.session.parent.parent.parent as Spanner;
+    return this.session!.parent.parent.parent as Spanner;
   }
 }
 
@@ -1661,6 +1677,11 @@ export class Transaction extends Dml {
         return {sql, params, paramTypes};
       });
 
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+    this.session.lastUsed = Date.now();
+
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
     if (this.id) {
       transaction.id = this.id as Uint8Array;
@@ -1827,6 +1848,11 @@ export class Transaction extends Dml {
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
     const gaxOpts =
       'gaxOptions' in options ? (options as CommitOptions).gaxOptions : options;
+
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+    this.session.lastUsed = Date.now();
 
     const mutations = this._queuedMutations;
     const session = this.session.formattedName_!;
@@ -2185,6 +2211,11 @@ export class Transaction extends Dml {
       );
       return;
     }
+
+    if (!this.session) {
+      throw new GoogleError(LONG_RUNNING_TRANSACTION_ERROR_MESSAGE);
+    }
+    this.session.lastUsed = Date.now();
 
     const session = this.session.formattedName_!;
     const transactionId = this.id;

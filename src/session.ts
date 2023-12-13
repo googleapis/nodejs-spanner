@@ -114,10 +114,14 @@ export type DeleteSessionCallback = NormalCallback<google.protobuf.IEmpty>;
 export class Session extends common.GrpcServiceObject {
   id!: string;
   formattedName_?: string;
-  txn?: Transaction;
+  txn?: Transaction | Snapshot | null;
+  nullTxn: boolean;
   lastUsed?: number;
+  longRunningTransaction?: boolean;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
+  transactionLogged: boolean;
+
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -268,6 +272,8 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
+    this.transactionLogged = false;
+    this.nullTxn = false;
   }
   /**
    * Delete a session.

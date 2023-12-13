@@ -20,10 +20,15 @@ import PQueue from 'p-queue';
 
 import {Database} from './database';
 import {Session} from './session';
-import {Transaction} from './transaction';
-import {NormalCallback} from './common';
+import {Snapshot, Transaction} from './transaction';
 import {GoogleError, grpc, ServiceError} from 'google-gax';
 import trace = require('stack-trace');
+import {
+  getLongRunningTransactionThreshold,
+  getLongRunningBackgroundTaskFrequency,
+  LONG_RUNNING_TRANSACTION_ERROR_MESSAGE,
+  SESSION_CLEANUP_TIMEOUT,
+} from './common';
 
 /**
  * @callback SessionPoolCloseCallback
@@ -34,7 +39,13 @@ export interface SessionPoolCloseCallback {
 }
 
 /** @deprecated. Use GetSessionCallback instead. */
-export type GetReadSessionCallback = NormalCallback<Session>;
+export type GetReadSessionCallback = {
+  (
+    err: Error | null,
+    session?: Session | null,
+    transaction?: Snapshot | null
+  ): void;
+};
 
 /** @deprecated. Use GetSessionCallback instead. */
 export interface GetWriteSessionCallback {
@@ -55,7 +66,7 @@ export interface GetSessionCallback {
   (
     err: Error | null,
     session?: Session | null,
-    transaction?: Transaction | null
+    transaction?: Transaction | Snapshot | null
   ): void;
 }
 
@@ -87,20 +98,23 @@ export interface SessionPoolInterface extends EventEmitter {
    */
   /**
    * When called returns a session.
-   *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @name SessionPoolInterface#getSession
    * @param {GetSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getReadSession
    * @param {GetReadSessionCallback} callback The callback function.
    */
   /**
    * When called returns a session.
-   *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @name SessionPoolInterface#getWriteSession
    * @param {GetWriteSessionCallback} callback The callback function.
@@ -114,8 +128,22 @@ export interface SessionPoolInterface extends EventEmitter {
   close(callback: SessionPoolCloseCallback): void;
   open(): void;
   getSession(callback: GetSessionCallback): void;
-  getReadSession(callback: GetReadSessionCallback): void;
-  getWriteSession(callback: GetWriteSessionCallback): void;
+  getSession(
+    longRunningTransaction: boolean,
+    callback: GetSessionCallback
+  ): void;
+  getSession(
+    longRunningTransactionOrCallback: boolean | GetSessionCallback,
+    callback: GetSessionCallback
+  ): void;
+  getReadSession(
+    longRunningTransaction: boolean,
+    callback: GetReadSessionCallback
+  ): void;
+  getWriteSession(
+    longRunningTransaction: boolean,
+    callback: GetSessionCallback
+  ): void;
   release(session: Session): void;
 }
 
@@ -145,6 +173,9 @@ export interface SessionPoolInterface extends EventEmitter {
  * @property {number} [writes=0.0]. Deprecated.
  * @property {number} [incStep=25] The number of new sessions to create when at
  *     least one more session is needed.
+ * @property {boolean} [closeInactiveTransactions=false] Close inactive transactions
+ *     running for longer than expected thresholds which may cause session leaks.
+ * @property {boolean} [logging=true] Log information related to session pool usage.
  */
 export interface SessionPoolOptions {
   acquireTimeout?: number;
@@ -162,6 +193,8 @@ export interface SessionPoolOptions {
    */
   writes?: number;
   incStep?: number;
+  closeInactiveTransactions?: boolean;
+  logging?: boolean;
   databaseRole?: string | null;
 }
 
@@ -176,8 +209,12 @@ const DEFAULTS: SessionPoolOptions = {
   maxIdle: 1,
   min: 25,
   incStep: 25,
+  closeInactiveTransactions: false,
+  logging: true,
   databaseRole: null,
 };
+
+const USED_SESSIONS_RATIO_THRESHOLD = 0.95;
 
 /**
  * Error to be thrown when attempting to release unknown resources.
@@ -351,7 +388,10 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _waiters = 0;
   _pingHandle!: NodeJS.Timer;
   _requests: PQueue;
-  _traces: Map<string, trace.StackFrame[]>;
+  _traces: Map<Session, trace.StackFrame[]>;
+  _longRunningTransactionHandle?: NodeJS.Timer;
+  _ongoingTransactionDeletion: boolean;
+  _lastSessionRecycle: number | null;
 
   /**
    * Formats stack trace objects into Node-like stack trace.
@@ -359,7 +399,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @param {object[]} trace The trace object.
    * @return {string}
    */
-  static formatTrace(frames: trace.StackFrame[]): string {
+  static formatTrace(frames: trace.StackFrame[], message = ''): string {
     const stack = frames.map(frame => {
       const name = frame.getFunctionName() || frame.getMethodName();
       const file = frame.getFileName();
@@ -369,7 +409,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       return `    at ${name} (${file}:${lineno}:${columnno})`;
     });
 
-    return `Session leak detected!\n${stack.join('\n')}`;
+    return `${message} \n ${stack.join('\n')}`;
   }
 
   /**
@@ -452,6 +492,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * Max sessions for session pool.
+   * @type {number}
+   */
+  get maxSessions(): number {
+    return this.options.max
+      ? this.options.max
+      : DEFAULTS.max
+      ? DEFAULTS.max
+      : 100;
+  }
+
+  /**
    * @constructor
    * @param {Database} database The DB instance.
    * @param {SessionPoolOptions} [options] Configuration options.
@@ -466,6 +518,11 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     this.database = database;
     this.options = Object.assign({}, DEFAULTS, options);
     this.options.min = Math.min(this.options.min!, this.options.max!);
+    this._ongoingTransactionDeletion = false;
+
+    if (this.options.logging) {
+      this.database.enableLogging();
+    }
     this.options.databaseRole = this.options.databaseRole
       ? this.options.databaseRole
       : database.databaseRole;
@@ -484,6 +541,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     });
 
     this._traces = new Map();
+    this._lastSessionRecycle = null;
   }
 
   /**
@@ -523,11 +581,16 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read session.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated Use getSession instead.
    * @param {GetReadSessionCallback} callback The callback function.
    */
-  getReadSession(callback: GetReadSessionCallback): void {
-    this.getSession((error, session) =>
+  getReadSession(
+    longRunningTransaction: boolean,
+    callback: GetReadSessionCallback
+  ): void {
+    this.getSession(longRunningTransaction, (error, session) =>
       callback(error as ServiceError, session)
     );
   }
@@ -535,21 +598,40 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Retrieve a read/write session.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @deprecated use getSession instead.
    * @param {GetWriteSessionCallback} callback The callback function.
    */
-  getWriteSession(callback: GetWriteSessionCallback): void {
-    this.getSession(callback);
+  getWriteSession(
+    longRunningTransaction: boolean,
+    callback: GetSessionCallback
+  ): void {
+    this.getSession(longRunningTransaction, callback);
   }
 
   /**
    * Retrieve a session.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @param {GetSessionCallback} callback The callback function.
    */
-  getSession(callback: GetSessionCallback): void {
-    this._acquire().then(
-      session => callback(null, session, session.txn!),
+  getSession(
+    longRunningTransactionOrCallback: boolean | GetSessionCallback,
+    cb?: GetSessionCallback
+  ): void {
+    const callback =
+      typeof longRunningTransactionOrCallback === 'boolean'
+        ? cb
+        : longRunningTransactionOrCallback;
+    const longRunningTransaction =
+      typeof longRunningTransactionOrCallback === 'boolean' &&
+      longRunningTransactionOrCallback
+        ? longRunningTransactionOrCallback
+        : false;
+    this._acquire(longRunningTransaction).then(
+      session => callback!(null, session, session.txn!),
       callback
     );
   }
@@ -600,14 +682,20 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       throw new ReleaseError(session);
     }
 
+    // reset session for next transaction.
+    if (session.txn) {
+      delete session.txn.session;
+    }
     delete session.txn;
+    session.transactionLogged = false;
     session.lastUsed = Date.now();
+    session.longRunningTransaction = false;
 
     if (isSessionNotFoundError(session.lastError)) {
       // Remove the session from the pool. It is not necessary to call _destroy,
       // as the session is already removed from the backend.
       this._inventory.borrowed.delete(session);
-      this._traces.delete(session.id);
+      this._traces.delete(session);
       return;
     }
     session.lastError = undefined;
@@ -615,7 +703,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
     // Delete the trace associated with this session to mark the session as checked
     // back into the pool. This will prevent the session to be marked as leaked if
     // the pool is closed while the session is being prepared.
-    this._traces.delete(session.id);
+    this._traces.delete(session);
     // Release it into the pool as a session if there are more waiters than
     // there are sessions available. Releasing it will unblock a waiter as soon
     // as possible.
@@ -625,11 +713,13 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to borrow a session from the pool.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @returns {Promise<Session>}
    */
-  async _acquire(): Promise<Session> {
+  async _acquire(longRunningTransaction: boolean): Promise<Session> {
     if (!this.isOpen) {
       throw new GoogleError(errors.Closed);
     }
@@ -648,7 +738,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
         throw new GoogleError(errors.Timeout);
       }
 
-      const session = await this._getSession(startTime);
+      const session = await this._getSession(startTime, longRunningTransaction);
 
       if (this._isValidSession(session)) {
         return session;
@@ -660,7 +750,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
 
     const session = await this._acquires.add(getSession);
     this._prepareTransaction(session);
-    this._traces.set(session.id, frames);
+    this._traces.set(session, frames);
     return session;
   }
 
@@ -681,25 +771,51 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Borrows the first session from the inventory.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @return {Session}
    */
-  _borrowFrom(): Session {
+  _borrowFrom(longRunningTransaction: boolean): Session {
     const session = this._inventory.sessions.pop()!;
     this._inventory.borrowed.add(session);
+    session.lastUsed = Date.now();
+    session.longRunningTransaction = longRunningTransaction;
+
+    const maxSessions = this.maxSessions;
+
+    // Check if more than 95% of the pool is exhausted and if cleanup is required.
+    if (
+      (this.options.closeInactiveTransactions || this.options.logging) &&
+      this.borrowed / maxSessions >= USED_SESSIONS_RATIO_THRESHOLD
+    ) {
+      this._startCleaningLongRunningSessions();
+    }
+
+    // Log if entire session pool is exhausted.
+    if (this.options.logging && this.borrowed === maxSessions) {
+      this.database.logger?.log(
+        'warn',
+        '100% of the session pool is exhausted.' +
+          'Increase max sessions in Session Pool Options as per requirement.'
+      );
+    }
+
     return session;
   }
 
   /**
    * Grabs the next available session.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @returns {Promise<Session>}
    */
-  _borrowNextAvailableSession(): Session {
-    return this._borrowFrom();
+  _borrowNextAvailableSession(longRunningTransaction: boolean): Session {
+    return this._borrowFrom(longRunningTransaction);
   }
 
   /**
@@ -845,7 +961,9 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
    * @return {string[]}
    */
   _getLeaks(): string[] {
-    return [...this._traces.values()].map(SessionPool.formatTrace);
+    return [...this._traces.values()].map(trace =>
+      SessionPool.formatTrace(trace, 'Session leak detected!')
+    );
   }
 
   /**
@@ -859,14 +977,19 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   /**
    * Attempts to get a session.
    *
+   * @param {boolean} longRunningTransaction Is transaction long-running,
+   * i.e. lasts longer than expected thresholds.
    * @private
    *
    * @param {number} startTime Timestamp to use when determining timeouts.
    * @returns {Promise<Session>}
    */
-  async _getSession(startTime: number): Promise<Session> {
+  async _getSession(
+    startTime: number,
+    longRunningTransaction: boolean
+  ): Promise<Session> {
     if (this._hasSessionUsableFor()) {
-      return this._borrowNextAvailableSession();
+      return this._borrowNextAvailableSession(longRunningTransaction);
     }
     if (this.isFull && this.options.fail!) {
       throw new SessionPoolExhaustedError(this._getLeaks());
@@ -965,7 +1088,7 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
       removeTimeoutListener();
     }
 
-    return this._borrowNextAvailableSession();
+    return this._borrowNextAvailableSession(longRunningTransaction);
   }
 
   /**
@@ -1037,6 +1160,68 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   }
 
   /**
+   * recycles sessions with long-running transactions
+   *
+   * @private
+   *
+   * @param {number} longRunningTransactionTimeout Timeout for recycling sessions.
+   */
+  async _deleteLongRunningTransactions(
+    longRunningTransactionTimeout: number = 1000 * 60 * 60
+  ): Promise<void> {
+    // Check lock, only one cleanup should take place at a time
+    if (this._ongoingTransactionDeletion) return;
+    this._ongoingTransactionDeletion = true;
+
+    // Stop cleanup after 60 minutes until triggered again unless a session has
+    // been recycled in the last 60 minutes.
+    if (Date.now() - this._lastSessionRecycle! > SESSION_CLEANUP_TIMEOUT) {
+      this._stopCleaningLongRunningSessions();
+      this._lastSessionRecycle = null;
+      this._ongoingTransactionDeletion = false;
+      return;
+    }
+
+    // Traverse each ongoing transaction and check if it needs to be recycled
+    for (const session of this._traces.keys()) {
+      if (session.lastUsed && !session.longRunningTransaction) {
+        const diff = Date.now() - session?.lastUsed;
+        if (
+          !session.longRunningTransaction &&
+          diff > longRunningTransactionTimeout
+        ) {
+          if (this.options.closeInactiveTransactions) {
+            // Recycle session if closeInactiveTransactions is true and log if logging is true.
+            if (this.options.logging) {
+              const sessionTrace = SessionPool.formatTrace(
+                this._traces.get(session) || [],
+                LONG_RUNNING_TRANSACTION_ERROR_MESSAGE
+              );
+              this.database.logger?.log('warn', sessionTrace);
+            }
+            this.release(session);
+            this._lastSessionRecycle = Date.now();
+          } else if (this.options.logging) {
+            // If only logging is true, mark session as logged so that
+            // we don't log the same transaction multiple times.
+            if (!session.transactionLogged) {
+              const sessionTrace = SessionPool.formatTrace(
+                this._traces.get(session) || [],
+                'Transaction has been running for longer than 60 minutes and might be causing a leak. ' +
+                  'Enable closeInactiveTransactions in Session Pool Options to automatically clean such transactions ' +
+                  'or, if transaction is expected to run long, run as batch or partitioned DML.'
+              );
+              session.transactionLogged = true;
+              this.database.logger?.log('warn', sessionTrace);
+            }
+          }
+        }
+      }
+    }
+    this._ongoingTransactionDeletion = false;
+  }
+
+  /**
    * Releases a session back into the pool.
    *
    * @private
@@ -1050,9 +1235,18 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _release(session: Session): void {
     this._inventory.sessions.push(session);
     this._inventory.borrowed.delete(session);
-    this._traces.delete(session.id);
+    this._traces.delete(session);
 
     this.emit('available');
+    const maxSessions = this.maxSessions;
+
+    // If on releasing this session, pool is less than 95% exhausted then stop the cleanup.
+    if (
+      this.options.closeInactiveTransactions &&
+      this.borrowed / maxSessions < USED_SESSIONS_RATIO_THRESHOLD
+    ) {
+      this._stopCleaningLongRunningSessions();
+    }
     this.emit('session-available');
     this.emit('readonly-available');
     this.emit('readwrite-available');
@@ -1083,5 +1277,45 @@ export class SessionPool extends EventEmitter implements SessionPoolInterface {
   _stopHouseKeeping(): void {
     clearInterval(this._pingHandle as any);
     clearInterval(this._evictHandle as any);
+    clearInterval(this._longRunningTransactionHandle as any);
+  }
+
+  /**
+   * starts cleanup tasks for recycling session.
+   *
+   * @private
+   */
+  _startCleaningLongRunningSessions(): void {
+    if (this._longRunningTransactionHandle) return;
+    if (this.options.logging) {
+      this.database.logger?.log(
+        'warn',
+        `${USED_SESSIONS_RATIO_THRESHOLD} of the session pool is exhausted`
+      );
+    }
+    this._lastSessionRecycle = Date.now();
+    if (!this._ongoingTransactionDeletion) {
+      this._deleteLongRunningTransactions(getLongRunningTransactionThreshold());
+    }
+    this._longRunningTransactionHandle = setInterval(
+      () =>
+        this._deleteLongRunningTransactions(
+          getLongRunningTransactionThreshold()
+        ),
+      getLongRunningBackgroundTaskFrequency()
+    );
+    this._longRunningTransactionHandle.unref();
+  }
+
+  /**
+   * stops cleanup tasks for recycling session.
+   *
+   * @private
+   */
+  _stopCleaningLongRunningSessions(): void {
+    if (this._longRunningTransactionHandle)
+      clearInterval(this._longRunningTransactionHandle as any);
+    this._longRunningTransactionHandle = undefined;
+    this._lastSessionRecycle = null;
   }
 }
