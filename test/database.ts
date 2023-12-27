@@ -36,6 +36,7 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {google} from '../protos/protos';
+import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
@@ -88,10 +89,10 @@ class FakeSession {
     this.calledWith_ = arguments;
   }
   partitionedDml(): FakeTransaction {
-    return new FakeTransaction();
+    return new FakeTransaction({} as google.spanner.v1.TransactionOptions.PartitionedDml);
   }
   snapshot(): FakeTransaction {
-    return new FakeTransaction();
+    return new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadOnly);
   }
 }
 
@@ -115,8 +116,10 @@ class FakeTable {
 
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
-  constructor() {
+  _options!: google.spanner.v1.ITransactionOptions;
+  constructor(options) {
     super();
+    this._options = options;
     this.calledWith_ = arguments;
   }
   begin() {}
@@ -1572,8 +1575,8 @@ describe('Database', () => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
       fakeSession2 = new FakeSession();
-      fakeSnapshot = new FakeTransaction();
-      fakeSnapshot2 = new FakeTransaction();
+      fakeSnapshot = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadOnly);
+      fakeSnapshot2 = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadOnly);
       fakeStream = through.obj();
       fakeStream2 = through.obj();
 
@@ -1935,7 +1938,7 @@ describe('Database', () => {
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakeSnapshot = new FakeTransaction();
+      fakeSnapshot = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadOnly);
 
       beginSnapshotStub = (
         sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
@@ -2009,7 +2012,7 @@ describe('Database', () => {
       } as MockError;
 
       const fakeSession2 = new FakeSession();
-      const fakeSnapshot2 = new FakeTransaction();
+      const fakeSnapshot2 = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadOnly);
       (sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub).callsFake(
         callback => callback(null)
       );
@@ -2072,7 +2075,7 @@ describe('Database', () => {
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakeTransaction = new FakeTransaction();
+      fakeTransaction = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadWrite);
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
@@ -2427,16 +2430,29 @@ describe('Database', () => {
 
     let fakePool: FakeSessionPool;
     let fakeSession: FakeSession;
-    let fakePartitionedDml: FakeTransaction;
+    let fakePartitionedDml = new FakeTransaction({} as google.spanner.v1.TransactionOptions.PartitionedDml);
 
     let getSessionStub;
     let beginStub;
     let runUpdateStub;
 
+    const fakeDirectedReadOptions = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailover: true,
+      },
+    };
+
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakePartitionedDml = new FakeTransaction();
+      fakePartitionedDml = new FakeTransaction({} as google.spanner.v1.TransactionOptions.PartitionedDml);
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
@@ -2530,6 +2546,7 @@ describe('Database', () => {
           sql: QUERY.sql,
           params: QUERY.params,
           requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+          directedReadOptions: fakeDirectedReadOptions
         },
         fakeCallback
       );
@@ -2540,6 +2557,70 @@ describe('Database', () => {
         sql: QUERY.sql,
         params: QUERY.params,
         requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        directedReadOptions: fakeDirectedReadOptions
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
+    it('should override directedReadOptions set for client when passed', () => {
+      const fakeCallback = sandbox.spy();
+
+      const fakeDirectedReadOptionsForRequest = {
+        includeReplicas: {
+          replicaSelections: [
+            {
+              location: 'us-east1',
+            },
+          ],
+        },
+      };
+
+      database.parent.parent = {
+        routeToLeaderEnabled: true,
+        directedReadOptions: fakeDirectedReadOptions,
+      };
+
+      database.runPartitionedUpdate(
+        {
+          sql: QUERY.sql,
+          params: QUERY.params,
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+          directedReadOptions: fakeDirectedReadOptionsForRequest
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        sql: QUERY.sql,
+        params: QUERY.params,
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        directedReadOptions: fakeDirectedReadOptionsForRequest
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
+    it('should accept requestOptions for client', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.runPartitionedUpdate(
+        {
+          sql: QUERY.sql,
+          params: QUERY.params,
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+          directedReadOptions: fakeDirectedReadOptions
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        sql: QUERY.sql,
+        params: QUERY.params,
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        directedReadOptions: fakeDirectedReadOptions
       });
       assert.ok(fakeCallback.calledOnce);
     });
@@ -2547,7 +2628,7 @@ describe('Database', () => {
 
   describe('runTransaction', () => {
     const SESSION = new FakeSession();
-    const TRANSACTION = new FakeTransaction();
+    const TRANSACTION = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadWrite);
 
     let pool: FakeSessionPool;
 
@@ -2631,7 +2712,7 @@ describe('Database', () => {
 
   describe('runTransactionAsync', () => {
     const SESSION = new FakeSession();
-    const TRANSACTION = new FakeTransaction();
+    const TRANSACTION = new FakeTransaction({} as google.spanner.v1.TransactionOptions.ReadWrite);
 
     let pool: FakeSessionPool;
 

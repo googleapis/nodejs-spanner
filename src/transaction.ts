@@ -1336,7 +1336,7 @@ export class Snapshot extends EventEmitter {
     if (
       !directedReadOptions &&
       this._getSpanner().directedReadOptions &&
-      this._options.readOnly
+      !this._options.readWrite
     ) {
       return this._getSpanner().directedReadOptions;
     }
