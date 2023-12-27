@@ -7100,6 +7100,39 @@ describe('Spanner', () => {
           postgreSqlRecords
         );
       });
+
+      it('GOOGLE_STANDARD_SQL should pass directedReadOptions at query level read-only transactions', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const directedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                type: protos.google.spanner.v1.DirectedReadOptions
+                  .ReplicaSelection.Type.READ_ONLY,
+              },
+            ],
+            autoFailover: true,
+          },
+        };
+
+        DATABASE.getSnapshot((err, transaction) => {
+          assert.ifError(err);
+          transaction!.run(
+            {
+              sql: `SELECT * FROM ${TABLE_NAME}`,
+              directedReadOptions: directedReadOptionsForRequest,
+            },
+            (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows.length, googleSqlRecords.length);
+              transaction!.end();
+              done();
+            }
+          );
+        });
+      });
     });
 
     describe('dml', () => {
