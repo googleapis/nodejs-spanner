@@ -444,6 +444,7 @@ describe('Database', () => {
       const error = new Error('err');
       const response = {};
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(error, response);
       });
@@ -467,6 +468,7 @@ describe('Database', () => {
         stub.withArgs(session.name).returns(fakeSessions[i]);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(null, response);
       });

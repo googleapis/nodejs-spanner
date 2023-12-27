@@ -30,7 +30,6 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
-import DirectedReadOptions = google.spanner.v1.DirectedReadOptions;
 import {
   BatchUpdateOptions,
   ExecuteSqlRequest,

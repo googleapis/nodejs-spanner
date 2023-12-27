@@ -1126,6 +1126,7 @@ describe('Spanner', () => {
     });
 
     it('should throw if the provided config object does not have baseConfig', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
       assert.throws(() => {
         spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
