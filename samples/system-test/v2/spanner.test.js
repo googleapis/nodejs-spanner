@@ -75,7 +75,7 @@ describe('AdminClients', () => {
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             PROJECT_ID,
-            "nam6",
+            'asia1',
           ),
           displayName: 'Multi-region options test',
           nodeCount: 1,
@@ -91,7 +91,7 @@ describe('AdminClients', () => {
     });
 
     // create_instance_config
-    it('should create an example custom instance config using autogen client', async () => {
+    it('should create an example custom instance config', async () => {
       const output = execSync(
         `node v2/instance-config-create.js ${SAMPLE_INSTANCE_CONFIG_ID} ${BASE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
       );
@@ -140,9 +140,15 @@ describe('AdminClients', () => {
     });
 
     // list_instance_config_operations
-    it('should list all instance config operations', async () => {
+    it.only('should list all instance config operations', async () => {
       const output = execSync(
-        `node instance-config-get-operations.js ${PROJECT_ID}`
+        `node v2/instance-config-get-operations.js ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Getting list of instance config operations on project ${PROJECT_ID}:...\n`
+        )
       );
       assert.match(
         output,
