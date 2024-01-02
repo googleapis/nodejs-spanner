@@ -47,6 +47,16 @@ async function createInstanceUsingAdminClient(instanceID, projectID) {
   }
 }
 
+// console.log("i am here");
+
+const {
+  createInstanceWithProcessingUnits,
+} = require('./instance-with-processing-units');
+
+const {
+  createInstanceWithAutoscalingConfig,
+} = require('./instance-with-autoscaling-config');
+
 require('yargs')
   .demand(1)
   .command(
@@ -57,6 +67,24 @@ require('yargs')
   )
   .example(
     'node $0 createInstanceUsingAdminClient "my-instance" "my-project-id"'
+  )
+  .command(
+    'createInstanceWithProcessingUnits <instanceName> <projectId>',
+    'Creates an example instance in a Cloud Spanner instance with processing units.',
+    {},
+    opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
+  )
+  .example(
+    'node $0 createInstanceWithAutoscalingConfig "my-instance" "my-project-id"'
+  )
+  .command(
+    'createInstanceWithAutoscalingConfig <instanceName> <projectId>',
+    'Creates an example instance in a Cloud Spanner instance with processing units.',
+    {},
+    opts => createInstanceWithAutoscalingConfig(opts.instanceName, opts.projectId)
+  )
+  .example(
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
