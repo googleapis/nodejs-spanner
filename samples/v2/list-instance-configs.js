@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,6 @@
 'use strict';
 
 function main(projectId) {
-  // [START spanner_list_instance_configs]
   /**
    * TODO(developer): Uncomment the following line before running the sample.
    */
@@ -29,7 +28,7 @@ function main(projectId) {
   // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
-  // creates an instance admin client
+  // Creates a client
   const instanceAdminClient = new InstanceAdminClient({
     projectId: projectId,
   });
@@ -39,9 +38,8 @@ function main(projectId) {
     // See https://cloud.google.com/spanner/docs/instance-configurations#configuration for a list of all available
     // configurations.
     const [instanceConfigs] = await instanceAdminClient.listInstanceConfigs({
-        parent: instanceAdminClient.projectPath(projectId),
+      parent: instanceAdminClient.projectPath(projectId),
     });
-    // console.log(instanceConfigs);
     console.log(`Available instance configs for project ${projectId}:`);
     instanceConfigs.forEach(instanceConfig => {
       console.log(
@@ -53,7 +51,6 @@ function main(projectId) {
     });
   }
   listInstanceConfigs();
-  // [END spanner_list_instance_configs]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

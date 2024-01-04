@@ -22,11 +22,17 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
   const {protos} = require('@google-cloud/spanner');
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+
   // creates an instance admin client
   const instanceAdminClient = new InstanceAdminClient({
     projectId: projectID,
   });
-  
+
   const autoscalingConfig =
     protos.google.spanner.admin.instance.v1.AutoscalingConfig.create({
       // Only one of minNodes/maxNodes or minProcessingUnits/maxProcessingUnits
@@ -50,8 +56,15 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
           }
         ),
     });
-  // Creates a new instance with autoscalingConfig
+
+  // Creates a new instance
   try {
+    console.log(
+      `Creating instance ${instanceAdminClient.instancePath(
+        projectID,
+        instanceID
+      )}.`
+    );
     const [operation] = await instanceAdminClient.createInstance({
       instanceId: instanceID,
       instance: {
@@ -61,6 +74,10 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
         ),
         displayName: 'Display name for the instance.',
         autoscalingConfig: autoscalingConfig,
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
       },
       parent: instanceAdminClient.projectPath(projectID),
     });
@@ -68,14 +85,13 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
     console.log(`Waiting for operation on ${instanceID} to complete...`);
     await operation.promise();
     console.log(`Created instance ${instanceID}.`);
+
+    // get instance metadata
     const [metadata] = await instanceAdminClient.getInstance({
-      name: instanceAdminClient.instancePath(
-        projectID,
-        instanceID,
-      ),
+      name: instanceAdminClient.instancePath(projectID, instanceID),
     });
     console.log(
-        `Autoscaling configurations of ${instanceID} are:  ` +
+      `Autoscaling configurations of ${instanceID} are:  ` +
         '\n' +
         `Min nodes: ${metadata.autoscalingConfig.autoscalingLimits.minNodes} ` +
         'nodes.' +
@@ -92,5 +108,5 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
   }
 }
 
-// createInstanceWithAutoscalingConfig("alka-autogen-instance-20", "span-cloud-testing");
-module.exports.createInstanceWithAutoscalingConfig = createInstanceWithAutoscalingConfig;
+module.exports.createInstanceWithAutoscalingConfig =
+  createInstanceWithAutoscalingConfig;

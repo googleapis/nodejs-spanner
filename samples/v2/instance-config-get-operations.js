@@ -28,7 +28,7 @@ function main(projectId = 'my-project-id') {
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
-  const { protos } = require('@google-cloud/spanner');
+  const {protos} = require('@google-cloud/spanner');
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
   // creates an instance admin client
@@ -43,7 +43,7 @@ function main(projectId = 'my-project-id') {
       );
       const [instanceConfigOperations] =
         await instanceAdminClient.listInstanceConfigOperations({
-            parent: instanceAdminClient.projectPath(projectId),
+          parent: instanceAdminClient.projectPath(projectId),
           filter:
             '(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)',
         });

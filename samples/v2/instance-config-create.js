@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,63 +20,69 @@
 'use strict';
 
 function main(
-  instanceConfigID = 'custom-my-instance-config-18',
-  baseInstanceConfigID = 'asia2',
-  projectID = 'span-cloud-testing'
+  instanceConfigID = 'custom-my-instance-config',
+  baseInstanceConfigID = 'my-base-instance-config',
+  projectID = 'my-project-id'
 ) {
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
   // const instanceConfigId = 'custom-my-instance-config-id'
   // const baseInstanceConfigId = 'my-base-instance-config-id';
   // const projectId = 'my-project-id';
+
+  // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
-  // creates an instance admin client
+  // creates a client
   const instanceAdminClient = new InstanceAdminClient({
     projectId: projectID,
   });
+
+  // Creates a new instance config
   async function createInstanceConfig() {
     const [baseInstanceConfig] = await instanceAdminClient.getInstanceConfig({
-        name: instanceAdminClient.instanceConfigPath(
-            projectID,
-            baseInstanceConfigID,
-        ),
+      name: instanceAdminClient.instanceConfigPath(
+        projectID,
+        baseInstanceConfigID
+      ),
     });
     try {
-        console.log(`Creating instance config ${instanceConfigID}.`);
-        const [operation] = await instanceAdminClient.createInstanceConfig({
-        
-            instanceConfigId: instanceConfigID,
-            instanceConfig: {
-                name: instanceAdminClient.instanceConfigPath(
-                    projectID,
-                    instanceConfigID,
-                ),
-                baseConfig: instanceAdminClient.instanceConfigPath(
-                    projectID,
-                    baseInstanceConfigID,
-                ),
-                displayName: instanceConfigID,
-                replicas: baseInstanceConfig.replicas,
-                optionalReplicas: baseInstanceConfig.optionalReplicas,
-            },
-            parent: instanceAdminClient.projectPath(projectID),
-    
-        });
-        console.log(
-            `Waiting for create operation for ${instanceConfigID} to complete...`
-        );
-        await operation.promise();
-        console.log(`Created instance config ${instanceConfigID}.`);
+      console.log(
+        `Creating instance config ${instanceAdminClient.instanceConfigPath(
+          projectID,
+          instanceConfigID
+        )}.`
+      );
+      const [operation] = await instanceAdminClient.createInstanceConfig({
+        instanceConfigId: instanceConfigID,
+        instanceConfig: {
+          name: instanceAdminClient.instanceConfigPath(
+            projectID,
+            instanceConfigID
+          ),
+          baseConfig: instanceAdminClient.instanceConfigPath(
+            projectID,
+            baseInstanceConfigID
+          ),
+          displayName: instanceConfigID,
+          replicas: baseInstanceConfig.replicas,
+          optionalReplicas: baseInstanceConfig.optionalReplicas,
+        },
+        parent: instanceAdminClient.projectPath(projectID),
+      });
+      console.log(
+        `Waiting for create operation for ${instanceConfigID} to complete...`
+      );
+      await operation.promise();
+      console.log(`Created instance config ${instanceConfigID}.`);
     } catch (err) {
-        console.error(
-            'ERROR: Creating instance config ',
-            instanceConfigID,
-            ' failed with error message ',
-            err
-        );
+      console.error(
+        'ERROR: Creating instance config ',
+        instanceConfigID,
+        ' failed with error message ',
+        err
+      );
     }
   }
   createInstanceConfig();

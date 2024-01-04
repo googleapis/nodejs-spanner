@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,17 +15,29 @@
 
 'use strict';
 
-// creates an instance using Instance Admin Client
 async function createInstanceWithProcessingUnits(instanceID, projectID) {
+  // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
-  // creates an instance admin client
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+
+  // Creates a client
   const instanceAdminClient = new InstanceAdminClient({
     projectId: projectID,
   });
 
   // Creates a new instance
   try {
+    console.log(
+      `Creating instance ${instanceAdminClient.instancePath(
+        projectID,
+        instanceID
+      )}.`
+    );
     const [operation] = await instanceAdminClient.createInstance({
       instanceId: instanceID,
       instance: {
@@ -35,6 +47,10 @@ async function createInstanceWithProcessingUnits(instanceID, projectID) {
         ),
         displayName: 'Display name for the instance.',
         processingUnits: 500,
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
       },
       parent: instanceAdminClient.projectPath(projectID),
     });
@@ -43,13 +59,10 @@ async function createInstanceWithProcessingUnits(instanceID, projectID) {
     await operation.promise();
     console.log(`Created instance ${instanceID}.`);
     const [metadata] = await instanceAdminClient.getInstance({
-      name: instanceAdminClient.instancePath(
-        projectID,
-        instanceID,
-      ),
+      name: instanceAdminClient.instancePath(projectID, instanceID),
     });
     console.log(
-    `Instance ${instanceID} has ${metadata.processingUnits} ` +
+      `Instance ${instanceID} has ${metadata.processingUnits} ` +
         'processing units.'
     );
   } catch (err) {
@@ -57,6 +70,5 @@ async function createInstanceWithProcessingUnits(instanceID, projectID) {
   }
 }
 
-// createInstanceWithProcessingUnits("alka-autogen-instance-18", "span-cloud-testing");
-
-module.exports.createInstanceWithProcessingUnits = createInstanceWithProcessingUnits;
+module.exports.createInstanceWithProcessingUnits =
+  createInstanceWithProcessingUnits;

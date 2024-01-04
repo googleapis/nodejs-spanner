@@ -23,8 +23,6 @@ function main(
   instanceConfigId = 'custom-my-instance-config',
   projectId = 'my-project-id'
 ) {
-  // [START spanner_delete_instance_config]
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -39,30 +37,18 @@ function main(
   });
   async function deleteInstanceConfig() {
     // Deletes an instance config.
-    
+
     try {
-        // Delete the instance config.
-        console.log(`Deleting ${instanceConfigId}...\n`);
-        const [operation] = await instanceAdminClient.deleteInstanceConfig({
-            name: instanceAdminClient.instanceConfigPath(
-                projectId,
-                instanceConfigId,
-            ),
-        });
-        // await operation.promise();
-        console.log(`Deleted instance config ${instanceConfigId}.\n`);
-    //     // Verify that the instance config no longer exists
-    //     const exists = await instanceConfig.exists();
-    //     if (exists) {
-    //         console.error(
-    //         'Error: Instance config ',
-    //         instanceConfigId,
-    //         ' still exists'
-    //         );
-    //     } else {
-            // await operation.promise();
-            // console.log(`Deleted instance config ${instanceConfigId}.\n`);
-    //     }
+      // Delete the instance config.
+      console.log(`Deleting ${instanceConfigId}...\n`);
+      const [operation] = await instanceAdminClient.deleteInstanceConfig({
+        name: instanceAdminClient.instanceConfigPath(
+          projectId,
+          instanceConfigId
+        ),
+      });
+      // await operation.promise();
+      console.log(`Deleted instance config ${instanceConfigId}.\n`);
     } catch (err) {
       console.error(
         'ERROR: Deleting instance config ',
@@ -73,7 +59,6 @@ function main(
     }
   }
   deleteInstanceConfig();
-  // [END spanner_delete_instance_config]
 }
 
 process.on('unhandledRejection', err => {
@@ -81,6 +66,5 @@ process.on('unhandledRejection', err => {
   process.exitCode = 1;
 });
 main(...process.argv.slice(2));
-
 
 /* instance exists needs to be added*/

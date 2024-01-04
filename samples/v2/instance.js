@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,16 +16,29 @@
 'use strict';
 
 // creates an instance using Instance Admin Client
-async function createInstanceUsingAdminClient(instanceID, projectID) {
+async function createInstance(instanceID, projectID) {
+  // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
-  // creates an instance admin client
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   **/
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+
+  // Creates a client
   const instanceAdminClient = new InstanceAdminClient({
     projectId: projectID,
   });
 
   // Creates a new instance
   try {
+    console.log(
+      `Creating instance ${instanceAdminClient.instancePath(
+        projectID,
+        instanceID
+      )}.`
+    );
     const [operation] = await instanceAdminClient.createInstance({
       instanceId: instanceID,
       instance: {
@@ -33,8 +46,12 @@ async function createInstanceUsingAdminClient(instanceID, projectID) {
           projectID,
           'regional-us-central1'
         ),
-        displayName: 'Display name for the instance.',
         nodeCount: 1,
+        displayName: 'Display name for the instance.',
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
       },
       parent: instanceAdminClient.projectPath(projectID),
     });
@@ -47,8 +64,6 @@ async function createInstanceUsingAdminClient(instanceID, projectID) {
   }
 }
 
-// console.log("i am here");
-
 const {
   createInstanceWithProcessingUnits,
 } = require('./instance-with-processing-units');
@@ -60,14 +75,12 @@ const {
 require('yargs')
   .demand(1)
   .command(
-    'createInstanceUsingAdminClient <instanceName> <projectId>',
+    'createInstance <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance using Instance Admin Client.',
     {},
-    opts => createInstanceUsingAdminClient(opts.instanceName, opts.projectId)
+    opts => createInstance(opts.instanceName, opts.projectId)
   )
-  .example(
-    'node $0 createInstanceUsingAdminClient "my-instance" "my-project-id"'
-  )
+  .example('node $0 createInstance "my-instance" "my-project-id"')
   .command(
     'createInstanceWithProcessingUnits <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance with processing units.',
@@ -75,16 +88,17 @@ require('yargs')
     opts => createInstanceWithProcessingUnits(opts.instanceName, opts.projectId)
   )
   .example(
-    'node $0 createInstanceWithAutoscalingConfig "my-instance" "my-project-id"'
+    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
   )
   .command(
     'createInstanceWithAutoscalingConfig <instanceName> <projectId>',
     'Creates an example instance in a Cloud Spanner instance with processing units.',
     {},
-    opts => createInstanceWithAutoscalingConfig(opts.instanceName, opts.projectId)
+    opts =>
+      createInstanceWithAutoscalingConfig(opts.instanceName, opts.projectId)
   )
   .example(
-    'node $0 createInstanceWithProcessingUnits "my-instance" "my-project-id"'
+    'node $0 createInstanceWithAutoscalingConfig "my-instance" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()
