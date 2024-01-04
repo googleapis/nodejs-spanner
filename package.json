@@ -94,7 +94,7 @@
     "@types/through2": "^2.0.34",
     "@types/uuid": "^9.0.0",
     "binary-search-bounds": "^2.0.4",
-    "c8": "^8.0.1",
+    "c8": "^9.0.0",
     "codecov": "^3.0.2",
     "concat-stream": "^2.0.0",
     "dedent": "^1.0.0",
