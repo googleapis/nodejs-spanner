@@ -112,7 +112,7 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
  * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
  * Indicates which replicas or regions should be used for non-transactional reads or queries.
- * DirectedReadOptions won't be set for readWrite transactions or partitioned dml requests"
+ * DirectedReadOptions won't be set for readWrite transactions"
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;

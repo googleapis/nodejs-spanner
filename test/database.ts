@@ -2463,7 +2463,7 @@ describe('Database', () => {
               .Type.READ_WRITE,
           },
         ],
-        autoFailover: true,
+        autoFailoverDisabled: true,
       },
     };
 
@@ -2582,18 +2582,8 @@ describe('Database', () => {
       assert.ok(fakeCallback.calledOnce);
     });
 
-    it('should override directedReadOptions set for client when passed', () => {
+    it('should ignore directedReadOptions set for client', () => {
       const fakeCallback = sandbox.spy();
-
-      const fakeDirectedReadOptionsForRequest = {
-        includeReplicas: {
-          replicaSelections: [
-            {
-              location: 'us-east1',
-            },
-          ],
-        },
-      };
 
       database.parent.parent = {
         routeToLeaderEnabled: true,
@@ -2605,7 +2595,6 @@ describe('Database', () => {
           sql: QUERY.sql,
           params: QUERY.params,
           requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-          directedReadOptions: fakeDirectedReadOptionsForRequest,
         },
         fakeCallback
       );
@@ -2616,31 +2605,6 @@ describe('Database', () => {
         sql: QUERY.sql,
         params: QUERY.params,
         requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        directedReadOptions: fakeDirectedReadOptionsForRequest,
-      });
-      assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should accept requestOptions for client', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.runPartitionedUpdate(
-        {
-          sql: QUERY.sql,
-          params: QUERY.params,
-          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-          directedReadOptions: fakeDirectedReadOptions,
-        },
-        fakeCallback
-      );
-
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.deepStrictEqual(query, {
-        sql: QUERY.sql,
-        params: QUERY.params,
-        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        directedReadOptions: fakeDirectedReadOptions,
       });
       assert.ok(fakeCallback.calledOnce);
     });

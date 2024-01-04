@@ -77,7 +77,7 @@ describe('Transaction', () => {
             .Type.READ_ONLY,
         },
       ],
-      autoFailover: true,
+      autoFailoverDisabled: true,
     },
   };
 

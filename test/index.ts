@@ -292,7 +292,7 @@ describe('Spanner', () => {
                 .ReplicaSelection.Type.READ_ONLY,
             },
           ],
-          autoFailover: true,
+          autoFailoverDisabled: true,
         },
       };
 

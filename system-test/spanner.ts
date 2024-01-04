@@ -7113,7 +7113,7 @@ describe('Spanner', () => {
                   .ReplicaSelection.Type.READ_ONLY,
               },
             ],
-            autoFailover: true,
+            autoFailoverDisabled: true,
           },
         };
 
@@ -8717,7 +8717,7 @@ describe('Spanner', () => {
                   .ReplicaSelection.Type.READ_WRITE,
               },
             ],
-            autoFailover: true,
+            autoFailoverDisabled: true,
           },
         };
 
