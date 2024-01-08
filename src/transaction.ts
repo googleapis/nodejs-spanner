@@ -43,7 +43,6 @@ import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import IDirectedReadOptions = google.spanner.v1.IDirectedReadOptions;
 import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
@@ -87,7 +86,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
-  directedReadOptions?: IDirectedReadOptions | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -109,7 +108,7 @@ export interface ReadRequest extends RequestOptions {
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
-  directedReadOptions?: IDirectedReadOptions | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -429,15 +428,6 @@ export class Snapshot extends EventEmitter {
    *     rows whose first key columns exactly match.
    */
   /**
-   * Object for Directed Read Options.
-   *
-   * @typedef {object} IDirectedReadOptions
-   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
-   *     ReplicaSelection which indicates the order in which replicas should be considered.
-   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
-   *     ReplicaSelection that should be excluded from serving requests.
-   */
-  /**
    * Read request options. This includes all standard ReadRequest options as
    * well as several convenience properties.
    *
@@ -469,7 +459,7 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
-   * @property {object} [directedReadOptions]
+   * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions]
    *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
@@ -977,15 +967,6 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
-   * Object for Directed Read Options.
-   *
-   * @typedef {object} IDirectedReadOptions
-   * @property {google.spanner.v1.IRequestOptions} includeReplicas Contains a repeated set of
-   *     ReplicaSelection which indicates the order in which replicas should be considered.
-   * @property {google.spanner.v1.IRequestOptions} excludeReplicas contains a repeated set of
-   *     ReplicaSelection that should be excluded from serving requests.
-   */
-  /**
    * ExecuteSql request options. This includes all standard ExecuteSqlRequest
    * options as well as several convenience properties.
    *
@@ -1331,7 +1312,10 @@ export class Snapshot extends EventEmitter {
    * @param {google.spanner.v1.IDirectedReadOptions} directedReadOptions Request directedReadOptions object.
    */
   protected _getDirectedReadOptions(
-    directedReadOptions: IDirectedReadOptions | null | undefined
+    directedReadOptions:
+      | google.spanner.v1.IDirectedReadOptions
+      | null
+      | undefined
   ) {
     if (
       !directedReadOptions &&

@@ -371,6 +371,18 @@ describe('BatchTransaction', () => {
   });
 
   describe('execute', () => {
+    const directedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_ONLY,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     it('should make read requests for read partitions', () => {
       const partition = {table: 'abc'};
       const stub = sandbox.stub(batchTransaction, 'read');
@@ -392,8 +404,12 @@ describe('BatchTransaction', () => {
       assert.strictEqual(query, partition);
     });
 
-    it('should make read requests for read partitions with data boost enabled', () => {
-      const partition = {table: 'abc', dataBoostEnabled: true};
+    it('should make read requests for read partitions with request options', () => {
+      const partition = {
+        table: 'abc',
+        dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
+      };
       const stub = sandbox.stub(batchTransaction, 'read');
 
       batchTransaction.execute(partition, assert.ifError);
@@ -403,10 +419,11 @@ describe('BatchTransaction', () => {
       assert.strictEqual(options, partition);
     });
 
-    it('should make query requests for non-read partitions with data boost enabled', () => {
+    it('should make query requests for non-read partitions with request options', () => {
       const partition = {
         sql: 'SELECT * FROM Singers',
         dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
       };
       const stub = sandbox.stub(batchTransaction, 'run');
 

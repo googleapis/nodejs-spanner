@@ -2566,7 +2566,6 @@ describe('Database', () => {
           sql: QUERY.sql,
           params: QUERY.params,
           requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-          directedReadOptions: fakeDirectedReadOptions,
         },
         fakeCallback
       );
@@ -2577,7 +2576,6 @@ describe('Database', () => {
         sql: QUERY.sql,
         params: QUERY.params,
         requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-        directedReadOptions: fakeDirectedReadOptions,
       });
       assert.ok(fakeCallback.calledOnce);
     });

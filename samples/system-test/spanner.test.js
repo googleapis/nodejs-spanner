@@ -1986,7 +1986,7 @@ describe('Spanner', () => {
       );
     });
 
-    // directed_read_transaction
+    // directed_read_options
     it('should run read-only transaction with directed read options set', async () => {
       const output = execSync(
         `node directed-reads.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`

@@ -435,7 +435,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
-      it('should override directedReadOptions set for client when passed', () => {
+      it('should override directedReadOptions set at client level when passed at request level', () => {
         const id = 'transaction-id-123';
         const fakeDirectedReadOptionsForRequest = {
           includeReplicas: {
@@ -868,7 +868,7 @@ describe('Transaction', () => {
         assert.deepStrictEqual(reqOpts, expectedRequest);
       });
 
-      it('should override directedReadOptions set for client when passed', () => {
+      it('should override directedReadOptions set at client level when passed for request level', () => {
         const id = 'transaction-id-123';
         const fakeParams = {b: 'a'};
         const fakeParamTypes = {b: 'number'};
