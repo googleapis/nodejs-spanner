@@ -969,7 +969,7 @@ export class Snapshot extends EventEmitter {
    *     execution statistics for the SQL statement that
    *     produced this result set.
    * @property {string} partitionToken The partition token.
-   * @property {number} seqno The Sequence number.
+   * @property {number} seqno The Sequence number. This option is used internally and will be overridden.
    * @property {string} sql The SQL string.
    * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
