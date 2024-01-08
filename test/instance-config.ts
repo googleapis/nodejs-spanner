@@ -253,6 +253,7 @@ describe('InstanceConfig', () => {
     it('should call getInstanceConfig', done => {
       const options = {};
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       sandbox.stub(SPANNER, 'getInstanceConfig').callsFake(_ => done());
 
       instanceConfig.get(options, assert.ifError);
@@ -270,6 +271,7 @@ describe('InstanceConfig', () => {
     });
 
     it('should not require an options object', done => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       sandbox.stub(SPANNER, 'getInstanceConfig').callsFake(_ => done());
       instanceConfig.get(assert.ifError);
     });
