@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 const {Spanner} = require('@google-cloud/spanner');
 const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
+const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 const pLimit = require('p-limit');
 const {describe, it, before, after, afterEach} = require('mocha');
 const {assert} = require('chai');
@@ -24,7 +25,14 @@ const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 const instanceCmd = 'node v2/instance.js';
-const databaseUsingAutogenCodeCmd = 'node v2/create-database.js';
+const schemaCmd = 'node v2/schema.js';
+const datatypesCmd = 'node v2/datatypes.js';
+const createTableWithForeignKeyDeleteCascadeCommand =
+  'node v2/table-create-with-foreign-key-delete-cascade.js';
+const alterTableWithForeignKeyDeleteCascadeCommand =
+  'node v2/table-alter-with-foreign-key-delete-cascade.js';
+const dropForeignKeyConstraintDeleteCascaseCommand =
+  'node v2/table-drop-foreign-key-constraint-delete-cascade.js';
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -61,6 +69,11 @@ const spanner = new Spanner({
 
 const instanceAdminClient = new InstanceAdminClient({
   projectId: PROJECT_ID,
+});
+
+const databaseAdminClient = new DatabaseAdminClient({
+  projectID: PROJECT_ID,
+  instanceID: SAMPLE_INSTANCE_ID,
 });
 
 const LABEL = 'node-sample-tests';
@@ -197,6 +210,7 @@ describe('AdminClients', () => {
         },
         gaxOptions: GAX_OPTIONS,
       });
+      const database = instance.database(DATABASE_ID);
       return operation.promise();
     } else {
       console.log(
@@ -324,6 +338,23 @@ describe('AdminClients', () => {
         new RegExp(`Created instance config ${SAMPLE_INSTANCE_CONFIG_ID}.`)
       );
     });
+
+    // create_database
+    it('should create an example database', async () => {
+      const output = execSync(
+        `${schemaCmd} createDatabase "${INSTANCE_ID}" "${DATABASE_ID}" "${PROJECT_ID}"`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for creation of ${DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`
+        )
+      );
+    });
   });
 
   describe('leader options', () => {
@@ -383,7 +414,7 @@ describe('AdminClients', () => {
     // delete_instance_config
     it('should delete an example custom instance config', async () => {
       const output = execSync(
-        `node instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
+        `node v2/instance-config-delete.js ${SAMPLE_INSTANCE_CONFIG_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -438,21 +469,318 @@ describe('AdminClients', () => {
   });
 
   describe('database', () => {
-    // create_database_using_database_admin_client
-    it('should create an example database using database admin client', async () => {
+    before(async () => {
+      const createSingersTableStatement = `
+      CREATE TABLE Singers (
+          SingerId   INT64 NOT NULL,
+          FirstName  STRING(1024),
+          LastName   STRING(1024),
+          SingerInfo BYTES(MAX)
+      ) PRIMARY KEY (SingerId)`;
+    const createAlbumsTableStatement = `
+      CREATE TABLE Albums (
+          SingerId     INT64 NOT NULL,
+          AlbumId      INT64 NOT NULL,
+          AlbumTitle   STRING(MAX)
+      ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`;
+      const [operation] = await databaseAdminClient.createDatabase({
+        createStatement: 'CREATE DATABASE `' + DATABASE_ID + '`',
+        extraStatements: [
+          createSingersTableStatement,
+          createAlbumsTableStatement,
+        ],
+        parent: databaseAdminClient.instancePath(PROJECT_ID, INSTANCE_ID),
+      });
+      await operation.promise();
+    });
+
+    after(async () => {
+      const [operation] = await databaseAdminClient.dropDatabase({
+        database: databaseAdminClient.databasePath(
+          PROJECT_ID,
+          INSTANCE_ID,
+          DATABASE_ID,
+        ),
+      });
+    });
+    // add_column
+    it('should add a column to a table', async () => {
       const output = execSync(
-        `${databaseUsingAutogenCodeCmd} createDatabaseUsingAdminClient "${INSTANCE_ID}" "${DATABASE_ID}" "${PROJECT_ID}"`
+        `${schemaCmd} addColumn ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, /Waiting for operation to complete\.\.\./);
+      assert.match(output, /Added the MarketingBudget column\./);
+    });
+    // add_and_drop_new_database_role
+    it('should add and drop new database roles', async () => {
+      const output = execSync(
+        `node v2/add-and-drop-new-database-role.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(output, new RegExp('Waiting for operation to complete...'));
+      assert.match(
+        output,
+        new RegExp('Created roles child and parent and granted privileges')
       );
       assert.match(
         output,
-        new RegExp(`Waiting for creation of ${DATABASE_ID} to complete...`)
+        new RegExp('Revoked privileges and dropped role child')
+      );
+    });
+    // get_database_roles
+    it('should list database roles', async () => {
+      const output = execSync(
+        `node v2/get-database-roles.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
         new RegExp(
-          `Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`
+          `Role: projects/${PROJECT_ID}/instances/${INSTANCE_ID}/databases/${DATABASE_ID}/databaseRoles/public`
         )
       );
     });
+  });
+  describe('postgreSQL', () => {
+    before(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      const [, operation] = await instance.create({
+        config: PG_LOCATION_ID,
+        nodes: 1,
+        displayName: 'PostgreSQL Test',
+        labels: {
+          ['cloud_spanner_samples']: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
+      });
+      await operation.promise();
+      // Set Dialect as PostgreSQL
+      const request = {
+        databaseDialect: Spanner.POSTGRESQL,
+      };
+      const [database, operationCreate] = await instance.createDatabase(
+        PG_DATABASE_ID,
+        request
+      );
+      const statements = [
+        `CREATE TABLE Singers 
+          (SingerId   bigint NOT NULL,
+          FirstName   varchar(1024),
+          LastName    varchar(1024),
+          SingerInfo  bytea,
+          FullName    character varying(2048) GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED,
+          PRIMARY KEY (SingerId)
+          );
+          CREATE TABLE Albums 
+          (AlbumId    bigint NOT NULL,
+          SingerId    bigint NOT NULL REFERENCES Singers (SingerId),
+          AlbumTitle  text,
+          PRIMARY KEY (AlbumId)
+          );`,
+      ];
+      const [operationUpdateDDL] = await database.updateSchema(statements);
+      const requests = ['ALTER TABLE Albums ADD COLUMN MarketingBudget BIGINT'];
+
+      // Alter existing table to add a column.
+      const [operations] = await database.updateSchema(requests);
+    });
+
+    after(async () => {
+      const instance = spanner.instance(SAMPLE_INSTANCE_ID);
+      await instance.delete();
+    });
+
+    // create_pg_database
+    it('should create an example PostgreSQL database', async () => {
+      const output = execSync(
+        `node v2/pg-database-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created database ${PG_DATABASE_ID} on instance ${SAMPLE_INSTANCE_ID} with dialect POSTGRESQL.`
+        )
+      );
+    });
+
+    // pg_interleaving
+    it('should create an interleaved table hierarchy using PostgreSQL dialect', async () => {
+      const output = execSync(
+        `node v2/pg-interleaving.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Created an interleaved table hierarchy in database ${PG_DATABASE_ID} using PostgreSQL dialect.`
+        )
+      );
+    });
+
+    // pg_add_column
+    it('should add a column to a table in the Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node v2/pg-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Added MarketingBudget column to Albums table in database ${PG_DATABASE_ID}`
+        )
+      );
+    });
+
+    //pg_create_index
+    it('should create an index in the Spanner PostgreSQL database.', async () => {
+      const output = execSync(
+        `node v2/pg-index-create-storing.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation to complete...`)
+      );
+      assert.match(
+        output, new RegExp('Added the AlbumsByAlbumTitle index.')
+      );
+    });
+
+    // pg_jsonb_add_column
+    it('should add a jsonb column to a table', async () => {
+      const output = execSync(
+        `node v2/pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+      );
+      assert.match(
+        output,
+        new RegExp(`Waiting for operation on ${PG_DATABASE_ID} to complete...`)
+      );
+      assert.match(
+        output,
+        new RegExp(
+          `Added jsonb column to table venues to database ${PG_DATABASE_ID}.`
+        )
+      );
+    });
+  });
+
+  // create_table_with_datatypes
+  it('should create Venues example table with supported datatype columns', async () => {
+    const output = execSync(
+      `${datatypesCmd} createVenuesTable "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(`Created table Venues in database ${DATABASE_ID}.`)
+    );
+  });
+
+  // add_numeric_column
+  it('should add a Revenue column to Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} addNumericColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+
+    assert.include(
+      output,
+      `Waiting for operation on ${DATABASE_ID} to complete...`
+    );
+    assert.include(
+      output,
+      `Added Revenue column to Venues table in database ${DATABASE_ID}.`
+    );
+  });
+
+  // add_json_column
+  it('should add a VenueDetails column to Venues example table', async () => {
+    const output = execSync(
+      `${datatypesCmd} addJsonColumn "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+
+    assert.include(
+      output,
+      `Waiting for operation on ${DATABASE_ID} to complete...`
+    );
+    assert.include(
+      output,
+      `Added VenueDetails column to Venues table in database ${DATABASE_ID}.`
+    );
+  });
+
+  it('should create a table with foreign key delete cascade', async () => {
+    const output = execSync(
+      `${createTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(
+        'Created Customers and ShoppingCarts table with FKShoppingCartsCustomerId'
+      )
+    );
+  });
+
+  it('should alter a table with foreign key delete cascade', async () => {
+    const output = execSync(
+      `${alterTableWithForeignKeyDeleteCascadeCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp('Altered ShoppingCarts table with FKShoppingCartsCustomerName')
+    );
+  });
+
+  it('should drop a foreign key constraint delete cascade', async () => {
+    const output = execSync(
+      `${dropForeignKeyConstraintDeleteCascaseCommand} "${INSTANCE_ID}" "${DATABASE_ID}" ${PROJECT_ID}`
+    );
+    assert.match(
+      output,
+      new RegExp(`Waiting for operation on ${DATABASE_ID} to complete...`)
+    );
+    assert.match(
+      output,
+      new RegExp(
+        'Altered ShoppingCarts table to drop FKShoppingCartsCustomerName'
+      )
+    );
+  });
+
+  // create_index
+  it('should create an index in an example table', async () => {
+    const output = execSync(
+      `node v2/index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(output, /Added the AlbumsByAlbumTitle index\./);
+  });
+
+  // create_storing_index
+  it('should create a storing index in an example table', async function () {
+    this.retries(5);
+    // Delay the start of the test, if this is a retry.
+    await delay(this.test);
+
+    const output = execSync(
+      `node v2/index-create-storing ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+    );
+    assert.match(output, /Waiting for operation to complete\.\.\./);
+    assert.match(output, /Added the AlbumsByAlbumTitle2 index\./);
   });
 });

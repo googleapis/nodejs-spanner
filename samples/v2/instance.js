@@ -44,12 +44,12 @@ async function createInstance(instanceID, projectID) {
       instance: {
         config: instanceAdminClient.instanceConfigPath(
           projectID,
-          'regional-us-central1'
+          'asia1'
         ),
         nodeCount: 1,
         displayName: 'Display name for the instance.',
         labels: {
-          ['cloud_spanner_samples']: 'true',
+          ['cloud_spanner_samples_alka']: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
       },
