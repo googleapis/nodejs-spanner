@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.2.0](https://github.com/googleapis/nodejs-spanner/compare/v7.1.0...v7.2.0) (2024-01-11)
+
+
+### Features
+
+* Support for Directed Reads ([#1966](https://github.com/googleapis/nodejs-spanner/issues/1966)) ([c0a4363](https://github.com/googleapis/nodejs-spanner/commit/c0a43638c81dd769cc55e021cc4cf1d93db8a72a))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v4 ([#1903](https://github.com/googleapis/nodejs-spanner/issues/1903)) ([7464c8b](https://github.com/googleapis/nodejs-spanner/commit/7464c8b2412a9b718cd8981363cb982aebbe3723))
+* **deps:** Update dependency @types/stack-trace to v0.0.33 ([#1952](https://github.com/googleapis/nodejs-spanner/issues/1952)) ([45ab751](https://github.com/googleapis/nodejs-spanner/commit/45ab751da1f0f73bc06c8b8e0007b457fa75518f))
+* **deps:** Update dependency retry-request to v7 ([#1934](https://github.com/googleapis/nodejs-spanner/issues/1934)) ([c575c80](https://github.com/googleapis/nodejs-spanner/commit/c575c80b17e5fdf2cbba24c806fa21f26c2010dc))
+
 ## [7.1.0](https://github.com/googleapis/nodejs-spanner/compare/v7.0.0...v7.1.0) (2023-11-16)
 
 
