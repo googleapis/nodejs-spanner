@@ -1985,5 +1985,25 @@ describe('Spanner', () => {
         )
       );
     });
+
+    // directed_read_options
+    it('should run read-only transaction with directed read options set', async () => {
+      const output = execSync(
+        `node directed-reads.js ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      );
+      console.log(output);
+      assert.match(
+        output,
+        new RegExp(
+          'SingerId: 2, AlbumId: 2, AlbumTitle: Forever Hold your Peace'
+        )
+      );
+      assert.match(
+        output,
+        new RegExp(
+          'Successfully executed read-only transaction with directedReadOptions'
+        )
+      );
+    });
   });
 });
