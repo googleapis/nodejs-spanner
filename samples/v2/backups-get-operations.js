@@ -89,6 +89,9 @@ async function getBackupOperations(
     });
   } catch (err) {
     console.error('ERROR:', err);
+  } finally {
+    //close the client
+    databaseAdminClient.close();
   }
   // [END spanner_list_backup_operations]
 }

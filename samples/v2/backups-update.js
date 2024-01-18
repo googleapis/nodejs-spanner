@@ -74,6 +74,9 @@ async function updateBackup(instanceId, backupId, projectId) {
     console.log('Expire time updated.');
   } catch (err) {
     console.error('ERROR:', err);
+  } finally {
+    //close the client
+    databaseAdminClient.close();
   }
   // [END spanner_update_backup]
 }
