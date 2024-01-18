@@ -42,7 +42,7 @@ async function updateBackup(instanceId, backupId, projectId) {
     const [metadata] = await databaseAdminClient.getBackup({
       name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
     });
-    
+
     const currentExpireTime = metadata.expireTime;
     const maxExpireTime = metadata.maxExpireTime;
     const wantExpireTime = new PreciseDate(currentExpireTime);

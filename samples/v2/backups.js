@@ -115,18 +115,14 @@ require('yargs')
     {},
     opts => getDatabaseOperations(opts.instanceName, opts.projectId)
   )
-  .example(
-    'node $0 getDatabaseOperations "my-instance" "my-project-id"'
-  )
+  .example('node $0 getDatabaseOperations "my-instance" "my-project-id"')
   .command(
     'updateBackup <instanceName> <backupName> <projectId>',
     'Updates the expire time of a backup.',
     {},
     opts => updateBackup(opts.instanceName, opts.backupName, opts.projectId)
   )
-  .example(
-    'node $0 updateBackup "my-instance" "my-backup" "my-project-id"'
-  )
+  .example('node $0 updateBackup "my-instance" "my-backup" "my-project-id"')
   .command(
     'restoreBackup <instanceName> <databaseName> <backupName> <projectId>',
     'Restores a Cloud Spanner database from a backup.',

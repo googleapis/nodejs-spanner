@@ -59,7 +59,7 @@ async function createBackupWithEncryptionKey(
 
     // Expire backup 14 days in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
-    
+
     // Create a backup of the state of the database at the current time.
     const [operation] = await databaseAdminClient.createBackup({
       parent: databaseAdminClient.instancePath(projectId, instanceId),

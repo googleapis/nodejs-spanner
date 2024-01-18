@@ -36,7 +36,6 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
   });
 
   try {
-
     // get the parent(instance) of the database
     const parent = databaseAdminClient.instancePath(projectId, instanceId);
 

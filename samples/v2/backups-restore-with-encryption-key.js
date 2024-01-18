@@ -23,7 +23,7 @@ async function restoreBackupWithEncryptionKey(
   keyName
 ) {
   // [START spanner_restore_backup_with_encryption_key]
-  
+
   // Imports the Google Cloud client library and precise date library
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 

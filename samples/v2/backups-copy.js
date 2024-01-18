@@ -73,7 +73,7 @@ function main(
       const [copyBackup] = await databaseAdminClient.getBackup({
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
       });
-      
+
       if (copyBackup.state === 'READY') {
         console.log(
           `Backup copy ${copyBackup.name} of size ` +

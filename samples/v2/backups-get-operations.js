@@ -22,7 +22,7 @@ async function getBackupOperations(
   projectId
 ) {
   // [START spanner_list_backup_operations]
-  
+
   // Imports the Google Cloud client library
   const {protos} = require('@google-cloud/spanner');
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');

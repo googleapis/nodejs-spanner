@@ -36,7 +36,6 @@ async function getDatabaseOperations(instanceId, projectId) {
 
   // List database operations
   try {
-
     const [databaseOperations] = await databaseAdminClient.listBackupOperations(
       {
         parent: databaseAdminClient.instancePath(projectId, instanceId),
