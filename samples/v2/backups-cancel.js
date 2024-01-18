@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_cancel_backup_create]
+  
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -29,7 +30,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,
@@ -44,6 +45,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
         databaseId
       )}.`
     );
+
     // Expire backup one day in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24;
     const [operation] = await databaseAdminClient.createBackup({

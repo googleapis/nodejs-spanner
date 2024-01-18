@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function deleteBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_delete_backup]
+
   // Imports the Google Cloud client library
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
@@ -28,7 +29,7 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,

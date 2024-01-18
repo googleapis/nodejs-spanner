@@ -23,6 +23,7 @@ async function createBackup(
   versionTime
 ) {
   // [START spanner_create_backup]
+
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -38,7 +39,7 @@ async function createBackup(
   // const backupId = 'my-backup';
   // const versionTime = Date.now() - 1000 * 60 * 60 * 24; // One day ago
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,

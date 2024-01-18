@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ async function createBackupWithEncryptionKey(
   keyName
 ) {
   // [START spanner_create_backup_with_encryption_key]
+
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -40,7 +41,7 @@ async function createBackupWithEncryptionKey(
   // const keyName =
   //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,
@@ -55,8 +56,10 @@ async function createBackupWithEncryptionKey(
         databaseId
       )}.`
     );
+
     // Expire backup 14 days in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    
     // Create a backup of the state of the database at the current time.
     const [operation] = await databaseAdminClient.createBackup({
       parent: databaseAdminClient.instancePath(projectId, instanceId),

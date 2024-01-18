@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ function main(
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,
@@ -73,7 +73,7 @@ function main(
       const [copyBackup] = await databaseAdminClient.getBackup({
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
       });
-      //   console.log(copyBackup);
+      
       if (copyBackup.state === 'READY') {
         console.log(
           `Backup copy ${copyBackup.name} of size ` +

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ async function restoreBackupWithEncryptionKey(
   keyName
 ) {
   // [START spanner_restore_backup_with_encryption_key]
+  
   // Imports the Google Cloud client library and precise date library
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 

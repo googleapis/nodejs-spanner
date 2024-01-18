@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function getBackups(instanceId, databaseId, backupId, projectId) {
   // [START spanner_list_backups]
+
   // Imports the Google Cloud client library
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
@@ -28,14 +29,17 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates an database admin client
+  // creates a client
   const databaseAdminClient = new DatabaseAdminClient({
     projectID: projectId,
     instanceID: instanceId,
   });
 
   try {
+
+    // get the parent(instance) of the database
     const parent = databaseAdminClient.instancePath(projectId, instanceId);
+
     // List all backups
     const [allBackups] = await databaseAdminClient.listBackups({
       parent: parent,
@@ -154,6 +158,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
+    //close the client
     databaseAdminClient.close();
   }
   // [END spanner_list_backups]

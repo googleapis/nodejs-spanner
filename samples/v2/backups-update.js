@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function updateBackup(instanceId, backupId, projectId) {
   // [START spanner_update_backup]
+
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -41,10 +42,12 @@ async function updateBackup(instanceId, backupId, projectId) {
     const [metadata] = await databaseAdminClient.getBackup({
       name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
     });
+    
     const currentExpireTime = metadata.expireTime;
     const maxExpireTime = metadata.maxExpireTime;
     const wantExpireTime = new PreciseDate(currentExpireTime);
     wantExpireTime.setDate(wantExpireTime.getDate() + 1);
+
     // New expire time should be less than the max expire time
     const min = (currentExpireTime, maxExpireTime) =>
       currentExpireTime < maxExpireTime ? currentExpireTime : maxExpireTime;
@@ -59,7 +62,7 @@ async function updateBackup(instanceId, backupId, projectId) {
         newExpireTime
       ).toISOString()}`
     );
-    // await backup.updateExpireTime(newExpireTime);
+
     await databaseAdminClient.updateBackup({
       backup: {
         name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
@@ -72,6 +75,9 @@ async function updateBackup(instanceId, backupId, projectId) {
     console.log('Expire time updated.');
   } catch (err) {
     console.error('ERROR:', err);
+  } finally {
+    //close the client
+    databaseAdminClient.close();
   }
   // [END spanner_update_backup]
 }
