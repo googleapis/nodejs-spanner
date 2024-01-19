@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -65,7 +65,7 @@
     "events-intercept": "^2.0.0",
     "extend": "^3.0.2",
     "google-auth-library": "^9.0.0",
-    "google-gax": "4.0.5",
+    "google-gax": "4.1.0",
     "grpc-gcp": "^1.0.0",
     "is": "^3.2.1",
     "lodash.snakecase": "^4.1.1",
@@ -99,7 +99,7 @@
     "concat-stream": "^2.0.0",
     "dedent": "^1.0.0",
     "execa": "^5.0.0",
-    "gapic-tools": "^0.2.0",
+    "gapic-tools": "^0.3.0",
     "gts": "^5.0.0",
     "jsdoc": "^4.0.0",
     "jsdoc-fresh": "^3.0.0",
