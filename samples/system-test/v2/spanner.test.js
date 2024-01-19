@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2017 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 const {Spanner} = require('@google-cloud/spanner');
 const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
-const {describe, it, before, after} = require('mocha');
+const {describe, it, before, after, afterEach} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
 
@@ -217,8 +217,32 @@ describe('AdminClient', () => {
   });
 
   // create_backup
-  it('should create a backup of the database', async () => {
+  it('should create a backup of the database-using-autogen', async () => {
     const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
+    );
+    await operation.promise();
     const database = instance.database(DATABASE_ID);
     const query = {
       sql: 'SELECT CURRENT_TIMESTAMP() as Timestamp',
@@ -233,7 +257,7 @@ describe('AdminClient', () => {
   });
 
   // create_backup_with_encryption_key
-  it('should create an encrypted backup of the database', async () => {
+  it('should create an encrypted backup of the database-using-autogen', async () => {
     const key = await getCryptoKey();
 
     const output = execSync(
@@ -248,7 +272,46 @@ describe('AdminClient', () => {
   });
 
   // copy_backup
-  it('should create a copy of a backup', async () => {
+  it('should create a copy of a backup using autogen', async () => {
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        RESTORE_DATABASE_ID,
+        request
+    );
+    await operation.promise();
+    const database = instance.database(RESTORE_DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
     const sourceBackupPath = `projects/${PROJECT_ID}/instances/${INSTANCE_ID}/backups/${BACKUP_ID}`;
     const output = execSync(
       `node v2/backups-copy.js ${INSTANCE_ID} ${COPY_BACKUP_ID} ${sourceBackupPath} ${PROJECT_ID}`
@@ -268,7 +331,46 @@ describe('AdminClient', () => {
   });
 
   // get_backups
-  it('should list backups in the instance', async () => {
+  it('should list backups in the instance using autogen', async () => {
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
+    );
+    await operation.promise();
+    const database = instance.database(DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
     const output = execSync(
       `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
@@ -284,39 +386,153 @@ describe('AdminClient', () => {
   });
 
   // list_backup_operations
-  it('should list backup operations in the instance', async () => {
+  it('should list backup operations in the instance using autogen', async () => {
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
+    );
+    await operation.promise();
+    const database = instance.database(DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
     const output = execSync(
       `${backupsCmd} getBackupOperations ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Create Backup Operations:/);
     assert.match(
       output,
-      new RegExp(
-        `Backup (.+)${BACKUP_ID} on database (.+)${DATABASE_ID} is 100% complete.`
-      )
+      new RegExp(`Backup (.+)${BACKUP_ID} on database (.+)${DATABASE_ID} is 100% complete.`)
     );
     assert.match(output, /Copy Backup Operations:/);
     assert.match(
       output,
-      new RegExp(
-        `Backup (.+)${COPY_BACKUP_ID} copied from source backup (.+)${BACKUP_ID} is 100% complete`
-      )
+      new RegExp(`Backup (.+)${COPY_BACKUP_ID} copied from source backup (.+)${BACKUP_ID} is 100% complete`)
     );
   });
 
   // update_backup_expire_time
-  it('should update the expire time of a backup', async () => {
+  it('should update the expire time of a backup using autogen', async () => {
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
+    );
+    await operation.promise();
+    const database = instance.database(DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
     const output = execSync(
-      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+        `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Expire time updated./);
   });
 
   // list_backup_operations
-  it('should list backups in the instance', async () => {
-    const output = execSync(
-      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+  it('should list backups in the instance using autogen', async () => {
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    console.log(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
     );
+    await operation.promise();
+    const database = instance.database(DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
+    const output = execSync(
+        `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      );
     assert.include(output, 'All backups:');
     assert.include(output, 'Backups matching backup name:');
     assert.include(output, 'Backups expiring within 30 days:');
@@ -329,12 +545,52 @@ describe('AdminClient', () => {
   });
 
   // restore_backup
-  it('should restore database from a backup', async function () {
+  it('should restore database from a backup using autogen', async function () {
     // Restoring a backup can be a slow operation so the test may timeout and
     // we'll have to retry.
     this.retries(5);
     // Delay the start of the test, if this is a retry.
     await delay(this.test);
+
+    // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
+    const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        DATABASE_ID,
+        request
+    );
+    await operation.promise();
+    const database = instance.database(DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
+
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
 
     const output = execSync(
       `${backupsCmd} restoreBackup ${INSTANCE_ID} ${RESTORE_DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
@@ -373,7 +629,7 @@ describe('AdminClient', () => {
   });
 
   // list_database_operations
-  it('should list database operations in the instance', async () => {
+  it('should list database operations in the instance using autogen', async () => {
     const output = execSync(
       `${backupsCmd} getDatabaseOperations ${INSTANCE_ID} ${PROJECT_ID}`
     );
@@ -388,15 +644,50 @@ describe('AdminClient', () => {
   });
 
   // delete_backup
-  it('should delete a backup', async () => {
+  it('should delete a backup using autogen', async () => {
     function sleep(timeMillis) {
       return new Promise(resolve => setTimeout(resolve, timeMillis));
     }
 
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
+    const request = {
+        schema: [
+          `CREATE TABLE Singers (
+            SingerId    INT64 NOT NULL,
+            FirstName   STRING(1024),
+            LastName    STRING(1024),
+            SingerInfo  BYTES(MAX),
+            FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
+          ) PRIMARY KEY (SingerId)`,
+          `CREATE TABLE Albums (
+            SingerId    INT64 NOT NULL,
+            AlbumId     INT64 NOT NULL,
+            AlbumTitle  STRING(MAX)
+          ) PRIMARY KEY (SingerId, AlbumId),
+          INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
+        ],
+    };
+    
+    // Creates a database
+    const [, operation] = await instance.createDatabase(
+        RESTORE_DATABASE_ID,
+        request
+    );
+    await operation.promise();
     const database = instance.database(RESTORE_DATABASE_ID);
+    const backup = instance.backup(BACKUP_ID);
 
+    const databasePath = database.formattedName_;
+    // Expire backup 14 days in the future
+    const expireTime = Date.now() + 1000 * 60 * 60 * 24 * 14;
+    // Create a backup of the state of the database at the current time.
+    const [, operationCreateBackup] = await backup.create({
+      databasePath: databasePath,
+      expireTime: expireTime,
+    });
+
+    await operationCreateBackup.promise();
     while ((await database.getState()) === 'READY_OPTIMIZING') {
       await sleep(1000);
     }
