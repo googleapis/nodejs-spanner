@@ -8731,10 +8731,10 @@ describe('Spanner', () => {
             },
             err => {
               assert.strictEqual(err?.details, expectedErrorMessage);
+              transaction!.end();
+              done();
             }
           );
-          transaction!.end();
-          done();
         });
       });
     });
