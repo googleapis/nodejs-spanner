@@ -17,7 +17,7 @@
 const {Spanner} = require('@google-cloud/spanner');
 const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {assert} = require('chai');
-const {describe, it, before, after, afterEach} = require('mocha');
+const {describe, it, before, after} = require('mocha');
 const cp = require('child_process');
 const pLimit = require('p-limit');
 
@@ -220,28 +220,25 @@ describe('AdminClient', () => {
   it('should create a backup of the database-using-autogen', async () => {
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const query = {
@@ -276,27 +273,27 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
     const [, operation] = await instance.createDatabase(
-        RESTORE_DATABASE_ID,
-        request
+      RESTORE_DATABASE_ID,
+      request
     );
     await operation.promise();
     const database = instance.database(RESTORE_DATABASE_ID);
@@ -335,28 +332,25 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const backup = instance.backup(BACKUP_ID);
@@ -390,28 +384,25 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const backup = instance.backup(BACKUP_ID);
@@ -432,12 +423,16 @@ describe('AdminClient', () => {
     assert.match(output, /Create Backup Operations:/);
     assert.match(
       output,
-      new RegExp(`Backup (.+)${BACKUP_ID} on database (.+)${DATABASE_ID} is 100% complete.`)
+      new RegExp(
+        `Backup (.+)${BACKUP_ID} on database (.+)${DATABASE_ID} is 100% complete.`
+      )
     );
     assert.match(output, /Copy Backup Operations:/);
     assert.match(
       output,
-      new RegExp(`Backup (.+)${COPY_BACKUP_ID} copied from source backup (.+)${BACKUP_ID} is 100% complete`)
+      new RegExp(
+        `Backup (.+)${COPY_BACKUP_ID} copied from source backup (.+)${BACKUP_ID} is 100% complete`
+      )
     );
   });
 
@@ -446,28 +441,25 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const backup = instance.backup(BACKUP_ID);
@@ -483,7 +475,7 @@ describe('AdminClient', () => {
 
     await operationCreateBackup.promise();
     const output = execSync(
-        `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+      `${backupsCmd} updateBackup ${INSTANCE_ID} ${BACKUP_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Expire time updated./);
   });
@@ -494,28 +486,25 @@ describe('AdminClient', () => {
     const instance = spanner.instance(INSTANCE_ID);
     console.log(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const backup = instance.backup(BACKUP_ID);
@@ -531,8 +520,8 @@ describe('AdminClient', () => {
 
     await operationCreateBackup.promise();
     const output = execSync(
-        `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
-      );
+      `${backupsCmd} getBackups ${INSTANCE_ID} ${DATABASE_ID} ${BACKUP_ID} ${PROJECT_ID}`
+    );
     assert.include(output, 'All backups:');
     assert.include(output, 'Backups matching backup name:');
     assert.include(output, 'Backups expiring within 30 days:');
@@ -555,28 +544,25 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
-    const [, operation] = await instance.createDatabase(
-        DATABASE_ID,
-        request
-    );
+    const [, operation] = await instance.createDatabase(DATABASE_ID, request);
     await operation.promise();
     const database = instance.database(DATABASE_ID);
     const backup = instance.backup(BACKUP_ID);
@@ -652,27 +638,27 @@ describe('AdminClient', () => {
     // Wait for database to finish optimizing - cannot delete a backup if a database restored from it
     const instance = spanner.instance(INSTANCE_ID);
     const request = {
-        schema: [
-          `CREATE TABLE Singers (
+      schema: [
+        `CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
             LastName    STRING(1024),
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
           ) PRIMARY KEY (SingerId)`,
-          `CREATE TABLE Albums (
+        `CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
           ) PRIMARY KEY (SingerId, AlbumId),
           INTERLEAVE IN PARENT Singers ON DELETE CASCADE`,
-        ],
+      ],
     };
-    
+
     // Creates a database
     const [, operation] = await instance.createDatabase(
-        RESTORE_DATABASE_ID,
-        request
+      RESTORE_DATABASE_ID,
+      request
     );
     await operation.promise();
     const database = instance.database(RESTORE_DATABASE_ID);
