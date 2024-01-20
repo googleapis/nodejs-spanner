@@ -16,6 +16,7 @@
 'use strict';
 
 async function createInstanceWithProcessingUnits(instanceID, projectID) {
+  // [START spanner_create_instance_with_processing_units]
   // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
@@ -68,6 +69,7 @@ async function createInstanceWithProcessingUnits(instanceID, projectID) {
   } catch (err) {
     console.error('ERROR:', err);
   }
+  // [END spanner_create_instance_with_processing_units]
 }
 
 module.exports.createInstanceWithProcessingUnits =

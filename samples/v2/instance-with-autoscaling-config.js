@@ -16,6 +16,7 @@
 'use strict';
 
 async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
+  // [START spanner_create_instance_with_autoscaling_config]
   // Imports the Google Cloud client library
   const {protos} = require('@google-cloud/spanner');
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -104,6 +105,7 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
   } catch (err) {
     console.error('ERROR:', err);
   }
+  // [END spanner_create_instance_with_autoscaling_config]
 }
 
 module.exports.createInstanceWithAutoscalingConfig =

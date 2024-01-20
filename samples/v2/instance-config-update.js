@@ -23,6 +23,8 @@ function main(
   instanceConfigId = 'custom-my-instance-config',
   projectId = 'my-project-id'
 ) {
+  // [START spanner_update_instance_config]
+
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -77,6 +79,7 @@ function main(
     }
   }
   updateInstanceConfig();
+  // [END spanner_update_instance_config]
 }
 
 process.on('unhandledRejection', err => {

@@ -24,6 +24,8 @@ function main(
   baseInstanceConfigID = 'my-base-instance-config',
   projectID = 'my-project-id'
 ) {
+  // [START spanner_create_instance_config]
+
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -86,6 +88,7 @@ function main(
     }
   }
   createInstanceConfig();
+  // [END spanner_create_instance_config]
 }
 
 process.on('unhandledRejection', err => {

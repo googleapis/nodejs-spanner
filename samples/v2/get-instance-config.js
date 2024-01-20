@@ -20,6 +20,8 @@
 'use strict';
 
 function main(projectID) {
+  // [START spanner_get_instance_config]
+
   /**
    * TODO(developer): Uncomment the following line before running the sample.
    */
@@ -51,6 +53,7 @@ function main(projectID) {
     );
   }
   getInstanceConfig();
+  // [END spanner_get_instance_config]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);
