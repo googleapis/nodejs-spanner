@@ -15,7 +15,6 @@
 'use strict';
 
 const {Spanner} = require('@google-cloud/spanner');
-const {KeyManagementServiceClient} = require('@google-cloud/kms');
 const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
 const pLimit = require('p-limit');
 const {describe, it, before, after, afterEach} = require('mocha');
@@ -24,7 +23,6 @@ const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 const instanceCmd = 'node v2/instance.js';
-const databaseUsingAutogenCodeCmd = 'node v2/create-database.js';
 
 const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
 const PROJECT_ID = process.env.GCLOUD_PROJECT;
@@ -39,21 +37,11 @@ const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
 const RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r`;
 const ENCRYPTED_RESTORE_DATABASE_ID = `test-database-${CURRENT_TIME}-r-enc`;
-const VERSION_RETENTION_DATABASE_ID = `test-database-${CURRENT_TIME}-v`;
-const ENCRYPTED_DATABASE_ID = `test-database-${CURRENT_TIME}-enc`;
-const DEFAULT_LEADER_DATABASE_ID = `test-database-${CURRENT_TIME}-dl`;
-const SEQUENCE_DATABASE_ID = `test-seq-database-${CURRENT_TIME}-r`;
 const BACKUP_ID = `test-backup-${CURRENT_TIME}`;
 const COPY_BACKUP_ID = `test-copy-backup-${CURRENT_TIME}`;
 const ENCRYPTED_BACKUP_ID = `test-backup-${CURRENT_TIME}-enc`;
 const CANCELLED_BACKUP_ID = `test-backup-${CURRENT_TIME}-c`;
 const LOCATION_ID = 'regional-us-central1';
-const PG_LOCATION_ID = 'regional-us-west2';
-const KEY_LOCATION_ID = 'us-central1';
-const KEY_RING_ID = 'test-key-ring-node';
-const KEY_ID = 'test-key';
-const DEFAULT_LEADER = 'us-central1';
-const DEFAULT_LEADER_2 = 'us-east1';
 
 const spanner = new Spanner({
   projectId: PROJECT_ID,
@@ -116,69 +104,6 @@ async function deleteInstance(instance) {
   const [backups] = await instance.getBackups();
   await Promise.all(backups.map(backup => backup.delete(GAX_OPTIONS)));
   return instance.delete(GAX_OPTIONS);
-}
-
-async function getCryptoKey() {
-  const NOT_FOUND = 5;
-
-  // Instantiates a client.
-  const client = new KeyManagementServiceClient();
-
-  // Build the parent key ring name.
-  const keyRingName = client.keyRingPath(
-    PROJECT_ID,
-    KEY_LOCATION_ID,
-    KEY_RING_ID
-  );
-
-  // Get key ring.
-  try {
-    await client.getKeyRing({name: keyRingName});
-  } catch (err) {
-    // Create key ring if it doesn't exist.
-    if (err.code === NOT_FOUND) {
-      // Build the parent location name.
-      const locationName = client.locationPath(PROJECT_ID, KEY_LOCATION_ID);
-      await client.createKeyRing({
-        parent: locationName,
-        keyRingId: KEY_RING_ID,
-      });
-    } else {
-      throw err;
-    }
-  }
-
-  // Get key.
-  try {
-    // Build the key name
-    const keyName = client.cryptoKeyPath(
-      PROJECT_ID,
-      KEY_LOCATION_ID,
-      KEY_RING_ID,
-      KEY_ID
-    );
-    const [key] = await client.getCryptoKey({
-      name: keyName,
-    });
-    return key;
-  } catch (err) {
-    // Create key if it doesn't exist.
-    if (err.code === NOT_FOUND) {
-      const [key] = await client.createCryptoKey({
-        parent: keyRingName,
-        cryptoKeyId: KEY_ID,
-        cryptoKey: {
-          purpose: 'ENCRYPT_DECRYPT',
-          versionTemplate: {
-            algorithm: 'GOOGLE_SYMMETRIC_ENCRYPTION',
-          },
-        },
-      });
-      return key;
-    } else {
-      throw err;
-    }
-  }
 }
 
 describe('AdminClients', () => {
@@ -361,6 +286,7 @@ describe('AdminClients', () => {
           SAMPLE_INSTANCE_CONFIG_ID
         ),
       });
+      await operation.promise();
     });
 
     // update_instance_config
@@ -434,25 +360,6 @@ describe('AdminClients', () => {
     it.skip('should get a specific instance config', async () => {
       const output = execSync(`node v2/get-instance-config.js ${PROJECT_ID}`);
       assert.include(output, 'Available leader options for instance config');
-    });
-  });
-
-  describe('database', () => {
-    // create_database_using_database_admin_client
-    it('should create an example database using database admin client', async () => {
-      const output = execSync(
-        `${databaseUsingAutogenCodeCmd} createDatabaseUsingAdminClient "${INSTANCE_ID}" "${DATABASE_ID}" "${PROJECT_ID}"`
-      );
-      assert.match(
-        output,
-        new RegExp(`Waiting for creation of ${DATABASE_ID} to complete...`)
-      );
-      assert.match(
-        output,
-        new RegExp(
-          `Created database ${DATABASE_ID} on instance ${INSTANCE_ID}.`
-        )
-      );
     });
   });
 });

@@ -47,7 +47,6 @@ function main(
           instanceConfigId
         ),
       });
-      // await operation.promise();
       console.log(`Deleted instance config ${instanceConfigId}.\n`);
     } catch (err) {
       console.error(
