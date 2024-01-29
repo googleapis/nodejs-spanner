@@ -42,7 +42,7 @@ function main(
     try {
       // Delete the instance config.
       console.log(`Deleting ${instanceConfigId}...\n`);
-      const [operation] = await instanceAdminClient.deleteInstanceConfig({
+      await instanceAdminClient.deleteInstanceConfig({
         name: instanceAdminClient.instanceConfigPath(
           projectId,
           instanceConfigId

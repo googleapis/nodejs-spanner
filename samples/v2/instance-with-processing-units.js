@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function createInstanceWithProcessingUnits(instanceID, projectID) {
+async function createInstanceWithProcessingUnits(instanceId, projectId) {
   // [START spanner_create_instance_with_processing_units]
   // Imports the Google Cloud client library
   const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -28,42 +28,42 @@ async function createInstanceWithProcessingUnits(instanceID, projectID) {
 
   // Creates a client
   const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectID,
+    projectId: projectId,
   });
 
   // Creates a new instance
   try {
     console.log(
       `Creating instance ${instanceAdminClient.instancePath(
-        projectID,
-        instanceID
+        projectId,
+        instanceId
       )}.`
     );
     const [operation] = await instanceAdminClient.createInstance({
-      instanceId: instanceID,
+      instanceId: instanceId,
       instance: {
         config: instanceAdminClient.instanceConfigPath(
-          projectID,
+          projectId,
           'regional-us-central1'
         ),
         displayName: 'Display name for the instance.',
         processingUnits: 500,
         labels: {
-          ['cloud_spanner_samples']: 'true',
+          cloud_spanner_samples: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
       },
-      parent: instanceAdminClient.projectPath(projectID),
+      parent: instanceAdminClient.projectPath(projectId),
     });
 
-    console.log(`Waiting for operation on ${instanceID} to complete...`);
+    console.log(`Waiting for operation on ${instanceId} to complete...`);
     await operation.promise();
-    console.log(`Created instance ${instanceID}.`);
+    console.log(`Created instance ${instanceId}.`);
     const [metadata] = await instanceAdminClient.getInstance({
-      name: instanceAdminClient.instancePath(projectID, instanceID),
+      name: instanceAdminClient.instancePath(projectId, instanceId),
     });
     console.log(
-      `Instance ${instanceID} has ${metadata.processingUnits} ` +
+      `Instance ${instanceId} has ${metadata.processingUnits} ` +
         'processing units.'
     );
   } catch (err) {

@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
+async function createInstanceWithAutoscalingConfig(instanceId, projectId) {
   // [START spanner_create_instance_with_autoscaling_config]
   // Imports the Google Cloud client library
   const {protos} = require('@google-cloud/spanner');
@@ -29,7 +29,7 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
 
   // creates an instance admin client
   const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectID,
+    projectId: projectId,
   });
 
   const autoscalingConfig =
@@ -60,37 +60,37 @@ async function createInstanceWithAutoscalingConfig(instanceID, projectID) {
   try {
     console.log(
       `Creating instance ${instanceAdminClient.instancePath(
-        projectID,
-        instanceID
+        projectId,
+        instanceId
       )}.`
     );
     const [operation] = await instanceAdminClient.createInstance({
-      instanceId: instanceID,
+      instanceId: instanceId,
+      parent: instanceAdminClient.projectPath(projectId),
       instance: {
         config: instanceAdminClient.instanceConfigPath(
-          projectID,
+          projectId,
           'regional-us-central1'
         ),
         displayName: 'Display name for the instance.',
         autoscalingConfig: autoscalingConfig,
         labels: {
-          ['cloud_spanner_samples']: 'true',
+          cloud_spanner_samples: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
       },
-      parent: instanceAdminClient.projectPath(projectID),
     });
 
-    console.log(`Waiting for operation on ${instanceID} to complete...`);
+    console.log(`Waiting for operation on ${instanceId} to complete...`);
     await operation.promise();
-    console.log(`Created instance ${instanceID}.`);
+    console.log(`Created instance ${instanceId}.`);
 
     // get instance metadata
     const [metadata] = await instanceAdminClient.getInstance({
-      name: instanceAdminClient.instancePath(projectID, instanceID),
+      name: instanceAdminClient.instancePath(projectId, instanceId),
     });
     console.log(
-      `Autoscaling configurations of ${instanceID} are:  ` +
+      `Autoscaling configurations of ${instanceId} are:  ` +
         '\n' +
         `Min nodes: ${metadata.autoscalingConfig.autoscalingLimits.minNodes} ` +
         'nodes.' +

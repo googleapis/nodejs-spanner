@@ -56,10 +56,12 @@ function main(
           ),
           displayName: 'updated custom instance config',
           labels: {
-            ['updated']: 'true',
+            updated: 'true',
             created: Math.round(Date.now() / 1000).toString(), // current time
           },
         },
+        // Field mask specifying fields that should get updated in InstanceConfig
+        // Only display_name and labels can be updated
         updateMask: (protos.google.protobuf.FieldMask = {
           paths: ['display_name', 'labels'],
         }),

@@ -16,7 +16,7 @@
 'use strict';
 
 // creates an instance using Instance Admin Client
-async function createInstance(instanceID, projectID) {
+async function createInstance(instanceId, projectId) {
   // [START spanner_create_instance]
 
   // Imports the Google Cloud client library
@@ -30,37 +30,38 @@ async function createInstance(instanceID, projectID) {
 
   // Creates a client
   const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectID,
+    projectId: projectId,
   });
 
   // Creates a new instance
   try {
     console.log(
       `Creating instance ${instanceAdminClient.instancePath(
-        projectID,
-        instanceID
+        projectId,
+        instanceId
       )}.`
     );
     const [operation] = await instanceAdminClient.createInstance({
-      instanceId: instanceID,
+      instanceId: instanceId,
+      parent: instanceAdminClient.projectPath(projectId),
       instance: {
         config: instanceAdminClient.instanceConfigPath(
-          projectID,
+          projectId,
           'regional-us-central1'
         ),
         nodeCount: 1,
         displayName: 'Display name for the instance.',
         labels: {
-          ['cloud_spanner_samples']: 'true',
+          cloud_spanner_samples: 'true',
           created: Math.round(Date.now() / 1000).toString(), // current time
         },
       },
-      parent: instanceAdminClient.projectPath(projectID),
     });
 
-    console.log(`Waiting for operation on ${instanceID} to complete...`);
+    console.log(`Waiting for operation on ${instanceId} to complete...`);
     await operation.promise();
-    console.log(`Created instance ${instanceID}.`);
+
+    console.log(`Created instance ${instanceId}.`);
   } catch (err) {
     console.error('ERROR:', err);
   }

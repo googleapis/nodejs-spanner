@@ -20,9 +20,9 @@
 'use strict';
 
 function main(
-  instanceConfigID = 'custom-my-instance-config',
-  baseInstanceConfigID = 'my-base-instance-config',
-  projectID = 'my-project-id'
+  instanceConfigId = 'custom-my-instance-config',
+  baseInstanceConfigId = 'my-base-instance-config',
+  projectId = 'my-project-id'
 ) {
   // [START spanner_create_instance_config]
 
@@ -38,50 +38,56 @@ function main(
 
   // creates a client
   const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectID,
+    projectId: projectId,
   });
 
   // Creates a new instance config
   async function createInstanceConfig() {
     const [baseInstanceConfig] = await instanceAdminClient.getInstanceConfig({
       name: instanceAdminClient.instanceConfigPath(
-        projectID,
-        baseInstanceConfigID
+        projectId,
+        baseInstanceConfigId
       ),
     });
     try {
       console.log(
         `Creating instance config ${instanceAdminClient.instanceConfigPath(
-          projectID,
-          instanceConfigID
+          projectId,
+          instanceConfigId
         )}.`
       );
+      console.log(
+        baseInstanceConfig.replicas.concat(
+          baseInstanceConfig.optionalReplicas[0]
+        )
+      );
       const [operation] = await instanceAdminClient.createInstanceConfig({
-        instanceConfigId: instanceConfigID,
+        instanceConfigId: instanceConfigId,
+        parent: instanceAdminClient.projectPath(projectId),
         instanceConfig: {
           name: instanceAdminClient.instanceConfigPath(
-            projectID,
-            instanceConfigID
+            projectId,
+            instanceConfigId
           ),
           baseConfig: instanceAdminClient.instanceConfigPath(
-            projectID,
-            baseInstanceConfigID
+            projectId,
+            baseInstanceConfigId
           ),
-          displayName: instanceConfigID,
-          replicas: baseInstanceConfig.replicas,
-          optionalReplicas: baseInstanceConfig.optionalReplicas,
+          displayName: instanceConfigId,
+          replicas: baseInstanceConfig.replicas.concat(
+            baseInstanceConfig.optionalReplicas[0]
+          ),
         },
-        parent: instanceAdminClient.projectPath(projectID),
       });
       console.log(
-        `Waiting for create operation for ${instanceConfigID} to complete...`
+        `Waiting for create operation for ${instanceConfigId} to complete...`
       );
       await operation.promise();
-      console.log(`Created instance config ${instanceConfigID}.`);
+      console.log(`Created instance config ${instanceConfigId}.`);
     } catch (err) {
       console.error(
         'ERROR: Creating instance config ',
-        instanceConfigID,
+        instanceConfigId,
         ' failed with error message ',
         err
       );
