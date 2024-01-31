@@ -42,9 +42,7 @@ function main(instanceId, projectId) {
       parent: databaseAdminClient.instancePath(projectId, instanceId),
     });
     console.log(`Databases for projects/${projectId}/instances/${instanceId}:`);
-    // console.log(databases);
     databases.forEach(database => {
-      // console.log(database);
       const defaultLeader = database.defaultLeader
         ? `(default leader = ${database.defaultLeader})`
         : '';

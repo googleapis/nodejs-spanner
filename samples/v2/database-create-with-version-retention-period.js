@@ -53,7 +53,6 @@ async function createDatabaseWithVersionRetentionPeriod(
       extraStatements: [versionRetentionStatement],
       parent: databaseAdminClient.instancePath(projectId, instanceId),
     });
-    // console.log(operation);
 
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();

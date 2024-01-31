@@ -42,7 +42,7 @@ function main(
   });
 
   async function updateDatabase() {
-    // Gets a reference to a Cloud Spanner instance and database
+    // Update the database metadata fields
     try {
       console.log(
         `Updating database ${databaseAdminClient.databasePath(
@@ -60,6 +60,8 @@ function main(
           ),
           enableDropProtection: true,
         },
+        // updateMask contains the fields to be undated in database
+        // Currently only enable_drop_protection can get updated
         updateMask: (protos.google.protobuf.FieldMask = {
           paths: ['enable_drop_protection'],
         }),

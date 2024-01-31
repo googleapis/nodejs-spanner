@@ -28,7 +28,6 @@ async function createDatabaseWithEncryptionKey(
   // const databaseId = 'my-database';
   // const keyName =
   //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
-  // projects/span-cloud-testing/locations/asia1/keyRings/shugups/cryptoKeys/backup
 
   // Imports the database admin client
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');

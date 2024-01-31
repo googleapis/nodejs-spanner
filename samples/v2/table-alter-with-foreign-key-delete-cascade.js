@@ -35,7 +35,7 @@ function main(instanceId, databaseId, projectId) {
   const databaseAdminClient = new DatabaseAdminClient({
     projectId: projectId,
     instanceId: instanceId,
-    });
+  });
 
   async function alterTableWithForeignKeyDeleteCascade() {
     const request = [

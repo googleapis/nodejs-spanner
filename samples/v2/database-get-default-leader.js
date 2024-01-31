@@ -36,7 +36,7 @@ function main(instanceId, databaseId, projectId) {
     instanceID: instanceId,
   });
 
-  async function getDatabaseDdl() {
+  async function getDefaultLeader() {
     // Get the default leader option for the database.
     const [metadata] = await databaseAdminClient.getDatabase({
       name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
@@ -51,7 +51,7 @@ function main(instanceId, databaseId, projectId) {
       );
     }
   }
-  getDatabaseDdl();
+  getDefaultLeader();
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

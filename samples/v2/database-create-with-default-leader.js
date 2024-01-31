@@ -26,7 +26,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
-  // const defaultLeader = 'my-default-leader';
+  // const defaultLeader = 'my-default-leader'; example: 'asia-northeast1'
 
   // Imports the database admin client
   const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
@@ -40,11 +40,6 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   async function createDatabaseWithDefaultLeader() {
     // Create a new database with an extra statement which will alter the
     // database after creation to set the default leader.
-    // get instance metadata
-    // const [metadata] = await instanceAdminClient.getInstanceConfig({
-    //     name: instanceAdminClient.instanceConfigPath(projectId, instanceId),
-    //   });
-    // console.log(metadata);
     console.log(
       `Creating database ${databaseAdminClient.databasePath(
         projectId,
@@ -52,7 +47,6 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
         databaseId
       )}.`
     );
-    // 'asia-northeast1'
     const createSingersTableStatement = `
       CREATE TABLE Singers (
         SingerId   INT64 NOT NULL,
