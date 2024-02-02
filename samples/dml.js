@@ -649,12 +649,11 @@ async function insertWithCustomTimeoutAndRetrySettings(
   const spanner = new Spanner({
     projectId: projectId,
   });
-  const DEADLINE_EXCEEDED_STATUS_CODE = 4;
   const UNAVAILABLE_STATUS_CODE = 14;
   const retryAndTimeoutSettings = {
     retry: {
       // The set of error codes that will be retried.
-      retryCodes: [DEADLINE_EXCEEDED_STATUS_CODE, UNAVAILABLE_STATUS_CODE],
+      retryCodes: [UNAVAILABLE_STATUS_CODE],
       backoffSettings: {
         // Configure retry delay settings.
         // The initial amount of time to wait before retrying the request.
@@ -662,7 +661,7 @@ async function insertWithCustomTimeoutAndRetrySettings(
         // The maximum amount of time to wait before retrying. I.e. after this
         // value is reached, the wait time will not increase further by the
         // multiplier.
-        maxRetryDelayMillis: 64000,
+        maxRetryDelayMillis: 16000,
         // The previous wait time is multiplied by this multiplier to come up
         // with the next wait time, until the max is reached.
         retryDelayMultiplier: 1.5,

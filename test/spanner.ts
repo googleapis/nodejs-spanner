@@ -50,7 +50,10 @@ import {Float, Int, Json, Numeric, SpannerDate} from '../src/codec';
 import * as stream from 'stream';
 import * as util from 'util';
 import {PreciseDate} from '@google-cloud/precise-date';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import CreateInstanceMetadata = google.spanner.admin.instance.v1.CreateInstanceMetadata;
 import QueryOptions = google.spanner.v1.ExecuteSqlRequest.QueryOptions;
 import v1 = google.spanner.v1;
@@ -1483,6 +1486,72 @@ describe('Spanner with mock server', () => {
                 .then(() => done());
             })
             .catch(done);
+        });
+      });
+    });
+
+    describe('LeaderAwareRouting', () => {
+      let spannerWithLARDisabled: Spanner;
+      let instanceWithLARDisabled: Instance;
+
+      function newTestDatabaseWithLARDisabled(
+        options?: SessionPoolOptions,
+        queryOptions?: IQueryOptions
+      ): Database {
+        return instanceWithLARDisabled.database(
+          `database-${dbCounter++}`,
+          options,
+          queryOptions
+        );
+      }
+
+      before(() => {
+        spannerWithLARDisabled = new Spanner({
+          servicePath: 'localhost',
+          port,
+          sslCreds: grpc.credentials.createInsecure(),
+          routeToLeaderEnabled: false,
+        });
+        // Gets a reference to a Cloud Spanner instance and database
+        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
+      });
+
+      it('should execute with leader aware routing enabled in a read/write transaction', async () => {
+        const database = newTestDatabase();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        let metadataCountWithLAREnabled = 0;
+        spannerMock.getMetadata().forEach(metadata => {
+          if (metadata.get(LEADER_AWARE_ROUTING_HEADER)[0] !== undefined) {
+            metadataCountWithLAREnabled++;
+            assert.strictEqual(
+              metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+              'true'
+            );
+          }
+        });
+        assert.notStrictEqual(metadataCountWithLAREnabled, 0);
+      });
+
+      it('should execute with leader aware routing disabled in a read/write transaction', async () => {
+        const database = newTestDatabaseWithLARDisabled();
+        await database.runTransactionAsync(async tx => {
+          await tx!.runUpdate({
+            sql: insertSql,
+          });
+          return await tx.commit();
+        });
+        await database.close();
+        spannerMock.getMetadata().forEach(metadata => {
+          assert.strictEqual(
+            metadata.get(LEADER_AWARE_ROUTING_HEADER)[0],
+            undefined
+          );
         });
       });
     });
@@ -3125,6 +3194,56 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should apply blind writes only once', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        attempts++;
+        if (attempts === 1) {
+          spannerMock.abortTransaction(tx);
+        }
+        tx!.insert('foo', {id: 1, value: 'One'});
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      assert.strictEqual(2, attempts);
+      // Verify that we have 2 ExecuteSqlRequests. The first one should use inline-begin. The second one should use a
+      // transaction ID.
+      const firstExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.begin
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(firstExecuteSqlRequest.transaction?.begin?.readWrite);
+      const secondExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.id
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(secondExecuteSqlRequest.transaction?.id);
+      // Verify that we have a BeginTransaction request for the retry.
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      // Verify that we have a single Commit request, and that the Commit request contains only one mutation.
+      assert.strictEqual(
+        1,
+        spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).mutations;
+        }).length
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.ok(commitRequest, 'Commit was called');
+      assert.strictEqual(commitRequest.mutations.length, 1);
+    });
+
     it('should use optimistic lock for runTransactionAsync', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3200,6 +3319,40 @@ describe('Spanner with mock server', () => {
         const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
         const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
         await Promise.all([rowCount1, rowCount2]);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, selectSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should handle parallel request with inline begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount3 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        await Promise.all([rowCount1, rowCount2, rowCount3]);
         await tx.commit();
       });
       await database.close();
@@ -3381,6 +3534,30 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should throw error if begin transaction fails on blind commit', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        });
+      } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
     });
   });
 
@@ -4127,9 +4304,8 @@ describe('Spanner with mock server', () => {
       const dbSpecificQuery: GetDatabaseOperationsOptions = {
         filter: dbSpecificFilter,
       };
-      const [operations1] = await instance.getDatabaseOperations(
-        dbSpecificQuery
-      );
+      const [operations1] =
+        await instance.getDatabaseOperations(dbSpecificQuery);
 
       const database = instance.database('test-database');
       const [operations2] = await database.getOperations();

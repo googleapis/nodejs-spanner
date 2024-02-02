@@ -24,10 +24,14 @@ import * as extend from 'extend';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-import {Session, Database} from '../src';
+import {Session, Database, Spanner} from '../src';
+import {protos} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -57,8 +61,17 @@ const fakeCodec: any = {
   convertProtoTimestampToDate() {},
 };
 
+const SPANNER = {
+  routeToLeaderEnabled: true,
+};
+
+const INSTANCE = {
+  parent: SPANNER,
+};
+
 const DATABASE = {
   formattedName_: 'database',
+  parent: INSTANCE,
 };
 
 class FakeTransaction {
@@ -74,6 +87,11 @@ class FakeTransaction {
   static encodeParams(): object {
     return {};
   }
+
+  _getSpanner(): Spanner {
+    return SPANNER as Spanner;
+  }
+
   run() {}
   read() {}
 }
@@ -127,17 +145,35 @@ describe('BatchTransaction', () => {
 
   describe('createQueryPartitions', () => {
     const GAX_OPTS = {a: 'b'};
+
+    const fakeDirectedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     const QUERY = {
       sql: 'SELECT * FROM Singers',
       gaxOptions: GAX_OPTS,
       params: {},
       types: {},
+      dataBoostEnabled: true,
+      directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
     it('should make the correct request', () => {
       const fakeParams = {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
       };
 
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
@@ -149,11 +185,15 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createQueryPartitions(QUERY, assert.ifError);
 
-      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
       assert.strictEqual(method, 'partitionQuery');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+      );
     });
 
     it('should accept query as string', () => {
@@ -278,11 +318,27 @@ describe('BatchTransaction', () => {
 
   describe('createReadPartitions', () => {
     const GAX_OPTS = {};
+
+    const fakeDirectedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     const QUERY = {
       table: 'abc',
       keys: ['a', 'b'],
       ranges: [{}, {}],
       gaxOptions: GAX_OPTS,
+      dataBoostEnabled: true,
+      directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
     it('should make the correct request', () => {
@@ -290,6 +346,8 @@ describe('BatchTransaction', () => {
       const expectedQuery = {
         table: QUERY.table,
         keySet: fakeKeySet,
+        dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
       };
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
@@ -300,15 +358,31 @@ describe('BatchTransaction', () => {
 
       batchTransaction.createReadPartitions(QUERY, assert.ifError);
 
-      const {client, method, reqOpts, gaxOpts} = stub.lastCall.args[0];
+      const {client, method, reqOpts, gaxOpts, headers} = stub.lastCall.args[0];
       assert.strictEqual(client, 'SpannerClient');
       assert.strictEqual(method, 'partitionRead');
       assert.deepStrictEqual(reqOpts, expectedQuery);
       assert.strictEqual(gaxOpts, GAX_OPTS);
+      assert.deepStrictEqual(
+        headers,
+        Object.assign({[LEADER_AWARE_ROUTING_HEADER]: 'true'})
+      );
     });
   });
 
   describe('execute', () => {
+    const directedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_ONLY,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     it('should make read requests for read partitions', () => {
       const partition = {table: 'abc'};
       const stub = sandbox.stub(batchTransaction, 'read');
@@ -322,6 +396,35 @@ describe('BatchTransaction', () => {
 
     it('should make query requests for non-read partitions', () => {
       const partition = {sql: 'SELECT * FROM Singers'};
+      const stub = sandbox.stub(batchTransaction, 'run');
+
+      batchTransaction.execute(partition, assert.ifError);
+
+      const query = stub.lastCall.args[0];
+      assert.strictEqual(query, partition);
+    });
+
+    it('should make read requests for read partitions with request options', () => {
+      const partition = {
+        table: 'abc',
+        dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
+      };
+      const stub = sandbox.stub(batchTransaction, 'read');
+
+      batchTransaction.execute(partition, assert.ifError);
+
+      const [table, options] = stub.lastCall.args;
+      assert.strictEqual(table, partition.table);
+      assert.strictEqual(options, partition);
+    });
+
+    it('should make query requests for non-read partitions with request options', () => {
+      const partition = {
+        sql: 'SELECT * FROM Singers',
+        dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
+      };
       const stub = sandbox.stub(batchTransaction, 'run');
 
       batchTransaction.execute(partition, assert.ifError);

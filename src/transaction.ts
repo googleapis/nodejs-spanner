@@ -17,6 +17,7 @@
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
+import Long = require('long');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError, Status, GoogleError} from 'google-gax';
 import * as is from 'is';
@@ -33,12 +34,16 @@ import {
 import {Session} from './session';
 import {Key} from './table';
 import {google as spannerClient} from '../protos/protos';
-import {NormalCallback, CLOUD_RESOURCE_HEADER} from './common';
+import {
+  NormalCallback,
+  CLOUD_RESOURCE_HEADER,
+  addLeaderAwareRoutingHeader,
+} from './common';
 import {google} from '../protos/protos';
 import IAny = google.protobuf.IAny;
 import IQueryOptions = google.spanner.v1.ExecuteSqlRequest.IQueryOptions;
 import IRequestOptions = google.spanner.v1.IRequestOptions;
-import {Database} from '.';
+import {Database, Spanner} from '.';
 import ReadLockMode = google.spanner.v1.TransactionOptions.ReadWrite.ReadLockMode;
 
 export type Rows = Array<Row | Json>;
@@ -117,6 +122,8 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   seqno?: number;
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -133,10 +140,12 @@ export interface ReadRequest extends RequestOptions {
   keys?: string[] | string[][];
   ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
-  limit?: number | Long | null;
+  limit?: number | Long | string | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
+  dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -147,7 +156,7 @@ export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
 export type BatchUpdateResponse = [
   number[],
-  spannerClient.spanner.v1.ExecuteBatchDmlResponse
+  spannerClient.spanner.v1.ExecuteBatchDmlResponse,
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
@@ -159,7 +168,7 @@ export type ReadResponse = [Rows];
 export type RunResponse = [
   Rows,
   spannerClient.spanner.v1.ResultSetStats,
-  spannerClient.spanner.v1.ResultSetMetadata
+  spannerClient.spanner.v1.ResultSetMetadata,
 ];
 export type RunUpdateResponse = [number];
 
@@ -254,7 +263,7 @@ export type CommitCallback =
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
-  protected _idWaiter: Readable;
+  protected _waitingRequests: Array<() => void>;
   protected _inlineBeginStarted;
   protected _useInRunner = false;
   id?: Uint8Array | string;
@@ -330,9 +339,7 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
-    this._idWaiter = new Readable({
-      read() {},
-    });
+    this._waitingRequests = [];
     this._inlineBeginStarted = false;
   }
 
@@ -407,13 +414,22 @@ export class Snapshot extends EventEmitter {
       reqOpts.requestOptions = this.requestOptions;
     }
 
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'beginTransaction',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -480,6 +496,8 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
+   * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -620,6 +638,10 @@ export class Snapshot extends EventEmitter {
       transaction.singleUse = this._options;
     }
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      request.directedReadOptions
+    );
+
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -629,6 +651,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.directedReadOptions;
     delete request.columnsMetadata;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
@@ -640,11 +663,21 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
       }
     );
+
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (this.id && transaction.begin) {
@@ -656,7 +689,7 @@ export class Snapshot extends EventEmitter {
         method: 'streamingRead',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       });
     };
 
@@ -991,7 +1024,7 @@ export class Snapshot extends EventEmitter {
    *     execution statistics for the SQL statement that
    *     produced this result set.
    * @property {string} partitionToken The partition token.
-   * @property {number} seqno The Sequence number.
+   * @property {number} seqno The Sequence number. This option is used internally and will be overridden.
    * @property {string} sql The SQL string.
    * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
@@ -1015,6 +1048,8 @@ export class Snapshot extends EventEmitter {
    *     that it is not ready for any more data. Increase this value if you
    *     experience 'Stream is still not ready to receive data' errors as a
    *     result of a slow writer in your receiving stream.
+   *  @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1096,6 +1131,10 @@ export class Snapshot extends EventEmitter {
     } = query;
     let reqOpts;
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      query.directedReadOptions
+    );
+
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1113,6 +1152,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.directedReadOptions;
       delete query.columnsMetadata;
 
       reqOpts = Object.assign(query, {
@@ -1123,11 +1163,21 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         params,
         paramTypes,
       });
     };
+
+    const headers = this.resourceHeader_;
+    if (
+      this._getSpanner().routeToLeaderEnabled &&
+      (this._options.readWrite !== undefined ||
+        this._options.partitionedDml !== undefined)
+    ) {
+      addLeaderAwareRoutingHeader(headers);
+    }
 
     const makeRequest = (resumeToken?: ResumeToken): Readable => {
       if (!reqOpts || (this.id && !reqOpts.transaction.id)) {
@@ -1145,7 +1195,7 @@ export class Snapshot extends EventEmitter {
         method: 'executeStreamingSql',
         reqOpts: Object.assign({}, reqOpts, {resumeToken}),
         gaxOpts: gaxOptions,
-        headers: this.resourceHeader_,
+        headers: headers,
       });
     };
 
@@ -1310,6 +1360,28 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
+   * Get directed read options
+   * @private
+   * @param {google.spanner.v1.IDirectedReadOptions} directedReadOptions Request directedReadOptions object.
+   */
+  protected _getDirectedReadOptions(
+    directedReadOptions:
+      | google.spanner.v1.IDirectedReadOptions
+      | null
+      | undefined
+  ) {
+    if (
+      !directedReadOptions &&
+      this._getSpanner().directedReadOptions &&
+      this._options.readOnly
+    ) {
+      return this._getSpanner().directedReadOptions;
+    }
+
+    return directedReadOptions;
+  }
+
+  /**
    * Update transaction properties from the response.
    *
    * @private
@@ -1326,7 +1398,7 @@ export class Snapshot extends EventEmitter {
       this.readTimestampProto = readTimestamp;
       this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
     }
-    this._idWaiter.emit('notify');
+    this._releaseWaitingRequests();
   }
 
   /**
@@ -1346,12 +1418,39 @@ export class Snapshot extends EventEmitter {
       this._inlineBeginStarted = true;
       return makeRequest;
     }
-    return (resumeToken?: ResumeToken): Readable =>
-      this._idWaiter.once('notify', () =>
+
+    // Queue subsequent requests.
+    return (resumeToken?: ResumeToken): Readable => {
+      const streamProxy = new Readable({
+        read() {},
+      });
+
+      this._waitingRequests.push(() => {
         makeRequest(resumeToken)
-          .on('data', chunk => this._idWaiter.emit('data', chunk))
-          .once('end', () => this._idWaiter.emit('end'))
-      );
+          .on('data', chunk => streamProxy.emit('data', chunk))
+          .on('end', () => streamProxy.emit('end'));
+      });
+
+      return streamProxy;
+    };
+  }
+
+  _releaseWaitingRequests() {
+    while (this._waitingRequests.length > 0) {
+      const request = this._waitingRequests.shift();
+      request?.();
+    }
+  }
+
+  /**
+   * Gets the Spanner object
+   *
+   * @private
+   *
+   * @returns {Spanner}
+   */
+  protected _getSpanner(): Spanner {
+    return this.session.parent.parent.parent as Spanner;
   }
 }
 
@@ -1673,13 +1772,18 @@ export class Transaction extends Dml {
       statements,
     } as spannerClient.spanner.v1.ExecuteBatchDmlRequest;
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'executeBatchDml',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (
         err: null | grpc.ServiceError,
@@ -1827,7 +1931,7 @@ export class Transaction extends Dml {
     } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
-      this.begin().then(() => this.commit(options, callback));
+      this.begin().then(() => this.commit(options, callback), callback);
       return;
     }
 
@@ -1842,13 +1946,18 @@ export class Transaction extends Dml {
       this.requestOptions
     );
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'commit',
         reqOpts,
         gaxOpts: gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err: null | Error, resp: spannerClient.spanner.v1.ICommitResponse) => {
         this.end();
@@ -2177,13 +2286,18 @@ export class Transaction extends Dml {
       transactionId,
     };
 
+    const headers = this.resourceHeader_;
+    if (this._getSpanner().routeToLeaderEnabled) {
+      addLeaderAwareRoutingHeader(headers);
+    }
+
     this.request(
       {
         client: 'SpannerClient',
         method: 'rollback',
         reqOpts,
         gaxOpts,
-        headers: this.resourceHeader_,
+        headers: headers,
       },
       (err: null | ServiceError) => {
         this.end();

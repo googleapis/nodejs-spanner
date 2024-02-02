@@ -22,9 +22,13 @@ import {common as p} from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
+import {protos} from '../src';
 import {codec} from '../src/codec';
 import {google} from '../protos/protos';
-import {CLOUD_RESOURCE_HEADER} from '../src/common';
+import {
+  CLOUD_RESOURCE_HEADER,
+  LEADER_AWARE_ROUTING_HEADER,
+} from '../src/common';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import {
   BatchUpdateOptions,
@@ -36,13 +40,26 @@ import {grpc} from 'google-gax';
 describe('Transaction', () => {
   const sandbox = sinon.createSandbox();
 
-  const PARENT = {formattedName_: 'formatted-database-name'};
   const REQUEST = sandbox.stub();
   const REQUEST_STREAM = sandbox.stub();
   const SESSION_NAME = 'session-123';
 
+  const SPANNER = {
+    routeToLeaderEnabled: true,
+    directedReadOptions: {},
+  };
+
+  const INSTANCE = {
+    parent: SPANNER,
+  };
+
+  const DATABASE = {
+    formattedName_: 'formatted-database-name',
+    parent: INSTANCE,
+  };
+
   const SESSION = {
-    parent: PARENT,
+    parent: DATABASE,
     formattedName_: SESSION_NAME,
     request: REQUEST,
     requestStream: REQUEST_STREAM,
@@ -50,6 +67,19 @@ describe('Transaction', () => {
 
   const PARTIAL_RESULT_STREAM = sandbox.stub();
   const PROMISIFY_ALL = sandbox.stub();
+
+  const fakeDirectedReadOptions = {
+    includeReplicas: {
+      replicaSelections: [
+        {
+          location: 'us-west1',
+          type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+            .Type.READ_ONLY,
+        },
+      ],
+      autoFailoverDisabled: true,
+    },
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let Snapshot;
@@ -289,6 +319,7 @@ describe('Transaction', () => {
           keys: ['a', 'b', 'c'],
           ranges: [{}, {}],
           columns: ['name'],
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         const expectedRequest = {
@@ -299,6 +330,7 @@ describe('Transaction', () => {
           keySet: fakeKeySet,
           resumeToken: undefined,
           columns: ['name'],
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         sandbox
@@ -377,6 +409,70 @@ describe('Transaction', () => {
         const options = PARTIAL_RESULT_STREAM.lastCall.args[1];
 
         assert.deepStrictEqual(options, fakeOptions);
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set at client level when passed at request level', () => {
+        const id = 'transaction-id-123';
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
+          },
+        };
+
+        const fakeRequest = {
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          table: TABLE,
+          keySet: {all: true},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        snapshot.id = id;
+        snapshot.createReadStream(TABLE, fakeRequest);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
       });
     });
 
@@ -574,6 +670,7 @@ describe('Transaction', () => {
           types: {a: 'string'},
           seqno: 1,
           queryOptions: {},
+          directedReadOptions: fakeDirectedReadOptions,
         });
 
         const expectedRequest = {
@@ -586,6 +683,7 @@ describe('Transaction', () => {
           seqno: 1,
           queryOptions: {},
           resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
         };
 
         sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
@@ -728,6 +826,102 @@ describe('Transaction', () => {
           done();
         });
         assert.ok(!REQUEST_STREAM.called, 'No request should be made');
+      });
+
+      it('should accept directedReadOptions set for client', () => {
+        const id = 'transaction-id-123';
+        const fakeParams = {b: 'a'};
+        const fakeParamTypes = {b: 'number'};
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: 'b'},
+          types: {a: 'string'},
+          seqno: 1,
+          queryOptions: {},
+        });
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+        });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
+      });
+
+      it('should override directedReadOptions set at client level when passed for request level', () => {
+        const id = 'transaction-id-123';
+        const fakeParams = {b: 'a'};
+        const fakeParamTypes = {b: 'number'};
+
+        SESSION.parent.parent.parent = {
+          routeToLeaderEnabled: true,
+          directedReadOptions: fakeDirectedReadOptions,
+        };
+
+        const fakeDirectedReadOptionsForRequest = {
+          includeReplicas: {
+            replicaSelections: [
+              {
+                location: 'us-east1',
+              },
+            ],
+          },
+        };
+
+        const fakeQuery = Object.assign({}, QUERY, {
+          params: {a: 'b'},
+          types: {a: 'string'},
+          seqno: 1,
+          queryOptions: {},
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        });
+
+        const expectedRequest = {
+          session: SESSION_NAME,
+          requestOptions: {},
+          transaction: {id},
+          sql: QUERY.sql,
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+          seqno: 1,
+          queryOptions: {},
+          resumeToken: undefined,
+          directedReadOptions: fakeDirectedReadOptionsForRequest,
+        };
+
+        sandbox.stub(Snapshot, 'encodeParams').withArgs(fakeQuery).returns({
+          params: fakeParams,
+          paramTypes: fakeParamTypes,
+        });
+
+        snapshot.id = id;
+        snapshot.runStream(fakeQuery);
+
+        const {reqOpts} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.deepStrictEqual(reqOpts, expectedRequest);
       });
     });
 
@@ -1211,7 +1405,13 @@ describe('Transaction', () => {
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.transaction, {id: fakeId});
         assert.strictEqual(reqOpts.seqno, 1);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should encode sql string statements', () => {
@@ -1341,7 +1541,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {
@@ -1382,7 +1588,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'beginTransaction');
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
     });
 
@@ -1400,7 +1612,13 @@ describe('Transaction', () => {
         assert.strictEqual(method, 'commit');
         assert.strictEqual(reqOpts.session, SESSION_NAME);
         assert.deepStrictEqual(reqOpts.mutations, []);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions as CallOptions', done => {
@@ -1769,7 +1987,13 @@ describe('Transaction', () => {
         assert.strictEqual(client, 'SpannerClient');
         assert.strictEqual(method, 'rollback');
         assert.deepStrictEqual(reqOpts, expectedReqOpts);
-        assert.deepStrictEqual(headers, transaction.resourceHeader_);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should accept gaxOptions', done => {
@@ -1929,6 +2153,27 @@ describe('Transaction', () => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
       });
 
+      it('should send the correct options', done => {
+        const QUERY: ExecuteSqlRequest = {
+          sql: 'SELET * FROM `MyTable`',
+        };
+
+        transaction.requestStream = config => {
+          assert.strictEqual(config.client, 'SpannerClient');
+          assert.strictEqual(config.method, 'executeStreamingSql');
+          assert.deepStrictEqual(
+            config.headers,
+            Object.assign(
+              {[LEADER_AWARE_ROUTING_HEADER]: true},
+              transaction.resourceHeader_
+            )
+          );
+          done();
+        };
+
+        transaction.runStream(QUERY);
+      });
+
       it('should set transaction tag when not `singleUse`', done => {
         const QUERY: ExecuteSqlRequest = {
           sql: 'SELET * FROM `MyTable`',
@@ -1954,6 +2199,23 @@ describe('Transaction', () => {
     describe('createReadStream', () => {
       before(() => {
         PARTIAL_RESULT_STREAM.callsFake(makeRequest => makeRequest());
+      });
+
+      it('should send the correct options', () => {
+        const TABLE = 'my-table-123';
+        transaction.createReadStream(TABLE);
+
+        const {client, method, headers} = REQUEST_STREAM.lastCall.args[0];
+
+        assert.strictEqual(client, 'SpannerClient');
+        assert.strictEqual(method, 'streamingRead');
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            transaction.resourceHeader_
+          )
+        );
       });
 
       it('should set transaction tag if not `singleUse`', () => {
@@ -2013,9 +2275,16 @@ describe('Transaction', () => {
         pdml.begin();
 
         const expectedOptions = {partitionedDml: {}};
-        const {reqOpts} = stub.lastCall.args[0];
+        const {reqOpts, headers} = stub.lastCall.args[0];
 
         assert.deepStrictEqual(reqOpts.options, expectedOptions);
+        assert.deepStrictEqual(
+          headers,
+          Object.assign(
+            {[LEADER_AWARE_ROUTING_HEADER]: true},
+            pdml.resourceHeader_
+          )
+        );
       });
     });
 

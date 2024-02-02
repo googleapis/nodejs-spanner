@@ -189,9 +189,12 @@ describe('codec', () => {
       const value = '9223372036854775807';
       const int = new codec.Int(value);
 
-      assert.throws(() => {
-        int.valueOf();
-      }, new RegExp('Integer ' + value + ' is out of bounds.'));
+      assert.throws(
+        () => {
+          int.valueOf();
+        },
+        new RegExp('Integer ' + value + ' is out of bounds.')
+      );
     });
   });
 

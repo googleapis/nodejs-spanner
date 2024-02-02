@@ -110,11 +110,21 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
   instanceAdmin.spanner.admin.instance.v1.IListInstanceConfigOperationsResponse
 >;
 
+/**
+ * Session pool configuration options.
+ * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
+ * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
+ * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
+ * Indicates which replicas or regions should be used for non-transactional reads or queries.
+ * DirectedReadOptions won't be set for readWrite transactions"
+ */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
   servicePath?: string;
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
+  routeToLeaderEnabled?: boolean;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
 }
 export interface RequestConfig {
   client: string;
@@ -160,7 +170,7 @@ export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
 export type TranslateEnumKeys<
   T,
   U extends keyof T,
-  E extends {[index: string]: unknown}
+  E extends {[index: string]: unknown},
 > = {
   [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
@@ -214,6 +224,8 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
+  routeToLeaderEnabled = true;
+  directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -288,6 +300,12 @@ class Spanner extends GrpcService {
       },
       options || {}
     ) as {} as SpannerOptions;
+
+    const directedReadOptions = options.directedReadOptions
+      ? options.directedReadOptions
+      : null;
+    delete options.directedReadOptions;
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -314,6 +332,11 @@ class Spanner extends GrpcService {
       packageJson: require('../../package.json'),
     } as {} as GrpcServiceConfig;
     super(config, options);
+
+    if (options.routeToLeaderEnabled === false) {
+      this.routeToLeaderEnabled = false;
+    }
+
     this.options = options;
     this.auth = new GoogleAuth(this.options);
     this.clients_ = new Map();
@@ -324,6 +347,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+    this.directedReadOptions = directedReadOptions;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
