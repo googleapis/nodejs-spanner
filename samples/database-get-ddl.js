@@ -41,9 +41,10 @@ function main(instanceId, databaseId, projectId) {
 
   async function getDatabaseDdl() {
     // Get the schema definition of the database.
-    const [ddlStatements] = await database.getSchema();
+    const [ddlStatements, protoDescriptors] = await database.getSchema();
 
     console.log(`Retrieved database DDL for ${database.formattedName_}:`);
+    console.log(`Proto Descriptors: ${protoDescriptors}`);
     ddlStatements.forEach(statement => {
       console.log(`${statement};\n`);
     });
