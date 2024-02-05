@@ -56,11 +56,6 @@ function main(
           instanceConfigId
         )}.`
       );
-      console.log(
-        baseInstanceConfig.replicas.concat(
-          baseInstanceConfig.optionalReplicas[0]
-        )
-      );
       const [operation] = await instanceAdminClient.createInstanceConfig({
         instanceConfigId: instanceConfigId,
         parent: instanceAdminClient.projectPath(projectId),
