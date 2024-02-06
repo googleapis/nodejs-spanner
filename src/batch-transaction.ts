@@ -20,7 +20,7 @@ import * as extend from 'extend';
 import * as is from 'is';
 import {Snapshot} from './transaction';
 import {google} from '../protos/protos';
-import {Session, Database, Spanner} from '.';
+import {Session, Database} from '.';
 import {
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,

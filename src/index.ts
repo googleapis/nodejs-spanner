@@ -110,6 +110,9 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
  * Session pool configuration options.
  * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
  * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
+ * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
+ * Indicates which replicas or regions should be used for non-transactional reads or queries.
+ * DirectedReadOptions won't be set for readWrite transactions"
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -117,6 +120,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
 }
 export interface RequestConfig {
   client: string;
@@ -217,6 +221,7 @@ class Spanner extends GrpcService {
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
+  directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -291,6 +296,12 @@ class Spanner extends GrpcService {
       },
       options || {}
     ) as {} as SpannerOptions;
+
+    const directedReadOptions = options.directedReadOptions
+      ? options.directedReadOptions
+      : null;
+    delete options.directedReadOptions;
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -332,6 +343,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+    this.directedReadOptions = directedReadOptions;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
