@@ -316,7 +316,8 @@ class Spanner extends GrpcService {
       baseUrl:
         options.apiEndpoint ||
         options.servicePath ||
-        v1.SpannerClient.servicePath,
+        // TODO: for TPC, this needs to support universeDomain
+        'spanner.googleapis.com',
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
