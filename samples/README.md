@@ -37,6 +37,7 @@ and automatic, synchronous replication for high availability.
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
+  * [Runs an execute sql request with directed read options](#runs-an-execute-sql-request-with-directed-read-options)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
   * [Update using DML returning.](#update-using-dml-returning.)
@@ -510,6 +511,23 @@ __Usage:__
 
 
 `node samples/datatypes.js`
+
+
+-----
+
+
+
+
+### Runs an execute sql request with directed read options
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/directed-reads.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/directed-reads.js,samples/README.md)
+
+__Usage:__
+
+
+`node directed-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
