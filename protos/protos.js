@@ -24746,6 +24746,7 @@
                              * @property {Array.<string>|null} [extraStatements] CreateDatabaseRequest extraStatements
                              * @property {google.spanner.admin.database.v1.IEncryptionConfig|null} [encryptionConfig] CreateDatabaseRequest encryptionConfig
                              * @property {google.spanner.admin.database.v1.DatabaseDialect|null} [databaseDialect] CreateDatabaseRequest databaseDialect
+                             * @property {Uint8Array|null} [protoDescriptors] CreateDatabaseRequest protoDescriptors
                              */
     
                             /**
@@ -24805,6 +24806,14 @@
                             CreateDatabaseRequest.prototype.databaseDialect = 0;
     
                             /**
+                             * CreateDatabaseRequest protoDescriptors.
+                             * @member {Uint8Array} protoDescriptors
+                             * @memberof google.spanner.admin.database.v1.CreateDatabaseRequest
+                             * @instance
+                             */
+                            CreateDatabaseRequest.prototype.protoDescriptors = $util.newBuffer([]);
+    
+                            /**
                              * Creates a new CreateDatabaseRequest instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.CreateDatabaseRequest
@@ -24839,6 +24848,8 @@
                                     $root.google.spanner.admin.database.v1.EncryptionConfig.encode(message.encryptionConfig, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                                 if (message.databaseDialect != null && Object.hasOwnProperty.call(message, "databaseDialect"))
                                     writer.uint32(/* id 5, wireType 0 =*/40).int32(message.databaseDialect);
+                                if (message.protoDescriptors != null && Object.hasOwnProperty.call(message, "protoDescriptors"))
+                                    writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.protoDescriptors);
                                 return writer;
                             };
     
@@ -24893,6 +24904,10 @@
                                         }
                                     case 5: {
                                             message.databaseDialect = reader.int32();
+                                            break;
+                                        }
+                                    case 6: {
+                                            message.protoDescriptors = reader.bytes();
                                             break;
                                         }
                                     default:
@@ -24957,6 +24972,9 @@
                                     case 2:
                                         break;
                                     }
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    if (!(message.protoDescriptors && typeof message.protoDescriptors.length === "number" || $util.isString(message.protoDescriptors)))
+                                        return "protoDescriptors: buffer expected";
                                 return null;
                             };
     
@@ -25008,6 +25026,11 @@
                                     message.databaseDialect = 2;
                                     break;
                                 }
+                                if (object.protoDescriptors != null)
+                                    if (typeof object.protoDescriptors === "string")
+                                        $util.base64.decode(object.protoDescriptors, message.protoDescriptors = $util.newBuffer($util.base64.length(object.protoDescriptors)), 0);
+                                    else if (object.protoDescriptors.length >= 0)
+                                        message.protoDescriptors = object.protoDescriptors;
                                 return message;
                             };
     
@@ -25031,6 +25054,13 @@
                                     object.createStatement = "";
                                     object.encryptionConfig = null;
                                     object.databaseDialect = options.enums === String ? "DATABASE_DIALECT_UNSPECIFIED" : 0;
+                                    if (options.bytes === String)
+                                        object.protoDescriptors = "";
+                                    else {
+                                        object.protoDescriptors = [];
+                                        if (options.bytes !== Array)
+                                            object.protoDescriptors = $util.newBuffer(object.protoDescriptors);
+                                    }
                                 }
                                 if (message.parent != null && message.hasOwnProperty("parent"))
                                     object.parent = message.parent;
@@ -25045,6 +25075,8 @@
                                     object.encryptionConfig = $root.google.spanner.admin.database.v1.EncryptionConfig.toObject(message.encryptionConfig, options);
                                 if (message.databaseDialect != null && message.hasOwnProperty("databaseDialect"))
                                     object.databaseDialect = options.enums === String ? $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] === undefined ? message.databaseDialect : $root.google.spanner.admin.database.v1.DatabaseDialect[message.databaseDialect] : message.databaseDialect;
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    object.protoDescriptors = options.bytes === String ? $util.base64.encode(message.protoDescriptors, 0, message.protoDescriptors.length) : options.bytes === Array ? Array.prototype.slice.call(message.protoDescriptors) : message.protoDescriptors;
                                 return object;
                             };
     
@@ -25994,6 +26026,7 @@
                              * @property {string|null} [database] UpdateDatabaseDdlRequest database
                              * @property {Array.<string>|null} [statements] UpdateDatabaseDdlRequest statements
                              * @property {string|null} [operationId] UpdateDatabaseDdlRequest operationId
+                             * @property {Uint8Array|null} [protoDescriptors] UpdateDatabaseDdlRequest protoDescriptors
                              */
     
                             /**
@@ -26037,6 +26070,14 @@
                             UpdateDatabaseDdlRequest.prototype.operationId = "";
     
                             /**
+                             * UpdateDatabaseDdlRequest protoDescriptors.
+                             * @member {Uint8Array} protoDescriptors
+                             * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlRequest
+                             * @instance
+                             */
+                            UpdateDatabaseDdlRequest.prototype.protoDescriptors = $util.newBuffer([]);
+    
+                            /**
                              * Creates a new UpdateDatabaseDdlRequest instance using the specified properties.
                              * @function create
                              * @memberof google.spanner.admin.database.v1.UpdateDatabaseDdlRequest
@@ -26067,6 +26108,8 @@
                                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.statements[i]);
                                 if (message.operationId != null && Object.hasOwnProperty.call(message, "operationId"))
                                     writer.uint32(/* id 3, wireType 2 =*/26).string(message.operationId);
+                                if (message.protoDescriptors != null && Object.hasOwnProperty.call(message, "protoDescriptors"))
+                                    writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.protoDescriptors);
                                 return writer;
                             };
     
@@ -26113,6 +26156,10 @@
                                         }
                                     case 3: {
                                             message.operationId = reader.string();
+                                            break;
+                                        }
+                                    case 4: {
+                                            message.protoDescriptors = reader.bytes();
                                             break;
                                         }
                                     default:
@@ -26163,6 +26210,9 @@
                                 if (message.operationId != null && message.hasOwnProperty("operationId"))
                                     if (!$util.isString(message.operationId))
                                         return "operationId: string expected";
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    if (!(message.protoDescriptors && typeof message.protoDescriptors.length === "number" || $util.isString(message.protoDescriptors)))
+                                        return "protoDescriptors: buffer expected";
                                 return null;
                             };
     
@@ -26189,6 +26239,11 @@
                                 }
                                 if (object.operationId != null)
                                     message.operationId = String(object.operationId);
+                                if (object.protoDescriptors != null)
+                                    if (typeof object.protoDescriptors === "string")
+                                        $util.base64.decode(object.protoDescriptors, message.protoDescriptors = $util.newBuffer($util.base64.length(object.protoDescriptors)), 0);
+                                    else if (object.protoDescriptors.length >= 0)
+                                        message.protoDescriptors = object.protoDescriptors;
                                 return message;
                             };
     
@@ -26210,6 +26265,13 @@
                                 if (options.defaults) {
                                     object.database = "";
                                     object.operationId = "";
+                                    if (options.bytes === String)
+                                        object.protoDescriptors = "";
+                                    else {
+                                        object.protoDescriptors = [];
+                                        if (options.bytes !== Array)
+                                            object.protoDescriptors = $util.newBuffer(object.protoDescriptors);
+                                    }
                                 }
                                 if (message.database != null && message.hasOwnProperty("database"))
                                     object.database = message.database;
@@ -26220,6 +26282,8 @@
                                 }
                                 if (message.operationId != null && message.hasOwnProperty("operationId"))
                                     object.operationId = message.operationId;
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    object.protoDescriptors = options.bytes === String ? $util.base64.encode(message.protoDescriptors, 0, message.protoDescriptors.length) : options.bytes === Array ? Array.prototype.slice.call(message.protoDescriptors) : message.protoDescriptors;
                                 return object;
                             };
     
@@ -27332,6 +27396,7 @@
                              * @memberof google.spanner.admin.database.v1
                              * @interface IGetDatabaseDdlResponse
                              * @property {Array.<string>|null} [statements] GetDatabaseDdlResponse statements
+                             * @property {Uint8Array|null} [protoDescriptors] GetDatabaseDdlResponse protoDescriptors
                              */
     
                             /**
@@ -27357,6 +27422,14 @@
                              * @instance
                              */
                             GetDatabaseDdlResponse.prototype.statements = $util.emptyArray;
+    
+                            /**
+                             * GetDatabaseDdlResponse protoDescriptors.
+                             * @member {Uint8Array} protoDescriptors
+                             * @memberof google.spanner.admin.database.v1.GetDatabaseDdlResponse
+                             * @instance
+                             */
+                            GetDatabaseDdlResponse.prototype.protoDescriptors = $util.newBuffer([]);
     
                             /**
                              * Creates a new GetDatabaseDdlResponse instance using the specified properties.
@@ -27385,6 +27458,8 @@
                                 if (message.statements != null && message.statements.length)
                                     for (var i = 0; i < message.statements.length; ++i)
                                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.statements[i]);
+                                if (message.protoDescriptors != null && Object.hasOwnProperty.call(message, "protoDescriptors"))
+                                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.protoDescriptors);
                                 return writer;
                             };
     
@@ -27423,6 +27498,10 @@
                                             if (!(message.statements && message.statements.length))
                                                 message.statements = [];
                                             message.statements.push(reader.string());
+                                            break;
+                                        }
+                                    case 2: {
+                                            message.protoDescriptors = reader.bytes();
                                             break;
                                         }
                                     default:
@@ -27467,6 +27546,9 @@
                                         if (!$util.isString(message.statements[i]))
                                             return "statements: string[] expected";
                                 }
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    if (!(message.protoDescriptors && typeof message.protoDescriptors.length === "number" || $util.isString(message.protoDescriptors)))
+                                        return "protoDescriptors: buffer expected";
                                 return null;
                             };
     
@@ -27489,6 +27571,11 @@
                                     for (var i = 0; i < object.statements.length; ++i)
                                         message.statements[i] = String(object.statements[i]);
                                 }
+                                if (object.protoDescriptors != null)
+                                    if (typeof object.protoDescriptors === "string")
+                                        $util.base64.decode(object.protoDescriptors, message.protoDescriptors = $util.newBuffer($util.base64.length(object.protoDescriptors)), 0);
+                                    else if (object.protoDescriptors.length >= 0)
+                                        message.protoDescriptors = object.protoDescriptors;
                                 return message;
                             };
     
@@ -27507,11 +27594,21 @@
                                 var object = {};
                                 if (options.arrays || options.defaults)
                                     object.statements = [];
+                                if (options.defaults)
+                                    if (options.bytes === String)
+                                        object.protoDescriptors = "";
+                                    else {
+                                        object.protoDescriptors = [];
+                                        if (options.bytes !== Array)
+                                            object.protoDescriptors = $util.newBuffer(object.protoDescriptors);
+                                    }
                                 if (message.statements && message.statements.length) {
                                     object.statements = [];
                                     for (var j = 0; j < message.statements.length; ++j)
                                         object.statements[j] = message.statements[j];
                                 }
+                                if (message.protoDescriptors != null && message.hasOwnProperty("protoDescriptors"))
+                                    object.protoDescriptors = options.bytes === String ? $util.base64.encode(message.protoDescriptors, 0, message.protoDescriptors.length) : options.bytes === Array ? Array.prototype.slice.call(message.protoDescriptors) : message.protoDescriptors;
                                 return object;
                             };
     
@@ -43546,6 +43643,7 @@
                      * @property {google.spanner.v1.IType|null} [arrayElementType] Type arrayElementType
                      * @property {google.spanner.v1.IStructType|null} [structType] Type structType
                      * @property {google.spanner.v1.TypeAnnotationCode|null} [typeAnnotation] Type typeAnnotation
+                     * @property {string|null} [protoTypeFqn] Type protoTypeFqn
                      */
     
                     /**
@@ -43596,6 +43694,14 @@
                     Type.prototype.typeAnnotation = 0;
     
                     /**
+                     * Type protoTypeFqn.
+                     * @member {string} protoTypeFqn
+                     * @memberof google.spanner.v1.Type
+                     * @instance
+                     */
+                    Type.prototype.protoTypeFqn = "";
+    
+                    /**
                      * Creates a new Type instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Type
@@ -43627,6 +43733,8 @@
                             $root.google.spanner.v1.StructType.encode(message.structType, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                         if (message.typeAnnotation != null && Object.hasOwnProperty.call(message, "typeAnnotation"))
                             writer.uint32(/* id 4, wireType 0 =*/32).int32(message.typeAnnotation);
+                        if (message.protoTypeFqn != null && Object.hasOwnProperty.call(message, "protoTypeFqn"))
+                            writer.uint32(/* id 5, wireType 2 =*/42).string(message.protoTypeFqn);
                         return writer;
                     };
     
@@ -43677,6 +43785,10 @@
                                     message.typeAnnotation = reader.int32();
                                     break;
                                 }
+                            case 5: {
+                                    message.protoTypeFqn = reader.string();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -43720,6 +43832,7 @@
                             case 1:
                             case 2:
                             case 3:
+                            case 15:
                             case 4:
                             case 5:
                             case 6:
@@ -43728,6 +43841,8 @@
                             case 9:
                             case 10:
                             case 11:
+                            case 13:
+                            case 14:
                                 break;
                             }
                         if (message.arrayElementType != null && message.hasOwnProperty("arrayElementType")) {
@@ -43750,6 +43865,9 @@
                             case 4:
                                 break;
                             }
+                        if (message.protoTypeFqn != null && message.hasOwnProperty("protoTypeFqn"))
+                            if (!$util.isString(message.protoTypeFqn))
+                                return "protoTypeFqn: string expected";
                         return null;
                     };
     
@@ -43788,6 +43906,10 @@
                         case 3:
                             message.code = 3;
                             break;
+                        case "FLOAT32":
+                        case 15:
+                            message.code = 15;
+                            break;
                         case "TIMESTAMP":
                         case 4:
                             message.code = 4;
@@ -43819,6 +43941,14 @@
                         case "JSON":
                         case 11:
                             message.code = 11;
+                            break;
+                        case "PROTO":
+                        case 13:
+                            message.code = 13;
+                            break;
+                        case "ENUM":
+                        case 14:
+                            message.code = 14;
                             break;
                         }
                         if (object.arrayElementType != null) {
@@ -43855,6 +43985,8 @@
                             message.typeAnnotation = 4;
                             break;
                         }
+                        if (object.protoTypeFqn != null)
+                            message.protoTypeFqn = String(object.protoTypeFqn);
                         return message;
                     };
     
@@ -43876,6 +44008,7 @@
                             object.arrayElementType = null;
                             object.structType = null;
                             object.typeAnnotation = options.enums === String ? "TYPE_ANNOTATION_CODE_UNSPECIFIED" : 0;
+                            object.protoTypeFqn = "";
                         }
                         if (message.code != null && message.hasOwnProperty("code"))
                             object.code = options.enums === String ? $root.google.spanner.v1.TypeCode[message.code] === undefined ? message.code : $root.google.spanner.v1.TypeCode[message.code] : message.code;
@@ -43885,6 +44018,8 @@
                             object.structType = $root.google.spanner.v1.StructType.toObject(message.structType, options);
                         if (message.typeAnnotation != null && message.hasOwnProperty("typeAnnotation"))
                             object.typeAnnotation = options.enums === String ? $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] === undefined ? message.typeAnnotation : $root.google.spanner.v1.TypeAnnotationCode[message.typeAnnotation] : message.typeAnnotation;
+                        if (message.protoTypeFqn != null && message.hasOwnProperty("protoTypeFqn"))
+                            object.protoTypeFqn = message.protoTypeFqn;
                         return object;
                     };
     
@@ -44381,6 +44516,7 @@
                  * @property {number} BOOL=1 BOOL value
                  * @property {number} INT64=2 INT64 value
                  * @property {number} FLOAT64=3 FLOAT64 value
+                 * @property {number} FLOAT32=15 FLOAT32 value
                  * @property {number} TIMESTAMP=4 TIMESTAMP value
                  * @property {number} DATE=5 DATE value
                  * @property {number} STRING=6 STRING value
@@ -44389,6 +44525,8 @@
                  * @property {number} STRUCT=9 STRUCT value
                  * @property {number} NUMERIC=10 NUMERIC value
                  * @property {number} JSON=11 JSON value
+                 * @property {number} PROTO=13 PROTO value
+                 * @property {number} ENUM=14 ENUM value
                  */
                 v1.TypeCode = (function() {
                     var valuesById = {}, values = Object.create(valuesById);
@@ -44396,6 +44534,7 @@
                     values[valuesById[1] = "BOOL"] = 1;
                     values[valuesById[2] = "INT64"] = 2;
                     values[valuesById[3] = "FLOAT64"] = 3;
+                    values[valuesById[15] = "FLOAT32"] = 15;
                     values[valuesById[4] = "TIMESTAMP"] = 4;
                     values[valuesById[5] = "DATE"] = 5;
                     values[valuesById[6] = "STRING"] = 6;
@@ -44404,6 +44543,8 @@
                     values[valuesById[9] = "STRUCT"] = 9;
                     values[valuesById[10] = "NUMERIC"] = 10;
                     values[valuesById[11] = "JSON"] = 11;
+                    values[valuesById[13] = "PROTO"] = 13;
+                    values[valuesById[14] = "ENUM"] = 14;
                     return values;
                 })();
     
@@ -52274,6 +52415,7 @@
                      * @property {google.spanner.v1.ITransactionOptions|null} [singleUseTransaction] CommitRequest singleUseTransaction
                      * @property {Array.<google.spanner.v1.IMutation>|null} [mutations] CommitRequest mutations
                      * @property {boolean|null} [returnCommitStats] CommitRequest returnCommitStats
+                     * @property {google.protobuf.IDuration|null} [maxCommitDelay] CommitRequest maxCommitDelay
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] CommitRequest requestOptions
                      */
     
@@ -52334,6 +52476,14 @@
                     CommitRequest.prototype.returnCommitStats = false;
     
                     /**
+                     * CommitRequest maxCommitDelay.
+                     * @member {google.protobuf.IDuration|null|undefined} maxCommitDelay
+                     * @memberof google.spanner.v1.CommitRequest
+                     * @instance
+                     */
+                    CommitRequest.prototype.maxCommitDelay = null;
+    
+                    /**
                      * CommitRequest requestOptions.
                      * @member {google.spanner.v1.IRequestOptions|null|undefined} requestOptions
                      * @memberof google.spanner.v1.CommitRequest
@@ -52392,6 +52542,8 @@
                             writer.uint32(/* id 5, wireType 0 =*/40).bool(message.returnCommitStats);
                         if (message.requestOptions != null && Object.hasOwnProperty.call(message, "requestOptions"))
                             $root.google.spanner.v1.RequestOptions.encode(message.requestOptions, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
+                        if (message.maxCommitDelay != null && Object.hasOwnProperty.call(message, "maxCommitDelay"))
+                            $root.google.protobuf.Duration.encode(message.maxCommitDelay, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
                         return writer;
                     };
     
@@ -52446,6 +52598,10 @@
                                 }
                             case 5: {
                                     message.returnCommitStats = reader.bool();
+                                    break;
+                                }
+                            case 8: {
+                                    message.maxCommitDelay = $root.google.protobuf.Duration.decode(reader, reader.uint32());
                                     break;
                                 }
                             case 6: {
@@ -52518,6 +52674,11 @@
                         if (message.returnCommitStats != null && message.hasOwnProperty("returnCommitStats"))
                             if (typeof message.returnCommitStats !== "boolean")
                                 return "returnCommitStats: boolean expected";
+                        if (message.maxCommitDelay != null && message.hasOwnProperty("maxCommitDelay")) {
+                            var error = $root.google.protobuf.Duration.verify(message.maxCommitDelay);
+                            if (error)
+                                return "maxCommitDelay." + error;
+                        }
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions")) {
                             var error = $root.google.spanner.v1.RequestOptions.verify(message.requestOptions);
                             if (error)
@@ -52562,6 +52723,11 @@
                         }
                         if (object.returnCommitStats != null)
                             message.returnCommitStats = Boolean(object.returnCommitStats);
+                        if (object.maxCommitDelay != null) {
+                            if (typeof object.maxCommitDelay !== "object")
+                                throw TypeError(".google.spanner.v1.CommitRequest.maxCommitDelay: object expected");
+                            message.maxCommitDelay = $root.google.protobuf.Duration.fromObject(object.maxCommitDelay);
+                        }
                         if (object.requestOptions != null) {
                             if (typeof object.requestOptions !== "object")
                                 throw TypeError(".google.spanner.v1.CommitRequest.requestOptions: object expected");
@@ -52589,6 +52755,7 @@
                             object.session = "";
                             object.returnCommitStats = false;
                             object.requestOptions = null;
+                            object.maxCommitDelay = null;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -52611,6 +52778,8 @@
                             object.returnCommitStats = message.returnCommitStats;
                         if (message.requestOptions != null && message.hasOwnProperty("requestOptions"))
                             object.requestOptions = $root.google.spanner.v1.RequestOptions.toObject(message.requestOptions, options);
+                        if (message.maxCommitDelay != null && message.hasOwnProperty("maxCommitDelay"))
+                            object.maxCommitDelay = $root.google.protobuf.Duration.toObject(message.maxCommitDelay, options);
                         return object;
                     };
     

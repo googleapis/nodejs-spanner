@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.3.0](https://github.com/googleapis/nodejs-spanner/compare/v7.2.0...v7.3.0) (2024-02-08)
+
+
+### Features
+
+* **spanner:** Add maxCommitDelay support ([#1992](https://github.com/googleapis/nodejs-spanner/issues/1992)) ([9f84408](https://github.com/googleapis/nodejs-spanner/commit/9f8440843fd8926a37ec300a318dad33b83b4f97))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.1.0 ([#1981](https://github.com/googleapis/nodejs-spanner/issues/1981)) ([2a36150](https://github.com/googleapis/nodejs-spanner/commit/2a36150cb61e9abeef073724189cc651d29d8776))
+* **deps:** Update dependency google-gax to v4.2.0 ([#1988](https://github.com/googleapis/nodejs-spanner/issues/1988)) ([005589a](https://github.com/googleapis/nodejs-spanner/commit/005589a7727ee87948a55a6c7710f5150fc1c6a7))
+* **deps:** Update dependency google-gax to v4.2.1 ([#1989](https://github.com/googleapis/nodejs-spanner/issues/1989)) ([d2ae995](https://github.com/googleapis/nodejs-spanner/commit/d2ae9952e7449ce2321e69a6be36c9d50d863095))
+* **deps:** Update dependency google-gax to v4.3.0 ([#1990](https://github.com/googleapis/nodejs-spanner/issues/1990)) ([e625753](https://github.com/googleapis/nodejs-spanner/commit/e625753a37393f32d9e449aa7324763082f6c923))
+
 ## [7.2.0](https://github.com/googleapis/nodejs-spanner/compare/v7.1.0...v7.2.0) (2024-01-11)
 
 
