@@ -224,7 +224,6 @@ class Spanner extends GrpcService {
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
   _instance_admin_api: null;
-  // emulatorHost: {[k: string]: string | number | undefined};
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.

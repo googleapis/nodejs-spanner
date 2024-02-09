@@ -28,7 +28,6 @@ import type {
   PaginationCallback,
   GaxCall,
 } from 'google-gax';
-import {grpc, GoogleError} from 'google-gax';
 import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
@@ -128,12 +127,11 @@ export class InstanceAdminClient {
    *     const client = new InstanceAdminClient({fallback: true}, gax);
    *     ```
    */
-
   constructor(
     opts?: ClientOptions,
     gaxInstance?: typeof gax | typeof gax.fallback
   ) {
-// Ensure that options include all the required fields.
+  // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof InstanceAdminClient;
     if (
       opts?.universe_domain &&
