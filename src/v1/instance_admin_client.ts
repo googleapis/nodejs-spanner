@@ -129,53 +129,11 @@ export class InstanceAdminClient {
    *     ```
    */
 
-  static getSpannerEmulatorHost():
-    | {endpoint: string; port?: number}
-    | undefined {
-    const endpointWithPort = process.env.SPANNER_EMULATOR_HOST;
-    if (endpointWithPort) {
-      if (
-        endpointWithPort.startsWith('http:') ||
-        endpointWithPort.startsWith('https:')
-      ) {
-        throw new GoogleError(
-          'SPANNER_EMULATOR_HOST must not start with a protocol specification (http/https)'
-        );
-      }
-      const index = endpointWithPort.indexOf(':');
-      if (index > -1) {
-        const portName = endpointWithPort.substring(index + 1);
-        const port = +portName;
-        if (!port || port < 1 || port > 65535) {
-          throw new GoogleError(`Invalid port number: ${portName}`);
-        }
-        return {
-          endpoint: endpointWithPort.substring(0, index),
-          port: +endpointWithPort.substring(index + 1),
-        };
-      }
-      return {endpoint: endpointWithPort};
-    }
-    return undefined;
-  }
-
   constructor(
     opts?: ClientOptions,
     gaxInstance?: typeof gax | typeof gax.fallback
   ) {
-    // Ensure that options include all the required fields.
-    const emulatorHost = InstanceAdminClient.getSpannerEmulatorHost();
-    if (
-      emulatorHost &&
-      emulatorHost.endpoint &&
-      emulatorHost.endpoint.length > 0 &&
-      opts
-    ) {
-      opts.servicePath = emulatorHost.endpoint;
-      opts.port = emulatorHost.port;
-      opts.sslCreds = grpc.credentials.createInsecure();
-    }
-
+// Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof InstanceAdminClient;
     if (
       opts?.universe_domain &&

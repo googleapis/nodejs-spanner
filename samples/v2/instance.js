@@ -20,18 +20,19 @@ async function createInstance(instanceId, projectId) {
   // [START spanner_create_instance]
 
   // Imports the Google Cloud client library
-  const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner} = require('@google-cloud/spanner');
 
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  const instanceAdminClient = spanner.instance_admin_api();
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    **/
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
-
-  // Creates a client
-  const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectId,
-  });
 
   // Creates a new instance
   try {

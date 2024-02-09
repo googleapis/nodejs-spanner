@@ -48,6 +48,7 @@ import {
 } from './instance-config';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
+import { InstanceAdminClient, DatabaseAdminClient } from './v1';
 import {
   PagedOptions,
   PagedResponse,
@@ -222,6 +223,8 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
+  _instance_admin_api: null;
+  // emulatorHost: {[k: string]: string | number | undefined};
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -235,6 +238,7 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
+  emulatorHost: { endpoint: string; port?: number | undefined; } | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -345,6 +349,20 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
+    this._instance_admin_api = null;
+    this.emulatorHost = emulatorHost;
+  }
+  
+  instance_admin_api(this): void {
+    if(this._instance_admin_api == null) {
+      this._instance_admin_api = new InstanceAdminClient();
+      if(this.emulatorHost) {
+        this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
+        this._instance_admin_api._opts.port = this.emulatorHost.port;
+        this._instance_admin_api._opts.sslCreds = this.grpc.credentials.createInsecure();
+      }
+    }
+    return this._instance_admin_api;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */

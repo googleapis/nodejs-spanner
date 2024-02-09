@@ -32,13 +32,15 @@ function main(
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
-  const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
-  const {protos} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Creates a client
-  const instanceAdminClient = new InstanceAdminClient({
+  const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.instance_admin_api();
+
   async function updateInstanceConfig() {
     // Updates an instance config
     try {

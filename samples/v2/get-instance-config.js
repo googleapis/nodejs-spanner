@@ -19,7 +19,7 @@
 
 'use strict';
 
-function main(projectID) {
+function main(projectId) {
   // [START spanner_get_instance_config]
 
   /**
@@ -28,12 +28,15 @@ function main(projectID) {
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
-  const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner} = require('@google-cloud/spanner');
 
   // Creates a client
-  const instanceAdminClient = new InstanceAdminClient({
-    projectId: projectID,
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.instance_admin_api();
+
 
   async function getInstanceConfig() {
     // Get the instance config for the multi-region North America 6 (NAM6).
@@ -41,8 +44,8 @@ function main(projectID) {
     // configurations.
     const [instanceConfig] = await instanceAdminClient.getInstanceConfig({
       name: instanceAdminClient.instanceConfigPath(
-        projectID,
-        'custom-my-instance-config-2'
+        projectId,
+        'custom-my-instance-config'
       ),
     });
     console.log(

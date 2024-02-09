@@ -18,8 +18,7 @@
 async function createInstanceWithAutoscalingConfig(instanceId, projectId) {
   // [START spanner_create_instance_with_autoscaling_config]
   // Imports the Google Cloud client library
-  const {protos} = require('@google-cloud/spanner');
-  const {InstanceAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -27,10 +26,12 @@ async function createInstanceWithAutoscalingConfig(instanceId, projectId) {
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance';
 
-  // creates an instance admin client
-  const instanceAdminClient = new InstanceAdminClient({
+  // Creates a client
+  const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.instance_admin_api();
 
   const autoscalingConfig =
     protos.google.spanner.admin.instance.v1.AutoscalingConfig.create({
