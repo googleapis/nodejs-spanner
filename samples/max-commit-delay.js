@@ -20,11 +20,11 @@
 function main(
   instanceId = 'my-instance',
   databaseId = 'my-database',
-  projectId = 'my-project-id',
+  projectId = 'my-project-id'
 ) {
   // [START spanner_set_max_commit_delay]
   // Imports the Google Cloud client library.
-  const { Spanner, protos } = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -50,8 +50,8 @@ function main(
     try {
       const [response] = await albumsTable.upsert(
         [
-          { SingerId: '1', AlbumId: '1', MarketingBudget: '200000' },
-          { SingerId: '2', AlbumId: '2', MarketingBudget: '400000' },
+          {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
+          {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
         ],
         {
           maxCommitDelay: protos.google.protobuf.Duration({
