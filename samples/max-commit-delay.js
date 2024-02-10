@@ -11,13 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// sample-metadata:
+//  title: Executes request with max commit delay
+//  usage: node max-commit-delay.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
 
-async function setMaxCommitDelay(instanceId, databaseId, projectId) {
+function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id',
+) {
   // [START spanner_set_max_commit_delay]
   // Imports the Google Cloud client library.
-  const {Spanner, protos} = require('@google-cloud/spanner');
+  const { Spanner, protos } = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -31,37 +38,43 @@ async function setMaxCommitDelay(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  async function spannerSetMaxCommitDelay() {
+    // Gets a reference to a Cloud Spanner instance and database.
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
 
-  // Instantiate Spanner table objects.
-  const albumsTable = database.table('Albums');
+    // Instantiate Spanner table objects.
+    const albumsTable = database.table('Albums');
 
-  // Updates rows in the Venues table.
-  try {
-    const [response] = await albumsTable.upsert(
-      [
-        {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
-        {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
-      ],
-      {
-        maxCommitDelay: protos.google.protobuf.Duration({
-          seconds: 0, // 0 seconds
-          nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
-        }),
-      }
-    );
-    console.log(
-      `Updated data with ${response.commitStats.mutationCount} mutations.`
-    );
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
+    // Updates rows in the Venues table.
+    try {
+      const [response] = await albumsTable.upsert(
+        [
+          { SingerId: '1', AlbumId: '1', MarketingBudget: '200000' },
+          { SingerId: '2', AlbumId: '2', MarketingBudget: '400000' },
+        ],
+        {
+          maxCommitDelay: protos.google.protobuf.Duration({
+            seconds: 0, // 0 seconds
+            nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
+          }),
+        }
+      );
+      console.log(
+        `Updated data with ${response.commitStats.mutationCount} mutations.`
+      );
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the database when finished.
+      database.close();
+    }
   }
+  spannerSetMaxCommitDelay();
   // [END spanner_set_max_commit_delay]
 }
-
-module.exports.setMaxCommitDelay = setMaxCommitDelay;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
