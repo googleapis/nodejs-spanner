@@ -1358,7 +1358,10 @@ describe('Spanner', () => {
     const output = execSync(
       `${crudCmd} setMaxCommitDelay ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
-    assert.match(output, new RegExp('Updated data with (\\d+) mutations'));
+    assert.match(
+      output,
+      /Successfully inserted 1 record into the Singers table/
+    );
   });
 
   // create_database_with_version_retention_period
