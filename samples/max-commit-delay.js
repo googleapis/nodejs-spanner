@@ -43,32 +43,37 @@ function main(
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
 
-    // Instantiate Spanner table objects.
-    const albumsTable = database.table('Albums');
+    database.runTransaction(async (err, transaction) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      try {
+        const [rowCount] = await transaction.runUpdate({
+          sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (110, @firstName, @lastName)',
+          params: {
+            firstName: 'Virginia',
+            lastName: 'Watson',
+          },
+        });
 
-    // Updates rows in the Venues table.
-    try {
-      const [response] = await albumsTable.upsert(
-        [
-          {SingerId: '1', AlbumId: '1', MarketingBudget: '200000'},
-          {SingerId: '2', AlbumId: '2', MarketingBudget: '400000'},
-        ],
-        {
+        console.log(
+          `Successfully inserted ${rowCount} record into the Singers table.`
+        );
+
+        await transaction.commit({
           maxCommitDelay: protos.google.protobuf.Duration({
             seconds: 0, // 0 seconds
             nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
           }),
-        }
-      );
-      console.log(
-        `Updated data with ${response.commitStats.mutationCount} mutations.`
-      );
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      database.close();
-    }
+        });
+      } catch (err) {
+        console.error('ERROR:', err);
+      } finally {
+        // Close the database when finished.
+        database.close();
+      }
+    });
   }
   spannerSetMaxCommitDelay();
   // [END spanner_set_max_commit_delay]
