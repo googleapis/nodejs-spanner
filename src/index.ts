@@ -355,6 +355,7 @@ class Spanner extends GrpcService {
     this.emulatorHost = emulatorHost;
   }
 
+  // Helper for session-related instance admin client API calls
   instance_admin_api(this): void {
     if (this._instance_admin_api === null) {
       this._instance_admin_api = new InstanceAdminClient();
@@ -368,6 +369,7 @@ class Spanner extends GrpcService {
     return this._instance_admin_api;
   }
 
+  // Helper for session-related database admin client API calls
   database_admin_api(this): void {
     if (this._database_admin_api === null) {
       this._database_admin_api = new DatabaseAdminClient();
