@@ -29,6 +29,7 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import {protos} from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest, CreateInstanceConfigRequest} from '../src/index';
 import {
@@ -252,7 +253,7 @@ describe('Spanner', () => {
       const options = getFake(spanner).calledWith_[1];
 
       assert.deepStrictEqual(config, {
-        baseUrl: fakeV1.SpannerClient.servicePath,
+        baseUrl: 'spanner.googleapis.com',
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
           Operations: {
@@ -279,6 +280,26 @@ describe('Spanner', () => {
     it('should optionally accept routeToLeaderEnabled', () => {
       const spanner = new Spanner({routeToLeaderEnabled: false});
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
+    });
+
+    it('should optionally accept directedReadOptions', () => {
+      const fakeDirectedReadOptions = {
+        includeReplicas: {
+          replicaSelections: [
+            {
+              location: 'us-west1',
+              type: protos.google.spanner.v1.DirectedReadOptions
+                .ReplicaSelection.Type.READ_ONLY,
+            },
+          ],
+          autoFailoverDisabled: true,
+        },
+      };
+
+      const spanner = new Spanner({
+        directedReadOptions: fakeDirectedReadOptions,
+      });
+      assert.strictEqual(spanner.directedReadOptions, fakeDirectedReadOptions);
     });
 
     it('should set projectFormattedName_', () => {
@@ -1105,6 +1126,7 @@ describe('Spanner', () => {
     });
 
     it('should throw if the provided config object does not have baseConfig', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
       assert.throws(() => {
         spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);
