@@ -63,7 +63,7 @@ import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import { InstanceAdminClient, DatabaseAdminClient } from './v1';
+import {InstanceAdminClient, DatabaseAdminClient} from './v1';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -239,7 +239,7 @@ class Spanner extends GrpcService {
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
 
-  emulatorHost: { endpoint: string; port?: number | undefined; } | undefined;
+  emulatorHost: {endpoint: string; port?: number | undefined} | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -356,24 +356,26 @@ class Spanner extends GrpcService {
   }
 
   instance_admin_api(this): void {
-    if(this._instance_admin_api == null) {
+    if (this._instance_admin_api === null) {
       this._instance_admin_api = new InstanceAdminClient();
-      if(this.emulatorHost) {
+      if (this.emulatorHost) {
         this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
         this._instance_admin_api._opts.port = this.emulatorHost.port;
-        this._instance_admin_api._opts.sslCreds = this.grpc.credentials.createInsecure();
+        this._instance_admin_api._opts.sslCreds =
+          this.grpc.credentials.createInsecure();
       }
     }
     return this._instance_admin_api;
   }
 
   database_admin_api(this): void {
-    if(this._database_admin_api == null) {
+    if (this._database_admin_api === null) {
       this._database_admin_api = new DatabaseAdminClient();
-      if(this.emulatorHost) {
+      if (this.emulatorHost) {
         this._database_admin_api._opts.servicePath = this.emulatorHost.endpoint;
         this._database_admin_api._opts.port = this.emulatorHost.port;
-        this._database_admin_api._opts.sslCreds = this.grpc.credentials.createInsecure();
+        this._database_admin_api._opts.sslCreds =
+          this.grpc.credentials.createInsecure();
       }
     }
     return this._database_admin_api;
