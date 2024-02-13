@@ -235,7 +235,6 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
-  emulatorHost: {endpoint: string; port?: number | undefined} | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
