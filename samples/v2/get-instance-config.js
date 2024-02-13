@@ -37,7 +37,6 @@ function main(projectId) {
 
   const instanceAdminClient = spanner.instance_admin_api();
 
-
   async function getInstanceConfig() {
     // Get the instance config for the multi-region North America 6 (NAM6).
     // See https://cloud.google.com/spanner/docs/instance-configurations#configuration for a list of all available

@@ -48,7 +48,6 @@ import {
 } from './instance-config';
 import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
-import { InstanceAdminClient, DatabaseAdminClient } from './v1';
 import {
   PagedOptions,
   PagedResponse,
@@ -236,7 +235,7 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
-  emulatorHost: { endpoint: string; port?: number | undefined; } | undefined;
+  emulatorHost: {endpoint: string; port?: number | undefined} | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -346,7 +345,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
-    this.directedReadOptions = directedReadOptions;    
+    this.directedReadOptions = directedReadOptions;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
