@@ -223,7 +223,6 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  _instance_admin_api: null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -347,21 +346,7 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
-    this.directedReadOptions = directedReadOptions;
-    this._instance_admin_api = null;
-    this.emulatorHost = emulatorHost;
-  }
-  
-  instance_admin_api(this): void {
-    if(this._instance_admin_api == null) {
-      this._instance_admin_api = new InstanceAdminClient();
-      if(this.emulatorHost) {
-        this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
-        this._instance_admin_api._opts.port = this.emulatorHost.port;
-        this._instance_admin_api._opts.sslCreds = this.grpc.credentials.createInsecure();
-      }
-    }
-    return this._instance_admin_api;
+    this.directedReadOptions = directedReadOptions;    
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */

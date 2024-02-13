@@ -131,7 +131,7 @@ export class InstanceAdminClient {
     opts?: ClientOptions,
     gaxInstance?: typeof gax | typeof gax.fallback
   ) {
-  // Ensure that options include all the required fields.
+    // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof InstanceAdminClient;
     if (
       opts?.universe_domain &&
