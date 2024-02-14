@@ -113,7 +113,6 @@ export class DatabaseAdminClient {
    *     const client = new DatabaseAdminClient({fallback: true}, gax);
    *     ```
    */
-
   constructor(
     opts?: ClientOptions,
     gaxInstance?: typeof gax | typeof gax.fallback
