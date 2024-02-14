@@ -223,8 +223,8 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  _instance_admin_api: null;
-  _database_admin_api: null;
+  _instance_admin_api: null | undefined;
+  _database_admin_api: null | undefined;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -350,14 +350,14 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this._instance_admin_api = null;
-    this._database_admin_api = null;
+    this._instance_admin_api = this._instance_admin_api;
+    this._database_admin_api = this._database_admin_api;
     this.emulatorHost = emulatorHost;
   }
 
   // Helper for session-related instance admin client API calls
   instance_admin_api(this): void {
-    if (this._instance_admin_api === null) {
+    if (this._instance_admin_api === null || this._instance_admin_api === undefined) {
       this._instance_admin_api = new InstanceAdminClient();
       if (this.emulatorHost) {
         this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
@@ -371,7 +371,7 @@ class Spanner extends GrpcService {
 
   // Helper for session-related database admin client API calls
   database_admin_api(this): void {
-    if (this._database_admin_api === null) {
+    if (this._database_admin_api === null || this._database_admin_api === undefined) {
       this._database_admin_api = new DatabaseAdminClient();
       if (this.emulatorHost) {
         this._database_admin_api._opts.servicePath = this.emulatorHost.endpoint;
