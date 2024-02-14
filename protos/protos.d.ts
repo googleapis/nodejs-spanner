@@ -18233,6 +18233,9 @@ export namespace google {
 
                 /** Session creatorRole */
                 creatorRole?: (string|null);
+
+                /** Session multiplexed */
+                multiplexed?: (boolean|null);
             }
 
             /** Represents a Session. */
@@ -18258,6 +18261,9 @@ export namespace google {
 
                 /** Session creatorRole. */
                 public creatorRole: string;
+
+                /** Session multiplexed. */
+                public multiplexed: boolean;
 
                 /**
                  * Creates a new Session instance using the specified properties.
@@ -20994,6 +21000,9 @@ export namespace google {
 
                 /** BatchWriteRequest mutationGroups */
                 mutationGroups?: (google.spanner.v1.BatchWriteRequest.IMutationGroup[]|null);
+
+                /** BatchWriteRequest excludeTxnFromChangeStreams */
+                excludeTxnFromChangeStreams?: (boolean|null);
             }
 
             /** Represents a BatchWriteRequest. */
@@ -21013,6 +21022,9 @@ export namespace google {
 
                 /** BatchWriteRequest mutationGroups. */
                 public mutationGroups: google.spanner.v1.BatchWriteRequest.IMutationGroup[];
+
+                /** BatchWriteRequest excludeTxnFromChangeStreams. */
+                public excludeTxnFromChangeStreams: boolean;
 
                 /**
                  * Creates a new BatchWriteRequest instance using the specified properties.

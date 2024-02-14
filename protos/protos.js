@@ -45851,6 +45851,7 @@
                      * @property {google.protobuf.ITimestamp|null} [createTime] Session createTime
                      * @property {google.protobuf.ITimestamp|null} [approximateLastUseTime] Session approximateLastUseTime
                      * @property {string|null} [creatorRole] Session creatorRole
+                     * @property {boolean|null} [multiplexed] Session multiplexed
                      */
     
                     /**
@@ -45910,6 +45911,14 @@
                     Session.prototype.creatorRole = "";
     
                     /**
+                     * Session multiplexed.
+                     * @member {boolean} multiplexed
+                     * @memberof google.spanner.v1.Session
+                     * @instance
+                     */
+                    Session.prototype.multiplexed = false;
+    
+                    /**
                      * Creates a new Session instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.Session
@@ -45944,6 +45953,8 @@
                             $root.google.protobuf.Timestamp.encode(message.approximateLastUseTime, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
                         if (message.creatorRole != null && Object.hasOwnProperty.call(message, "creatorRole"))
                             writer.uint32(/* id 5, wireType 2 =*/42).string(message.creatorRole);
+                        if (message.multiplexed != null && Object.hasOwnProperty.call(message, "multiplexed"))
+                            writer.uint32(/* id 6, wireType 0 =*/48).bool(message.multiplexed);
                         return writer;
                     };
     
@@ -46017,6 +46028,10 @@
                                     message.creatorRole = reader.string();
                                     break;
                                 }
+                            case 6: {
+                                    message.multiplexed = reader.bool();
+                                    break;
+                                }
                             default:
                                 reader.skipType(tag & 7);
                                 break;
@@ -46076,6 +46091,9 @@
                         if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
                             if (!$util.isString(message.creatorRole))
                                 return "creatorRole: string expected";
+                        if (message.multiplexed != null && message.hasOwnProperty("multiplexed"))
+                            if (typeof message.multiplexed !== "boolean")
+                                return "multiplexed: boolean expected";
                         return null;
                     };
     
@@ -46112,6 +46130,8 @@
                         }
                         if (object.creatorRole != null)
                             message.creatorRole = String(object.creatorRole);
+                        if (object.multiplexed != null)
+                            message.multiplexed = Boolean(object.multiplexed);
                         return message;
                     };
     
@@ -46135,6 +46155,7 @@
                             object.createTime = null;
                             object.approximateLastUseTime = null;
                             object.creatorRole = "";
+                            object.multiplexed = false;
                         }
                         if (message.name != null && message.hasOwnProperty("name"))
                             object.name = message.name;
@@ -46150,6 +46171,8 @@
                             object.approximateLastUseTime = $root.google.protobuf.Timestamp.toObject(message.approximateLastUseTime, options);
                         if (message.creatorRole != null && message.hasOwnProperty("creatorRole"))
                             object.creatorRole = message.creatorRole;
+                        if (message.multiplexed != null && message.hasOwnProperty("multiplexed"))
+                            object.multiplexed = message.multiplexed;
                         return object;
                     };
     
@@ -53057,6 +53080,7 @@
                      * @property {string|null} [session] BatchWriteRequest session
                      * @property {google.spanner.v1.IRequestOptions|null} [requestOptions] BatchWriteRequest requestOptions
                      * @property {Array.<google.spanner.v1.BatchWriteRequest.IMutationGroup>|null} [mutationGroups] BatchWriteRequest mutationGroups
+                     * @property {boolean|null} [excludeTxnFromChangeStreams] BatchWriteRequest excludeTxnFromChangeStreams
                      */
     
                     /**
@@ -53100,6 +53124,14 @@
                     BatchWriteRequest.prototype.mutationGroups = $util.emptyArray;
     
                     /**
+                     * BatchWriteRequest excludeTxnFromChangeStreams.
+                     * @member {boolean} excludeTxnFromChangeStreams
+                     * @memberof google.spanner.v1.BatchWriteRequest
+                     * @instance
+                     */
+                    BatchWriteRequest.prototype.excludeTxnFromChangeStreams = false;
+    
+                    /**
                      * Creates a new BatchWriteRequest instance using the specified properties.
                      * @function create
                      * @memberof google.spanner.v1.BatchWriteRequest
@@ -53130,6 +53162,8 @@
                         if (message.mutationGroups != null && message.mutationGroups.length)
                             for (var i = 0; i < message.mutationGroups.length; ++i)
                                 $root.google.spanner.v1.BatchWriteRequest.MutationGroup.encode(message.mutationGroups[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                        if (message.excludeTxnFromChangeStreams != null && Object.hasOwnProperty.call(message, "excludeTxnFromChangeStreams"))
+                            writer.uint32(/* id 5, wireType 0 =*/40).bool(message.excludeTxnFromChangeStreams);
                         return writer;
                     };
     
@@ -53176,6 +53210,10 @@
                                     if (!(message.mutationGroups && message.mutationGroups.length))
                                         message.mutationGroups = [];
                                     message.mutationGroups.push($root.google.spanner.v1.BatchWriteRequest.MutationGroup.decode(reader, reader.uint32()));
+                                    break;
+                                }
+                            case 5: {
+                                    message.excludeTxnFromChangeStreams = reader.bool();
                                     break;
                                 }
                             default:
@@ -53230,6 +53268,9 @@
                                     return "mutationGroups." + error;
                             }
                         }
+                        if (message.excludeTxnFromChangeStreams != null && message.hasOwnProperty("excludeTxnFromChangeStreams"))
+                            if (typeof message.excludeTxnFromChangeStreams !== "boolean")
+                                return "excludeTxnFromChangeStreams: boolean expected";
                         return null;
                     };
     
@@ -53262,6 +53303,8 @@
                                 message.mutationGroups[i] = $root.google.spanner.v1.BatchWriteRequest.MutationGroup.fromObject(object.mutationGroups[i]);
                             }
                         }
+                        if (object.excludeTxnFromChangeStreams != null)
+                            message.excludeTxnFromChangeStreams = Boolean(object.excludeTxnFromChangeStreams);
                         return message;
                     };
     
@@ -53283,6 +53326,7 @@
                         if (options.defaults) {
                             object.session = "";
                             object.requestOptions = null;
+                            object.excludeTxnFromChangeStreams = false;
                         }
                         if (message.session != null && message.hasOwnProperty("session"))
                             object.session = message.session;
@@ -53293,6 +53337,8 @@
                             for (var j = 0; j < message.mutationGroups.length; ++j)
                                 object.mutationGroups[j] = $root.google.spanner.v1.BatchWriteRequest.MutationGroup.toObject(message.mutationGroups[j], options);
                         }
+                        if (message.excludeTxnFromChangeStreams != null && message.hasOwnProperty("excludeTxnFromChangeStreams"))
+                            object.excludeTxnFromChangeStreams = message.excludeTxnFromChangeStreams;
                         return object;
                     };
     

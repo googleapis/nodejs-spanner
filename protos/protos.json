@@ -5026,6 +5026,13 @@
                     "creatorRole": {
                       "type": "string",
                       "id": 5
+                    },
+                    "multiplexed": {
+                      "type": "bool",
+                      "id": 6,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
                     }
                   }
                 },
@@ -5627,6 +5634,13 @@
                       "id": 4,
                       "options": {
                         "(google.api.field_behavior)": "REQUIRED"
+                      }
+                    },
+                    "excludeTxnFromChangeStreams": {
+                      "type": "bool",
+                      "id": 5,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
                       }
                     }
                   },
