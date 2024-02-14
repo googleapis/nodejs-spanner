@@ -69,6 +69,7 @@ export interface RequestOptions {
 export interface CommitOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
+  maxCommitDelay?: spannerClient.protobuf.IDuration;
   gaxOptions?: CallOptions;
 }
 
@@ -86,6 +87,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -107,6 +109,7 @@ export interface ReadRequest extends RequestOptions {
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -457,6 +460,8 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
+   * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -591,6 +596,10 @@ export class Snapshot extends EventEmitter {
       transaction.singleUse = this._options;
     }
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      request.directedReadOptions
+    );
+
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -600,6 +609,7 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.directedReadOptions;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -610,6 +620,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
@@ -969,7 +980,7 @@ export class Snapshot extends EventEmitter {
    *     execution statistics for the SQL statement that
    *     produced this result set.
    * @property {string} partitionToken The partition token.
-   * @property {number} seqno The Sequence number.
+   * @property {number} seqno The Sequence number. This option is used internally and will be overridden.
    * @property {string} sql The SQL string.
    * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
@@ -993,6 +1004,8 @@ export class Snapshot extends EventEmitter {
    *     that it is not ready for any more data. Increase this value if you
    *     experience 'Stream is still not ready to receive data' errors as a
    *     result of a slow writer in your receiving stream.
+   *  @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1068,6 +1081,10 @@ export class Snapshot extends EventEmitter {
       query;
     let reqOpts;
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      query.directedReadOptions
+    );
+
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
       const {params, paramTypes} = Snapshot.encodeParams(query);
@@ -1085,6 +1102,7 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.directedReadOptions;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1094,6 +1112,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         params,
         paramTypes,
@@ -1281,11 +1300,36 @@ export class Snapshot extends EventEmitter {
     if (!is.empty(typeMap)) {
       Object.keys(typeMap).forEach(param => {
         const type = typeMap[param];
-        paramTypes[param] = codec.createTypeObject(type);
+        const typeObject = codec.createTypeObject(type);
+        if (typeObject.code !== 'TYPE_CODE_UNSPECIFIED') {
+          paramTypes[param] = codec.createTypeObject(type);
+        }
       });
     }
 
     return {params, paramTypes};
+  }
+
+  /**
+   * Get directed read options
+   * @private
+   * @param {google.spanner.v1.IDirectedReadOptions} directedReadOptions Request directedReadOptions object.
+   */
+  protected _getDirectedReadOptions(
+    directedReadOptions:
+      | google.spanner.v1.IDirectedReadOptions
+      | null
+      | undefined
+  ) {
+    if (
+      !directedReadOptions &&
+      this._getSpanner().directedReadOptions &&
+      this._options.readOnly
+    ) {
+      return this._getSpanner().directedReadOptions;
+    }
+
+    return directedReadOptions;
   }
 
   /**
@@ -1758,6 +1802,9 @@ export class Transaction extends Dml {
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
+   * @property {spannerClient.proto.IDuration} maxCommitDelay Maximum amount
+   *     of delay the commit is willing to incur in order to improve
+   *     throughput. Value should be between 0ms and 500ms.
    * @property {object} [gaxOptions] The request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -1847,6 +1894,12 @@ export class Transaction extends Dml {
       (options as CommitOptions).returnCommitStats
     ) {
       reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
+    }
+    if (
+      'maxCommitDelay' in options &&
+      (options as CommitOptions).maxCommitDelay
+    ) {
+      reqOpts.maxCommitDelay = (options as CommitOptions).maxCommitDelay;
     }
     reqOpts.requestOptions = Object.assign(
       requestOptions || {},

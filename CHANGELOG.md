@@ -4,6 +4,52 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.3.0](https://github.com/googleapis/nodejs-spanner/compare/v7.2.0...v7.3.0) (2024-02-08)
+
+
+### Features
+
+* **spanner:** Add maxCommitDelay support ([#1992](https://github.com/googleapis/nodejs-spanner/issues/1992)) ([9f84408](https://github.com/googleapis/nodejs-spanner/commit/9f8440843fd8926a37ec300a318dad33b83b4f97))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.1.0 ([#1981](https://github.com/googleapis/nodejs-spanner/issues/1981)) ([2a36150](https://github.com/googleapis/nodejs-spanner/commit/2a36150cb61e9abeef073724189cc651d29d8776))
+* **deps:** Update dependency google-gax to v4.2.0 ([#1988](https://github.com/googleapis/nodejs-spanner/issues/1988)) ([005589a](https://github.com/googleapis/nodejs-spanner/commit/005589a7727ee87948a55a6c7710f5150fc1c6a7))
+* **deps:** Update dependency google-gax to v4.2.1 ([#1989](https://github.com/googleapis/nodejs-spanner/issues/1989)) ([d2ae995](https://github.com/googleapis/nodejs-spanner/commit/d2ae9952e7449ce2321e69a6be36c9d50d863095))
+* **deps:** Update dependency google-gax to v4.3.0 ([#1990](https://github.com/googleapis/nodejs-spanner/issues/1990)) ([e625753](https://github.com/googleapis/nodejs-spanner/commit/e625753a37393f32d9e449aa7324763082f6c923))
+
+## [7.2.0](https://github.com/googleapis/nodejs-spanner/compare/v7.1.0...v7.2.0) (2024-01-11)
+
+
+### Features
+
+* Support for Directed Reads ([#1966](https://github.com/googleapis/nodejs-spanner/issues/1966)) ([c0a4363](https://github.com/googleapis/nodejs-spanner/commit/c0a43638c81dd769cc55e021cc4cf1d93db8a72a))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @google-cloud/precise-date to v4 ([#1903](https://github.com/googleapis/nodejs-spanner/issues/1903)) ([7464c8b](https://github.com/googleapis/nodejs-spanner/commit/7464c8b2412a9b718cd8981363cb982aebbe3723))
+* **deps:** Update dependency @types/stack-trace to v0.0.33 ([#1952](https://github.com/googleapis/nodejs-spanner/issues/1952)) ([45ab751](https://github.com/googleapis/nodejs-spanner/commit/45ab751da1f0f73bc06c8b8e0007b457fa75518f))
+* **deps:** Update dependency retry-request to v7 ([#1934](https://github.com/googleapis/nodejs-spanner/issues/1934)) ([c575c80](https://github.com/googleapis/nodejs-spanner/commit/c575c80b17e5fdf2cbba24c806fa21f26c2010dc))
+
+## [7.1.0](https://github.com/googleapis/nodejs-spanner/compare/v7.0.0...v7.1.0) (2023-11-16)
+
+
+### Features
+
+* Add PG.OID type cod annotation ([69192b5](https://github.com/googleapis/nodejs-spanner/commit/69192b50ead0bde98676cb647ba4bf8a3112bb02))
+* **spanner:** Add autoscaling config to the instance proto ([#1935](https://github.com/googleapis/nodejs-spanner/issues/1935)) ([fe285c6](https://github.com/googleapis/nodejs-spanner/commit/fe285c67074ba36aaf5b49ea867c0d5851d83717))
+* **spanner:** Add directed_read_option in spanner.proto ([69192b5](https://github.com/googleapis/nodejs-spanner/commit/69192b50ead0bde98676cb647ba4bf8a3112bb02))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @types/stack-trace to v0.0.31 ([#1924](https://github.com/googleapis/nodejs-spanner/issues/1924)) ([96af405](https://github.com/googleapis/nodejs-spanner/commit/96af4051c6717dfcbbc6e117e3ecd7f8e9dd758a))
+* **deps:** Update dependency @types/stack-trace to v0.0.32 ([#1939](https://github.com/googleapis/nodejs-spanner/issues/1939)) ([cb66474](https://github.com/googleapis/nodejs-spanner/commit/cb66474e995a90c1288e70842f723c51f1ffd37d))
+* **deps:** Update dependency google-gax to v4.0.4 ([#1926](https://github.com/googleapis/nodejs-spanner/issues/1926)) ([361fe6a](https://github.com/googleapis/nodejs-spanner/commit/361fe6a812f56c6834f1f7c7db60fc1083243768))
+* **deps:** Update dependency google-gax to v4.0.5 ([#1937](https://github.com/googleapis/nodejs-spanner/issues/1937)) ([ab26075](https://github.com/googleapis/nodejs-spanner/commit/ab260759be2fcc9ff80342f710b4c807742da2c5))
+
 ## [7.0.0](https://github.com/googleapis/nodejs-spanner/compare/v6.16.0...v7.0.0) (2023-08-30)
 
 

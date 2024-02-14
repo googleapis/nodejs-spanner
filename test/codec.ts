@@ -969,7 +969,7 @@ describe('codec', () => {
     });
 
     it('should determine if the value is a string', () => {
-      assert.deepStrictEqual(codec.getType('abc'), {type: 'string'});
+      assert.deepStrictEqual(codec.getType('abc'), {type: 'unspecified'});
     });
 
     it('should determine if the value is bytes', () => {
@@ -1006,7 +1006,7 @@ describe('codec', () => {
 
       assert.deepStrictEqual(type, {
         type: 'struct',
-        fields: [{name: 'a', type: 'string'}],
+        fields: [{name: 'a', type: 'unspecified'}],
       });
     });
 

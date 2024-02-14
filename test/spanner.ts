@@ -961,7 +961,6 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
         assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
         assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
-        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
         assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
         assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
         assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
@@ -3192,6 +3191,56 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should apply blind writes only once', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        attempts++;
+        if (attempts === 1) {
+          spannerMock.abortTransaction(tx);
+        }
+        tx!.insert('foo', {id: 1, value: 'One'});
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      assert.strictEqual(2, attempts);
+      // Verify that we have 2 ExecuteSqlRequests. The first one should use inline-begin. The second one should use a
+      // transaction ID.
+      const firstExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.begin
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(firstExecuteSqlRequest.transaction?.begin?.readWrite);
+      const secondExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.id
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(secondExecuteSqlRequest.transaction?.id);
+      // Verify that we have a BeginTransaction request for the retry.
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      // Verify that we have a single Commit request, and that the Commit request contains only one mutation.
+      assert.strictEqual(
+        1,
+        spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).mutations;
+        }).length
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.ok(commitRequest, 'Commit was called');
+      assert.strictEqual(commitRequest.mutations.length, 1);
     });
 
     it('should use optimistic lock for runTransactionAsync', async () => {
