@@ -350,8 +350,6 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this._instance_admin_api = this._instance_admin_api;
-    this._database_admin_api = this._database_admin_api;
     this.emulatorHost = emulatorHost;
   }
 
