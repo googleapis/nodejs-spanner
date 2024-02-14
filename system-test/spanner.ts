@@ -828,7 +828,7 @@ describe('Spanner', () => {
     });
 
     describe('oids', () => {
-      it('POSTGRESQL should read pgOid values', function (done) {
+      it('POSTGRESQL should read non-null pgOid values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
@@ -839,6 +839,21 @@ describe('Spanner', () => {
             queriedValue = rows[0][0].value.value;
           }
           assert.strictEqual(queriedValue, '123');
+          done();
+        });
+      });
+
+      it('POSTGRESQL should read null pgOid values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT null::oid', (err, rows) => {
+          assert.ifError(err);
+          let queriedValue = rows[0][0].value;
+          if (rows[0][0].value) {
+            queriedValue = rows[0][0].value.value;
+          }
+          assert.strictEqual(queriedValue, null);
           done();
         });
       });
