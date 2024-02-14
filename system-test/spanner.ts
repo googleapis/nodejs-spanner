@@ -275,6 +275,47 @@ describe('Spanner', () => {
         });
       });
     }
+    function readUntypedData(column, value, dialect, callback) {
+      const id = generateName('id');
+      const insertData = {
+        Key: id,
+        [column]: value,
+      };
+
+      let table = googleSqlTable;
+      let query: ExecuteSqlRequest = {
+        sql: 'SELECT * FROM `' + table.name + '` WHERE ' + column + ' = @value',
+        params: {
+          value,
+        },
+      };
+      let database = DATABASE;
+      if (dialect === Spanner.POSTGRESQL) {
+        table = postgreSqlTable;
+        query = {
+          sql: 'SELECT * FROM ' + table.name + ' WHERE "' + column + '" = $1',
+          params: {
+            p1: value,
+          },
+        };
+        database = PG_DATABASE;
+      }
+      table.insert(insertData, (err, insertResp) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        database.run(query, (err, rows, readResp) => {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          callback(null, rows.shift(), insertResp, readResp);
+        });
+      });
+    }
 
     before(async () => {
       if (IS_EMULATOR_ENABLED) {
@@ -757,6 +798,65 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'IntValue',
+          '5',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().IntValue, 5);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped int64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData('IntValue', '5', Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().IntValue, 5);
+          done();
+        });
+      });
+    });
+
+    describe('oids', () => {
+      it('POSTGRESQL should read non-null pgOid values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT 123::oid', (err, rows) => {
+          assert.ifError(err);
+          let queriedValue = rows[0][0].value;
+          if (rows[0][0].value) {
+            queriedValue = rows[0][0].value.value;
+          }
+          assert.strictEqual(queriedValue, '123');
+          done();
+        });
+      });
+
+      it('POSTGRESQL should read null pgOid values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT null::oid', (err, rows) => {
+          assert.ifError(err);
+          let queriedValue = rows[0][0].value;
+          if (rows[0][0].value) {
+            queriedValue = rows[0][0].value.value;
+          }
+          assert.strictEqual(queriedValue, null);
+          done();
+        });
+      });
     });
 
     describe('float64s', () => {
@@ -902,6 +1002,33 @@ describe('Spanner', () => {
         insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, values);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'FloatValue',
+          5.6,
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().FloatValue, 5.6);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped float64 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData('FloatValue', 5.6, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().FloatValue, 5.6);
           done();
         });
       });
@@ -1055,6 +1182,44 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'NumericValue',
+          '5.623',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().NumericValue.value,
+              Spanner.numeric('5.623').value
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped numeric values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'NumericValue',
+          '5.623',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().NumericValue,
+              Spanner.pgNumeric(5.623)
+            );
+            done();
+          }
+        );
+      });
     });
 
     describe('strings', () => {
@@ -1152,6 +1317,38 @@ describe('Spanner', () => {
           (err, row) => {
             assert.ifError(err);
             assert.deepStrictEqual(row.toJSON().StringArray, ['abc', 'def']);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'StringValue',
+          'hello',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringValue, 'hello');
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped string values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'StringValue',
+          'hello',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringValue, 'hello');
             done();
           }
         );
@@ -1256,6 +1453,38 @@ describe('Spanner', () => {
           assert.deepStrictEqual(row.toJSON().BytesArray, values);
           done();
         });
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped bytes values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'BytesValue',
+          Buffer.from('b'),
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('b'));
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped bytes values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'BytesValue',
+          Buffer.from('b'),
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().BytesValue, Buffer.from('b'));
+            done();
+          }
+        );
       });
     });
 
@@ -1435,6 +1664,46 @@ describe('Spanner', () => {
           done();
         });
       });
+
+      it('GOOGLE_STANDARD_SQL should read untyped timestamp values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'TimestampValue',
+          '2014-09-27T12:30:00.45Z',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            const time = row.toJSON().TimestampValue.getTime();
+            assert.strictEqual(
+              time,
+              Spanner.timestamp('2014-09-27T12:30:00.45Z').getTime()
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped timestamp values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'TimestampValue',
+          '2014-09-27T12:30:00.45Z',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            const time = row.toJSON().TimestampValue.getTime();
+            assert.strictEqual(
+              time,
+              Spanner.timestamp('2014-09-27T12:30:00.45Z').getTime()
+            );
+            done();
+          }
+        );
+      });
     });
 
     describe('dates', () => {
@@ -1540,6 +1809,44 @@ describe('Spanner', () => {
           assert.deepStrictEqual(DateArray, values);
           done();
         });
+      });
+
+      it('GOOGLE_STANDARD_SQL should read untyped date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'DateValue',
+          '2014-09-27',
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              Spanner.date(row.toJSON().DateValue),
+              Spanner.date('2014-09-27')
+            );
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should read untyped date values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        readUntypedData(
+          'DateValue',
+          '2014-09-27',
+          Spanner.POSTGRESQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              Spanner.date(row.toJSON().DateValue),
+              Spanner.date('2014-09-27')
+            );
+            done();
+          }
+        );
       });
     });
 
@@ -4676,6 +4983,52 @@ describe('Spanner', () => {
           });
         });
 
+        describe('pgOid', () => {
+          const oidQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              assert.strictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 1234,
+              },
+              types: {
+                v: 'pgOid',
+              },
+            };
+            oidQuery(done, PG_DATABASE, query, '1234');
+          });
+
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'pgOid',
+              },
+            };
+            oidQuery(done, PG_DATABASE, query, null);
+          });
+        });
+
         describe('float64', () => {
           const float64Query = (done, database, query, value) => {
             database.run(query, (err, rows) => {
@@ -4920,6 +5273,9 @@ describe('Spanner', () => {
               params: {
                 v: 'abc',
               },
+              types: {
+                v: 'string',
+              },
             };
             stringQuery(done, DATABASE, query, 'abc');
           });
@@ -4973,6 +5329,12 @@ describe('Spanner', () => {
               sql: 'SELECT @v',
               params: {
                 v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'string',
+                },
               },
             };
 
@@ -5426,6 +5788,21 @@ describe('Spanner', () => {
                 }),
                 p4: Spanner.int(10),
               },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
+              },
             };
 
             DATABASE.run(query, (err, rows) => {
@@ -5480,6 +5857,23 @@ describe('Spanner', () => {
                     nestedf: 'bob',
                   }),
                 }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'structf',
+                      type: 'struct',
+                      fields: [
+                        {
+                          name: 'nestedf',
+                          type: 'string',
+                        },
+                      ],
+                    },
+                  ],
+                },
               },
             };
 
@@ -5652,6 +6046,21 @@ describe('Spanner', () => {
                   userf: 'bob',
                 }),
               },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                  ],
+                },
+              },
             };
 
             DATABASE.run(query, (err, rows) => {
@@ -5672,6 +6081,21 @@ describe('Spanner', () => {
                   userf: 'bob',
                   threadf: Spanner.int(1),
                 }),
+              },
+              types: {
+                structParam: {
+                  type: 'struct',
+                  fields: [
+                    {
+                      name: 'userf',
+                      type: 'string',
+                    },
+                    {
+                      name: 'threadf',
+                      type: 'int64',
+                    },
+                  ],
+                },
               },
             };
 
