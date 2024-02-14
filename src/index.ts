@@ -63,7 +63,6 @@ import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import { DatabaseAdminClient } from './v1';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -223,7 +222,6 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  _database_admin_api: null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -237,7 +235,6 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
-  emulatorHost: { endpoint: string; port?: number | undefined; } | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -348,20 +345,6 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this._database_admin_api = null;
-    this.emulatorHost = emulatorHost;
-  }
-
-  database_admin_api(this): void {
-    if(this._database_admin_api == null) {
-      this._database_admin_api = new DatabaseAdminClient();
-      if(this.emulatorHost) {
-        this._database_admin_api._opts.servicePath = this.emulatorHost.endpoint;
-        this._database_admin_api._opts.port = this.emulatorHost.port;
-        this._database_admin_api._opts.sslCreds = this.grpc.credentials.createInsecure();
-      }
-    }
-    return this._database_admin_api;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
@@ -375,8 +358,6 @@ class Spanner extends GrpcService {
       client.close();
     });
   }
-
-  
 
   /**
    * Config for the new instance.

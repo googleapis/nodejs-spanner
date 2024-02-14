@@ -21,9 +21,6 @@
 function main(instanceId, databaseId, projectId) {
   // [START spanner_alter_table_with_foreign_key_delete_cascade]
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -31,28 +28,32 @@ function main(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
+
+  // creates a client
+  const spanner = new Spanner({
     projectId: projectId,
-    instanceId: instanceId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   async function alterTableWithForeignKeyDeleteCascade() {
     const request = [
-        `ALTER TABLE ShoppingCarts
+      `ALTER TABLE ShoppingCarts
         ADD CONSTRAINT FKShoppingCartsCustomerName
         FOREIGN KEY (CustomerName)
         REFERENCES Customers(CustomerName)
         ON DELETE CASCADE`,
-      ];
-      const [operation] = await databaseAdminClient.updateDatabaseDdl({
-        database: databaseAdminClient.databasePath(
-            projectId,
-            instanceId,
-            databaseId,
-        ),
-        statements: request,
-      });
+    ];
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();

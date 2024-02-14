@@ -16,8 +16,6 @@
 
 async function addNumericColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_numeric_column]
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -26,11 +24,15 @@ async function addNumericColumn(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
+
+  // creates a client
+  const spanner = new Spanner({
     projectId: projectId,
-    instanceId: instanceId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   const request = ['ALTER TABLE Venues ADD COLUMN Revenue NUMERIC'];
 

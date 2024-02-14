@@ -27,14 +27,15 @@ function main(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   async function getDefaultLeader() {
     // Get the default leader option for the database.

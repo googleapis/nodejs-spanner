@@ -31,14 +31,15 @@ function main(
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
+  // creates a client
+  const spanner = new Spanner({
     projectId: projectId,
-    instanceId: instanceId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   async function pgAddColumn() {
     const request = ['ALTER TABLE Albums ADD COLUMN MarketingBudget BIGINT'];

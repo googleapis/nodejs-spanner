@@ -21,9 +21,6 @@
 function main(instanceId, databaseId, projectId) {
   // [START spanner_create_table_with_foreign_key_delete_cascade]
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -31,11 +28,15 @@ function main(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
+
+  // creates a client
+  const spanner = new Spanner({
     projectId: projectId,
-    instanceId: instanceId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   async function createTableWithForeignKeyDeleteCascade() {
     const request = [

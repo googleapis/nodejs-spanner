@@ -19,9 +19,6 @@
 async function createDatabase(instanceID, databaseID, projectID) {
   // [START spanner_create_database]
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -29,11 +26,15 @@ async function createDatabase(instanceID, databaseID, projectID) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectID,
-    instanceID: instanceID,
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
+
+  // creates a client
+  const spanner = new Spanner({
+    projectId: projectID,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   const createSingersTableStatement = `
     CREATE TABLE Singers (
@@ -75,9 +76,6 @@ async function createDatabase(instanceID, databaseID, projectID) {
 async function addColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_column]
 
-  // Imports the database admin client
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -85,11 +83,15 @@ async function addColumn(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../../build/src');
+
+  // creates a client
+  const spanner = new Spanner({
     projectId: projectId,
-    instanceId: instanceId,
   });
+
+  const databaseAdminClient = spanner.database_admin_api();
 
   // Creates a new index in the database
   try {
