@@ -827,6 +827,38 @@ describe('Spanner', () => {
       });
     });
 
+    describe('oids', () => {
+      it('POSTGRESQL should read non-null pgOid values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT 123::oid', (err, rows) => {
+          assert.ifError(err);
+          let queriedValue = rows[0][0].value;
+          if (rows[0][0].value) {
+            queriedValue = rows[0][0].value.value;
+          }
+          assert.strictEqual(queriedValue, '123');
+          done();
+        });
+      });
+
+      it('POSTGRESQL should read null pgOid values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        PG_DATABASE.run('SELECT null::oid', (err, rows) => {
+          assert.ifError(err);
+          let queriedValue = rows[0][0].value;
+          if (rows[0][0].value) {
+            queriedValue = rows[0][0].value.value;
+          }
+          assert.strictEqual(queriedValue, null);
+          done();
+        });
+      });
+    });
+
     describe('float64s', () => {
       const float64Insert = (done, dialect, value) => {
         insert({FloatValue: value}, dialect, (err, row) => {
@@ -4948,6 +4980,52 @@ describe('Spanner', () => {
               assert.deepStrictEqual(rows![0][0].value, null);
               done();
             });
+          });
+        });
+
+        describe('pgOid', () => {
+          const oidQuery = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              assert.strictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 1234,
+              },
+              types: {
+                v: 'pgOid',
+              },
+            };
+            oidQuery(done, PG_DATABASE, query, '1234');
+          });
+
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'pgOid',
+              },
+            };
+            oidQuery(done, PG_DATABASE, query, null);
           });
         });
 
