@@ -42007,6 +42007,7 @@
                      * @property {google.spanner.v1.TransactionOptions.IReadWrite|null} [readWrite] TransactionOptions readWrite
                      * @property {google.spanner.v1.TransactionOptions.IPartitionedDml|null} [partitionedDml] TransactionOptions partitionedDml
                      * @property {google.spanner.v1.TransactionOptions.IReadOnly|null} [readOnly] TransactionOptions readOnly
+                     * @property {boolean|null} [excludeTxnFromChangeStreams] TransactionOptions excludeTxnFromChangeStreams
                      */
     
                     /**
@@ -42047,6 +42048,14 @@
                      * @instance
                      */
                     TransactionOptions.prototype.readOnly = null;
+    
+                    /**
+                     * TransactionOptions excludeTxnFromChangeStreams.
+                     * @member {boolean} excludeTxnFromChangeStreams
+                     * @memberof google.spanner.v1.TransactionOptions
+                     * @instance
+                     */
+                    TransactionOptions.prototype.excludeTxnFromChangeStreams = false;
     
                     // OneOf field names bound to virtual getters and setters
                     var $oneOfFields;
@@ -42092,6 +42101,8 @@
                             $root.google.spanner.v1.TransactionOptions.ReadOnly.encode(message.readOnly, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         if (message.partitionedDml != null && Object.hasOwnProperty.call(message, "partitionedDml"))
                             $root.google.spanner.v1.TransactionOptions.PartitionedDml.encode(message.partitionedDml, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                        if (message.excludeTxnFromChangeStreams != null && Object.hasOwnProperty.call(message, "excludeTxnFromChangeStreams"))
+                            writer.uint32(/* id 5, wireType 0 =*/40).bool(message.excludeTxnFromChangeStreams);
                         return writer;
                     };
     
@@ -42136,6 +42147,10 @@
                                 }
                             case 2: {
                                     message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.decode(reader, reader.uint32());
+                                    break;
+                                }
+                            case 5: {
+                                    message.excludeTxnFromChangeStreams = reader.bool();
                                     break;
                                 }
                             default:
@@ -42202,6 +42217,9 @@
                                     return "readOnly." + error;
                             }
                         }
+                        if (message.excludeTxnFromChangeStreams != null && message.hasOwnProperty("excludeTxnFromChangeStreams"))
+                            if (typeof message.excludeTxnFromChangeStreams !== "boolean")
+                                return "excludeTxnFromChangeStreams: boolean expected";
                         return null;
                     };
     
@@ -42232,6 +42250,8 @@
                                 throw TypeError(".google.spanner.v1.TransactionOptions.readOnly: object expected");
                             message.readOnly = $root.google.spanner.v1.TransactionOptions.ReadOnly.fromObject(object.readOnly);
                         }
+                        if (object.excludeTxnFromChangeStreams != null)
+                            message.excludeTxnFromChangeStreams = Boolean(object.excludeTxnFromChangeStreams);
                         return message;
                     };
     
@@ -42248,6 +42268,8 @@
                         if (!options)
                             options = {};
                         var object = {};
+                        if (options.defaults)
+                            object.excludeTxnFromChangeStreams = false;
                         if (message.readWrite != null && message.hasOwnProperty("readWrite")) {
                             object.readWrite = $root.google.spanner.v1.TransactionOptions.ReadWrite.toObject(message.readWrite, options);
                             if (options.oneofs)
@@ -42263,6 +42285,8 @@
                             if (options.oneofs)
                                 object.mode = "partitionedDml";
                         }
+                        if (message.excludeTxnFromChangeStreams != null && message.hasOwnProperty("excludeTxnFromChangeStreams"))
+                            object.excludeTxnFromChangeStreams = message.excludeTxnFromChangeStreams;
                         return object;
                     };
     

@@ -16549,6 +16549,9 @@ export namespace google {
 
                 /** TransactionOptions readOnly */
                 readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
+
+                /** TransactionOptions excludeTxnFromChangeStreams */
+                excludeTxnFromChangeStreams?: (boolean|null);
             }
 
             /** Represents a TransactionOptions. */
@@ -16568,6 +16571,9 @@ export namespace google {
 
                 /** TransactionOptions readOnly. */
                 public readOnly?: (google.spanner.v1.TransactionOptions.IReadOnly|null);
+
+                /** TransactionOptions excludeTxnFromChangeStreams. */
+                public excludeTxnFromChangeStreams: boolean;
 
                 /** TransactionOptions mode. */
                 public mode?: ("readWrite"|"partitionedDml"|"readOnly");

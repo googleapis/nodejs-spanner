@@ -4462,6 +4462,10 @@
                     "readOnly": {
                       "type": "ReadOnly",
                       "id": 2
+                    },
+                    "excludeTxnFromChangeStreams": {
+                      "type": "bool",
+                      "id": 5
                     }
                   },
                   "nested": {
