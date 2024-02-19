@@ -353,7 +353,7 @@ class Spanner extends GrpcService {
     this.emulatorHost = emulatorHost;
   }
 
-  // Helper for session-related instance admin client API calls
+  // Helper for instance admin client API calls
   create_instance_admin_client(this): void {
     if (!this._instance_admin_api) {
       this._instance_admin_api = new InstanceAdminClient();
@@ -367,7 +367,7 @@ class Spanner extends GrpcService {
     return this._instance_admin_api;
   }
 
-  // Helper for session-related database admin client API calls
+  // Helper for database admin client API calls
   create_database_admin_client(this): void {
     if (!this._database_admin_api) {
       this._database_admin_api = new DatabaseAdminClient();
@@ -383,9 +383,12 @@ class Spanner extends GrpcService {
 
   /** Closes this Spanner client and cleans up all resources used by it. */
   close(): void {
+    console.log("inside close method index.ts");
+    console.log(this.clients_);
     this.clients_.forEach(c => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = c as any;
+      console.log("the client is: ", client);
       if (client.operationsClient && client.operationsClient.close) {
         client.operationsClient.close();
       }
