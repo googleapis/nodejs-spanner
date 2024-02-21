@@ -63,7 +63,6 @@ import {PartitionedDml, Snapshot, Transaction} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
-import {InstanceAdminClient, DatabaseAdminClient} from './v1';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const gcpApiConfig = require('./spanner_grpc_config.json');
@@ -355,7 +354,7 @@ class Spanner extends GrpcService {
 
   // Helper for instance admin client API calls
   get_instance_admin_client(this): void {
-    const clientName = "InstanceAdminClient";
+    const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
@@ -374,7 +373,7 @@ class Spanner extends GrpcService {
 
   // Helper for database admin client API calls
   get_database_admin_client(this): void {
-    const clientName = "DatabaseAdminClient";
+    const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
