@@ -354,9 +354,14 @@ class Spanner extends GrpcService {
   }
 
   // Helper for instance admin client API calls
-  create_instance_admin_client(this): void {
+  get_instance_admin_client(this): void {
+    const clientName = "InstanceAdminClient";
+    if (!this.clients_.has(clientName)) {
+      this.clients_.set(clientName, new v1[clientName](this.options));
+    }
+    const gaxClient = this.clients_.get(clientName)!;
     if (!this._instance_admin_api) {
-      this._instance_admin_api = new InstanceAdminClient();
+      this._instance_admin_api = gaxClient;
       if (this.emulatorHost) {
         this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
         this._instance_admin_api._opts.port = this.emulatorHost.port;
@@ -368,9 +373,14 @@ class Spanner extends GrpcService {
   }
 
   // Helper for database admin client API calls
-  create_database_admin_client(this): void {
+  get_database_admin_client(this): void {
+    const clientName = "DatabaseAdminClient";
+    if (!this.clients_.has(clientName)) {
+      this.clients_.set(clientName, new v1[clientName](this.options));
+    }
+    const gaxClient = this.clients_.get(clientName)!;
     if (!this._database_admin_api) {
-      this._database_admin_api = new DatabaseAdminClient();
+      this._database_admin_api = gaxClient;
       if (this.emulatorHost) {
         this._database_admin_api._opts.servicePath = this.emulatorHost.endpoint;
         this._database_admin_api._opts.port = this.emulatorHost.port;
