@@ -2014,6 +2014,19 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {number[]} request.mutationGroups
    *   Required. The groups of mutations to be applied.
+   * @param {boolean} [request.excludeTxnFromChangeStreams]
+   *   Optional. When `exclude_txn_from_change_streams` is set to `true`:
+   *    * Mutations from all transactions in this batch write operation will not
+   *    be recorded in change streams with DDL option `allow_txn_exclusion=true`
+   *    that are tracking columns modified by these transactions.
+   *    * Mutations from all transactions in this batch write operation will be
+   *    recorded in change streams with DDL option `allow_txn_exclusion=false or
+   *    not set` that are tracking columns modified by these transactions.
+   *
+   *   When `exclude_txn_from_change_streams` is set to `false` or not set,
+   *   mutations from all transactions in this batch write operation will be
+   *   recorded in all change streams that are tracking columns modified by these
+   *   transactions.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
