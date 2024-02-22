@@ -1120,10 +1120,11 @@ describe('Transaction', () => {
       });
 
       it('should guess missing param types', () => {
-        const fakeParams = {a: 'foo', b: 3};
+        const fakeParams = {a: true, b: 3};
         const fakeTypes = {b: 'number'};
-        const fakeMissingType = {type: 'string'};
-        const expectedType = {code: google.spanner.v1.TypeCode.STRING};
+        const fakeMissingType = {type: 'boolean'};
+        const expectedMissingType = {code: google.spanner.v1.TypeCode.BOOL};
+        const expectedKnownType = {code: google.spanner.v1.TypeCode.INT64};
 
         sandbox
           .stub(codec, 'getType')
@@ -1132,15 +1133,17 @@ describe('Transaction', () => {
 
         sandbox
           .stub(codec, 'createTypeObject')
+          .withArgs('number')
+          .returns(expectedKnownType as google.spanner.v1.Type)
           .withArgs(fakeMissingType)
-          .returns(expectedType as google.spanner.v1.Type);
+          .returns(expectedMissingType as google.spanner.v1.Type);
 
         const {paramTypes} = Snapshot.encodeParams({
           params: fakeParams,
           types: fakeTypes,
         });
 
-        assert.strictEqual(paramTypes.a, expectedType);
+        assert.strictEqual(paramTypes.a, expectedMissingType);
       });
     });
   });
@@ -1267,17 +1270,17 @@ describe('Transaction', () => {
 
       const OBJ_STATEMENTS = [
         {
-          sql: 'INSERT INTO TxnTable (Key, StringValue) VALUES(@key, @str)',
+          sql: 'INSERT INTO TxnTable (Key, BoolValue) VALUES(@key, @bool)',
           params: {
-            key: 'k999',
-            str: 'abc',
+            key: 999,
+            bool: true,
           },
         },
         {
-          sql: 'UPDATE TxnTable t SET t.StringValue = @str WHERE t.Key = @key',
+          sql: 'UPDATE TxnTable t SET t.BoolValue = @bool WHERE t.Key = @key',
           params: {
-            key: 'k999',
-            str: 'abcd',
+            key: 999,
+            bool: false,
           },
         },
       ];
@@ -1287,26 +1290,26 @@ describe('Transaction', () => {
           sql: OBJ_STATEMENTS[0].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[0].params.key},
-              str: {stringValue: OBJ_STATEMENTS[0].params.str},
+              key: {stringValue: OBJ_STATEMENTS[0].params.key.toString()},
+              bool: {boolValue: OBJ_STATEMENTS[0].params.bool},
             },
           },
           paramTypes: {
-            key: {code: 'STRING'},
-            str: {code: 'STRING'},
+            key: {code: 'INT64'},
+            bool: {code: 'BOOL'},
           },
         },
         {
           sql: OBJ_STATEMENTS[1].sql,
           params: {
             fields: {
-              key: {stringValue: OBJ_STATEMENTS[1].params.key},
-              str: {stringValue: OBJ_STATEMENTS[1].params.str},
+              key: {stringValue: OBJ_STATEMENTS[1].params.key.toString()},
+              bool: {boolValue: OBJ_STATEMENTS[1].params.bool},
             },
           },
           paramTypes: {
-            key: {code: 'STRING'},
-            str: {code: 'STRING'},
+            key: {code: 'INT64'},
+            bool: {code: 'BOOL'},
           },
         },
       ];
@@ -1633,7 +1636,14 @@ describe('Transaction', () => {
       });
 
       it('should accept commit options', done => {
-        const options = {returnCommitStats: true};
+        const maxCommitDelay = new google.protobuf.Duration({
+          seconds: 0, // 0 seconds
+          nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
+        });
+        const options = {
+          returnCommitStats: true,
+          maxCommitDelay: maxCommitDelay,
+        };
         transaction.request = config => {
           assert.strictEqual(config.reqOpts.returnCommitStats, true);
           done();

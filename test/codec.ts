@@ -192,6 +192,35 @@ describe('codec', () => {
     });
   });
 
+  describe('PGOid', () => {
+    it('should stringify the value', () => {
+      const value = 8;
+      const oid = new codec.PGOid(value);
+
+      assert.strictEqual(oid.value, '8');
+    });
+
+    it('should return as a number', () => {
+      const value = 8;
+      const oid = new codec.PGOid(value);
+
+      assert.strictEqual(oid.valueOf(), 8);
+      assert.strictEqual(oid + 2, 10);
+    });
+
+    it('should throw if number is out of bounds', () => {
+      const value = '9223372036854775807';
+      const oid = new codec.PGOid(value);
+
+      assert.throws(
+        () => {
+          oid.valueOf();
+        },
+        new RegExp('PG.OID ' + value + ' is out of bounds.')
+      );
+    });
+  });
+
   describe('Numeric', () => {
     it('should store value as a string', () => {
       const value = '8.01911';
@@ -601,6 +630,18 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded.toString(), expected);
     });
 
+    it('should decode PG OID', () => {
+      const value = '64';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.INT64,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
+      });
+
+      assert(decoded instanceof codec.PGOid);
+      assert.strictEqual(decoded.value, value);
+    });
+
     it('should decode TIMESTAMP', () => {
       const value = new Date();
       const expected = new PreciseDate(value.getTime());
@@ -821,6 +862,14 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
+    it('should encode PG OID', () => {
+      const value = new codec.PGOid(10);
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, '10');
+    });
+
     it('should encode FLOAT64', () => {
       const value = new codec.Float(10);
 
@@ -920,7 +969,7 @@ describe('codec', () => {
     });
 
     it('should determine if the value is a string', () => {
-      assert.deepStrictEqual(codec.getType('abc'), {type: 'string'});
+      assert.deepStrictEqual(codec.getType('abc'), {type: 'unspecified'});
     });
 
     it('should determine if the value is bytes', () => {
@@ -957,7 +1006,7 @@ describe('codec', () => {
 
       assert.deepStrictEqual(type, {
         type: 'struct',
-        fields: [{name: 'a', type: 'string'}],
+        fields: [{name: 'a', type: 'unspecified'}],
       });
     });
 
@@ -984,6 +1033,12 @@ describe('codec', () => {
     it('should determine if the value is a PGNumeric', () => {
       assert.deepStrictEqual(codec.getType(new codec.PGNumeric('7248')), {
         type: 'pgNumeric',
+      });
+    });
+
+    it('should determine if the value is a PGOid', () => {
+      assert.deepStrictEqual(codec.getType(new codec.PGOid(5678)), {
+        type: 'pgOid',
       });
     });
   });
@@ -1209,6 +1264,24 @@ describe('codec', () => {
       assert.deepStrictEqual(type, {
         code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.NUMERIC],
         typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_NUMERIC,
+      });
+    });
+
+    it('should set code and typeAnnotation for pgOid string', () => {
+      const type = codec.createTypeObject('pgOid');
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
+      });
+    });
+
+    it('should set code and typeAnnotation for pgOid friendlyType object', () => {
+      const type = codec.createTypeObject({type: 'pgOid'});
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
       });
     });
   });
