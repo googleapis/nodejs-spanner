@@ -35,14 +35,14 @@ function main(
 
   // Imports the Google Cloud Spanner client library
   const {Spanner} = require('@google-cloud/spanner');
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
-  // creates a client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   async function spannerCopyBackup() {
     // Expire copy backup 14 days in the future

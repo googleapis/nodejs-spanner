@@ -155,19 +155,18 @@ require('yargs')
     'node $0 restoreBackupWithEncryptionKey "my-instance" "my-database" "my-backup" "my-project-id" "my-key-name"'
   )
   .command(
-    'deleteBackup <instanceName> <databaseName> <backupName> <projectId>',
+    'deleteBackup <instanceName> <backupName> <projectId>',
     'Deletes a backup.',
     {},
     opts =>
       deleteBackup(
         opts.instanceName,
-        opts.databaseName,
         opts.backupName,
         opts.projectId
       )
   )
   .example(
-    'node $0 deleteBackup "my-instance" "my-database" "my-backup" "my-project-id"'
+    'node $0 deleteBackup "my-instance" "my-backup" "my-project-id"'
   )
   .wrap(120)
   .recommendCommands()

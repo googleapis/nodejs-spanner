@@ -19,9 +19,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_cancel_backup_create]
 
   // Imports the Google Cloud client library and precise date library
-  const {Spanner} = require('@google-cloud/spanner');
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
-  const {protos} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -30,11 +28,12 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates a client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   // Creates a new backup of the database
   try {

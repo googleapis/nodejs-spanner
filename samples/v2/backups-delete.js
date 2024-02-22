@@ -15,11 +15,11 @@
 
 'use strict';
 
-async function deleteBackup(instanceId, databaseId, backupId, projectId) {
+async function deleteBackup(instanceId, backupId, projectId) {
   // [START spanner_delete_backup]
 
   // Imports the Google Cloud client library
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -29,11 +29,12 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates a client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   try {
     // Delete the backup

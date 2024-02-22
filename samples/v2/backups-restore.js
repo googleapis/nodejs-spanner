@@ -18,7 +18,7 @@
 async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_restore_backup]
   // Imports the Google Cloud client library and precise date library
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
@@ -29,11 +29,12 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   // Restore the database
   console.log(
@@ -51,14 +52,12 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
 
   // Wait for restore to complete
   console.log('Waiting for database restore to complete...');
-  console.log(restoreOperation);
   await restoreOperation.promise();
 
   console.log('Database restored from backup.');
   const [metadata] = await databaseAdminClient.getDatabase({
     name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
   });
-  //   const restoreInfo = await databaseAdminClient.restoreDatabaseestoreInfo();
   console.log(
     `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
       `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +

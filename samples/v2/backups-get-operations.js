@@ -24,8 +24,7 @@ async function getBackupOperations(
   // [START spanner_list_backup_operations]
 
   // Imports the Google Cloud client library
-  const {protos} = require('@google-cloud/spanner');
-  const {DatabaseAdminClient} = require('@google-cloud/spanner/build/src/v1');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -35,11 +34,12 @@ async function getBackupOperations(
   // const backupId = 'my-backup';
   // const instanceId = 'my-instance';
 
-  // creates an database admin client
-  const databaseAdminClient = new DatabaseAdminClient({
-    projectID: projectId,
-    instanceID: instanceId,
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
   });
+
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   // List create backup operations
   try {
@@ -89,9 +89,6 @@ async function getBackupOperations(
     });
   } catch (err) {
     console.error('ERROR:', err);
-  } finally {
-    //close the client
-    databaseAdminClient.close();
   }
   // [END spanner_list_backup_operations]
 }
