@@ -244,15 +244,10 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
   }
 
-  _resetPendingValues(hasResumeToken: boolean) {
-    if (hasResumeToken) {
-      if (this._pendingValueForResume) {
-        this._pendingValue = this._pendingValueForResume;
-      } else {
-        delete this._pendingValue;
-      }
+  _resetPendingValues() {
+    if (this._pendingValueForResume) {
+      this._pendingValue = this._pendingValueForResume;
     } else {
-      this._values = [];
       delete this._pendingValue;
     }
   }
@@ -488,9 +483,10 @@ export function partialResultStream(
     });
   };
   const makeRequest = (): void => {
-    partialRSStream._resetPendingValues(
-      is.defined(lastResumeToken) && lastResumeToken.length > 0
-    );
+    
+    if(is.defined(lastResumeToken) && lastResumeToken.length > 0) {
+      partialRSStream._resetPendingValues(); 
+    }
     lastRequestStream = requestFn(lastResumeToken);
     lastRequestStream.on('end', endListener);
     requestsStream.add(lastRequestStream);
