@@ -483,9 +483,8 @@ export function partialResultStream(
     });
   };
   const makeRequest = (): void => {
-    
-    if(is.defined(lastResumeToken) && lastResumeToken.length > 0) {
-      partialRSStream._resetPendingValues(); 
+    if (is.defined(lastResumeToken) && lastResumeToken.length > 0) {
+      partialRSStream._resetPendingValues();
     }
     lastRequestStream = requestFn(lastResumeToken);
     lastRequestStream.on('end', endListener);
