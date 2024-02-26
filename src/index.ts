@@ -222,8 +222,6 @@ class Spanner extends GrpcService {
   resourceHeader_: {[k: string]: string};
   routeToLeaderEnabled = true;
   directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
-  _instance_admin_api: null | undefined;
-  _database_admin_api: null | undefined;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -237,8 +235,6 @@ class Spanner extends GrpcService {
     google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
   static GOOGLE_STANDARD_SQL =
     google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL;
-
-  emulatorHost: {endpoint: string; port?: number | undefined} | undefined;
 
   /**
    * Gets the configured Spanner emulator host from an environment variable.
@@ -349,54 +345,63 @@ class Spanner extends GrpcService {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
     this.directedReadOptions = directedReadOptions;
-    this.emulatorHost = emulatorHost;
   }
-
-  // Helper for instance admin client API calls
-  get_instance_admin_client(this): void {
+  /**
+   * Gets the InstanceAdminClient object
+   * @param this 
+   * @returns {v1.InstanceAdminClient}
+   */
+  get_instance_admin_client(this): any {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       // add the client created to the clients_ map
-      /* NOTE: when the spanner client is closed, all the clients present in the clients_ map will also be closed as well */
+      // NOTE: when the spanner client will get closed, all the clients present in the clients_ map will also be closed as well
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
-    const gaxClient = this.clients_.get(clientName)!;
-    if (!this._instance_admin_api) {
-      this._instance_admin_api = gaxClient;
-      if (this.emulatorHost) {
-        // emulator support setup
-        this._instance_admin_api._opts.servicePath = this.emulatorHost.endpoint;
-        this._instance_admin_api._opts.port = this.emulatorHost.port;
-        this._instance_admin_api._opts.sslCreds =
-          this.grpc.credentials.createInsecure();
+    const instanceAdminClient = this.clients_.get(clientName)!;
+    const emulatorHost = Spanner.getSpannerEmulatorHost();
+    if (
+      emulatorHost &&
+      emulatorHost.endpoint &&
+      emulatorHost.endpoint.length > 0
+    ) {
+      // emulator support setup
+      instanceAdminClient._opts.servicePath = emulatorHost.endpoint;
+      instanceAdminClient._opts.port = emulatorHost.port;
+      instanceAdminClient._opts.sslCreds =
+        this.grpc.credentials.createInsecure();
       }
-    }
 
     // return the instance admin client
-    return this._instance_admin_api;
+    return instanceAdminClient;
   }
-
-  // Helper for database admin client API calls
-  get_database_admin_client(this): void {
+  /**
+   * 
+   * @param this 
+   * @returns {v1.DatabaseAdminClient}
+   */
+  get_database_admin_client(this): any {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       // add the client created to the clients_ map
-      /* NOTE: when the spanner client is closed, all the clients present in the clients_ map will also be closed as well */
+      // NOTE: when the spanner client will get closed, all the clients present in the clients_ map will also be closed as well
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
-    const gaxClient = this.clients_.get(clientName)!;
-    if (!this._database_admin_api) {
-      this._database_admin_api = gaxClient;
-      if (this.emulatorHost) {
-        // emulator support setup
-        this._database_admin_api._opts.servicePath = this.emulatorHost.endpoint;
-        this._database_admin_api._opts.port = this.emulatorHost.port;
-        this._database_admin_api._opts.sslCreds =
-          this.grpc.credentials.createInsecure();
+    const databaseAdminClient = this.clients_.get(clientName)!;
+    const emulatorHost = Spanner.getSpannerEmulatorHost();
+    if (
+      emulatorHost &&
+      emulatorHost.endpoint &&
+      emulatorHost.endpoint.length > 0
+    ) {
+      // emulator support setup
+      databaseAdminClient._opts.servicePath = emulatorHost.endpoint;
+      databaseAdminClient._opts.port = emulatorHost.port;
+      databaseAdminClient._opts.sslCreds =
+        this.grpc.credentials.createInsecure();
       }
-    }
     // return the database admin client
-    return this._database_admin_api;
+    return databaseAdminClient;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
