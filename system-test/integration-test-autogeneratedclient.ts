@@ -178,7 +178,7 @@ describe('Admin Client', () => {
   });
 
   describe('Databases', () => {
-    async function createDatabase(done, database, dialect) {
+    async function createDatabase(database, dialect) {
       const [metadata] = await databaseAdminClient.getDatabase({
         name: databaseAdminClient.databasePath(
           process.env.GCLOUD_PROJECT,
@@ -203,11 +203,10 @@ describe('Admin Client', () => {
       } else {
         assert.strictEqual(metadata!.databaseDialect, dialect);
       }
-      done();
     }
 
-    it('GOOGLE_STANDARD_SQL should have created the database', done => {
-      createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
+    it('GOOGLE_STANDARD_SQL should have created the database', async function () {
+      createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
   });
 });
