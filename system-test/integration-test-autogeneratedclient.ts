@@ -168,8 +168,8 @@ describe('Admin Client', () => {
             envInstanceName
           )
         );
-      } catch(err) {
-        if(!err) {
+      } catch (err) {
+        if (!err) {
           assert.ifError(err);
         }
       }
@@ -211,7 +211,7 @@ describe('Admin Client', () => {
       }
     }
 
-    it('GOOGLE_STANDARD_SQL should have created the database', async function () {
+    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
       createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
   });
