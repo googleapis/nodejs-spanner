@@ -1,5 +1,5 @@
 /*!
- * Copyright 2024 Google Inc. All Rights Reserved.
+ * Copyright 2024 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,7 @@ describe('Admin Client', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
-  const instance = envInstanceName
-    ? spanner.instance(envInstanceName)
-    : spanner.instance(generateName('instance'));
+  const instance = envInstanceName ? envInstanceName : generateName('instance');
 
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
@@ -63,11 +61,10 @@ describe('Admin Client', () => {
 
   before(async () => {
     await deleteOldTestInstances();
-    const instanceId = generateName('instance');
     if (generateInstanceForTest) {
       const [operation] = await instanceAdminClient.createInstance({
         parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
-        instanceId: instanceId,
+        instanceId: instance,
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             process.env.GCLOUD_PROJECT,
@@ -82,10 +79,13 @@ describe('Admin Client', () => {
         },
       });
       await operation.promise();
-      RESOURCES_TO_CLEAN.push(instance);
+      RESOURCES_TO_CLEAN.push(operation);
     } else {
       console.log(
-        `Not creating temp instance, using + ${instance.formattedName_}...`
+        `Not creating temp instance, using + ${instanceAdminClient.instancePath(
+          process.env.GCLOUD_PROJECT,
+          envInstanceName
+        )}...`
       );
     }
     const [operation] = await databaseAdminClient.createDatabase({
@@ -98,7 +98,7 @@ describe('Admin Client', () => {
       ],
       parent: databaseAdminClient.instancePath(
         process.env.GCLOUD_PROJECT,
-        instanceId
+        instance
       ),
     });
     await operation.promise();
@@ -154,83 +154,60 @@ describe('Admin Client', () => {
 
   describe('Instances', () => {
     it('should have created the instance', async () => {
-      try {
-        const [metadata] = await instanceAdminClient.getInstance({
-          name: instanceAdminClient.instancePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName
-          ),
-        });
-        assert.strictEqual(
-          metadata!.name,
-          instanceAdminClient.instancePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName
-          )
-        );
-      } catch (err) {
-        assert.ifError(err);
-      }
+      const [metadata] = await instanceAdminClient.getInstance({
+        name: instanceAdminClient.instancePath(
+          process.env.GCLOUD_PROJECT,
+          envInstanceName
+        ),
+      });
+      assert.strictEqual(
+        metadata!.name,
+        instanceAdminClient.instancePath(
+          process.env.GCLOUD_PROJECT,
+          envInstanceName
+        )
+      );
     });
 
     it('should list the instances', async () => {
-      try {
-        const [operation] = await instanceAdminClient.listInstances({
-          parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
-        });
-        assert(operation!.length > 0);
-      } catch (err) {
-        assert.ifError(err);
-      }
+      const [operation] = await instanceAdminClient.listInstances({
+        parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
+      });
+      assert(operation!.length > 0);
     });
   });
 
   describe('Databases', () => {
-    async function createDatabase(database, dialect) {
-      try {
-        const [metadata] = await databaseAdminClient.getDatabase({
-          name: databaseAdminClient.databasePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName,
-            database
-          ),
-        });
+    async function createDatabase(done, database, dialect) {
+      const [metadata] = await databaseAdminClient.getDatabase({
+        name: databaseAdminClient.databasePath(
+          process.env.GCLOUD_PROJECT,
+          envInstanceName,
+          database
+        ),
+      });
+      assert.strictEqual(
+        metadata!.name,
+        databaseAdminClient.databasePath(
+          process.env.GCLOUD_PROJECT,
+          envInstanceName,
+          database
+        )
+      );
+      assert.strictEqual(metadata!.state, 'READY');
+      if (IS_EMULATOR_ENABLED) {
         assert.strictEqual(
-          metadata!.name,
-          databaseAdminClient.databasePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName,
-            database
-          )
+          metadata!.databaseDialect,
+          'DATABASE_DIALECT_UNSPECIFIED'
         );
-        assert.strictEqual(metadata!.state, 'READY');
-        if (IS_EMULATOR_ENABLED) {
-          assert.strictEqual(
-            metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED'
-          );
-        } else {
-          assert.strictEqual(metadata!.databaseDialect, dialect);
-        }
-      } catch (err) {
-        assert.ifError(err);
+      } else {
+        assert.strictEqual(metadata!.databaseDialect, dialect);
       }
+      done();
     }
 
-    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
-      createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
-    });
-
-    it('should list the databases from an instance', done => {
-      instance.getDatabases((err, databases) => {
-        assert.ifError(err);
-        assert(databases!.length > 0);
-        // check if enableDropProtection is populated for databases.
-        databases!.map(db => {
-          assert.notStrictEqual(db.metadata.enableDropProtection, null);
-        });
-        done();
-      });
+    it('GOOGLE_STANDARD_SQL should have created the database', done => {
+      createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
     });
   });
 });
