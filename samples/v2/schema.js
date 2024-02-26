@@ -34,7 +34,7 @@ async function createDatabase(instanceID, databaseID, projectID) {
     projectId: projectID,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   const createSingersTableStatement = `
     CREATE TABLE Singers (

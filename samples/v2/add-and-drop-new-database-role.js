@@ -39,7 +39,7 @@ function main(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   async function addAndDropNewDatabaseRole() {
     // Creates a new user defined role and grant permissions

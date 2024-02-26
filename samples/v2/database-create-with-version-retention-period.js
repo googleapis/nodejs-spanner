@@ -36,7 +36,7 @@ async function createDatabaseWithVersionRetentionPeriod(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   try {
     // Create a new database with an extra statement which will alter the

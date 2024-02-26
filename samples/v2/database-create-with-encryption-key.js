@@ -38,7 +38,7 @@ async function createDatabaseWithEncryptionKey(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   // Creates a database
   const [operation] = await databaseAdminClient.createDatabase({

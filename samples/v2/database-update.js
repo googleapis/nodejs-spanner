@@ -39,7 +39,7 @@ function main(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   async function updateDatabase() {
     // Update the database metadata fields

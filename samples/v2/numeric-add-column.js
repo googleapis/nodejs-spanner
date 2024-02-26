@@ -32,7 +32,7 @@ async function addNumericColumn(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   const request = ['ALTER TABLE Venues ADD COLUMN Revenue NUMERIC'];
 

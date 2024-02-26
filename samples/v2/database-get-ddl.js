@@ -35,7 +35,7 @@ function main(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.get_database_admin_client();
 
   async function getDatabaseDdl() {
     // Get the schema definition of the database.
