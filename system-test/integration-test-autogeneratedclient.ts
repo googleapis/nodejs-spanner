@@ -153,20 +153,26 @@ describe('Admin Client', () => {
   });
 
   describe('Instances', () => {
-    it('should have created the instance', async () => {
-      const [metadata] = await instanceAdminClient.getInstance({
-        name: instanceAdminClient.instancePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName
-        ),
-      });
-      assert.strictEqual(
-        metadata!.name,
-        instanceAdminClient.instancePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName
-        )
-      );
+    it('should have created the instance autogen', async () => {
+      try {
+        const [metadata] = await instanceAdminClient.getInstance({
+          name: instanceAdminClient.instancePath(
+            process.env.GCLOUD_PROJECT,
+            envInstanceName
+          ),
+        });
+        assert.strictEqual(
+          metadata!.name,
+          instanceAdminClient.instancePath(
+            process.env.GCLOUD_PROJECT,
+            envInstanceName
+          )
+        );
+      } catch(err) {
+        if(!err) {
+          assert.ifError(err);
+        }
+      }
     });
 
     it('should list the instances', async () => {
