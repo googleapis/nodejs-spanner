@@ -18,17 +18,9 @@ import * as assert from 'assert';
 import {describe, it, before, after} from 'mocha';
 import pLimit = require('p-limit');
 import * as uuid from 'uuid';
-import {
-  Backup,
-  Database,
-  Spanner,
-  Instance,
-  InstanceConfig,
-} from '../src';
+import {Backup, Database, Spanner, Instance, InstanceConfig} from '../src';
 import {grpc, CallOptions} from 'google-gax';
 const PREFIX = 'gcloud-tests-';
-const RUN_ID = shortUUID();
-const LABEL = `node-spanner-systests-${RUN_ID}`;
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
@@ -54,8 +46,6 @@ const GAX_OPTIONS: CallOptions = {
   },
 };
 
-const CURRENT_TIME = Math.round(Date.now() / 1000).toString();
-
 describe('Admin Client', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
@@ -63,16 +53,6 @@ describe('Admin Client', () => {
   const instance = envInstanceName
     ? spanner.instance(envInstanceName)
     : spanner.instance(generateName('instance'));
-
-  const INSTANCE_CONFIG = {
-    config: 'regional-us-central1',
-    nodes: 1,
-    labels: {
-      [LABEL]: 'true',
-      created: CURRENT_TIME,
-    },
-    gaxOptions: GAX_OPTIONS,
-  };
 
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
@@ -88,17 +68,17 @@ describe('Admin Client', () => {
         parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
         instanceId: generateName('instance'),
         instance: {
-            config: instanceAdminClient.instanceConfigPath(
-               process.env.GCLOUD_PROJECT,
-              'regional-us-central1'
-            ),
-            nodeCount: 1,
-            displayName: 'Display name for the test instance.',
-            labels: {
-              cloud_spanner_samples: 'true',
-              created: Math.round(Date.now() / 1000).toString(), // current time
-            },
+          config: instanceAdminClient.instanceConfigPath(
+            process.env.GCLOUD_PROJECT,
+            'regional-us-central1'
+          ),
+          nodeCount: 1,
+          displayName: 'Display name for the test instance.',
+          labels: {
+            cloud_spanner_samples: 'true',
+            created: Math.round(Date.now() / 1000).toString(), // current time
           },
+        },
       });
       await operation.promise();
       RESOURCES_TO_CLEAN.push(instance);
@@ -113,9 +93,12 @@ describe('Admin Client', () => {
         `CREATE TABLE ${TABLE_NAME} (
           SingerId STRING(1024) NOT NULL,
           Name STRING(1024),
-        ) PRIMARY KEY(SingerId)`
+        ) PRIMARY KEY(SingerId)`,
       ],
-      parent: databaseAdminClient.instancePath(process.env.GCLOUD_PROJECT, envInstanceName),
+      parent: databaseAdminClient.instancePath(
+        process.env.GCLOUD_PROJECT,
+        envInstanceName
+      ),
     });
     await operation.promise();
   });
@@ -169,71 +152,71 @@ describe('Admin Client', () => {
   });
 
   describe('Instances', () => {
-    it('should have created the instance', async function () {
+    it('should have created the instance', async () => {
       try {
         const [metadata] = await instanceAdminClient.getInstance({
           name: instanceAdminClient.instancePath(
-              process.env.GCLOUD_PROJECT,
-              envInstanceName
-          )
+            process.env.GCLOUD_PROJECT,
+            envInstanceName
+          ),
         });
-        assert.strictEqual(metadata!.name, instanceAdminClient.instancePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName,
-        ));
-      } catch(err) {
+        assert.strictEqual(
+          metadata!.name,
+          instanceAdminClient.instancePath(
+            process.env.GCLOUD_PROJECT,
+            envInstanceName
+          )
+        );
+      } catch (err) {
         assert.ifError(err);
       }
     });
 
-    it('should list the instances', async function () {
+    it('should list the instances', async () => {
       try {
         const [operation] = await instanceAdminClient.listInstances({
-          parent: instanceAdminClient.projectPath(
-            process.env.GCLOUD_PROJECT,
-          ),
+          parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
         });
         assert(operation!.length > 0);
-      } catch(err) {
+      } catch (err) {
         assert.ifError(err);
       }
     });
   });
 
   describe('Databases', () => {
-
     async function createDatabase(database, dialect) {
       try {
         const [metadata] = await databaseAdminClient.getDatabase({
           name: databaseAdminClient.databasePath(
             process.env.GCLOUD_PROJECT,
             envInstanceName,
-            database,
-          )
+            database
+          ),
         });
-        assert.strictEqual(metadata!.name, databaseAdminClient.databasePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName,
-          database,
-        ));
+        assert.strictEqual(
+          metadata!.name,
+          databaseAdminClient.databasePath(
+            process.env.GCLOUD_PROJECT,
+            envInstanceName,
+            database
+          )
+        );
         assert.strictEqual(metadata!.state, 'READY');
         if (IS_EMULATOR_ENABLED) {
           assert.strictEqual(
             metadata!.databaseDialect,
-            'DATABASE_DIALECT_UNSPECIFIED',
+            'DATABASE_DIALECT_UNSPECIFIED'
           );
         } else {
-          assert.strictEqual(
-            metadata!.databaseDialect,
-            dialect,
-          );
+          assert.strictEqual(metadata!.databaseDialect, dialect);
         }
-      } catch(err) {
+      } catch (err) {
         assert.ifError(err);
       }
-    };
+    }
 
-    it('GOOGLE_STANDARD_SQL should have created the database', async function() {
+    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
       createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
 
@@ -249,7 +232,6 @@ describe('Admin Client', () => {
       });
     });
   });
-
 });
 
 function shortUUID() {

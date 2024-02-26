@@ -348,7 +348,7 @@ class Spanner extends GrpcService {
   }
   /**
    * Gets the InstanceAdminClient object
-   * @param this 
+   * @param this
    * @returns {v1.InstanceAdminClient}
    */
   get_instance_admin_client(this): any {
@@ -370,14 +370,14 @@ class Spanner extends GrpcService {
       instanceAdminClient._opts.port = emulatorHost.port;
       instanceAdminClient._opts.sslCreds =
         this.grpc.credentials.createInsecure();
-      }
+    }
 
     // return the instance admin client
     return instanceAdminClient;
   }
   /**
-   * 
-   * @param this 
+   *
+   * @param this
    * @returns {v1.DatabaseAdminClient}
    */
   get_database_admin_client(this): any {
@@ -399,7 +399,7 @@ class Spanner extends GrpcService {
       databaseAdminClient._opts.port = emulatorHost.port;
       databaseAdminClient._opts.sslCreds =
         this.grpc.credentials.createInsecure();
-      }
+    }
     // return the database admin client
     return databaseAdminClient;
   }
