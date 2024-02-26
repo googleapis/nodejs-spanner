@@ -86,7 +86,7 @@ describe('Admin Client', () => {
     if (generateInstanceForTest) {
       const [operation] = await instanceAdminClient.createInstance({
         parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
-        instanceId: INSTANCE_CONFIG,
+        instanceId: generateName('instance'),
         instance: {
             config: instanceAdminClient.instanceConfigPath(
                process.env.GCLOUD_PROJECT,
