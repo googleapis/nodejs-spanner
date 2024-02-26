@@ -158,16 +158,9 @@ require('yargs')
     'deleteBackup <instanceName> <backupName> <projectId>',
     'Deletes a backup.',
     {},
-    opts =>
-      deleteBackup(
-        opts.instanceName,
-        opts.backupName,
-        opts.projectId
-      )
+    opts => deleteBackup(opts.instanceName, opts.backupName, opts.projectId)
   )
-  .example(
-    'node $0 deleteBackup "my-instance" "my-backup" "my-project-id"'
-  )
+  .example('node $0 deleteBackup "my-instance" "my-backup" "my-project-id"')
   .wrap(120)
   .recommendCommands()
   .epilogue('For more information, see https://cloud.google.com/spanner/docs')
