@@ -1,5 +1,5 @@
 /*!
- * Copyright 2024 Google LLC. All Rights Reserved.
+ * Copyright 2024 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,10 +63,11 @@ describe('Admin Client', () => {
 
   before(async () => {
     await deleteOldTestInstances();
+    const instanceId = generateName('instance');
     if (generateInstanceForTest) {
       const [operation] = await instanceAdminClient.createInstance({
         parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
-        instanceId: generateName('instance'),
+        instanceId: instanceId,
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             process.env.GCLOUD_PROJECT,
@@ -97,7 +98,7 @@ describe('Admin Client', () => {
       ],
       parent: databaseAdminClient.instancePath(
         process.env.GCLOUD_PROJECT,
-        envInstanceName
+        instanceId
       ),
     });
     await operation.promise();
