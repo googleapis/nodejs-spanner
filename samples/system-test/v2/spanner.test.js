@@ -239,7 +239,6 @@ describe('AdminClient', () => {
     const output = execSync(
       `${backupsCmd} createBackupWithEncryptionKey ${INSTANCE_ID} ${DATABASE_ID} ${ENCRYPTED_BACKUP_ID} ${PROJECT_ID} ${key.name}`
     );
-    console.log(output);
     assert.match(
       output,
       new RegExp(`Backup (.+)${ENCRYPTED_BACKUP_ID} of size`)

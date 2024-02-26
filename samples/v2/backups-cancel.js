@@ -68,13 +68,12 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    // Delete backup in case it got created before the cancel operation
-    await databaseAdminClient.deleteBackup({
-      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-    });
-
-    // Close the database when finished.
-    await databaseAdminClient.close();
+    // Close the spanner client when finished.
+    /*
+      The databaseAdminClient does not require explicit closure.
+            The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
+    */
+    spanner.close();
   }
   // [END spanner_cancel_backup_create]
 }

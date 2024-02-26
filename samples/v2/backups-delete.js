@@ -45,8 +45,6 @@ async function deleteBackup(instanceId, backupId, projectId) {
     console.log('Backup deleted.');
   } catch (err) {
     console.log('ERROR: Backup is not deleted');
-  } finally {
-    databaseAdminClient.close();
   }
   // [END spanner_delete_backup]
 }

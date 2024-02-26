@@ -56,9 +56,6 @@ async function getDatabaseOperations(instanceId, projectId) {
     });
   } catch (err) {
     console.error('ERROR:', err);
-  } finally {
-    // close the client
-    databaseAdminClient.close();
   }
   // [END spanner_list_database_operations]
 }
