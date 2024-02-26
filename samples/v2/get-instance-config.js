@@ -35,7 +35,7 @@ function main(projectId) {
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.instance_admin_api();
+  const instanceAdminClient = spanner.get_instance_admin_client();
 
   async function getInstanceConfig() {
     // Get the instance config for the multi-region North America 6 (NAM6).

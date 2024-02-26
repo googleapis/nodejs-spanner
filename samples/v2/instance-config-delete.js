@@ -38,7 +38,7 @@ function main(
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.instance_admin_api();
+  const instanceAdminClient = spanner.get_instance_admin_client();
 
   async function deleteInstanceConfig() {
     // Deletes an instance config.

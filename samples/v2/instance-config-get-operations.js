@@ -35,7 +35,7 @@ function main(projectId = 'my-project-id') {
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.instance_admin_api();
+  const instanceAdminClient = spanner.get_instance_admin_client();
 
   async function getInstanceConfigOperations() {
     // Lists the instance config operations.

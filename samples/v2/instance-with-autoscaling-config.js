@@ -31,7 +31,7 @@ async function createInstanceWithAutoscalingConfig(instanceId, projectId) {
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.instance_admin_api();
+  const instanceAdminClient = spanner.get_instance_admin_client();
 
   const autoscalingConfig =
     protos.google.spanner.admin.instance.v1.AutoscalingConfig.create({

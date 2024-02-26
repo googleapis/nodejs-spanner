@@ -27,7 +27,7 @@ async function createInstance(instanceId, projectId) {
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.instance_admin_api();
+  const instanceAdminClient = spanner.get_instance_admin_client();
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    **/
