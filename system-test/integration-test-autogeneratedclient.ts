@@ -50,7 +50,7 @@ describe('Admin Client', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
-  const instance = envInstanceName ? envInstanceName : generateName('instance');
+  const instanceId = envInstanceName ? envInstanceName : generateName('instance');
 
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
@@ -64,7 +64,7 @@ describe('Admin Client', () => {
     if (generateInstanceForTest) {
       const [operation] = await instanceAdminClient.createInstance({
         parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
-        instanceId: instance,
+        instanceId: instanceId,
         instance: {
           config: instanceAdminClient.instanceConfigPath(
             process.env.GCLOUD_PROJECT,
@@ -98,7 +98,7 @@ describe('Admin Client', () => {
       ],
       parent: databaseAdminClient.instancePath(
         process.env.GCLOUD_PROJECT,
-        instance
+        instanceId
       ),
     });
     await operation.promise();
@@ -153,7 +153,7 @@ describe('Admin Client', () => {
   });
 
   describe('Instances', () => {
-    it('should have created the instance autogen', async () => {
+    it('should have created the instance', async () => {
       try {
         const [metadata] = await instanceAdminClient.getInstance({
           name: instanceAdminClient.instancePath(
