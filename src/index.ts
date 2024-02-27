@@ -46,7 +46,13 @@ import {
   CreateInstanceConfigCallback,
   CreateInstanceConfigResponse,
 } from './instance-config';
-import {grpc, GrpcClientOptions, CallOptions, GoogleError, ClientOptions} from 'google-gax';
+import {
+  grpc,
+  GrpcClientOptions,
+  CallOptions,
+  GoogleError,
+  ClientOptions,
+} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
@@ -364,7 +370,10 @@ class Spanner extends GrpcService {
   get_instance_admin_client(): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
-      this.clients_.set(clientName, new v1[clientName](this.options as ClientOptions));
+      this.clients_.set(
+        clientName,
+        new v1[clientName](this.options as ClientOptions)
+      );
     }
     return this.clients_.get(clientName)! as v1.InstanceAdminClient;
   }
@@ -385,12 +394,14 @@ class Spanner extends GrpcService {
   get_database_admin_client(): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
-      this.clients_.set(clientName, new v1[clientName](this.options as ClientOptions));
+      this.clients_.set(
+        clientName,
+        new v1[clientName](this.options as ClientOptions)
+      );
     }
     return this.clients_.get(clientName)! as v1.DatabaseAdminClient;
   }
 
-  
   /** Closes this Spanner client and cleans up all resources used by it. */
   close(): void {
     this.clients_.forEach(c => {
