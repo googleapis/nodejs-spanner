@@ -252,7 +252,7 @@ describe('Spanner', () => {
               'us-central1'
             ),
             nodeCount: 1,
-            displayName: 'Display name for the test instance.',
+            displayName: instanceId,
           },
         });
         const [instance] = await operation.promise();
