@@ -352,6 +352,14 @@ class Spanner extends GrpcService {
    * The InstanceAdminClient object will automatically be closed upon calling Spanner.close().
    * @param this
    * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
+   * @example
+   *  ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner({
+   *    projectId: projectId,
+   *  });
+   * const instanceAdminClient = spanner.get_instance_admin_client();
+   * ```
    */
   get_instance_admin_client(this): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
@@ -381,6 +389,14 @@ class Spanner extends GrpcService {
    * The DatabaseAdminClient will automatically be closed upon calling Spanner.close().
    * @param this
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner({
+   *    projectId: projectId,
+   * });
+   * const databaseAdminClient = spanner.get_database_admin_client();
+   * ```
    */
   get_database_admin_client(this): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
