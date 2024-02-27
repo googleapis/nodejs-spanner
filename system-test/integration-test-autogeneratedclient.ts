@@ -48,13 +48,14 @@ const GAX_OPTIONS: CallOptions = {
 
 describe('Admin Client', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
+  const projectId = process.env.GCLOUD_PROJECT?process.env.GCLOUD_PROJECT:'';
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
   const instanceId = envInstanceName ? envInstanceName : generateName('instance');
 
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
-  const RESOURCES_TO_CLEAN: Array<Instance | Backup | Database> = [];
+  const RESOURCES_TO_CLEAN: Array<Object> = [];
   const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = generateName('database');
   const TABLE_NAME = 'Singers';
@@ -62,12 +63,14 @@ describe('Admin Client', () => {
   before(async () => {
     await deleteOldTestInstances();
     if (generateInstanceForTest) {
+      assert(projectId);
+      assert(instanceId);
       const [operation] = await instanceAdminClient.createInstance({
-        parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
+        parent: instanceAdminClient.projectPath(projectId),
         instanceId: instanceId,
         instance: {
           config: instanceAdminClient.instanceConfigPath(
-            process.env.GCLOUD_PROJECT,
+            projectId,
             'regional-us-central1'
           ),
           nodeCount: 1,
@@ -82,8 +85,11 @@ describe('Admin Client', () => {
       RESOURCES_TO_CLEAN.push(operation);
     } else {
       console.log(
+        "inside the before all hooks"
+      );
+      console.log(
         `Not creating temp instance, using + ${instanceAdminClient.instancePath(
-          process.env.GCLOUD_PROJECT,
+          projectId,
           envInstanceName
         )}...`
       );
@@ -97,7 +103,7 @@ describe('Admin Client', () => {
         ) PRIMARY KEY(SingerId)`,
       ],
       parent: databaseAdminClient.instancePath(
-        process.env.GCLOUD_PROJECT,
+        projectId,
         instanceId
       ),
     });
@@ -109,63 +115,45 @@ describe('Admin Client', () => {
       if (generateInstanceForTest) {
         // Sleep for 30 seconds before cleanup, just in case
         await new Promise(resolve => setTimeout(resolve, 30000));
-        // Deleting all backups before an instance can be deleted.
-        await Promise.all(
-          RESOURCES_TO_CLEAN.filter(resource => resource instanceof Backup).map(
-            backup => backup.delete(GAX_OPTIONS)
-          )
-        );
         /**
          * Deleting instances created during this test.
          * All databasess will automatically be deleted with instance.
          * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstance}
          */
+        // const [metadata] = await instanceAdminClient.getInstance({
+        //   name: instanceAdminClient.instancePath(projectId, instanceId)
+        // });
+        // console.log(metadata);
         await Promise.all(
           RESOURCES_TO_CLEAN.filter(
-            resource => resource instanceof Instance
-          ).map(instance => instance.delete(GAX_OPTIONS))
-        );
-      } else {
-        /**
-         * Limit the number of concurrent 'Administrative requests per minute'
-         * Not to exceed quota
-         * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
-         */
-        const limit = pLimit(5);
-        await Promise.all(
-          RESOURCES_TO_CLEAN.map(resource =>
-            limit(() => resource.delete(GAX_OPTIONS))
+            resource => 
+            instanceAdminClient.deleteInstance({
+              name: resource['result'].name,
+            }),
           )
         );
+      } else {
+        
       }
     } catch (err) {
       console.error('Cleanup failed:', err);
     }
-    /**
-     * Deleting instance configs created during this test.
-     * @see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.admin.instance.v1#google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstanceConfig}
-     */
-    await Promise.all(
-      INSTANCE_CONFIGS_TO_CLEAN.map(instanceConfig =>
-        instanceConfig.delete({gaxOpts: GAX_OPTIONS})
-      )
-    );
   });
 
   describe('Instances', () => {
-    it('should have created the instance', async () => {
+    it('should have created the instance autogen', async () => {
       try {
         const [metadata] = await instanceAdminClient.getInstance({
           name: instanceAdminClient.instancePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName
+            projectId,
+            instanceId
           ),
         });
         assert.strictEqual(
           metadata!.name,
           instanceAdminClient.instancePath(
-            process.env.GCLOUD_PROJECT,
-            envInstanceName
+            projectId,
+            instanceId
           )
         );
       } catch (err) {
@@ -175,9 +163,9 @@ describe('Admin Client', () => {
       }
     });
 
-    it('should list the instances', async () => {
+    it('should list the instances autogen', async () => {
       const [operation] = await instanceAdminClient.listInstances({
-        parent: instanceAdminClient.projectPath(process.env.GCLOUD_PROJECT),
+        parent: instanceAdminClient.projectPath(projectId),
       });
       assert(operation!.length > 0);
     });
@@ -187,16 +175,16 @@ describe('Admin Client', () => {
     async function createDatabase(database, dialect) {
       const [metadata] = await databaseAdminClient.getDatabase({
         name: databaseAdminClient.databasePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName,
+          projectId,
+          instanceId,
           database
         ),
       });
       assert.strictEqual(
         metadata!.name,
         databaseAdminClient.databasePath(
-          process.env.GCLOUD_PROJECT,
-          envInstanceName,
+          projectId,
+          instanceId,
           database
         )
       );
@@ -211,7 +199,7 @@ describe('Admin Client', () => {
       }
     }
 
-    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
+    it('GOOGLE_STANDARD_SQL should have created the database autogen', async () => {
       createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
   });

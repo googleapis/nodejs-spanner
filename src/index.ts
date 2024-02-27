@@ -353,7 +353,7 @@ class Spanner extends GrpcService {
    * @param this
    * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
    */
-  getInstanceAdminClient(this): any {
+  get_instance_admin_client(this): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
@@ -382,7 +382,7 @@ class Spanner extends GrpcService {
    * @param this
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
    */
-  getDatabaseAdminClient(this): any {
+  get_database_admin_client(this): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
