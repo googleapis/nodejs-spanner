@@ -25,8 +25,8 @@ const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
-const instanceAdminClient = spanner.getInstanceAdminClient();
-const databaseAdminClient = spanner.getDatabaseAdminClient();
+const instanceAdminClient = spanner.get_instance_admin_client();
+const databaseAdminClient = spanner.get_database_admin_client();
 const GAX_OPTIONS: CallOptions = {
   retry: {
     retryCodes: [
@@ -136,7 +136,7 @@ describe('Admin Client', () => {
   });
 
   describe('Instances', () => {
-    it('should have created the instance autogen', async () => {
+    it('should have created the instance', async () => {
       try {
         const [metadata] = await instanceAdminClient.getInstance({
           name: instanceAdminClient.instancePath(projectId, instanceId),
@@ -152,7 +152,7 @@ describe('Admin Client', () => {
       }
     });
 
-    it('should list the instances autogen', async () => {
+    it('should list the instances', async () => {
       const [operation] = await instanceAdminClient.listInstances({
         parent: instanceAdminClient.projectPath(projectId),
       });
@@ -180,7 +180,7 @@ describe('Admin Client', () => {
       }
     }
 
-    it('GOOGLE_STANDARD_SQL should have created the database autogen', async () => {
+    it('GOOGLE_STANDARD_SQL should have created the database', async () => {
       createDatabase(DATABASE, 'GOOGLE_STANDARD_SQL');
     });
   });

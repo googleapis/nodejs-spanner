@@ -46,7 +46,7 @@ import {
   CreateInstanceConfigCallback,
   CreateInstanceConfigResponse,
 } from './instance-config';
-import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
+import {grpc, GrpcClientOptions, CallOptions, GoogleError, ClientOptions} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
@@ -361,14 +361,13 @@ class Spanner extends GrpcService {
    * const instanceAdminClient = spanner.getInstanceAdminClient();
    * ```
    */
-  getInstanceAdminClient(this): v1.InstanceAdminClient {
+  get_instance_admin_client(this): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
     return this.clients_.get(clientName)!;
   }
-
   /**
    * Gets the DatabaseAdminClient object.
    * The DatabaseAdminClient object is also shared for handwritten client and should not be manually closed.
@@ -383,14 +382,15 @@ class Spanner extends GrpcService {
    * const databaseAdminClient = spanner.getDatabaseAdminClient();
    * ```
    */
-  getDatabaseAdminClient(this): v1.DatabaseAdminClient {
+  get_database_admin_client(this): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
-    return  this.clients_.get(clientName)!;
+    return this.clients_.get(clientName)!;
   }
 
+  
   /** Closes this Spanner client and cleans up all resources used by it. */
   close(): void {
     this.clients_.forEach(c => {
