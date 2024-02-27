@@ -366,6 +366,7 @@ class Spanner extends GrpcService {
    * const instanceAdminClient = spanner.getInstanceAdminClient();
    * ```
    */
+
   getInstanceAdminClient(): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
@@ -389,6 +390,7 @@ class Spanner extends GrpcService {
    * const databaseAdminClient = spanner.getDatabaseAdminClient();
    * ```
    */
+  
   getDatabaseAdminClient(): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
