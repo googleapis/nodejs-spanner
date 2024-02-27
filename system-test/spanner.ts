@@ -249,7 +249,7 @@ describe('Spanner', () => {
           instance: {
             config: instanceAdminClient.instanceConfigPath(
               projectId,
-              'us-central1'
+              'regional-us-central1'
             ),
             nodeCount: 1,
             displayName: instanceId,
