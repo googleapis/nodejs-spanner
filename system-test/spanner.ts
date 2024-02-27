@@ -253,6 +253,10 @@ describe('Spanner', () => {
             ),
             nodeCount: 1,
             displayName: instanceId,
+            labels: {
+              cloud_spanner_samples: 'true',
+              created: Math.round(Date.now() / 1000).toString(), // current time
+            },
           },
         });
         const [instance] = await operation.promise();
