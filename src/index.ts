@@ -346,61 +346,63 @@ class Spanner extends GrpcService {
     };
     this.directedReadOptions = directedReadOptions;
   }
+
   /**
-   * Gets the InstanceAdminClient object
+   * Gets the InstanceAdminClient object.
+   * The InstanceAdminClient object will automatically be closed upon calling Spanner.close().
    * @param this
-   * @returns {v1.InstanceAdminClient}
+   * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
    */
-  get_instance_admin_client(this): any {
+  getInstanceAdminClient(this): any {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
-      // add the client created to the clients_ map
-      // NOTE: when the spanner client will get closed, all the clients present in the clients_ map will also be closed as well
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
     const instanceAdminClient = this.clients_.get(clientName)!;
+    
+    // Emulator support setup
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
       emulatorHost.endpoint &&
       emulatorHost.endpoint.length > 0
     ) {
-      // emulator support setup
       instanceAdminClient._opts.servicePath = emulatorHost.endpoint;
       instanceAdminClient._opts.port = emulatorHost.port;
       instanceAdminClient._opts.sslCreds =
         this.grpc.credentials.createInsecure();
     }
 
-    // return the instance admin client
     return instanceAdminClient;
   }
+
   /**
-   *
+   * Gets the DatabaseAdminClient object. 
+   * The DatabaseAdminClient will automatically be closed upon calling Spanner.close().
    * @param this
-   * @returns {v1.DatabaseAdminClient}
+   * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
    */
-  get_database_admin_client(this): any {
+  getDatabaseAdminClient(this): any {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
-      // add the client created to the clients_ map
-      // NOTE: when the spanner client will get closed, all the clients present in the clients_ map will also be closed as well
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
     const databaseAdminClient = this.clients_.get(clientName)!;
+    
+    // Emulator support setup
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
       emulatorHost.endpoint &&
       emulatorHost.endpoint.length > 0
     ) {
-      // emulator support setup
+      
       databaseAdminClient._opts.servicePath = emulatorHost.endpoint;
       databaseAdminClient._opts.port = emulatorHost.port;
       databaseAdminClient._opts.sslCreds =
         this.grpc.credentials.createInsecure();
     }
-    // return the database admin client
+
     return databaseAdminClient;
   }
 

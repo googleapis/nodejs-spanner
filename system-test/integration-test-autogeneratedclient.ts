@@ -25,8 +25,8 @@ const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
-const instanceAdminClient = spanner.get_instance_admin_client();
-const databaseAdminClient = spanner.get_database_admin_client();
+const instanceAdminClient = spanner.getInstanceAdminClient();
+const databaseAdminClient = spanner.getDatabaseAdminClient();
 const GAX_OPTIONS: CallOptions = {
   retry: {
     retryCodes: [
