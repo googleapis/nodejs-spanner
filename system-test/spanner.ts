@@ -249,14 +249,10 @@ describe('Spanner', () => {
           instance: {
             config: instanceAdminClient.instanceConfigPath(
               projectId,
-              'regional-us-central1'
+              'us-central1'
             ),
             nodeCount: 1,
             displayName: 'Display name for the test instance.',
-            labels: {
-              cloud_spanner_samples: 'true',
-              created: Math.round(Date.now() / 1000).toString(), // current time
-            },
           },
         });
         const [instance] = await operation.promise();
