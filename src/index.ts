@@ -364,7 +364,7 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    *  });
-   * const instanceAdminClient = spanner.getInstanceAdminClient();
+   * const instanceAdminClient = spanner.get_instance_admin_client();
    * ```
    */
   get_instance_admin_client(): v1.InstanceAdminClient {
@@ -388,7 +388,7 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    * });
-   * const databaseAdminClient = spanner.getDatabaseAdminClient();
+   * const databaseAdminClient = spanner.get_database_admin_client();
    * ```
    */
   get_database_admin_client(): v1.DatabaseAdminClient {
