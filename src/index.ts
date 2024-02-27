@@ -377,6 +377,7 @@ class Spanner extends GrpcService {
     }
     return this.clients_.get(clientName)! as v1.InstanceAdminClient;
   }
+
   /**
    * Gets the DatabaseAdminClient object.
    * The returned DatabaseAdminClient object is a managed, shared instance and should not be manually closed.
