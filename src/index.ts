@@ -363,10 +363,10 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    *  });
-   * const instanceAdminClient = spanner.get_instance_admin_client();
+   * const instanceAdminClient = spanner.getInstanceAdminClient();
    * ```
    */
-  get_instance_admin_client(): v1.InstanceAdminClient {
+  getInstanceAdminClient(): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(
@@ -386,10 +386,10 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    * });
-   * const databaseAdminClient = spanner.get_database_admin_client();
+   * const databaseAdminClient = spanner.getDatabaseAdminClient();
    * ```
    */
-  get_database_admin_client(): v1.DatabaseAdminClient {
+  getDatabaseAdminClient(): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(
@@ -1794,6 +1794,8 @@ promisifyAll(Spanner, {
     'pgJsonb',
     'operation',
     'timestamp',
+    `getInstanceAdminClient`,
+    'getDatabaseAdminClient',
   ],
 });
 

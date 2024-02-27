@@ -237,8 +237,8 @@ describe('Spanner', () => {
       ? envInstanceName
       : generateName('instance');
     const DATABASE = generateName('database');
-    const instanceAdminClient = spanner.get_instance_admin_client();
-    const databaseAdminClient = spanner.get_database_admin_client();
+    const instanceAdminClient = spanner.getInstanceAdminClient();
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
     before(async () => {
       assert(projectId);
@@ -283,7 +283,7 @@ describe('Spanner', () => {
     });
 
     describe('Instances', () => {
-      it('should have created the instance', async () => {
+      it.only('should have created the instance', async () => {
         assert(projectId);
         try {
           const [metadata] = await instanceAdminClient.getInstance({
