@@ -1794,7 +1794,7 @@ promisifyAll(Spanner, {
     'pgJsonb',
     'operation',
     'timestamp',
-    `getInstanceAdminClient`,
+    'getInstanceAdminClient',
     'getDatabaseAdminClient',
   ],
 });

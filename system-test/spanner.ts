@@ -283,7 +283,7 @@ describe('Spanner', () => {
     });
 
     describe('Instances', () => {
-      it.only('should have created the instance', async () => {
+      it('should have created the instance', async () => {
         assert(projectId);
         try {
           const [metadata] = await instanceAdminClient.getInstance({
@@ -302,10 +302,10 @@ describe('Spanner', () => {
 
       it('should list the instances', async () => {
         assert(projectId);
-        const [operation] = await instanceAdminClient.listInstances({
+        const [instances] = await instanceAdminClient.listInstances({
           parent: instanceAdminClient.projectPath(projectId),
         });
-        assert(operation!.length > 0);
+        assert(instances!.length > 0);
       });
     });
 
