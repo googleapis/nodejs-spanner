@@ -349,7 +349,7 @@ class Spanner extends GrpcService {
 
   /**
    * Gets the InstanceAdminClient object.
-   * The InstanceAdminClient object will automatically be closed upon calling Spanner.close().
+   * The InstanceAdminClient object is also shared for handwritten client and should not be manually closed.
    * @param this
    * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
    * @example
@@ -358,35 +358,20 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    *  });
-   * const instanceAdminClient = spanner.get_instance_admin_client();
+   * const instanceAdminClient = spanner.getInstanceAdminClient();
    * ```
    */
-  get_instance_admin_client(this): v1.InstanceAdminClient {
+  getInstanceAdminClient(this): v1.InstanceAdminClient {
     const clientName = 'InstanceAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
-    const instanceAdminClient = this.clients_.get(clientName)!;
-
-    // Emulator support setup
-    const emulatorHost = Spanner.getSpannerEmulatorHost();
-    if (
-      emulatorHost &&
-      emulatorHost.endpoint &&
-      emulatorHost.endpoint.length > 0
-    ) {
-      instanceAdminClient._opts.servicePath = emulatorHost.endpoint;
-      instanceAdminClient._opts.port = emulatorHost.port;
-      instanceAdminClient._opts.sslCreds =
-        this.grpc.credentials.createInsecure();
-    }
-
-    return instanceAdminClient;
+    return this.clients_.get(clientName)!;
   }
 
   /**
    * Gets the DatabaseAdminClient object.
-   * The DatabaseAdminClient will automatically be closed upon calling Spanner.close().
+   * The DatabaseAdminClient object is also shared for handwritten client and should not be manually closed.
    * @param this
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
    * @example
@@ -395,30 +380,15 @@ class Spanner extends GrpcService {
    * const spanner = new Spanner({
    *    projectId: projectId,
    * });
-   * const databaseAdminClient = spanner.get_database_admin_client();
+   * const databaseAdminClient = spanner.getDatabaseAdminClient();
    * ```
    */
-  get_database_admin_client(this): v1.DatabaseAdminClient {
+  getDatabaseAdminClient(this): v1.DatabaseAdminClient {
     const clientName = 'DatabaseAdminClient';
     if (!this.clients_.has(clientName)) {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
-    const databaseAdminClient = this.clients_.get(clientName)!;
-
-    // Emulator support setup
-    const emulatorHost = Spanner.getSpannerEmulatorHost();
-    if (
-      emulatorHost &&
-      emulatorHost.endpoint &&
-      emulatorHost.endpoint.length > 0
-    ) {
-      databaseAdminClient._opts.servicePath = emulatorHost.endpoint;
-      databaseAdminClient._opts.port = emulatorHost.port;
-      databaseAdminClient._opts.sslCreds =
-        this.grpc.credentials.createInsecure();
-    }
-
-    return databaseAdminClient;
+    return  this.clients_.get(clientName)!;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
