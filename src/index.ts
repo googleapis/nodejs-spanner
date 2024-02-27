@@ -356,7 +356,6 @@ class Spanner extends GrpcService {
   /**
    * Gets the InstanceAdminClient object.
    * The InstanceAdminClient object is also shared for handwritten client and should not be manually closed.
-   * @param this
    * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
    * @example
    *  ```
@@ -380,7 +379,6 @@ class Spanner extends GrpcService {
   /**
    * Gets the DatabaseAdminClient object.
    * The DatabaseAdminClient object is also shared for handwritten client and should not be manually closed.
-   * @param this
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
    * @example
    * ```
