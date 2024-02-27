@@ -1,5 +1,5 @@
 /*!
- * Copyright 2024 Google Inc. All Rights Reserved.
+ * Copyright 2016 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -355,7 +355,7 @@ class Spanner extends GrpcService {
 
   /**
    * Gets the InstanceAdminClient object.
-   * The InstanceAdminClient object is also shared for handwritten client and should not be manually closed.
+   * The returned InstanceAdminClient object is a shared, managed instance and should not be manually closed.
    * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
    * @example
    *  ```
@@ -378,7 +378,7 @@ class Spanner extends GrpcService {
   }
   /**
    * Gets the DatabaseAdminClient object.
-   * The DatabaseAdminClient object is also shared for handwritten client and should not be manually closed.
+   * The returned DatabaseAdminClient object is a managed, shared instance and should not be manually closed.
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
    * @example
    * ```
