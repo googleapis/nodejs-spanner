@@ -18,15 +18,15 @@ import * as assert from 'assert';
 import {describe, it, before, after} from 'mocha';
 import pLimit = require('p-limit');
 import * as uuid from 'uuid';
-import {Backup, Database, Spanner, Instance, InstanceConfig} from '../src';
+import {Spanner, Instance} from '../src';
 import {grpc, CallOptions} from 'google-gax';
 const PREFIX = 'gcloud-tests-';
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
   apiEndpoint: process.env.API_ENDPOINT,
 });
-const instanceAdminClient = spanner.getInstanceAdminClient();
-const databaseAdminClient = spanner.getDatabaseAdminClient();
+const instanceAdminClient = spanner.get_instance_admin_client();
+const databaseAdminClient = spanner.get_database_admin_client();
 const GAX_OPTIONS: CallOptions = {
   retry: {
     retryCodes: [
@@ -48,15 +48,18 @@ const GAX_OPTIONS: CallOptions = {
 
 describe('Admin Client', () => {
   const envInstanceName = process.env.SPANNERTEST_INSTANCE;
-  const projectId = process.env.GCLOUD_PROJECT?process.env.GCLOUD_PROJECT:'';
+  const projectId = process.env.GCLOUD_PROJECT
+    ? process.env.GCLOUD_PROJECT
+    : '';
   // True if a new instance has been created for this test run, false if reusing an existing instance
   const generateInstanceForTest = !envInstanceName;
-  const instanceId = envInstanceName ? envInstanceName : generateName('instance');
+  const instanceId = envInstanceName
+    ? envInstanceName
+    : generateName('instance');
 
   const IS_EMULATOR_ENABLED =
     typeof process.env.SPANNER_EMULATOR_HOST !== 'undefined';
   const RESOURCES_TO_CLEAN: Array<Object> = [];
-  const INSTANCE_CONFIGS_TO_CLEAN: Array<InstanceConfig> = [];
   const DATABASE = generateName('database');
   const TABLE_NAME = 'Singers';
 
@@ -84,9 +87,7 @@ describe('Admin Client', () => {
       await operation.promise();
       RESOURCES_TO_CLEAN.push(operation);
     } else {
-      console.log(
-        "inside the before all hooks"
-      );
+      console.log('inside the before all hooks');
       console.log(
         `Not creating temp instance, using + ${instanceAdminClient.instancePath(
           projectId,
@@ -102,10 +103,7 @@ describe('Admin Client', () => {
           Name STRING(1024),
         ) PRIMARY KEY(SingerId)`,
       ],
-      parent: databaseAdminClient.instancePath(
-        projectId,
-        instanceId
-      ),
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
     });
     await operation.promise();
   });
@@ -125,15 +123,12 @@ describe('Admin Client', () => {
         // });
         // console.log(metadata);
         await Promise.all(
-          RESOURCES_TO_CLEAN.filter(
-            resource => 
+          RESOURCES_TO_CLEAN.filter(resource =>
             instanceAdminClient.deleteInstance({
               name: resource['result'].name,
-            }),
+            })
           )
         );
-      } else {
-        
       }
     } catch (err) {
       console.error('Cleanup failed:', err);
@@ -144,17 +139,11 @@ describe('Admin Client', () => {
     it('should have created the instance autogen', async () => {
       try {
         const [metadata] = await instanceAdminClient.getInstance({
-          name: instanceAdminClient.instancePath(
-            projectId,
-            instanceId
-          ),
+          name: instanceAdminClient.instancePath(projectId, instanceId),
         });
         assert.strictEqual(
           metadata!.name,
-          instanceAdminClient.instancePath(
-            projectId,
-            instanceId
-          )
+          instanceAdminClient.instancePath(projectId, instanceId)
         );
       } catch (err) {
         if (!err) {
@@ -174,19 +163,11 @@ describe('Admin Client', () => {
   describe('Databases', () => {
     async function createDatabase(database, dialect) {
       const [metadata] = await databaseAdminClient.getDatabase({
-        name: databaseAdminClient.databasePath(
-          projectId,
-          instanceId,
-          database
-        ),
+        name: databaseAdminClient.databasePath(projectId, instanceId, database),
       });
       assert.strictEqual(
         metadata!.name,
-        databaseAdminClient.databasePath(
-          projectId,
-          instanceId,
-          database
-        )
+        databaseAdminClient.databasePath(projectId, instanceId, database)
       );
       assert.strictEqual(metadata!.state, 'READY');
       if (IS_EMULATOR_ENABLED) {

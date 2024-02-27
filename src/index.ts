@@ -359,7 +359,7 @@ class Spanner extends GrpcService {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
     const instanceAdminClient = this.clients_.get(clientName)!;
-    
+
     // Emulator support setup
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
@@ -377,7 +377,7 @@ class Spanner extends GrpcService {
   }
 
   /**
-   * Gets the DatabaseAdminClient object. 
+   * Gets the DatabaseAdminClient object.
    * The DatabaseAdminClient will automatically be closed upon calling Spanner.close().
    * @param this
    * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
@@ -388,7 +388,7 @@ class Spanner extends GrpcService {
       this.clients_.set(clientName, new v1[clientName](this.options));
     }
     const databaseAdminClient = this.clients_.get(clientName)!;
-    
+
     // Emulator support setup
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
@@ -396,7 +396,6 @@ class Spanner extends GrpcService {
       emulatorHost.endpoint &&
       emulatorHost.endpoint.length > 0
     ) {
-      
       databaseAdminClient._opts.servicePath = emulatorHost.endpoint;
       databaseAdminClient._opts.port = emulatorHost.port;
       databaseAdminClient._opts.sslCreds =
