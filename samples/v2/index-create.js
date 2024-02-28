@@ -62,8 +62,12 @@ function main(
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
-      // Close the database when finished.
-      databaseAdminClient.close();
+      // Close the spanner client when finished.
+    /*
+      The databaseAdminClient does not require explicit closure.
+            The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
+    */
+      spanner.close();
     }
   }
   createIndex();
