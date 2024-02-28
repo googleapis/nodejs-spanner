@@ -19,7 +19,7 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
   // [START spanner_create_instance_with_processing_units]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -32,7 +32,7 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
     projectId: projectId,
   });
 
-  const instanceAdminClient = spanner.get_instance_admin_client();
+  const instanceAdminClient = spanner.getInstanceAdminClient();
 
   // Creates a new instance
   try {
