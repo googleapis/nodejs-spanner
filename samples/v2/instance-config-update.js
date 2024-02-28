@@ -32,7 +32,7 @@ function main(
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
-  const {Spanner, protos} = require('../../build/src');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Creates a client
   const spanner = new Spanner({
