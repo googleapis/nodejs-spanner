@@ -91,6 +91,8 @@ const fakePfy = extend({}, pfy, {
       'pgJsonb',
       'operation',
       'timestamp',
+      'getInstanceAdminClient',
+      'getDatabaseAdminClient',
     ]);
   },
 });
