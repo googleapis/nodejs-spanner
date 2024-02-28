@@ -19,7 +19,7 @@ async function deleteBackup(instanceId, backupId, projectId) {
   // [START spanner_delete_backup]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

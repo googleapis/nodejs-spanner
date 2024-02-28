@@ -25,7 +25,7 @@ async function restoreBackupWithEncryptionKey(
   // [START spanner_restore_backup_with_encryption_key]
 
   // Imports the Google Cloud client library and precise date library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.

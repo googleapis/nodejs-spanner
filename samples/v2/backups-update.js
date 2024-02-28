@@ -19,7 +19,7 @@ async function updateBackup(instanceId, backupId, projectId) {
   // [START spanner_update_backup]
 
   // Imports the Google Cloud client library and precise date library
-  const {Spanner, protos} = require('../../build/src');
+  const {Spanner, protos} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**

@@ -34,7 +34,7 @@ function main(
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud Spanner client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   // Creates a client
