@@ -27,7 +27,7 @@ async function createDatabase(instanceID, databaseID, projectID) {
   // const databaseId = 'my-database';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   // creates a client
   const spanner = new Spanner({
@@ -84,14 +84,14 @@ async function addColumn(instanceId, databaseId, projectId) {
   // const databaseId = 'my-database';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.database_admin_api();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new index in the database
   try {

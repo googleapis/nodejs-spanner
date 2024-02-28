@@ -28,7 +28,7 @@ function main(instanceId, databaseId, projectId) {
   // const databaseId = 'my-database-id';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   // creates a client
   const spanner = new Spanner({
@@ -44,7 +44,7 @@ function main(instanceId, databaseId, projectId) {
     });
     if (metadata.defaultLeader !== '') {
       console.log(
-        `The default leader for ${databaseId} is ${metadata.defaultLeader}`
+        `The default_leader for ${databaseId} is ${metadata.defaultLeader}`
       );
     } else {
       console.log(

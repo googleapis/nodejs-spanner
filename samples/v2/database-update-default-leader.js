@@ -30,7 +30,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   // const defaultLeader = 'my-default-leader';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   // creates a client
   const spanner = new Spanner({
