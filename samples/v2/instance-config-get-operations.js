@@ -46,7 +46,7 @@ function main(projectId = 'my-project-id') {
       const [instanceConfigOperations] =
         await instanceAdminClient.listInstanceConfigOperations({
           parent: instanceAdminClient.projectPath(projectId),
-          // filtering on CreateInstanceConfigMetadata fields
+          // This filter ensures that only operations with metadata type CreateInstanceConfigMetadata
           filter:
             '(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)',
         });

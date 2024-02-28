@@ -42,10 +42,7 @@ function main(projectId) {
     // See https://cloud.google.com/spanner/docs/instance-configurations#configuration for a list of all available
     // configurations.
     const [instanceConfig] = await instanceAdminClient.getInstanceConfig({
-      name: instanceAdminClient.instanceConfigPath(
-        projectId,
-        'custom-my-instance-config'
-      ),
+      name: instanceAdminClient.instanceConfigPath(projectId, 'nam6'),
     });
     console.log(
       `Available leader options for instance config ${instanceConfig.name} ('${
