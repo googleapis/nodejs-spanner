@@ -19,7 +19,7 @@ async function updateBackup(instanceId, backupId, projectId) {
   // [START spanner_update_backup]
 
   // Imports the Google Cloud client library and precise date library
-  const {Spanner, protos} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('../../build/src');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
@@ -34,7 +34,7 @@ async function updateBackup(instanceId, backupId, projectId) {
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Read backup metadata and update expiry time
   try {

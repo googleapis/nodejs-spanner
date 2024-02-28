@@ -19,7 +19,8 @@ async function getDatabaseOperations(instanceId, projectId) {
   // [START spanner_list_database_operations]
 
   // Imports the Google Cloud client library
-  const {Spanner, protos} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
+  const {protos} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -32,11 +33,11 @@ async function getDatabaseOperations(instanceId, projectId) {
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List database operations
   try {
-    const [databaseOperations] = await databaseAdminClient.listBackupOperations(
+    const [databaseOperations] = await databaseAdminClient.listDatabaseOperations(
       {
         parent: databaseAdminClient.instancePath(projectId, instanceId),
         filter:

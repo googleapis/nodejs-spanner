@@ -25,7 +25,8 @@ async function createBackup(
   // [START spanner_create_backup]
 
   // Imports the Google Cloud client library and precise date library
-  const {Spanner, protos} = require('@google-cloud/spanner');
+  const {protos} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
@@ -42,7 +43,7 @@ async function createBackup(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database
   try {

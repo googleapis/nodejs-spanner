@@ -19,7 +19,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
   // [START spanner_list_backups]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -34,7 +34,7 @@ async function getBackups(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   try {
     // get the parent(instance) of the database
