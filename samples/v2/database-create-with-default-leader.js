@@ -29,14 +29,14 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   // const defaultLeader = 'my-default-leader'; example: 'asia-northeast1'
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function createDatabaseWithDefaultLeader() {
     // Create a new database with an extra statement which will alter the

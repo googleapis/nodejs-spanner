@@ -27,14 +27,14 @@ async function createDatabase(instanceID, databaseID, projectID) {
   // const databaseId = 'my-database';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   // creates a client
   const spanner = new Spanner({
     projectId: projectID,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   const createSingersTableStatement = `
     CREATE TABLE Singers (

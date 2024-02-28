@@ -23,7 +23,7 @@ async function createDatabaseWithVersionRetentionPeriod(
   // [START spanner_create_database_with_version_retention_period]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -36,7 +36,7 @@ async function createDatabaseWithVersionRetentionPeriod(
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   try {
     // Create a new database with an extra statement which will alter the

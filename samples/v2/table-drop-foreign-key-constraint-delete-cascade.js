@@ -29,14 +29,14 @@ function main(instanceId, databaseId, projectId) {
   // const databaseId = 'my-database-id';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
 
   // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function dropForeignKeyConstraintDeleteCascade() {
     const request = [

@@ -30,15 +30,14 @@ async function createDatabaseWithEncryptionKey(
   //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-  const {protos} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('../../build/src');
 
   // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  const databaseAdminClient = spanner.get_database_admin_client();
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a database
   const [operation] = await databaseAdminClient.createDatabase({
