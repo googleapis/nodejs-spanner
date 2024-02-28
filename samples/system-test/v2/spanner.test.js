@@ -14,7 +14,7 @@
 
 'use strict';
 
-const {Spanner} = require('../../../build/src');
+const {Spanner} = require('@google-cloud/spanner');
 const pLimit = require('p-limit');
 const {describe, it, before, after, afterEach} = require('mocha');
 const {assert} = require('chai');
