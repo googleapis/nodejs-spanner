@@ -44,13 +44,12 @@ function main(
   async function createPgDatabase() {
     // Creates a PostgreSQL database. PostgreSQL create requests may not contain any additional
     // DDL statements. We need to execute these separately after the database has been created.
-    const [operationCreate, database] =
-      await databaseAdminClient.createDatabase({
-        createStatement: 'CREATE DATABASE "' + databaseId + '"',
-        parent: databaseAdminClient.instancePath(projectId, instanceId),
-        databaseDialect:
-          protos.google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL,
-      });
+    const [operationCreate] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE "' + databaseId + '"',
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      databaseDialect:
+        protos.google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL,
+    });
 
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operationCreate.promise();
