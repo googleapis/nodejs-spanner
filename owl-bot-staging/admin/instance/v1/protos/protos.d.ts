@@ -4863,6 +4863,20 @@ export namespace google {
                         public listInstances(request: google.spanner.admin.instance.v1.IListInstancesRequest): Promise<google.spanner.admin.instance.v1.ListInstancesResponse>;
 
                         /**
+                         * Calls ListInstancePartitions.
+                         * @param request ListInstancePartitionsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListInstancePartitionsResponse
+                         */
+                        public listInstancePartitions(request: google.spanner.admin.instance.v1.IListInstancePartitionsRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitionsCallback): void;
+
+                        /**
+                         * Calls ListInstancePartitions.
+                         * @param request ListInstancePartitionsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listInstancePartitions(request: google.spanner.admin.instance.v1.IListInstancePartitionsRequest): Promise<google.spanner.admin.instance.v1.ListInstancePartitionsResponse>;
+
+                        /**
                          * Calls GetInstance.
                          * @param request GetInstanceRequest message or plain object
                          * @param callback Node-style callback called with the error, if any, and Instance
@@ -4959,6 +4973,76 @@ export namespace google {
                          * @returns Promise
                          */
                         public testIamPermissions(request: google.iam.v1.ITestIamPermissionsRequest): Promise<google.iam.v1.TestIamPermissionsResponse>;
+
+                        /**
+                         * Calls GetInstancePartition.
+                         * @param request GetInstancePartitionRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and InstancePartition
+                         */
+                        public getInstancePartition(request: google.spanner.admin.instance.v1.IGetInstancePartitionRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.GetInstancePartitionCallback): void;
+
+                        /**
+                         * Calls GetInstancePartition.
+                         * @param request GetInstancePartitionRequest message or plain object
+                         * @returns Promise
+                         */
+                        public getInstancePartition(request: google.spanner.admin.instance.v1.IGetInstancePartitionRequest): Promise<google.spanner.admin.instance.v1.InstancePartition>;
+
+                        /**
+                         * Calls CreateInstancePartition.
+                         * @param request CreateInstancePartitionRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public createInstancePartition(request: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.CreateInstancePartitionCallback): void;
+
+                        /**
+                         * Calls CreateInstancePartition.
+                         * @param request CreateInstancePartitionRequest message or plain object
+                         * @returns Promise
+                         */
+                        public createInstancePartition(request: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls DeleteInstancePartition.
+                         * @param request DeleteInstancePartitionRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Empty
+                         */
+                        public deleteInstancePartition(request: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.DeleteInstancePartitionCallback): void;
+
+                        /**
+                         * Calls DeleteInstancePartition.
+                         * @param request DeleteInstancePartitionRequest message or plain object
+                         * @returns Promise
+                         */
+                        public deleteInstancePartition(request: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest): Promise<google.protobuf.Empty>;
+
+                        /**
+                         * Calls UpdateInstancePartition.
+                         * @param request UpdateInstancePartitionRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and Operation
+                         */
+                        public updateInstancePartition(request: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.UpdateInstancePartitionCallback): void;
+
+                        /**
+                         * Calls UpdateInstancePartition.
+                         * @param request UpdateInstancePartitionRequest message or plain object
+                         * @returns Promise
+                         */
+                        public updateInstancePartition(request: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest): Promise<google.longrunning.Operation>;
+
+                        /**
+                         * Calls ListInstancePartitionOperations.
+                         * @param request ListInstancePartitionOperationsRequest message or plain object
+                         * @param callback Node-style callback called with the error, if any, and ListInstancePartitionOperationsResponse
+                         */
+                        public listInstancePartitionOperations(request: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest, callback: google.spanner.admin.instance.v1.InstanceAdmin.ListInstancePartitionOperationsCallback): void;
+
+                        /**
+                         * Calls ListInstancePartitionOperations.
+                         * @param request ListInstancePartitionOperationsRequest message or plain object
+                         * @returns Promise
+                         */
+                        public listInstancePartitionOperations(request: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest): Promise<google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse>;
                     }
 
                     namespace InstanceAdmin {
@@ -5013,6 +5097,13 @@ export namespace google {
                         type ListInstancesCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancesResponse) => void;
 
                         /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstancePartitions}.
+                         * @param error Error, if any
+                         * @param [response] ListInstancePartitionsResponse
+                         */
+                        type ListInstancePartitionsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancePartitionsResponse) => void;
+
+                        /**
                          * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstance}.
                          * @param error Error, if any
                          * @param [response] Instance
@@ -5060,6 +5151,41 @@ export namespace google {
                          * @param [response] TestIamPermissionsResponse
                          */
                         type TestIamPermissionsCallback = (error: (Error|null), response?: google.iam.v1.TestIamPermissionsResponse) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|getInstancePartition}.
+                         * @param error Error, if any
+                         * @param [response] InstancePartition
+                         */
+                        type GetInstancePartitionCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.InstancePartition) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|createInstancePartition}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type CreateInstancePartitionCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|deleteInstancePartition}.
+                         * @param error Error, if any
+                         * @param [response] Empty
+                         */
+                        type DeleteInstancePartitionCallback = (error: (Error|null), response?: google.protobuf.Empty) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|updateInstancePartition}.
+                         * @param error Error, if any
+                         * @param [response] Operation
+                         */
+                        type UpdateInstancePartitionCallback = (error: (Error|null), response?: google.longrunning.Operation) => void;
+
+                        /**
+                         * Callback as used by {@link google.spanner.admin.instance.v1.InstanceAdmin|listInstancePartitionOperations}.
+                         * @param error Error, if any
+                         * @param [response] ListInstancePartitionOperationsResponse
+                         */
+                        type ListInstancePartitionOperationsCallback = (error: (Error|null), response?: google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse) => void;
                     }
 
                     /** Properties of a ReplicaInfo. */
@@ -6939,6 +7065,9 @@ export namespace google {
 
                         /** ListInstancesRequest filter */
                         filter?: (string|null);
+
+                        /** ListInstancesRequest instanceDeadline */
+                        instanceDeadline?: (google.protobuf.ITimestamp|null);
                     }
 
                     /** Represents a ListInstancesRequest. */
@@ -6961,6 +7090,9 @@ export namespace google {
 
                         /** ListInstancesRequest filter. */
                         public filter: string;
+
+                        /** ListInstancesRequest instanceDeadline. */
+                        public instanceDeadline?: (google.protobuf.ITimestamp|null);
 
                         /**
                          * Creates a new ListInstancesRequest instance using the specified properties.
@@ -7048,6 +7180,9 @@ export namespace google {
 
                         /** ListInstancesResponse nextPageToken */
                         nextPageToken?: (string|null);
+
+                        /** ListInstancesResponse unreachable */
+                        unreachable?: (string[]|null);
                     }
 
                     /** Represents a ListInstancesResponse. */
@@ -7064,6 +7199,9 @@ export namespace google {
 
                         /** ListInstancesResponse nextPageToken. */
                         public nextPageToken: string;
+
+                        /** ListInstancesResponse unreachable. */
+                        public unreachable: string[];
 
                         /**
                          * Creates a new ListInstancesResponse instance using the specified properties.
@@ -7785,6 +7923,1272 @@ export namespace google {
 
                         /**
                          * Gets the default type url for UpdateInstanceConfigMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an InstancePartition. */
+                    interface IInstancePartition {
+
+                        /** InstancePartition name */
+                        name?: (string|null);
+
+                        /** InstancePartition config */
+                        config?: (string|null);
+
+                        /** InstancePartition displayName */
+                        displayName?: (string|null);
+
+                        /** InstancePartition nodeCount */
+                        nodeCount?: (number|null);
+
+                        /** InstancePartition processingUnits */
+                        processingUnits?: (number|null);
+
+                        /** InstancePartition state */
+                        state?: (google.spanner.admin.instance.v1.InstancePartition.State|keyof typeof google.spanner.admin.instance.v1.InstancePartition.State|null);
+
+                        /** InstancePartition createTime */
+                        createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** InstancePartition updateTime */
+                        updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** InstancePartition referencingDatabases */
+                        referencingDatabases?: (string[]|null);
+
+                        /** InstancePartition referencingBackups */
+                        referencingBackups?: (string[]|null);
+
+                        /** InstancePartition etag */
+                        etag?: (string|null);
+                    }
+
+                    /** Represents an InstancePartition. */
+                    class InstancePartition implements IInstancePartition {
+
+                        /**
+                         * Constructs a new InstancePartition.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IInstancePartition);
+
+                        /** InstancePartition name. */
+                        public name: string;
+
+                        /** InstancePartition config. */
+                        public config: string;
+
+                        /** InstancePartition displayName. */
+                        public displayName: string;
+
+                        /** InstancePartition nodeCount. */
+                        public nodeCount?: (number|null);
+
+                        /** InstancePartition processingUnits. */
+                        public processingUnits?: (number|null);
+
+                        /** InstancePartition state. */
+                        public state: (google.spanner.admin.instance.v1.InstancePartition.State|keyof typeof google.spanner.admin.instance.v1.InstancePartition.State);
+
+                        /** InstancePartition createTime. */
+                        public createTime?: (google.protobuf.ITimestamp|null);
+
+                        /** InstancePartition updateTime. */
+                        public updateTime?: (google.protobuf.ITimestamp|null);
+
+                        /** InstancePartition referencingDatabases. */
+                        public referencingDatabases: string[];
+
+                        /** InstancePartition referencingBackups. */
+                        public referencingBackups: string[];
+
+                        /** InstancePartition etag. */
+                        public etag: string;
+
+                        /** InstancePartition computeCapacity. */
+                        public computeCapacity?: ("nodeCount"|"processingUnits");
+
+                        /**
+                         * Creates a new InstancePartition instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns InstancePartition instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IInstancePartition): google.spanner.admin.instance.v1.InstancePartition;
+
+                        /**
+                         * Encodes the specified InstancePartition message. Does not implicitly {@link google.spanner.admin.instance.v1.InstancePartition.verify|verify} messages.
+                         * @param message InstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified InstancePartition message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.InstancePartition.verify|verify} messages.
+                         * @param message InstancePartition message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IInstancePartition, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an InstancePartition message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns InstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.InstancePartition;
+
+                        /**
+                         * Decodes an InstancePartition message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns InstancePartition
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.InstancePartition;
+
+                        /**
+                         * Verifies an InstancePartition message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an InstancePartition message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns InstancePartition
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.InstancePartition;
+
+                        /**
+                         * Creates a plain object from an InstancePartition message. Also converts values to other types if specified.
+                         * @param message InstancePartition
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.InstancePartition, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this InstancePartition to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for InstancePartition
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    namespace InstancePartition {
+
+                        /** State enum. */
+                        enum State {
+                            STATE_UNSPECIFIED = 0,
+                            CREATING = 1,
+                            READY = 2
+                        }
+                    }
+
+                    /** Properties of a CreateInstancePartitionMetadata. */
+                    interface ICreateInstancePartitionMetadata {
+
+                        /** CreateInstancePartitionMetadata instancePartition */
+                        instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** CreateInstancePartitionMetadata startTime */
+                        startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstancePartitionMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstancePartitionMetadata endTime */
+                        endTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a CreateInstancePartitionMetadata. */
+                    class CreateInstancePartitionMetadata implements ICreateInstancePartitionMetadata {
+
+                        /**
+                         * Constructs a new CreateInstancePartitionMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata);
+
+                        /** CreateInstancePartitionMetadata instancePartition. */
+                        public instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** CreateInstancePartitionMetadata startTime. */
+                        public startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstancePartitionMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstancePartitionMetadata endTime. */
+                        public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new CreateInstancePartitionMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstancePartitionMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata): google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+
+                        /**
+                         * Encodes the specified CreateInstancePartitionMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstancePartitionMetadata.verify|verify} messages.
+                         * @param message CreateInstancePartitionMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstancePartitionMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstancePartitionMetadata.verify|verify} messages.
+                         * @param message CreateInstancePartitionMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstancePartitionMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstancePartitionMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+
+                        /**
+                         * Decodes a CreateInstancePartitionMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstancePartitionMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+
+                        /**
+                         * Verifies a CreateInstancePartitionMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstancePartitionMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstancePartitionMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstancePartitionMetadata;
+
+                        /**
+                         * Creates a plain object from a CreateInstancePartitionMetadata message. Also converts values to other types if specified.
+                         * @param message CreateInstancePartitionMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstancePartitionMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstancePartitionMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CreateInstancePartitionMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a CreateInstancePartitionRequest. */
+                    interface ICreateInstancePartitionRequest {
+
+                        /** CreateInstancePartitionRequest parent */
+                        parent?: (string|null);
+
+                        /** CreateInstancePartitionRequest instancePartitionId */
+                        instancePartitionId?: (string|null);
+
+                        /** CreateInstancePartitionRequest instancePartition */
+                        instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+                    }
+
+                    /** Represents a CreateInstancePartitionRequest. */
+                    class CreateInstancePartitionRequest implements ICreateInstancePartitionRequest {
+
+                        /**
+                         * Constructs a new CreateInstancePartitionRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest);
+
+                        /** CreateInstancePartitionRequest parent. */
+                        public parent: string;
+
+                        /** CreateInstancePartitionRequest instancePartitionId. */
+                        public instancePartitionId: string;
+
+                        /** CreateInstancePartitionRequest instancePartition. */
+                        public instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /**
+                         * Creates a new CreateInstancePartitionRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns CreateInstancePartitionRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest): google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
+
+                        /**
+                         * Encodes the specified CreateInstancePartitionRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstancePartitionRequest.verify|verify} messages.
+                         * @param message CreateInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified CreateInstancePartitionRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.CreateInstancePartitionRequest.verify|verify} messages.
+                         * @param message CreateInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.ICreateInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a CreateInstancePartitionRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns CreateInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
+
+                        /**
+                         * Decodes a CreateInstancePartitionRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns CreateInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
+
+                        /**
+                         * Verifies a CreateInstancePartitionRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a CreateInstancePartitionRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns CreateInstancePartitionRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.CreateInstancePartitionRequest;
+
+                        /**
+                         * Creates a plain object from a CreateInstancePartitionRequest message. Also converts values to other types if specified.
+                         * @param message CreateInstancePartitionRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.CreateInstancePartitionRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this CreateInstancePartitionRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for CreateInstancePartitionRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a DeleteInstancePartitionRequest. */
+                    interface IDeleteInstancePartitionRequest {
+
+                        /** DeleteInstancePartitionRequest name */
+                        name?: (string|null);
+
+                        /** DeleteInstancePartitionRequest etag */
+                        etag?: (string|null);
+                    }
+
+                    /** Represents a DeleteInstancePartitionRequest. */
+                    class DeleteInstancePartitionRequest implements IDeleteInstancePartitionRequest {
+
+                        /**
+                         * Constructs a new DeleteInstancePartitionRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest);
+
+                        /** DeleteInstancePartitionRequest name. */
+                        public name: string;
+
+                        /** DeleteInstancePartitionRequest etag. */
+                        public etag: string;
+
+                        /**
+                         * Creates a new DeleteInstancePartitionRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns DeleteInstancePartitionRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest): google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
+
+                        /**
+                         * Encodes the specified DeleteInstancePartitionRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstancePartitionRequest.verify|verify} messages.
+                         * @param message DeleteInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified DeleteInstancePartitionRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.DeleteInstancePartitionRequest.verify|verify} messages.
+                         * @param message DeleteInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a DeleteInstancePartitionRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns DeleteInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
+
+                        /**
+                         * Decodes a DeleteInstancePartitionRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns DeleteInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
+
+                        /**
+                         * Verifies a DeleteInstancePartitionRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a DeleteInstancePartitionRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns DeleteInstancePartitionRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.DeleteInstancePartitionRequest;
+
+                        /**
+                         * Creates a plain object from a DeleteInstancePartitionRequest message. Also converts values to other types if specified.
+                         * @param message DeleteInstancePartitionRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.DeleteInstancePartitionRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this DeleteInstancePartitionRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for DeleteInstancePartitionRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a GetInstancePartitionRequest. */
+                    interface IGetInstancePartitionRequest {
+
+                        /** GetInstancePartitionRequest name */
+                        name?: (string|null);
+                    }
+
+                    /** Represents a GetInstancePartitionRequest. */
+                    class GetInstancePartitionRequest implements IGetInstancePartitionRequest {
+
+                        /**
+                         * Constructs a new GetInstancePartitionRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IGetInstancePartitionRequest);
+
+                        /** GetInstancePartitionRequest name. */
+                        public name: string;
+
+                        /**
+                         * Creates a new GetInstancePartitionRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns GetInstancePartitionRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IGetInstancePartitionRequest): google.spanner.admin.instance.v1.GetInstancePartitionRequest;
+
+                        /**
+                         * Encodes the specified GetInstancePartitionRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstancePartitionRequest.verify|verify} messages.
+                         * @param message GetInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IGetInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GetInstancePartitionRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.GetInstancePartitionRequest.verify|verify} messages.
+                         * @param message GetInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IGetInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GetInstancePartitionRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GetInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.GetInstancePartitionRequest;
+
+                        /**
+                         * Decodes a GetInstancePartitionRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GetInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.GetInstancePartitionRequest;
+
+                        /**
+                         * Verifies a GetInstancePartitionRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GetInstancePartitionRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GetInstancePartitionRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.GetInstancePartitionRequest;
+
+                        /**
+                         * Creates a plain object from a GetInstancePartitionRequest message. Also converts values to other types if specified.
+                         * @param message GetInstancePartitionRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.GetInstancePartitionRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GetInstancePartitionRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for GetInstancePartitionRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateInstancePartitionRequest. */
+                    interface IUpdateInstancePartitionRequest {
+
+                        /** UpdateInstancePartitionRequest instancePartition */
+                        instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** UpdateInstancePartitionRequest fieldMask */
+                        fieldMask?: (google.protobuf.IFieldMask|null);
+                    }
+
+                    /** Represents an UpdateInstancePartitionRequest. */
+                    class UpdateInstancePartitionRequest implements IUpdateInstancePartitionRequest {
+
+                        /**
+                         * Constructs a new UpdateInstancePartitionRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest);
+
+                        /** UpdateInstancePartitionRequest instancePartition. */
+                        public instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** UpdateInstancePartitionRequest fieldMask. */
+                        public fieldMask?: (google.protobuf.IFieldMask|null);
+
+                        /**
+                         * Creates a new UpdateInstancePartitionRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstancePartitionRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest): google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
+
+                        /**
+                         * Encodes the specified UpdateInstancePartitionRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstancePartitionRequest.verify|verify} messages.
+                         * @param message UpdateInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstancePartitionRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstancePartitionRequest.verify|verify} messages.
+                         * @param message UpdateInstancePartitionRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstancePartitionRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
+
+                        /**
+                         * Decodes an UpdateInstancePartitionRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstancePartitionRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
+
+                        /**
+                         * Verifies an UpdateInstancePartitionRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstancePartitionRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstancePartitionRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstancePartitionRequest;
+
+                        /**
+                         * Creates a plain object from an UpdateInstancePartitionRequest message. Also converts values to other types if specified.
+                         * @param message UpdateInstancePartitionRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstancePartitionRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstancePartitionRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateInstancePartitionRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of an UpdateInstancePartitionMetadata. */
+                    interface IUpdateInstancePartitionMetadata {
+
+                        /** UpdateInstancePartitionMetadata instancePartition */
+                        instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** UpdateInstancePartitionMetadata startTime */
+                        startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstancePartitionMetadata cancelTime */
+                        cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstancePartitionMetadata endTime */
+                        endTime?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents an UpdateInstancePartitionMetadata. */
+                    class UpdateInstancePartitionMetadata implements IUpdateInstancePartitionMetadata {
+
+                        /**
+                         * Constructs a new UpdateInstancePartitionMetadata.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata);
+
+                        /** UpdateInstancePartitionMetadata instancePartition. */
+                        public instancePartition?: (google.spanner.admin.instance.v1.IInstancePartition|null);
+
+                        /** UpdateInstancePartitionMetadata startTime. */
+                        public startTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstancePartitionMetadata cancelTime. */
+                        public cancelTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstancePartitionMetadata endTime. */
+                        public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new UpdateInstancePartitionMetadata instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns UpdateInstancePartitionMetadata instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata): google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+
+                        /**
+                         * Encodes the specified UpdateInstancePartitionMetadata message. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.verify|verify} messages.
+                         * @param message UpdateInstancePartitionMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified UpdateInstancePartitionMetadata message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.verify|verify} messages.
+                         * @param message UpdateInstancePartitionMetadata message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an UpdateInstancePartitionMetadata message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns UpdateInstancePartitionMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+
+                        /**
+                         * Decodes an UpdateInstancePartitionMetadata message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns UpdateInstancePartitionMetadata
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+
+                        /**
+                         * Verifies an UpdateInstancePartitionMetadata message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an UpdateInstancePartitionMetadata message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns UpdateInstancePartitionMetadata
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata;
+
+                        /**
+                         * Creates a plain object from an UpdateInstancePartitionMetadata message. Also converts values to other types if specified.
+                         * @param message UpdateInstancePartitionMetadata
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this UpdateInstancePartitionMetadata to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for UpdateInstancePartitionMetadata
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstancePartitionsRequest. */
+                    interface IListInstancePartitionsRequest {
+
+                        /** ListInstancePartitionsRequest parent */
+                        parent?: (string|null);
+
+                        /** ListInstancePartitionsRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListInstancePartitionsRequest pageToken */
+                        pageToken?: (string|null);
+
+                        /** ListInstancePartitionsRequest instancePartitionDeadline */
+                        instancePartitionDeadline?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a ListInstancePartitionsRequest. */
+                    class ListInstancePartitionsRequest implements IListInstancePartitionsRequest {
+
+                        /**
+                         * Constructs a new ListInstancePartitionsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancePartitionsRequest);
+
+                        /** ListInstancePartitionsRequest parent. */
+                        public parent: string;
+
+                        /** ListInstancePartitionsRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListInstancePartitionsRequest pageToken. */
+                        public pageToken: string;
+
+                        /** ListInstancePartitionsRequest instancePartitionDeadline. */
+                        public instancePartitionDeadline?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new ListInstancePartitionsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancePartitionsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancePartitionsRequest): google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionsRequest.verify|verify} messages.
+                         * @param message ListInstancePartitionsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancePartitionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionsRequest.verify|verify} messages.
+                         * @param message ListInstancePartitionsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancePartitionsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancePartitionsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancePartitionsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+
+                        /**
+                         * Decodes a ListInstancePartitionsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancePartitionsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+
+                        /**
+                         * Verifies a ListInstancePartitionsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancePartitionsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancePartitionsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancePartitionsRequest;
+
+                        /**
+                         * Creates a plain object from a ListInstancePartitionsRequest message. Also converts values to other types if specified.
+                         * @param message ListInstancePartitionsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancePartitionsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancePartitionsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstancePartitionsRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstancePartitionsResponse. */
+                    interface IListInstancePartitionsResponse {
+
+                        /** ListInstancePartitionsResponse instancePartitions */
+                        instancePartitions?: (google.spanner.admin.instance.v1.IInstancePartition[]|null);
+
+                        /** ListInstancePartitionsResponse nextPageToken */
+                        nextPageToken?: (string|null);
+
+                        /** ListInstancePartitionsResponse unreachable */
+                        unreachable?: (string[]|null);
+                    }
+
+                    /** Represents a ListInstancePartitionsResponse. */
+                    class ListInstancePartitionsResponse implements IListInstancePartitionsResponse {
+
+                        /**
+                         * Constructs a new ListInstancePartitionsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancePartitionsResponse);
+
+                        /** ListInstancePartitionsResponse instancePartitions. */
+                        public instancePartitions: google.spanner.admin.instance.v1.IInstancePartition[];
+
+                        /** ListInstancePartitionsResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /** ListInstancePartitionsResponse unreachable. */
+                        public unreachable: string[];
+
+                        /**
+                         * Creates a new ListInstancePartitionsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancePartitionsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancePartitionsResponse): google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionsResponse.verify|verify} messages.
+                         * @param message ListInstancePartitionsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancePartitionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionsResponse.verify|verify} messages.
+                         * @param message ListInstancePartitionsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancePartitionsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancePartitionsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancePartitionsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
+
+                        /**
+                         * Decodes a ListInstancePartitionsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancePartitionsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
+
+                        /**
+                         * Verifies a ListInstancePartitionsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancePartitionsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancePartitionsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancePartitionsResponse;
+
+                        /**
+                         * Creates a plain object from a ListInstancePartitionsResponse message. Also converts values to other types if specified.
+                         * @param message ListInstancePartitionsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancePartitionsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancePartitionsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstancePartitionsResponse
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstancePartitionOperationsRequest. */
+                    interface IListInstancePartitionOperationsRequest {
+
+                        /** ListInstancePartitionOperationsRequest parent */
+                        parent?: (string|null);
+
+                        /** ListInstancePartitionOperationsRequest filter */
+                        filter?: (string|null);
+
+                        /** ListInstancePartitionOperationsRequest pageSize */
+                        pageSize?: (number|null);
+
+                        /** ListInstancePartitionOperationsRequest pageToken */
+                        pageToken?: (string|null);
+
+                        /** ListInstancePartitionOperationsRequest instancePartitionDeadline */
+                        instancePartitionDeadline?: (google.protobuf.ITimestamp|null);
+                    }
+
+                    /** Represents a ListInstancePartitionOperationsRequest. */
+                    class ListInstancePartitionOperationsRequest implements IListInstancePartitionOperationsRequest {
+
+                        /**
+                         * Constructs a new ListInstancePartitionOperationsRequest.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest);
+
+                        /** ListInstancePartitionOperationsRequest parent. */
+                        public parent: string;
+
+                        /** ListInstancePartitionOperationsRequest filter. */
+                        public filter: string;
+
+                        /** ListInstancePartitionOperationsRequest pageSize. */
+                        public pageSize: number;
+
+                        /** ListInstancePartitionOperationsRequest pageToken. */
+                        public pageToken: string;
+
+                        /** ListInstancePartitionOperationsRequest instancePartitionDeadline. */
+                        public instancePartitionDeadline?: (google.protobuf.ITimestamp|null);
+
+                        /**
+                         * Creates a new ListInstancePartitionOperationsRequest instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancePartitionOperationsRequest instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest): google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionOperationsRequest message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.verify|verify} messages.
+                         * @param message ListInstancePartitionOperationsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionOperationsRequest message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.verify|verify} messages.
+                         * @param message ListInstancePartitionOperationsRequest message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancePartitionOperationsRequest message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancePartitionOperationsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+
+                        /**
+                         * Decodes a ListInstancePartitionOperationsRequest message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancePartitionOperationsRequest
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+
+                        /**
+                         * Verifies a ListInstancePartitionOperationsRequest message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancePartitionOperationsRequest message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancePartitionOperationsRequest
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest;
+
+                        /**
+                         * Creates a plain object from a ListInstancePartitionOperationsRequest message. Also converts values to other types if specified.
+                         * @param message ListInstancePartitionOperationsRequest
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancePartitionOperationsRequest to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstancePartitionOperationsRequest
+                         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                         * @returns The default type url
+                         */
+                        public static getTypeUrl(typeUrlPrefix?: string): string;
+                    }
+
+                    /** Properties of a ListInstancePartitionOperationsResponse. */
+                    interface IListInstancePartitionOperationsResponse {
+
+                        /** ListInstancePartitionOperationsResponse operations */
+                        operations?: (google.longrunning.IOperation[]|null);
+
+                        /** ListInstancePartitionOperationsResponse nextPageToken */
+                        nextPageToken?: (string|null);
+
+                        /** ListInstancePartitionOperationsResponse unreachableInstancePartitions */
+                        unreachableInstancePartitions?: (string[]|null);
+                    }
+
+                    /** Represents a ListInstancePartitionOperationsResponse. */
+                    class ListInstancePartitionOperationsResponse implements IListInstancePartitionOperationsResponse {
+
+                        /**
+                         * Constructs a new ListInstancePartitionOperationsResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse);
+
+                        /** ListInstancePartitionOperationsResponse operations. */
+                        public operations: google.longrunning.IOperation[];
+
+                        /** ListInstancePartitionOperationsResponse nextPageToken. */
+                        public nextPageToken: string;
+
+                        /** ListInstancePartitionOperationsResponse unreachableInstancePartitions. */
+                        public unreachableInstancePartitions: string[];
+
+                        /**
+                         * Creates a new ListInstancePartitionOperationsResponse instance using the specified properties.
+                         * @param [properties] Properties to set
+                         * @returns ListInstancePartitionOperationsResponse instance
+                         */
+                        public static create(properties?: google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse): google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionOperationsResponse message. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.verify|verify} messages.
+                         * @param message ListInstancePartitionOperationsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ListInstancePartitionOperationsResponse message, length delimited. Does not implicitly {@link google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.verify|verify} messages.
+                         * @param message ListInstancePartitionOperationsResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ListInstancePartitionOperationsResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ListInstancePartitionOperationsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+
+                        /**
+                         * Decodes a ListInstancePartitionOperationsResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ListInstancePartitionOperationsResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+
+                        /**
+                         * Verifies a ListInstancePartitionOperationsResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ListInstancePartitionOperationsResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ListInstancePartitionOperationsResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse;
+
+                        /**
+                         * Creates a plain object from a ListInstancePartitionOperationsResponse message. Also converts values to other types if specified.
+                         * @param message ListInstancePartitionOperationsResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ListInstancePartitionOperationsResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+
+                        /**
+                         * Gets the default type url for ListInstancePartitionOperationsResponse
                          * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                          * @returns The default type url
                          */

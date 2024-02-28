@@ -45,6 +45,16 @@
                 "testIamPermissions"
               ]
             },
+            "GetInstancePartition": {
+              "methods": [
+                "getInstancePartition"
+              ]
+            },
+            "DeleteInstancePartition": {
+              "methods": [
+                "deleteInstancePartition"
+              ]
+            },
             "CreateInstanceConfig": {
               "methods": [
                 "createInstanceConfig"
@@ -63,6 +73,16 @@
             "UpdateInstance": {
               "methods": [
                 "updateInstance"
+              ]
+            },
+            "CreateInstancePartition": {
+              "methods": [
+                "createInstancePartition"
+              ]
+            },
+            "UpdateInstancePartition": {
+              "methods": [
+                "updateInstancePartition"
               ]
             },
             "ListInstanceConfigs": {
@@ -84,6 +104,20 @@
                 "listInstances",
                 "listInstancesStream",
                 "listInstancesAsync"
+              ]
+            },
+            "ListInstancePartitions": {
+              "methods": [
+                "listInstancePartitions",
+                "listInstancePartitionsStream",
+                "listInstancePartitionsAsync"
+              ]
+            },
+            "ListInstancePartitionOperations": {
+              "methods": [
+                "listInstancePartitionOperations",
+                "listInstancePartitionOperationsStream",
+                "listInstancePartitionOperationsAsync"
               ]
             }
           }
@@ -126,6 +160,16 @@
                 "testIamPermissions"
               ]
             },
+            "GetInstancePartition": {
+              "methods": [
+                "getInstancePartition"
+              ]
+            },
+            "DeleteInstancePartition": {
+              "methods": [
+                "deleteInstancePartition"
+              ]
+            },
             "CreateInstanceConfig": {
               "methods": [
                 "createInstanceConfig"
@@ -144,6 +188,16 @@
             "UpdateInstance": {
               "methods": [
                 "updateInstance"
+              ]
+            },
+            "CreateInstancePartition": {
+              "methods": [
+                "createInstancePartition"
+              ]
+            },
+            "UpdateInstancePartition": {
+              "methods": [
+                "updateInstancePartition"
               ]
             },
             "ListInstanceConfigs": {
@@ -165,6 +219,20 @@
                 "listInstances",
                 "listInstancesStream",
                 "listInstancesAsync"
+              ]
+            },
+            "ListInstancePartitions": {
+              "methods": [
+                "listInstancePartitions",
+                "listInstancePartitionsStream",
+                "listInstancePartitionsAsync"
+              ]
+            },
+            "ListInstancePartitionOperations": {
+              "methods": [
+                "listInstancePartitionOperations",
+                "listInstancePartitionOperationsStream",
+                "listInstancePartitionOperationsAsync"
               ]
             }
           }

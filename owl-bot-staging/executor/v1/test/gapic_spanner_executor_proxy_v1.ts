@@ -473,6 +473,52 @@ describe('v1.SpannerExecutorProxyClient', () => {
             });
         });
 
+        describe('instancePartition', () => {
+            const fakePath = "/rendered/path/instancePartition";
+            const expectedParameters = {
+                project: "projectValue",
+                instance: "instanceValue",
+                instance_partition: "instancePartitionValue",
+            };
+            const client = new spannerexecutorproxyModule.v1.SpannerExecutorProxyClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            client.pathTemplates.instancePartitionPathTemplate.render =
+                sinon.stub().returns(fakePath);
+            client.pathTemplates.instancePartitionPathTemplate.match =
+                sinon.stub().returns(expectedParameters);
+
+            it('instancePartitionPath', () => {
+                const result = client.instancePartitionPath("projectValue", "instanceValue", "instancePartitionValue");
+                assert.strictEqual(result, fakePath);
+                assert((client.pathTemplates.instancePartitionPathTemplate.render as SinonStub)
+                    .getCall(-1).calledWith(expectedParameters));
+            });
+
+            it('matchProjectFromInstancePartitionName', () => {
+                const result = client.matchProjectFromInstancePartitionName(fakePath);
+                assert.strictEqual(result, "projectValue");
+                assert((client.pathTemplates.instancePartitionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchInstanceFromInstancePartitionName', () => {
+                const result = client.matchInstanceFromInstancePartitionName(fakePath);
+                assert.strictEqual(result, "instanceValue");
+                assert((client.pathTemplates.instancePartitionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+
+            it('matchInstancePartitionFromInstancePartitionName', () => {
+                const result = client.matchInstancePartitionFromInstancePartitionName(fakePath);
+                assert.strictEqual(result, "instancePartitionValue");
+                assert((client.pathTemplates.instancePartitionPathTemplate.match as SinonStub)
+                    .getCall(-1).calledWith(fakePath));
+            });
+        });
+
         describe('session', () => {
             const fakePath = "/rendered/path/session";
             const expectedParameters = {

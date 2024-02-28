@@ -185,6 +185,9 @@ export class SpannerExecutorProxyClient {
       instanceConfigPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instanceConfigs/{instance_config}'
       ),
+      instancePartitionPathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}'
+      ),
       sessionPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}/sessions/{session}'
       ),
@@ -611,6 +614,55 @@ export class SpannerExecutorProxyClient {
    */
   matchInstanceConfigFromInstanceConfigName(instanceConfigName: string) {
     return this.pathTemplates.instanceConfigPathTemplate.match(instanceConfigName).instance_config;
+  }
+
+  /**
+   * Return a fully-qualified instancePartition resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} instance_partition
+   * @returns {string} Resource name string.
+   */
+  instancePartitionPath(project:string,instance:string,instancePartition:string) {
+    return this.pathTemplates.instancePartitionPathTemplate.render({
+      project: project,
+      instance: instance,
+      instance_partition: instancePartition,
+    });
+  }
+
+  /**
+   * Parse the project from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromInstancePartitionName(instancePartitionName: string) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(instancePartitionName).project;
+  }
+
+  /**
+   * Parse the instance from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromInstancePartitionName(instancePartitionName: string) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(instancePartitionName).instance;
+  }
+
+  /**
+   * Parse the instance_partition from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the instance_partition.
+   */
+  matchInstancePartitionFromInstancePartitionName(instancePartitionName: string) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(instancePartitionName).instance_partition;
   }
 
   /**

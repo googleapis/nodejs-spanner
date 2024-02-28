@@ -1512,6 +1512,24 @@
                                 }
                               ]
                             },
+                            "ListInstancePartitions": {
+                              "requestType": "ListInstancePartitionsRequest",
+                              "responseType": "ListInstancePartitionsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/instancePartitions",
+                                "(google.api.method_signature)": "parent"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{parent=projects/*/instances/*}/instancePartitions"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent"
+                                }
+                              ]
+                            },
                             "GetInstance": {
                               "requestType": "GetInstanceRequest",
                               "responseType": "Instance",
@@ -1661,6 +1679,116 @@
                                 },
                                 {
                                   "(google.api.method_signature)": "resource,permissions"
+                                }
+                              ]
+                            },
+                            "GetInstancePartition": {
+                              "requestType": "GetInstancePartitionRequest",
+                              "responseType": "InstancePartition",
+                              "options": {
+                                "(google.api.http).get": "/v1/{name=projects/*/instances/*/instancePartitions/*}",
+                                "(google.api.method_signature)": "name"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{name=projects/*/instances/*/instancePartitions/*}"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "CreateInstancePartition": {
+                              "requestType": "CreateInstancePartitionRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).post": "/v1/{parent=projects/*/instances/*}/instancePartitions",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "parent,instance_partition,instance_partition_id",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.InstancePartition",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.CreateInstancePartitionMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "post": "/v1/{parent=projects/*/instances/*}/instancePartitions",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent,instance_partition,instance_partition_id"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.instance.v1.InstancePartition",
+                                    "metadata_type": "google.spanner.admin.instance.v1.CreateInstancePartitionMetadata"
+                                  }
+                                }
+                              ]
+                            },
+                            "DeleteInstancePartition": {
+                              "requestType": "DeleteInstancePartitionRequest",
+                              "responseType": "google.protobuf.Empty",
+                              "options": {
+                                "(google.api.http).delete": "/v1/{name=projects/*/instances/*/instancePartitions/*}",
+                                "(google.api.method_signature)": "name"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "delete": "/v1/{name=projects/*/instances/*/instancePartitions/*}"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "name"
+                                }
+                              ]
+                            },
+                            "UpdateInstancePartition": {
+                              "requestType": "UpdateInstancePartitionRequest",
+                              "responseType": "google.longrunning.Operation",
+                              "options": {
+                                "(google.api.http).patch": "/v1/{instance_partition.name=projects/*/instances/*/instancePartitions/*}",
+                                "(google.api.http).body": "*",
+                                "(google.api.method_signature)": "instance_partition,field_mask",
+                                "(google.longrunning.operation_info).response_type": "google.spanner.admin.instance.v1.InstancePartition",
+                                "(google.longrunning.operation_info).metadata_type": "google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "patch": "/v1/{instance_partition.name=projects/*/instances/*/instancePartitions/*}",
+                                    "body": "*"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "instance_partition,field_mask"
+                                },
+                                {
+                                  "(google.longrunning.operation_info)": {
+                                    "response_type": "google.spanner.admin.instance.v1.InstancePartition",
+                                    "metadata_type": "google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata"
+                                  }
+                                }
+                              ]
+                            },
+                            "ListInstancePartitionOperations": {
+                              "requestType": "ListInstancePartitionOperationsRequest",
+                              "responseType": "ListInstancePartitionOperationsResponse",
+                              "options": {
+                                "(google.api.http).get": "/v1/{parent=projects/*/instances/*}/instancePartitionOperations",
+                                "(google.api.method_signature)": "parent"
+                              },
+                              "parsedOptions": [
+                                {
+                                  "(google.api.http)": {
+                                    "get": "/v1/{parent=projects/*/instances/*}/instancePartitionOperations"
+                                  }
+                                },
+                                {
+                                  "(google.api.method_signature)": "parent"
                                 }
                               ]
                             }
@@ -2153,6 +2281,10 @@
                             "filter": {
                               "type": "string",
                               "id": 4
+                            },
+                            "instanceDeadline": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 5
                             }
                           }
                         },
@@ -2166,6 +2298,11 @@
                             "nextPageToken": {
                               "type": "string",
                               "id": 2
+                            },
+                            "unreachable": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3
                             }
                           }
                         },
@@ -2267,6 +2404,317 @@
                             },
                             "cancelTime": {
                               "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "InstancePartition": {
+                          "options": {
+                            "(google.api.resource).type": "spanner.googleapis.com/InstancePartition",
+                            "(google.api.resource).pattern": "projects/{project}/instances/{instance}/instancePartitions/{instance_partition}"
+                          },
+                          "oneofs": {
+                            "computeCapacity": {
+                              "oneof": [
+                                "nodeCount",
+                                "processingUnits"
+                              ]
+                            }
+                          },
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "config": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstanceConfig"
+                              }
+                            },
+                            "displayName": {
+                              "type": "string",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "nodeCount": {
+                              "type": "int32",
+                              "id": 5
+                            },
+                            "processingUnits": {
+                              "type": "int32",
+                              "id": 6
+                            },
+                            "state": {
+                              "type": "State",
+                              "id": 7,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "createTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 8,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "updateTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 9,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "referencingDatabases": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 10,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "referencingBackups": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 11,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "etag": {
+                              "type": "string",
+                              "id": 12
+                            }
+                          },
+                          "nested": {
+                            "State": {
+                              "values": {
+                                "STATE_UNSPECIFIED": 0,
+                                "CREATING": 1,
+                                "READY": 2
+                              }
+                            }
+                          }
+                        },
+                        "CreateInstancePartitionMetadata": {
+                          "fields": {
+                            "instancePartition": {
+                              "type": "InstancePartition",
+                              "id": 1
+                            },
+                            "startTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            },
+                            "endTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "CreateInstancePartitionRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
+                              }
+                            },
+                            "instancePartitionId": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "instancePartition": {
+                              "type": "InstancePartition",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
+                        "DeleteInstancePartitionRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstancePartition"
+                              }
+                            },
+                            "etag": {
+                              "type": "string",
+                              "id": 2
+                            }
+                          }
+                        },
+                        "GetInstancePartitionRequest": {
+                          "fields": {
+                            "name": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/InstancePartition"
+                              }
+                            }
+                          }
+                        },
+                        "UpdateInstancePartitionRequest": {
+                          "fields": {
+                            "instancePartition": {
+                              "type": "InstancePartition",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            },
+                            "fieldMask": {
+                              "type": "google.protobuf.FieldMask",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED"
+                              }
+                            }
+                          }
+                        },
+                        "UpdateInstancePartitionMetadata": {
+                          "fields": {
+                            "instancePartition": {
+                              "type": "InstancePartition",
+                              "id": 1
+                            },
+                            "startTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 2
+                            },
+                            "cancelTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 3
+                            },
+                            "endTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4
+                            }
+                          }
+                        },
+                        "ListInstancePartitionsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
+                              }
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 2
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 3
+                            },
+                            "instancePartitionDeadline": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "ListInstancePartitionsResponse": {
+                          "fields": {
+                            "instancePartitions": {
+                              "rule": "repeated",
+                              "type": "InstancePartition",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "unreachable": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3
+                            }
+                          }
+                        },
+                        "ListInstancePartitionOperationsRequest": {
+                          "fields": {
+                            "parent": {
+                              "type": "string",
+                              "id": 1,
+                              "options": {
+                                "(google.api.field_behavior)": "REQUIRED",
+                                "(google.api.resource_reference).type": "spanner.googleapis.com/Instance"
+                              }
+                            },
+                            "filter": {
+                              "type": "string",
+                              "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "pageSize": {
+                              "type": "int32",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "pageToken": {
+                              "type": "string",
+                              "id": 4,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            },
+                            "instancePartitionDeadline": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 5,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL"
+                              }
+                            }
+                          }
+                        },
+                        "ListInstancePartitionOperationsResponse": {
+                          "fields": {
+                            "operations": {
+                              "rule": "repeated",
+                              "type": "google.longrunning.Operation",
+                              "id": 1
+                            },
+                            "nextPageToken": {
+                              "type": "string",
+                              "id": 2
+                            },
+                            "unreachableInstancePartitions": {
+                              "rule": "repeated",
+                              "type": "string",
                               "id": 3
                             }
                           }
