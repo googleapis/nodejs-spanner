@@ -112,7 +112,7 @@ async function addColumn(instanceId, databaseId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Close the spanner client when finished.
-    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
     spanner.close();
   }
 

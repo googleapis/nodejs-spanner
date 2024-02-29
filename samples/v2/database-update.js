@@ -60,8 +60,7 @@ function main(
           ),
           enableDropProtection: true,
         },
-        // updateMask contains the fields to be undated in database
-        // Currently only enable_drop_protection can get updated
+        // updateMask contains the fields to be updated in database
         updateMask: (protos.google.protobuf.FieldMask = {
           paths: ['enable_drop_protection'],
         }),
@@ -75,7 +74,7 @@ function main(
       console.log('ERROR:', err);
     } finally {
       // Close the spanner client when finished.
-      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
       spanner.close();
     }
   }
