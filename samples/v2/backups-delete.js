@@ -37,15 +37,21 @@ async function deleteBackup(instanceId, backupId, projectId) {
   // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  // Delete the backup
+  console.log(`Deleting backup ${backupId}.`);
+  await databaseAdminClient.deleteBackup({
+    name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+  });
+  console.log('Backup deleted.');
+
+  // Verify backup no longer exists
   try {
-    // Delete the backup
-    console.log(`Deleting backup ${backupId}.`);
-    await databaseAdminClient.deleteBackup({
+    await databaseAdminClient.getBackup({
       name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
     });
-    console.log('Backup deleted.');
+    console.error('Error: backup still exists.');
   } catch (err) {
-    console.log('ERROR: Backup is not deleted');
+    console.log('Backup deleted.');
   }
   // [END spanner_delete_backup]
 }

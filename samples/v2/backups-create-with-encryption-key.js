@@ -25,8 +25,7 @@ async function createBackupWithEncryptionKey(
   // [START spanner_create_backup_with_encryption_key]
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('../../build/src');
-  const {protos} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
