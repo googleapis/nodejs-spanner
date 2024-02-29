@@ -34,6 +34,7 @@ async function updateBackup(instanceId, backupId, projectId) {
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Read backup metadata and update expiry time

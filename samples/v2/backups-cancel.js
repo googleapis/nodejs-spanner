@@ -33,6 +33,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database
@@ -68,6 +69,10 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
+    // Delete backup in case it got created before the cancel operation
+    await databaseAdminClient.deleteBackup({
+      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+    });
     // Close the spanner client when finished.
     // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
     spanner.close();

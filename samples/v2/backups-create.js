@@ -42,6 +42,7 @@ async function createBackup(
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database

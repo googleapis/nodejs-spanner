@@ -25,7 +25,8 @@ async function createBackupWithEncryptionKey(
   // [START spanner_create_backup_with_encryption_key]
 
   // Imports the Google Cloud client library
-  const {Spanner, protos} = require('@google-cloud/spanner');
+  const {Spanner} = require('../../build/src');
+  const {protos} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
   /**
@@ -35,7 +36,6 @@ async function createBackupWithEncryptionKey(
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const backupId = 'my-backup';
-  // const versionTime = Date.now() - 1000 * 60 * 60 * 24; // One day ago
   // const keyName =
   //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
@@ -44,6 +44,7 @@ async function createBackupWithEncryptionKey(
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database

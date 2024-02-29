@@ -39,6 +39,7 @@ async function getBackupOperations(
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List create backup operations

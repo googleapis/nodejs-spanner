@@ -34,6 +34,7 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Restore the database
