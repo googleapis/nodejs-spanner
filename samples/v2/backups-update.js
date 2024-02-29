@@ -75,8 +75,9 @@ async function updateBackup(instanceId, backupId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    //close the client
-    databaseAdminClient.close();
+    // Close the spanner client when finished.
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+    spanner.close();
   }
   // [END spanner_update_backup]
 }

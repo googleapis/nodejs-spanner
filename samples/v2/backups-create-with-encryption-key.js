@@ -105,10 +105,7 @@ async function createBackupWithEncryptionKey(
     console.error('ERROR:', err);
   } finally {
     // Close the spanner client when finished.
-    /*
-      The databaseAdminClient does not require explicit closure.
-            The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
-    */
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
     spanner.close();
   }
   // [END spanner_create_backup_with_encryption_key]

@@ -69,10 +69,7 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Close the spanner client when finished.
-    /*
-      The databaseAdminClient does not require explicit closure.
-            The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
-    */
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
     spanner.close();
   }
   // [END spanner_cancel_backup_create]
