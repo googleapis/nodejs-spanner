@@ -75,10 +75,7 @@ function main(
       console.log('ERROR:', err);
     } finally {
       // Close the spanner client when finished.
-    /*
-      The databaseAdminClient does not require explicit closure.
-            The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
-    */
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically encompass the closure of the databaseAdminClient.
       spanner.close();
     }
   }
