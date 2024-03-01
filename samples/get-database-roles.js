@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,22 +30,33 @@ function main(
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
-  // Imports the Google Cloud Spanner client library
+
+  // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Instantiates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  async function getDatabaseRoles() {
-    // Gets a reference to a Cloud Spanner instance and database.
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  async function getDatabaseRoles() {
     // Fetching database roles
-    const [databaseRoles] = await database.getDatabaseRoles();
-    console.log(`Roles for Database: ${database.formattedName_}`);
+    const [databaseRoles] = await databaseAdminClient.listDatabaseRoles({
+      parent: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+    });
+    console.log(
+      `Roles for Database: ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )}`
+    );
     databaseRoles.forEach(role => {
       console.log(`Role: ${role.name}`);
     });

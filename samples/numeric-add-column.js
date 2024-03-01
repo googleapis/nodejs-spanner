@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 async function addNumericColumn(instanceId, databaseId, projectId) {
   // [START spanner_add_numeric_column]
-  // Imports the Google Cloud client library.
-  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -26,19 +24,27 @@ async function addNumericColumn(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // Creates a client
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   const request = ['ALTER TABLE Venues ADD COLUMN Revenue NUMERIC'];
 
   // Alter existing table to add a column.
-  const [operation] = await database.updateSchema(request);
+  const [operation] = await databaseAdminClient.updateDatabaseDdl({
+    database: databaseAdminClient.databasePath(
+      projectId,
+      instanceId,
+      databaseId
+    ),
+    statements: request,
+  });
 
   console.log(`Waiting for operation on ${databaseId} to complete...`);
 
