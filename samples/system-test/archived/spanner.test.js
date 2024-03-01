@@ -1570,7 +1570,9 @@ describe('Spanner', () => {
 
     // list_instance_configs
     it('should list available instance configs', async () => {
-      const output = execSync(`node archived/list-instance-configs.js ${PROJECT_ID}`);
+      const output = execSync(
+        `node archived/list-instance-configs.js ${PROJECT_ID}`
+      );
       assert.match(
         output,
         new RegExp(`Available instance configs for project ${PROJECT_ID}:`)
@@ -1581,7 +1583,9 @@ describe('Spanner', () => {
     // get_instance_config
     // TODO: Enable when the feature has been released.
     it.skip('should get a specific instance config', async () => {
-      const output = execSync(`node archived/get-instance-config.js ${PROJECT_ID}`);
+      const output = execSync(
+        `node archived/get-instance-config.js ${PROJECT_ID}`
+      );
       assert.include(output, 'Available leader options for instance config');
     });
 
