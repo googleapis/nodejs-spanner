@@ -37,7 +37,7 @@ const rpcPriorityQueryPartitionsCommand =
 const transactionCmd = 'node transaction.js';
 const transactionTagCommand = 'node transaction-tag.js';
 const requestTagCommand = 'node request-tag.js';
-const timestampCmd = 'node timestamp.js';
+const timestampCmd = 'node archived/timestamp.js';
 const structCmd = 'node struct.js';
 const dmlCmd = 'node dml.js';
 const datatypesCmd = 'node archived/datatypes.js';
@@ -1438,7 +1438,7 @@ describe('Spanner', () => {
     // create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node sequence-create.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-create.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1453,7 +1453,7 @@ describe('Spanner', () => {
     // alter_sequence
     it('should alter a sequence', async () => {
       const output = execSync(
-        `node sequence-alter.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-alter.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1470,7 +1470,7 @@ describe('Spanner', () => {
     // drop_sequence
     it('should drop a sequence', async () => {
       const output = execSync(
-        `node sequence-drop.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
+        `node archived/sequence-drop.js "${INSTANCE_ID}" "${SEQUENCE_DATABASE_ID}" ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1843,7 +1843,7 @@ describe('Spanner', () => {
     // pg_jsonb_add_column
     it('should add a jsonb column to a table', async () => {
       const output = execSync(
-        `node pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-jsonb-add-column.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1948,7 +1948,7 @@ describe('Spanner', () => {
     // pg_create_sequence
     it('should create a sequence', async () => {
       const output = execSync(
-        `node pg-sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-create.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1963,7 +1963,7 @@ describe('Spanner', () => {
     // pg_alter_sequence
     it('should alter a sequence', async () => {
       const output = execSync(
-        `node pg-sequence-alter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-alter.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,
@@ -1980,7 +1980,7 @@ describe('Spanner', () => {
     // pg_drop_sequence
     it('should drop a sequence', async () => {
       const output = execSync(
-        `node pg-sequence-drop.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
+        `node archived/pg-sequence-drop.js ${SAMPLE_INSTANCE_ID} ${PG_DATABASE_ID} ${PROJECT_ID}`
       );
       assert.match(
         output,

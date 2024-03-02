@@ -20,6 +20,11 @@ async function createDatabaseWithEncryptionKey(
   projectId,
   keyName
 ) {
+  // [START spanner_create_database_with_encryption_key]
+
+  // Imports the Google Cloud client library
+  const {Spanner, protos} = require('@google-cloud/spanner');
+
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -29,14 +34,12 @@ async function createDatabaseWithEncryptionKey(
   // const keyName =
   //   'projects/my-project-id/my-region/keyRings/my-key-ring/cryptoKeys/my-key';
 
-  // Imports the Google Cloud client library
-  const {Spanner, protos} = require('@google-cloud/spanner');
-
   // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
+  // Gets a reference to a Cloud Spanner Database Admin Client object
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a database
@@ -62,6 +65,7 @@ async function createDatabaseWithEncryptionKey(
   console.log(
     `Database encrypted with key ${metadata.encryptionConfig.kmsKeyName}.`
   );
+  // [END spanner_create_database_with_encryption_key]
 }
 
 module.exports.createDatabaseWithEncryptionKey =

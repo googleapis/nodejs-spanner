@@ -31,8 +31,9 @@ async function createTableWithTimestamp(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner Database Admin Client object
-  const databaseAdminClient = spanner.getDatabaseAdminClient();
+  // Gets a reference to a Cloud Spanner instance
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
 
   // Note: Cloud Spanner interprets Node.js numbers as FLOAT64s, so they
   // must be converted to strings before being inserted as INT64s
@@ -48,14 +49,7 @@ async function createTableWithTimestamp(instanceId, databaseId, projectId) {
   ];
 
   // Creates a table in an existing database
-  const [operation] = await databaseAdminClient.updateDatabaseDdl({
-    database: databaseAdminClient.databasePath(
-      projectId,
-      instanceId,
-      databaseId
-    ),
-    statements: request,
-  });
+  const [operation] = await database.updateSchema(request);
 
   console.log(`Waiting for operation on ${databaseId} to complete...`);
 
@@ -191,8 +185,9 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner Database Admin Client object
-  const databaseAdminClient = spanner.getDatabaseAdminClient();
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
 
   const request = [
     `ALTER TABLE Albums ADD COLUMN LastUpdateTime TIMESTAMP OPTIONS
@@ -201,14 +196,7 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
 
   // Adds a new commit timestamp column to the Albums table
   try {
-    const [operation] = await databaseAdminClient.updateDatabaseDdl({
-      database: databaseAdminClient.databasePath(
-        projectId,
-        instanceId,
-        databaseId
-      ),
-      statements: request,
-    });
+    const [operation] = await database.updateSchema(request);
 
     console.log('Waiting for operation to complete...');
 
@@ -220,9 +208,8 @@ async function addTimestampColumn(instanceId, databaseId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    // Close the spanner client when finished.
-    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
-    spanner.close();
+    // Close the database when finished.
+    database.close();
   }
   // [END spanner_add_timestamp_column]
 }

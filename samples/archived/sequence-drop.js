@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,8 +36,9 @@ async function main(instanceId, databaseId, projectId) {
   });
 
   async function dropSequence(instanceId, databaseId) {
-    // Gets a reference to a Cloud Spanner Database Admin Client object
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
 
     const request = [
       'ALTER TABLE Customers ALTER COLUMN CustomerId DROP DEFAULT',
@@ -46,14 +47,7 @@ async function main(instanceId, databaseId, projectId) {
 
     // Drop sequence from DDL
     try {
-      const [operation] = await databaseAdminClient.updateDatabaseDdl({
-        database: databaseAdminClient.databasePath(
-          projectId,
-          instanceId,
-          databaseId
-        ),
-        statements: request,
-      });
+      const [operation] = await database.updateSchema(request);
 
       console.log('Waiting for operation to complete...');
       await operation.promise();
@@ -64,9 +58,8 @@ async function main(instanceId, databaseId, projectId) {
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
-      // Close the spanner client when finished.
-      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
-      spanner.close();
+      // Close the database when finished.
+      await database.close();
     }
   }
   await dropSequence(instanceId, databaseId);
