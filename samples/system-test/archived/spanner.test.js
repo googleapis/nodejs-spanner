@@ -469,7 +469,7 @@ describe('Spanner', () => {
   // create_index
   it('should create an index in an example table', async () => {
     const output = execSync(
-      `node index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
+      `node archived/index-create ${INSTANCE_ID} ${DATABASE_ID} ${PROJECT_ID}`
     );
     assert.match(output, /Waiting for operation to complete\.\.\./);
     assert.match(output, /Added the AlbumsByAlbumTitle index\./);
