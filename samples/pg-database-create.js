@@ -63,20 +63,16 @@ function main(
     // Create a couple of tables using a separate request. We must use PostgreSQL style DDL as the
     // database has been created with the PostgreSQL dialect.
     const statements = [
-      `CREATE TABLE Singers 
-        (SingerId   bigint NOT NULL,
-        FirstName   varchar(1024),
-        LastName    varchar(1024),
-        SingerInfo  bytea,
-        FullName    character varying(2048) GENERATED ALWAYS AS (FirstName || ' ' || LastName) STORED,
-        PRIMARY KEY (SingerId)
-        );
-        CREATE TABLE Albums 
-        (AlbumId    bigint NOT NULL,
-        SingerId    bigint NOT NULL REFERENCES Singers (SingerId),
-        AlbumTitle  text,
-        PRIMARY KEY (AlbumId)
-        );`,
+      `CREATE TABLE Venues (
+        VenueId         BIGINT NOT NULL,
+        VenueName       character varying(100),
+        VenueInfo       BYTEA,
+        Capacity        BIGINT,
+        OutdoorVenue    BOOL,
+        PopularityScore FLOAT8,
+        Revenue         NUMERIC,
+        LastUpdateTime  SPANNER.COMMIT_TIMESTAMP NOT NULL,
+        PRIMARY KEY (VenueId))`,
     ];
     const [operationUpdateDDL] = await databaseAdminClient.updateDatabaseDdl({
       database: databaseAdminClient.databasePath(
