@@ -589,6 +589,7 @@ interface FieldType extends Type {
  * @private
  *
  * @param {*} value - The value.
+ * @param {boolean} isArrayValue - If the value is for an array type.
  * @returns {object}
  *
  * @example
@@ -597,7 +598,7 @@ interface FieldType extends Type {
  * // {type: 'float64'}
  * ```
  */
-function getType(value: Value): Type {
+function getType(value: Value, isArrayValue = false): Type {
   const isSpecialNumber =
     is.infinite(value) || (is.number(value) && isNaN(value));
 
@@ -627,6 +628,10 @@ function getType(value: Value): Type {
 
   if (is.boolean(value)) {
     return {type: 'bool'};
+  }
+
+  if (is.string(value) && isArrayValue) {
+    return {type: 'string'};
   }
 
   if (Buffer.isBuffer(value)) {
@@ -663,7 +668,7 @@ function getType(value: Value): Type {
 
     return {
       type: 'array',
-      child: getType(child),
+      child: getType(child, true),
     };
   }
 
