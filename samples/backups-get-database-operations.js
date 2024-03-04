@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function getDatabaseOperations(instanceId, projectId) {
   // [START spanner_list_database_operations]
+
   // Imports the Google Cloud client library
   const {Spanner, protos} = require('@google-cloud/spanner');
 
@@ -31,15 +32,17 @@ async function getDatabaseOperations(instanceId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance
-  const instance = spanner.instance(instanceId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List database operations
   try {
-    const [databaseOperations] = await instance.getDatabaseOperations({
-      filter:
-        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
-    });
+    const [databaseOperations] =
+      await databaseAdminClient.listDatabaseOperations({
+        parent: databaseAdminClient.instancePath(projectId, instanceId),
+        filter:
+          '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.OptimizeRestoredDatabaseMetadata)',
+      });
     console.log('Optimize Database Operations:');
     databaseOperations.forEach(databaseOperation => {
       const metadata =

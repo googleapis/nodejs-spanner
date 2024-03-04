@@ -91,6 +91,8 @@ const fakePfy = extend({}, pfy, {
       'pgJsonb',
       'operation',
       'timestamp',
+      'getInstanceAdminClient',
+      'getDatabaseAdminClient',
     ]);
   },
 });
@@ -253,7 +255,7 @@ describe('Spanner', () => {
       const options = getFake(spanner).calledWith_[1];
 
       assert.deepStrictEqual(config, {
-        baseUrl: fakeV1.SpannerClient.servicePath,
+        baseUrl: 'spanner.googleapis.com',
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
           Operations: {

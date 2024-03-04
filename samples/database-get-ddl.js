@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,6 @@
 'use strict';
 
 function main(instanceId, databaseId, projectId) {
-  // [START spanner_get_database_ddl]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -31,25 +30,35 @@ function main(instanceId, databaseId, projectId) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance and a database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function getDatabaseDdl() {
     // Get the schema definition of the database.
-    const [ddlStatements] = await database.getSchema();
+    const [ddlStatements] = await databaseAdminClient.getDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+    });
 
-    console.log(`Retrieved database DDL for ${database.formattedName_}:`);
-    ddlStatements.forEach(statement => {
-      console.log(`${statement};\n`);
+    console.log(
+      `Retrieved database DDL for ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )}:`
+    );
+    ddlStatements.statements.forEach(element => {
+      console.log(element);
     });
   }
   getDatabaseDdl();
-  // [END spanner_get_database_ddl]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

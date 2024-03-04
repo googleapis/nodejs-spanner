@@ -250,6 +250,25 @@ export class PGJsonb {
 }
 
 /**
+ * @typedef PGOid
+ * @see Spanner.pgOid
+ */
+export class PGOid extends WrappedNumber {
+  value: string;
+  constructor(value: string) {
+    super();
+    this.value = value.toString();
+  }
+  valueOf(): number {
+    const num = Number(this.value);
+    if (num > Number.MAX_SAFE_INTEGER) {
+      throw new GoogleError(`PG.OID ${this.value} is out of bounds.`);
+    }
+    return num;
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -364,6 +383,14 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       break;
     case spannerClient.spanner.v1.TypeCode.INT64:
     case 'INT64':
+      if (
+        type.typeAnnotation ===
+          spannerClient.spanner.v1.TypeAnnotationCode.PG_OID ||
+        type.typeAnnotation === 'PG_OID'
+      ) {
+        decoded = new PGOid(decoded);
+        break;
+      }
       decoded = new Int(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.NUMERIC:
@@ -503,6 +530,7 @@ const TypeCode: {
   unspecified: 'TYPE_CODE_UNSPECIFIED',
   bool: 'BOOL',
   int64: 'INT64',
+  pgOid: 'INT64',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
   pgNumeric: 'NUMERIC',
@@ -593,12 +621,12 @@ function getType(value: Value): Type {
     return {type: 'pgJsonb'};
   }
 
-  if (is.boolean(value)) {
-    return {type: 'bool'};
+  if (value instanceof PGOid) {
+    return {type: 'pgOid'};
   }
 
-  if (is.string(value)) {
-    return {type: 'string'};
+  if (is.boolean(value)) {
+    return {type: 'bool'};
   }
 
   if (Buffer.isBuffer(value)) {
@@ -643,6 +671,7 @@ function getType(value: Value): Type {
     return {type: 'json'};
   }
 
+  // String type is also returned as unspecified to allow untyped parameters
   return {type: 'unspecified'};
 }
 
@@ -736,6 +765,8 @@ function createTypeObject(
       spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC;
   } else if (friendlyType.type === 'jsonb') {
     type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_JSONB;
+  } else if (friendlyType.type === 'pgOid') {
+    type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_OID;
   }
   return type;
 }
@@ -751,6 +782,7 @@ export const codec = {
   Numeric,
   PGNumeric,
   PGJsonb,
+  PGOid,
   convertFieldsToJson,
   decode,
   encode,
