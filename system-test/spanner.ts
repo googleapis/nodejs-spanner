@@ -1431,6 +1431,46 @@ describe('Spanner', () => {
         );
       });
 
+      it('GOOGLE_STANDARD_SQL should query untyped string array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+
+        const value = ['ghi', 'jkl'];
+        const table = googleSqlTable;
+
+        const query: ExecuteSqlRequest = {
+          sql:
+            'SELECT * FROM `' +
+            table.name +
+            '` WHERE EXISTS (SELECT 1 FROM UNNEST(StringArray) AS c WHERE c IN UNNEST(@value))',
+          params: {
+            value,
+          },
+        };
+
+        insert(
+          {StringArray: value},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().StringArray, ['ghi', 'jkl']);
+
+            DATABASE.run(query, (err, rows) => {
+              if (err) {
+                assert.ifError(err);
+                done();
+              }
+              assert.deepStrictEqual(rows!.shift()!.toJSON().StringArray, [
+                'ghi',
+                'jkl',
+              ]);
+              done();
+            });
+          }
+        );
+      });
+
       it('GOOGLE_STANDARD_SQL should read untyped string values', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
