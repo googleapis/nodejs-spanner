@@ -20,6 +20,7 @@
 'use strict';
 
 function main(instanceId, databaseId, projectId) {
+  // [START spanner_get_database_ddl]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -59,6 +60,7 @@ function main(instanceId, databaseId, projectId) {
     });
   }
   getDatabaseDdl();
+  // [END spanner_get_database_ddl]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);

@@ -20,6 +20,7 @@
 'use strict';
 
 function main(instanceId, databaseId, defaultLeader, projectId) {
+  // [START spanner_create_database_with_default_leader]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -87,6 +88,7 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     );
   }
   createDatabaseWithDefaultLeader();
+  // [END spanner_create_database_with_default_leader]
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);
