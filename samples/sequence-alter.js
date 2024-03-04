@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 async function main(instanceId, databaseId, projectId) {
   // [START spanner_alter_sequence]
+
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -36,16 +37,22 @@ async function main(instanceId, databaseId, projectId) {
   });
 
   async function alterSequence(instanceId, databaseId) {
-    // Gets a reference to a Cloud Spanner instance and database
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
     const request = [
       'ALTER SEQUENCE Seq SET OPTIONS (skip_range_min = 1000, skip_range_max = 5000000)',
     ];
 
     try {
-      const [operation] = await database.updateSchema(request);
+      const [operation] = await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        statements: request,
+      });
 
       console.log('Waiting for operation to complete...');
       await operation.promise();
@@ -56,6 +63,11 @@ async function main(instanceId, databaseId, projectId) {
     } catch (err) {
       console.error('ERROR:', err);
     }
+
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
+
     database.runTransaction(async (err, transaction) => {
       if (err) {
         console.error(err);

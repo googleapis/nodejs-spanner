@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,14 +40,20 @@ function main(
   });
 
   async function pgJsonbAddColumn() {
-    // Gets a reference to a Cloud Spanner instance and database.
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
     const request = ['ALTER TABLE Venues ADD COLUMN VenueDetails JSONB'];
 
     // Updates schema by adding a new table.
-    const [operation] = await database.updateSchema(request);
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();
     console.log(

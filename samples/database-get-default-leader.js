@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,6 @@
 'use strict';
 
 function main(instanceId, databaseId, projectId) {
-  // [START spanner_query_information_schema_database_options]
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -31,27 +30,21 @@ function main(instanceId, databaseId, projectId) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance and a database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
 
-  async function getDatabaseDdl() {
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
+
+  async function getDefaultLeader() {
     // Get the default leader option for the database.
-    const [rows] = await database.run({
-      sql: `
-        SELECT s.OPTION_NAME, s.OPTION_VALUE
-        FROM INFORMATION_SCHEMA.DATABASE_OPTIONS s
-        WHERE s.OPTION_NAME = 'default_leader'`,
-      json: true,
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
     });
-    if (rows.length > 0) {
-      const option = rows[0];
+    if (metadata.defaultLeader !== '') {
       console.log(
-        `The ${option.OPTION_NAME} for ${databaseId} is ${option.OPTION_VALUE}`
+        `The default_leader for ${databaseId} is ${metadata.defaultLeader}`
       );
     } else {
       console.log(
@@ -59,8 +52,7 @@ function main(instanceId, databaseId, projectId) {
       );
     }
   }
-  getDatabaseDdl();
-  // [END spanner_query_information_schema_database_options]
+  getDefaultLeader();
 }
 process.on('unhandledRejection', err => {
   console.error(err.message);
