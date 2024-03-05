@@ -119,6 +119,60 @@ async function addColumn(instanceId, databaseId, projectId) {
   // [END spanner_add_column]
 }
 
+async function queryDataWithNewColumn(instanceId, databaseId, projectId) {
+  // [START spanner_query_data_with_new_column]
+  // This sample uses the `MarketingBudget` column. You can add the column
+  // by running the `add_column` sample or by running this DDL statement against
+  // your database:
+  //    ALTER TABLE Albums ADD COLUMN MarketingBudget INT64
+
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const query = {
+    sql: 'SELECT SingerId, AlbumId, MarketingBudget FROM Albums',
+  };
+
+  // Queries rows from the Albums table
+  try {
+    const [rows] = await database.run(query);
+
+    rows.forEach(async row => {
+      const json = row.toJSON();
+
+      console.log(
+        `SingerId: ${json.SingerId}, AlbumId: ${
+          json.AlbumId
+        }, MarketingBudget: ${
+          json.MarketingBudget ? json.MarketingBudget : null
+        }`
+      );
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_query_data_with_new_column]
+}
+
 const {
   createDatabaseWithVersionRetentionPeriod,
 } = require('./database-create-with-version-retention-period');
@@ -143,6 +197,18 @@ require('yargs')
     opts => addColumn(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .example('node $0 addColumn "my-instance" "my-database" "my-project-id"')
+  .command(
+    'queryNewColumn <instanceName> <databaseName> <projectId>',
+    'Executes a read-only SQL query against an example Cloud Spanner table with an additional column (MarketingBudget) added by addColumn.',
+    {},
+    opts =>
+      queryDataWithNewColumn(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .example('node $0 queryNewColumn "my-instance" "my-database" "my-project-id"')
   .command(
     'createDatabaseWithVersionRetentionPeriod <instanceName> <databaseId> <projectId>',
     'Creates a database with a version retention period.',
