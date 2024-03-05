@@ -663,7 +663,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node get-instance-config.js <PROJECT_ID> <INSTANCE_CONFIG_ID>`
+`node get-instance-config.js <PROJECT_ID>`
 
 
 -----
