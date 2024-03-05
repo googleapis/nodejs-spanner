@@ -38,13 +38,13 @@ async function createIndex(instanceId, databaseId, projectId) {
   // Creates a new index in the database
   try {
     const [operation] = await databaseAdminClient.updateDatabaseDdl({
-        database: databaseAdminClient.databasePath(
-          projectId,
-          instanceId,
-          databaseId
-        ),
-        statements: request,
-      });
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log('Waiting for operation to complete...');
     await operation.promise();
@@ -91,12 +91,12 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
   // Creates a new index in the database
   try {
     const [operation] = await databaseAdminClient.updateDatabaseDdl({
-        database: databaseAdminClient.databasePath(
-          projectId,
-          instanceId,
-          databaseId
-        ),
-        statements: request,
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
     });
 
     console.log('Waiting for operation to complete...');
