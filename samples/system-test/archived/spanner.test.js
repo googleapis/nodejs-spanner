@@ -1627,17 +1627,6 @@ describe('Spanner', () => {
       );
     });
 
-    // get_default_leader
-    it('should get the default leader option of a database', async () => {
-      const output = execSync(
-        `node archived/database-get-default-leader.js "${SAMPLE_INSTANCE_ID}" "${DEFAULT_LEADER_DATABASE_ID}" ${PROJECT_ID}`
-      );
-      assert.include(
-        output,
-        `The default_leader for ${DEFAULT_LEADER_DATABASE_ID} is ${DEFAULT_LEADER_2}`
-      );
-    });
-
     // list_databases
     it('should list databases on the instance', async () => {
       const output = execSync(

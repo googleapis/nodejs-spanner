@@ -15,7 +15,7 @@
 
 // sample-metadata:
 //  title: Gets the instance config metadata for the configuration nam6
-//  usage: node get-instance-config.js <PROJECT_ID> <INSTANCE_CONFIG_ID>
+//  usage: node get-instance-config.js <PROJECT_ID>
 
 'use strict';
 
