@@ -6999,6 +6999,27 @@ describe('Spanner', () => {
         readInvalidColumn(done, postgreSqlTable);
       });
 
+      it('GOOGLE_STANDARD_SQL should execute over invalid query fails', done => {
+        console.time('invalid query GOOGLE_STANDARD_SQL');
+        DATABASE.run('SELECT aaa', (err, rows) => {
+          assert.strictEqual(err?.code, 3);
+          done(); 
+        });
+        console.timeEnd('invalid query GOOGLE_STANDARD_SQL');
+      });
+
+      it('POSTGRESQL should execute over invalid query fails', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        console.time('invalid query POSTGRESQL');
+        PG_DATABASE.run('SELECT aaa', (err, rows) => {
+          assert.strictEqual(err?.code, 3);
+          done(); 
+        });
+        console.timeEnd('invalid query POSTGRESQL');
+      });
+
       const failDeadlineExceed = (done, table) => {
         const query = {
           keys: ['k1'],
