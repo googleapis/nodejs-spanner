@@ -113,7 +113,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
       console.error('ERROR:', err);
     } finally {
       // Close the spanner client when finished.
-      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+      // The instanceAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the instanceAdminClient.
       spanner.close();
     }
     // [END spanner_create_instance_with_autoscaling_config]
