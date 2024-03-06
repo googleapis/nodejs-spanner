@@ -25,6 +25,8 @@ deep-copy-regex:
     dest: /owl-bot-staging/$1/$2
   - source: /google/spanner/(admin/instance/v.*)/.*-nodejs/(.*)
     dest: /owl-bot-staging/$1/$2
+  - source: /google/spanner/(executor/v.*)/.*-nodejs/(.*)
+    dest: /owl-bot-staging/$1/$2
 
 begin-after-commit-hash: 46f25fb1121747b994ff5818963fda84b5e6bfd3
 

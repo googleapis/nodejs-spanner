@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,22 +32,34 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance and a database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function updateDatabaseWithDefaultLeader() {
-    console.log(`Updating database ${database.formattedName_}.`);
+    console.log(
+      `Updating database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )}.`
+    );
     const setDefaultLeaderStatement = `
       ALTER DATABASE \`${databaseId}\`
       SET OPTIONS (default_leader = '${defaultLeader}')`;
-    const [operation] = await database.updateSchema(setDefaultLeaderStatement);
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: [setDefaultLeaderStatement],
+    });
 
-    console.log(`Waiting for updating of ${database.id} to complete...`);
+    console.log(`Waiting for updating of ${databaseId} to complete...`);
     await operation.promise();
     console.log(
       `Updated database ${databaseId} with default leader ${defaultLeader}.`

@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,34 +31,47 @@ function main(
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
 
-  // Imports the Google Cloud Spanner client library
-  const {Spanner} = require('@google-cloud/spanner');
+  // Imports the Google Cloud client library
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
-  // Instantiates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  async function updateDatabase() {
-    // Gets a reference to a Cloud Spanner instance and database
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  async function updateDatabase() {
+    // Update the database metadata fields
     try {
-      console.log(`Updating database ${database.id}.`);
-      const [operation] = await database.setMetadata({
-        enableDropProtection: true,
+      console.log(
+        `Updating database ${databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        )}.`
+      );
+      const [operation] = await databaseAdminClient.updateDatabase({
+        database: {
+          name: databaseAdminClient.databasePath(
+            projectId,
+            instanceId,
+            databaseId
+          ),
+          enableDropProtection: true,
+        },
+        // updateMask contains the fields to be updated in database
+        updateMask: (protos.google.protobuf.FieldMask = {
+          paths: ['enable_drop_protection'],
+        }),
       });
       console.log(
-        `Waiting for update operation for ${database.id} to complete...`
+        `Waiting for update operation for ${databaseId} to complete...`
       );
       await operation.promise();
-      console.log(`Updated database ${database.id}.`);
+      console.log(`Updated database ${databaseId}.`);
     } catch (err) {
       console.log('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      database.close();
     }
   }
   updateDatabase();

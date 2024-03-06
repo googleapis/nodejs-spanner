@@ -120,7 +120,6 @@ describe('Spanner with mock server', () => {
         }
       );
     });
-    server.start();
     spannerMock.putStatementResult(
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet())
@@ -961,6 +960,7 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(request.paramTypes!['int64'].code, 'INT64');
         assert.strictEqual(request.paramTypes!['float64'].code, 'FLOAT64');
         assert.strictEqual(request.paramTypes!['numeric'].code, 'NUMERIC');
+        assert.strictEqual(request.paramTypes!['string'].code, 'STRING');
         assert.strictEqual(request.paramTypes!['bytes'].code, 'BYTES');
         assert.strictEqual(request.paramTypes!['json'].code, 'JSON');
         assert.strictEqual(request.paramTypes!['date'].code, 'DATE');
@@ -3695,10 +3695,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked string value', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -3747,10 +3747,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked string value in an array', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -3800,10 +3800,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked list value', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -4046,6 +4046,200 @@ describe('Spanner with mock server', () => {
         await database.close();
       }
     });
+
+    it('should clear pending values if the last partial result did not have a resume token and was not a complete row', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        resumeToken: undefined,
+        metadata: createMultiColumnMetadata(),
+        values: [
+          {stringValue: 'id1.1'},
+          {stringValue: 'id1.2'},
+          {stringValue: '100'},
+        ],
+        chunkedValue: false,
+      });
+      const prs2 = PartialResultSet.create({
+        resumeToken: undefined,
+        values: [
+          {boolValue: true},
+          {boolValue: true},
+          {numberValue: 0.5},
+          {stringValue: 'id2.1'},
+          {stringValue: 'id2.2'},
+        ],
+        chunkedValue: false,
+      });
+      const prs3 = PartialResultSet.create({
+        resumeToken: undefined,
+        values: [
+          {stringValue: '200'},
+          {boolValue: true},
+          {boolValue: true},
+          {numberValue: 0.5},
+        ],
+      });
+      // Let the stream return UNAVAILABLE on index 1 (so the second PartialResultSet).
+      setupResultsAndErrors(sql, [prs1, prs2, prs3], [1]);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[][];
+        verifyQueryResult(rows);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should not clear pending values if the last partial result had a resume token and was not a complete row', async () => {
+      for (const errorIndexes of [[1], [2]]) {
+        const sql = 'SELECT * FROM TestTable';
+        const prs1 = PartialResultSet.create({
+          resumeToken: Buffer.from('00000000'),
+          metadata: createMultiColumnMetadata(),
+          values: [
+            {stringValue: 'id1.1'},
+            {stringValue: 'id1.2'},
+            {stringValue: '100'},
+          ],
+          chunkedValue: false,
+        });
+        const prs2 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+            {stringValue: 'id2.1'},
+            {stringValue: 'id2.2'},
+          ],
+          chunkedValue: false,
+        });
+        const prs3 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {stringValue: '200'},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+          ],
+        });
+        setupResultsAndErrors(sql, [prs1, prs2, prs3], errorIndexes);
+        const database = newTestDatabase();
+        try {
+          const [rows] = (await database.run({
+            sql,
+            json: true,
+          })) as Json[][];
+          verifyQueryResult(rows);
+        } finally {
+          await database.close();
+        }
+      }
+    });
+
+    it('should not clear pending values if the last partial result was chunked and had a resume token', async () => {
+      for (const errorIndexes of [[2]]) {
+        const sql = 'SELECT * FROM TestTable';
+        const prs1 = PartialResultSet.create({
+          resumeToken: Buffer.from('00000000'),
+          metadata: createMultiColumnMetadata(),
+          values: [
+            {stringValue: 'id1.1'},
+            {stringValue: 'id1.2'},
+            {stringValue: '100'},
+          ],
+          chunkedValue: true,
+        });
+        const prs2 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            // The previous value was chunked, but it is still perfectly possible that it actually contained
+            // the entire value. So in this case the actual value was '100'.
+            {stringValue: ''},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+            {stringValue: 'id2.1'},
+            {stringValue: 'id2.2'},
+          ],
+          chunkedValue: false,
+        });
+        const prs3 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {stringValue: '200'},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+          ],
+        });
+        setupResultsAndErrors(sql, [prs1, prs2, prs3], errorIndexes);
+        const database = newTestDatabase();
+        try {
+          const [rows] = (await database.run({
+            sql,
+            json: true,
+          })) as Json[][];
+          verifyQueryResult(rows);
+        } finally {
+          await database.close();
+        }
+      }
+    });
+
+    function verifyQueryResult(rows: Json[]) {
+      assert.strictEqual(rows.length, 2);
+      assert.strictEqual(rows[0].col1, 'id1.1');
+      assert.strictEqual(rows[0].col2, 'id1.2');
+      assert.strictEqual(rows[0].col3, 100);
+      assert.strictEqual(rows[0].col4, true);
+      assert.strictEqual(rows[0].col5, true);
+      assert.strictEqual(rows[0].col6, 0.5);
+
+      assert.strictEqual(rows[1].col1, 'id2.1');
+      assert.strictEqual(rows[1].col2, 'id2.2');
+      assert.strictEqual(rows[1].col3, 200);
+      assert.strictEqual(rows[1].col4, true);
+      assert.strictEqual(rows[1].col5, true);
+      assert.strictEqual(rows[1].col6, 0.5);
+    }
+
+    function createMultiColumnMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'col1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col2',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col3',
+          type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col4',
+          type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col5',
+          type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col6',
+          type: protobuf.Type.create({code: protobuf.TypeCode.FLOAT64}),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
 
     function createMetadata() {
       const fields = [

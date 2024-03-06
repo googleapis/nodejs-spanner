@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,8 +15,9 @@
 
 'use strict';
 
-async function deleteBackup(instanceId, databaseId, backupId, projectId) {
+async function deleteBackup(instanceId, backupId, projectId) {
   // [START spanner_delete_backup]
+
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -33,19 +34,23 @@ async function deleteBackup(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and backup
-  const instance = spanner.instance(instanceId);
-  const backup = instance.backup(backupId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Delete the backup
   console.log(`Deleting backup ${backupId}.`);
-  await backup.delete();
+  await databaseAdminClient.deleteBackup({
+    name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+  });
+  console.log('Backup deleted.');
 
   // Verify backup no longer exists
-  const exists = await backup.exists();
-  if (exists) {
+  try {
+    await databaseAdminClient.getBackup({
+      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+    });
     console.error('Error: backup still exists.');
-  } else {
+  } catch (err) {
     console.log('Backup deleted.');
   }
   // [END spanner_delete_backup]

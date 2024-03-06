@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,6 +34,9 @@ function main(projectId = 'my-project-id') {
   const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
   async function getInstanceConfigOperations() {
     // Lists the instance config operations.
     try {
@@ -41,7 +44,9 @@ function main(projectId = 'my-project-id') {
         `Getting list of instance config operations on project ${projectId}...\n`
       );
       const [instanceConfigOperations] =
-        await spanner.getInstanceConfigOperations({
+        await instanceAdminClient.listInstanceConfigOperations({
+          parent: instanceAdminClient.projectPath(projectId),
+          // This filter ensures that only operations with metadata type CreateInstanceConfigMetadata
           filter:
             '(metadata.@type=type.googleapis.com/google.spanner.admin.instance.v1.CreateInstanceConfigMetadata)',
         });
