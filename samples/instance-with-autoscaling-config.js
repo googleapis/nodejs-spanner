@@ -41,7 +41,7 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
 
     const autoscalingConfig =
       protos.google.spanner.admin.instance.v1.AutoscalingConfig.create({
-        // Only one of minNodes/maxNodes or minProcessingUnits/maxProcessingUnits can be set
+        // Only one of minNodes/maxNodes or minProcessingUnits/maxProcessingUnits can be set.
         autoscalingLimits:
           protos.google.spanner.admin.instance.v1.AutoscalingConfig.AutoscalingLimits.create(
             {
