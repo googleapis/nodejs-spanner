@@ -61,6 +61,8 @@ function main(instanceId = 'my-instance', projectId = 'my-project-id') {
       });
 
     // Creates a new instance with autoscaling configuration
+    // When autoscalingConfig is enabled, nodeCount and processingUnits fields
+    // need not be specified.
     try {
       console.log(
         `Creating instance ${instanceAdminClient.instancePath(
