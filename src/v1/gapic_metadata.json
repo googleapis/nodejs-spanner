@@ -2,172 +2,24 @@
   "schema": "1.0",
   "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
   "language": "typescript",
-  "protoPackage": "google.spanner.admin.instance.v1",
-  "libraryPackage": "@google-cloud/spanner",
+  "protoPackage": "google.spanner.executor.v1",
+  "libraryPackage": "@google-cloud/executor",
   "services": {
-    "InstanceAdmin": {
+    "SpannerExecutorProxy": {
       "clients": {
         "grpc": {
-          "libraryClient": "InstanceAdminClient",
+          "libraryClient": "SpannerExecutorProxyClient",
           "rpcs": {
-            "GetInstanceConfig": {
+            "ExecuteActionAsync": {
               "methods": [
-                "getInstanceConfig"
-              ]
-            },
-            "DeleteInstanceConfig": {
-              "methods": [
-                "deleteInstanceConfig"
-              ]
-            },
-            "GetInstance": {
-              "methods": [
-                "getInstance"
-              ]
-            },
-            "DeleteInstance": {
-              "methods": [
-                "deleteInstance"
-              ]
-            },
-            "SetIamPolicy": {
-              "methods": [
-                "setIamPolicy"
-              ]
-            },
-            "GetIamPolicy": {
-              "methods": [
-                "getIamPolicy"
-              ]
-            },
-            "TestIamPermissions": {
-              "methods": [
-                "testIamPermissions"
-              ]
-            },
-            "CreateInstanceConfig": {
-              "methods": [
-                "createInstanceConfig"
-              ]
-            },
-            "UpdateInstanceConfig": {
-              "methods": [
-                "updateInstanceConfig"
-              ]
-            },
-            "CreateInstance": {
-              "methods": [
-                "createInstance"
-              ]
-            },
-            "UpdateInstance": {
-              "methods": [
-                "updateInstance"
-              ]
-            },
-            "ListInstanceConfigs": {
-              "methods": [
-                "listInstanceConfigs",
-                "listInstanceConfigsStream",
-                "listInstanceConfigsAsync"
-              ]
-            },
-            "ListInstanceConfigOperations": {
-              "methods": [
-                "listInstanceConfigOperations",
-                "listInstanceConfigOperationsStream",
-                "listInstanceConfigOperationsAsync"
-              ]
-            },
-            "ListInstances": {
-              "methods": [
-                "listInstances",
-                "listInstancesStream",
-                "listInstancesAsync"
+                "executeActionAsync"
               ]
             }
           }
         },
         "grpc-fallback": {
-          "libraryClient": "InstanceAdminClient",
-          "rpcs": {
-            "GetInstanceConfig": {
-              "methods": [
-                "getInstanceConfig"
-              ]
-            },
-            "DeleteInstanceConfig": {
-              "methods": [
-                "deleteInstanceConfig"
-              ]
-            },
-            "GetInstance": {
-              "methods": [
-                "getInstance"
-              ]
-            },
-            "DeleteInstance": {
-              "methods": [
-                "deleteInstance"
-              ]
-            },
-            "SetIamPolicy": {
-              "methods": [
-                "setIamPolicy"
-              ]
-            },
-            "GetIamPolicy": {
-              "methods": [
-                "getIamPolicy"
-              ]
-            },
-            "TestIamPermissions": {
-              "methods": [
-                "testIamPermissions"
-              ]
-            },
-            "CreateInstanceConfig": {
-              "methods": [
-                "createInstanceConfig"
-              ]
-            },
-            "UpdateInstanceConfig": {
-              "methods": [
-                "updateInstanceConfig"
-              ]
-            },
-            "CreateInstance": {
-              "methods": [
-                "createInstance"
-              ]
-            },
-            "UpdateInstance": {
-              "methods": [
-                "updateInstance"
-              ]
-            },
-            "ListInstanceConfigs": {
-              "methods": [
-                "listInstanceConfigs",
-                "listInstanceConfigsStream",
-                "listInstanceConfigsAsync"
-              ]
-            },
-            "ListInstanceConfigOperations": {
-              "methods": [
-                "listInstanceConfigOperations",
-                "listInstanceConfigOperationsStream",
-                "listInstanceConfigOperationsAsync"
-              ]
-            },
-            "ListInstances": {
-              "methods": [
-                "listInstances",
-                "listInstancesStream",
-                "listInstancesAsync"
-              ]
-            }
-          }
+          "libraryClient": "SpannerExecutorProxyClient",
+          "rpcs": {}
         }
       }
     }
