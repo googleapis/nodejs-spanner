@@ -50,7 +50,7 @@ function main(
       }
       try {
         const [rowCount] = await transaction.runUpdate({
-          sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (110, @firstName, @lastName)',
+          sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (111, @firstName, @lastName)',
           params: {
             firstName: 'Virginia',
             lastName: 'Watson',
