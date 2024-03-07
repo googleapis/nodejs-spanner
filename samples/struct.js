@@ -111,21 +111,6 @@ async function queryDataWithStruct(instanceId, databaseId, projectId) {
     params: {
       name: nameStruct,
     },
-    types: {
-      name: {
-        type: 'struct',
-        fields: [
-          {
-            name: 'FirstName',
-            type: 'string',
-          },
-          {
-            name: 'LastName',
-            type: 'string',
-          },
-        ],
-      },
-    },
   };
 
   // Queries rows from the Singers table
@@ -264,21 +249,6 @@ async function queryStructField(instanceId, databaseId, projectId) {
     sql: 'SELECT SingerId FROM Singers WHERE FirstName = @name.FirstName',
     params: {
       name: nameStruct,
-    },
-    types: {
-      name: {
-        type: 'struct',
-        fields: [
-          {
-            name: 'FirstName',
-            type: 'string',
-          },
-          {
-            name: 'LastName',
-            type: 'string',
-          },
-        ],
-      },
     },
   };
 

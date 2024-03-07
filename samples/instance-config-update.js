@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,27 +32,44 @@ function main(
   // const projectId = 'my-project-id';
 
   // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
   async function updateInstanceConfig() {
     // Updates an instance config
-    const instanceConfig = spanner.instanceConfig(instanceConfigId);
     try {
-      console.log(`Updating instance config ${instanceConfig.formattedName_}.`);
-      const [operation] = await instanceConfig.setMetadata({
+      console.log(
+        `Updating instance config ${instanceAdminClient.instanceConfigPath(
+          projectId,
+          instanceConfigId
+        )}.`
+      );
+      const [operation] = await instanceAdminClient.updateInstanceConfig({
         instanceConfig: {
+          name: instanceAdminClient.instanceConfigPath(
+            projectId,
+            instanceConfigId
+          ),
           displayName: 'updated custom instance config',
           labels: {
             updated: 'true',
+            created: Math.round(Date.now() / 1000).toString(), // current time
           },
         },
+        // Field mask specifying fields that should get updated in InstanceConfig
+        // Only display_name and labels can be updated
+        updateMask: (protos.google.protobuf.FieldMask = {
+          paths: ['display_name', 'labels'],
+        }),
       });
       console.log(
-        `Waiting for update operation for ${instanceConfig.id} to complete...`
+        `Waiting for update operation for ${instanceConfigId} to complete...`
       );
       await operation.promise();
       console.log(`Updated instance config ${instanceConfigId}.`);

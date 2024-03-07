@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,15 +31,20 @@ async function createIndex(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   const request = ['CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle)'];
 
   // Creates a new index in the database
   try {
-    const [operation] = await database.updateSchema(request);
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log('Waiting for operation to complete...');
     await operation.promise();
@@ -48,8 +53,9 @@ async function createIndex(instanceId, databaseId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    // Close the database when finished.
-    database.close();
+    // Close the spanner client when finished.
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+    spanner.close();
   }
   // [END spanner_create_index]
 }
@@ -76,9 +82,7 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   const request = [
     'CREATE INDEX AlbumsByAlbumTitle2 ON Albums(AlbumTitle) STORING (MarketingBudget)',
@@ -86,7 +90,14 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
 
   // Creates a new index in the database
   try {
-    const [operation] = await database.updateSchema(request);
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log('Waiting for operation to complete...');
     await operation.promise();
@@ -95,8 +106,9 @@ async function createStoringIndex(instanceId, databaseId, projectId) {
   } catch (err) {
     console.error('ERROR:', err);
   } finally {
-    // Close the database when finished.
-    database.close();
+    // Close the spanner client when finished.
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+    spanner.close();
   }
   // [END spanner_create_storing_index]
 }
