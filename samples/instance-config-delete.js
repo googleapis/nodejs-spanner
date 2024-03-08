@@ -71,5 +71,3 @@ process.on('unhandledRejection', err => {
   process.exitCode = 1;
 });
 main(...process.argv.slice(2));
-
-/* instance exists needs to be added*/
