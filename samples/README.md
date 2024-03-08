@@ -64,6 +64,7 @@ and automatic, synchronous replication for high availability.
   * [Json-update-data](#json-update-data)
   * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
   * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
+  * [Executes request with max commit delay](#executes-request-with-max-commit-delay)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
@@ -971,6 +972,23 @@ __Usage:__
 
 
 `node list-instance-configs.js <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes request with max commit delay
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/max-commit-delay.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/max-commit-delay.js,samples/README.md)
+
+__Usage:__
+
+
+`node max-commit-delay.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
