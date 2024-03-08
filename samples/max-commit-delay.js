@@ -62,6 +62,8 @@ function main(
         );
 
         await transaction.commit({
+          // The maximum amount of time to delay the transaction to improve
+          // throughput.
           maxCommitDelay: protos.google.protobuf.Duration({
             seconds: 0, // 0 seconds
             nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
