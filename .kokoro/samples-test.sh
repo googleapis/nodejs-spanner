@@ -39,7 +39,7 @@ if [ -f samples/package.json ]; then
     npm link ../
     npm install
     cd ..
-    # If tests are running against main branch, run the samples along with archived, configure flakybot
+    # If tests are running against main branch, configure flakybot
     # to open issues on failures:
     if [[ $KOKORO_BUILD_ARTIFACTS_SUBDIR = *"continuous"* ]] || [[ $KOKORO_BUILD_ARTIFACTS_SUBDIR = *"nightly"* ]]; then
       export MOCHA_REPORTER_OUTPUT=test_output_sponge_log.xml
@@ -49,10 +49,9 @@ if [ -f samples/package.json ]; then
         $KOKORO_GFILE_DIR/linux_amd64/flakybot
       }
       trap cleanup EXIT HUP
-      npm run samples-test-with-archived
-    else
-      npm run samples-test
     fi
+
+    npm run samples-test
 fi
 
 # codecov combines coverage across integration and unit tests. Include
