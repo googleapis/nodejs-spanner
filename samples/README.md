@@ -56,6 +56,7 @@ and automatic, synchronous replication for high availability.
   * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
+  * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -63,6 +64,7 @@ and automatic, synchronous replication for high availability.
   * [Json-update-data](#json-update-data)
   * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
   * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
+  * [Executes request with max commit delay](#executes-request-with-max-commit-delay)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
@@ -663,7 +665,7 @@ View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/sa
 __Usage:__
 
 
-`node get-instance-config.js <PROJECT_ID> <INSTANCE_CONFIG_ID>`
+`node get-instance-config.js <PROJECT_ID>`
 
 
 -----
@@ -841,6 +843,23 @@ __Usage:__
 
 
 
+### Creates a instance with autoscaling config.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-autoscaling-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-with-autoscaling-config.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Instance-with-processing-units
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-processing-units.js).
@@ -953,6 +972,23 @@ __Usage:__
 
 
 `node list-instance-configs.js <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes request with max commit delay
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/max-commit-delay.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/max-commit-delay.js,samples/README.md)
+
+__Usage:__
+
+
+`node max-commit-delay.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

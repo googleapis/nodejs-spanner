@@ -221,6 +221,9 @@ export class InstanceAdminClient {
       instanceConfigPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instanceConfigs/{instance_config}'
       ),
+      instancePartitionPathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/instancePartitions/{instance_partition}'
+      ),
       projectPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}'
       ),
@@ -244,6 +247,16 @@ export class InstanceAdminClient {
         'pageToken',
         'nextPageToken',
         'instances'
+      ),
+      listInstancePartitions: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'instancePartitions'
+      ),
+      listInstancePartitionOperations: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
       ),
     };
 
@@ -315,6 +328,18 @@ export class InstanceAdminClient {
     const updateInstanceMetadata = protoFilesRoot.lookup(
       '.google.spanner.admin.instance.v1.UpdateInstanceMetadata'
     ) as gax.protobuf.Type;
+    const createInstancePartitionResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.InstancePartition'
+    ) as gax.protobuf.Type;
+    const createInstancePartitionMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata'
+    ) as gax.protobuf.Type;
+    const updateInstancePartitionResponse = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.InstancePartition'
+    ) as gax.protobuf.Type;
+    const updateInstancePartitionMetadata = protoFilesRoot.lookup(
+      '.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata'
+    ) as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
       createInstanceConfig: new this._gaxModule.LongrunningDescriptor(
@@ -336,6 +361,24 @@ export class InstanceAdminClient {
         this.operationsClient,
         updateInstanceResponse.decode.bind(updateInstanceResponse),
         updateInstanceMetadata.decode.bind(updateInstanceMetadata)
+      ),
+      createInstancePartition: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        createInstancePartitionResponse.decode.bind(
+          createInstancePartitionResponse
+        ),
+        createInstancePartitionMetadata.decode.bind(
+          createInstancePartitionMetadata
+        )
+      ),
+      updateInstancePartition: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        updateInstancePartitionResponse.decode.bind(
+          updateInstancePartitionResponse
+        ),
+        updateInstancePartitionMetadata.decode.bind(
+          updateInstancePartitionMetadata
+        )
       ),
     };
 
@@ -396,6 +439,7 @@ export class InstanceAdminClient {
       'deleteInstanceConfig',
       'listInstanceConfigOperations',
       'listInstances',
+      'listInstancePartitions',
       'getInstance',
       'createInstance',
       'updateInstance',
@@ -403,6 +447,11 @@ export class InstanceAdminClient {
       'setIamPolicy',
       'getIamPolicy',
       'testIamPermissions',
+      'getInstancePartition',
+      'createInstancePartition',
+      'deleteInstancePartition',
+      'updateInstancePartition',
+      'listInstancePartitionOperations',
     ];
     for (const methodName of instanceAdminStubMethods) {
       const callPromise = this.instanceAdminStub.then(
@@ -1206,6 +1255,213 @@ export class InstanceAdminClient {
     this.initialize();
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
+  /**
+   * Gets information about a particular instance partition.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the requested instance partition. Values are of
+   *   the form
+   *   `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  getInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.instance.v1.IInstancePartition,
+      (
+        | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  getInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.instance.v1.IInstancePartition,
+      | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
+    callback: Callback<
+      protos.google.spanner.admin.instance.v1.IInstancePartition,
+      | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.instance.v1.IInstancePartition,
+          | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.instance.v1.IInstancePartition,
+      | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.instance.v1.IInstancePartition,
+      (
+        | protos.google.spanner.admin.instance.v1.IGetInstancePartitionRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.getInstancePartition(request, options, callback);
+  }
+  /**
+   * Deletes an existing instance partition. Requires that the
+   * instance partition is not used by any database or backup and is not the
+   * default instance partition of an instance.
+   *
+   * Authorization requires `spanner.instancePartitions.delete` permission on
+   * the resource
+   * {@link protos.google.spanner.admin.instance.v1.InstancePartition.name|name}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the instance partition to be deleted.
+   *   Values are of the form
+   *   `projects/{project}/instances/{instance}/instancePartitions/{instance_partition}`
+   * @param {string} request.etag
+   *   Optional. If not empty, the API only deletes the instance partition when
+   *   the etag provided matches the current status of the requested instance
+   *   partition. Otherwise, deletes the instance partition without checking the
+   *   current status of the requested instance partition.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  deleteInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      (
+        | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  deleteInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  deleteInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  deleteInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      (
+        | protos.google.spanner.admin.instance.v1.IDeleteInstancePartitionRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.deleteInstancePartition(
+      request,
+      options,
+      callback
+    );
+  }
 
   /**
    * Creates an instance config and begins preparing it to be used. The
@@ -1938,6 +2194,377 @@ export class InstanceAdminClient {
     >;
   }
   /**
+   * Creates an instance partition and begins preparing it to be used. The
+   * returned {@link protos.google.longrunning.Operation|long-running operation}
+   * can be used to track the progress of preparing the new instance partition.
+   * The instance partition name is assigned by the caller. If the named
+   * instance partition already exists, `CreateInstancePartition` returns
+   * `ALREADY_EXISTS`.
+   *
+   * Immediately upon completion of this request:
+   *
+   *   * The instance partition is readable via the API, with all requested
+   *     attributes but no allocated resources. Its state is `CREATING`.
+   *
+   * Until completion of the returned operation:
+   *
+   *   * Cancelling the operation renders the instance partition immediately
+   *     unreadable via the API.
+   *   * The instance partition can be deleted.
+   *   * All other attempts to modify the instance partition are rejected.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * Billing for all successfully-allocated resources begins (some types
+   *     may have lower than the requested levels).
+   *   * Databases can start using this instance partition.
+   *   * The instance partition's allocated resource levels are readable via the
+   *     API.
+   *   * The instance partition's state becomes `READY`.
+   *
+   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * have a name of the format
+   * `<instance_partition_name>/operations/<operation_id>` and can be used to
+   * track creation of the instance partition.  The
+   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}.
+   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}, if
+   * successful.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the instance in which to create the instance
+   *   partition. Values are of the form
+   *   `projects/<project>/instances/<instance>`.
+   * @param {string} request.instancePartitionId
+   *   Required. The ID of the instance partition to create. Valid identifiers are
+   *   of the form `{@link protos.-a-z0-9|a-z}*[a-z0-9]` and must be between 2 and 64
+   *   characters in length.
+   * @param {google.spanner.admin.instance.v1.InstancePartition} request.instancePartition
+   *   Required. The instance partition to create. The instance_partition.name may
+   *   be omitted, but if specified must be
+   *   `<parent>/instancePartitions/<instance_partition_id>`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  createInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  >;
+  createInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.ICreateInstancePartitionRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.createInstancePartition(
+      request,
+      options,
+      callback
+    );
+  }
+  /**
+   * Check the status of the long running operation returned by `createInstancePartition()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  async checkCreateInstancePartitionProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.instance.v1.InstancePartition,
+      protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata
+    >
+  > {
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(
+      operation,
+      this.descriptors.longrunning.createInstancePartition,
+      this._gaxModule.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.instance.v1.InstancePartition,
+      protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata
+    >;
+  }
+  /**
+   * Updates an instance partition, and begins allocating or releasing resources
+   * as requested. The returned [long-running
+   * operation][google.longrunning.Operation] can be used to track the
+   * progress of updating the instance partition. If the named instance
+   * partition does not exist, returns `NOT_FOUND`.
+   *
+   * Immediately upon completion of this request:
+   *
+   *   * For resource types for which a decrease in the instance partition's
+   *   allocation has been requested, billing is based on the newly-requested
+   *   level.
+   *
+   * Until completion of the returned operation:
+   *
+   *   * Cancelling the operation sets its metadata's
+   *     {@link protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata.cancel_time|cancel_time},
+   *     and begins restoring resources to their pre-request values. The
+   *     operation is guaranteed to succeed at undoing all resource changes,
+   *     after which point it terminates with a `CANCELLED` status.
+   *   * All other attempts to modify the instance partition are rejected.
+   *   * Reading the instance partition via the API continues to give the
+   *     pre-request resource levels.
+   *
+   * Upon completion of the returned operation:
+   *
+   *   * Billing begins for all successfully-allocated resources (some types
+   *     may have lower than the requested levels).
+   *   * All newly-reserved resources are available for serving the instance
+   *     partition's tables.
+   *   * The instance partition's new resource levels are readable via the API.
+   *
+   * The returned {@link protos.google.longrunning.Operation|long-running operation} will
+   * have a name of the format
+   * `<instance_partition_name>/operations/<operation_id>` and can be used to
+   * track the instance partition modification. The
+   * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
+   * {@link protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata|UpdateInstancePartitionMetadata}.
+   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}, if
+   * successful.
+   *
+   * Authorization requires `spanner.instancePartitions.update` permission on
+   * the resource
+   * {@link protos.google.spanner.admin.instance.v1.InstancePartition.name|name}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {google.spanner.admin.instance.v1.InstancePartition} request.instancePartition
+   *   Required. The instance partition to update, which must always include the
+   *   instance partition name. Otherwise, only fields mentioned in
+   *   {@link protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest.field_mask|field_mask}
+   *   need be included.
+   * @param {google.protobuf.FieldMask} request.fieldMask
+   *   Required. A mask specifying which fields in
+   *   {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}
+   *   should be updated. The field mask must always be specified; this prevents
+   *   any future fields in
+   *   {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}
+   *   from being erased accidentally by clients that do not know about them.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   *   a long running operation. Its `promise()` method returns a promise
+   *   you can `await` for.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  updateInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  >;
+  updateInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
+    options: CallOptions,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateInstancePartition(
+    request: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
+    callback: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateInstancePartition(
+    request?: protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          LROperation<
+            protos.google.spanner.admin.instance.v1.IInstancePartition,
+            protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+          >,
+          protos.google.longrunning.IOperation | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | null | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >,
+      protos.google.longrunning.IOperation | undefined,
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        'instance_partition.name': request.instancePartition!.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.updateInstancePartition(
+      request,
+      options,
+      callback
+    );
+  }
+  /**
+   * Check the status of the long running operation returned by `updateInstancePartition()`.
+   * @param {String} name
+   *   The operation name that will be passed.
+   * @returns {Promise} - The promise which resolves to an object.
+   *   The decoded operation object has result and metadata field to get information from.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+   *   for more details and examples.
+   */
+  async checkUpdateInstancePartitionProgress(
+    name: string
+  ): Promise<
+    LROperation<
+      protos.google.spanner.admin.instance.v1.InstancePartition,
+      protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata
+    >
+  > {
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new this._gaxModule.Operation(
+      operation,
+      this.descriptors.longrunning.updateInstancePartition,
+      this._gaxModule.createDefaultBackoffSettings()
+    );
+    return decodeOperation as LROperation<
+      protos.google.spanner.admin.instance.v1.InstancePartition,
+      protos.google.spanner.admin.instance.v1.UpdateInstancePartitionMetadata
+    >;
+  }
+  /**
    * Lists the supported instance configurations for a given project.
    *
    * @param {Object} request
@@ -2523,6 +3150,13 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
+   * @param {google.protobuf.Timestamp} request.instanceDeadline
+   *   Deadline used while retrieving metadata for instances.
+   *   Instances whose metadata cannot be retrieved within this deadline will be
+   *   added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2645,6 +3279,13 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
+   * @param {google.protobuf.Timestamp} request.instanceDeadline
+   *   Deadline used while retrieving metadata for instances.
+   *   Instances whose metadata cannot be retrieved within this deadline will be
+   *   added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2715,6 +3356,13 @@ export class InstanceAdminClient {
    *     * `name:howl labels.env:dev` --> The instance's name contains "howl" and
    *                                    it has the label "env" with its value
    *                                    containing "dev".
+   * @param {google.protobuf.Timestamp} request.instanceDeadline
+   *   Deadline used while retrieving metadata for instances.
+   *   Instances whose metadata cannot be retrieved within this deadline will be
+   *   added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancesResponse|ListInstancesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2745,6 +3393,602 @@ export class InstanceAdminClient {
       request as {},
       callSettings
     ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstance>;
+  }
+  /**
+   * Lists all instance partitions for the given instance.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose instance partitions should be listed. Values
+   *   are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} request.pageSize
+   *   Number of instance partitions to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partitions.
+   *   Instance partitions whose metadata cannot be retrieved within this deadline
+   *   will be added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listInstancePartitionsAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitions(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.instance.v1.IInstancePartition[],
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse,
+    ]
+  >;
+  listInstancePartitions(
+    request: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstancePartition
+    >
+  ): void;
+  listInstancePartitions(
+    request: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstancePartition
+    >
+  ): void;
+  listInstancePartitions(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.instance.v1.IInstancePartition
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.instance.v1.IInstancePartition
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.instance.v1.IInstancePartition[],
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionsResponse,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.listInstancePartitions(
+      request,
+      options,
+      callback
+    );
+  }
+
+  /**
+   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose instance partitions should be listed. Values
+   *   are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} request.pageSize
+   *   Number of instance partitions to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partitions.
+   *   Instance partitions whose metadata cannot be retrieved within this deadline
+   *   will be added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition} on 'data' event.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed. Note that it can affect your quota.
+   *   We recommend using `listInstancePartitionsAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitionsStream(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    options?: CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings = this._defaults['listInstancePartitions'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listInstancePartitions.createStream(
+      this.innerApiCalls.listInstancePartitions as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to `listInstancePartitions`, but returns an iterable object.
+   *
+   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The instance whose instance partitions should be listed. Values
+   *   are of the form `projects/<project>/instances/<instance>`.
+   * @param {number} request.pageSize
+   *   Number of instance partitions to be returned in the response. If 0 or less,
+   *   defaults to the server's maximum allowed page size.
+   * @param {string} request.pageToken
+   *   If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partitions.
+   *   Instance partitions whose metadata cannot be retrieved within this deadline
+   *   will be added to
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse.unreachable|unreachable}
+   *   in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionsResponse|ListInstancePartitionsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+   *   When you iterate the returned iterable, each element will be an object representing
+   *   {@link protos.google.spanner.admin.instance.v1.InstancePartition|InstancePartition}. The API will be called under the hood as needed, once per the page,
+   *   so you can stop the iteration when you don't need more results.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitionsAsync(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionsRequest,
+    options?: CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.instance.v1.IInstancePartition> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings = this._defaults['listInstancePartitions'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listInstancePartitions.asyncIterate(
+      this.innerApiCalls['listInstancePartitions'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.instance.v1.IInstancePartition>;
+  }
+  /**
+   * Lists instance partition [long-running
+   * operations][google.longrunning.Operation] in the given instance.
+   * An instance partition operation has a name of the form
+   * `projects/<project>/instances/<instance>/instancePartitions/<instance_partition>/operations/<operation>`.
+   * The long-running operation
+   * {@link protos.google.longrunning.Operation.metadata|metadata} field type
+   * `metadata.type_url` describes the type of the metadata. Operations returned
+   * include those that have completed/failed/canceled within the last 7 days,
+   * and pending operations. Operations returned are ordered by
+   * `operation.metadata.value.start_time` in descending order starting from the
+   * most recently started operation.
+   *
+   * Authorization requires `spanner.instancePartitionOperations.list`
+   * permission on the resource
+   * {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest.parent|parent}.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The parent instance of the instance partition operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} [request.filter]
+   *   Optional. An expression that filters the list of returned operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for
+   *        {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}
+   *        is
+   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=` \
+   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata)
+   *       AND` \
+   *       `(metadata.instance_partition.name:custom-instance-partition) AND` \
+   *       `(metadata.start_time < \"2021-03-28T14:50:00Z\") AND` \
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}.
+   *       * The instance partition name contains "custom-instance-partition".
+   *       * The operation started before 2021-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} [request.pageSize]
+   *   Optional. Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partition
+   *   operations. Instance partitions whose operation metadata cannot be
+   *   retrieved within this deadline will be added to
+   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of {@link protos.google.longrunning.Operation|Operation}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listInstancePartitionOperationsAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitionOperations(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse,
+    ]
+  >;
+  listInstancePartitionOperations(
+    request: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): void;
+  listInstancePartitionOperations(
+    request: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): void;
+  listInstancePartitionOperations(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+          | protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse
+          | null
+          | undefined,
+          protos.google.longrunning.IOperation
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+      | protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse
+      | null
+      | undefined,
+      protos.google.longrunning.IOperation
+    >
+  ): Promise<
+    [
+      protos.google.longrunning.IOperation[],
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest | null,
+      protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsResponse,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.listInstancePartitionOperations(
+      request,
+      options,
+      callback
+    );
+  }
+
+  /**
+   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The parent instance of the instance partition operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} [request.filter]
+   *   Optional. An expression that filters the list of returned operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for
+   *        {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}
+   *        is
+   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=` \
+   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata)
+   *       AND` \
+   *       `(metadata.instance_partition.name:custom-instance-partition) AND` \
+   *       `(metadata.start_time < \"2021-03-28T14:50:00Z\") AND` \
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}.
+   *       * The instance partition name contains "custom-instance-partition".
+   *       * The operation started before 2021-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} [request.pageSize]
+   *   Optional. Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partition
+   *   operations. Instance partitions whose operation metadata cannot be
+   *   retrieved within this deadline will be added to
+   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing {@link protos.google.longrunning.Operation|Operation} on 'data' event.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed. Note that it can affect your quota.
+   *   We recommend using `listInstancePartitionOperationsAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitionOperationsStream(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    options?: CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings =
+      this._defaults['listInstancePartitionOperations'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listInstancePartitionOperations.createStream(
+      this.innerApiCalls.listInstancePartitionOperations as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to `listInstancePartitionOperations`, but returns an iterable object.
+   *
+   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The parent instance of the instance partition operations.
+   *   Values are of the form `projects/<project>/instances/<instance>`.
+   * @param {string} [request.filter]
+   *   Optional. An expression that filters the list of returned operations.
+   *
+   *   A filter expression consists of a field name, a
+   *   comparison operator, and a value for filtering.
+   *   The value must be a string, a number, or a boolean. The comparison operator
+   *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
+   *   Colon `:` is the contains operator. Filter rules are not case sensitive.
+   *
+   *   The following fields in the {@link protos.google.longrunning.Operation|Operation}
+   *   are eligible for filtering:
+   *
+   *     * `name` - The name of the long-running operation
+   *     * `done` - False if the operation is in progress, else true.
+   *     * `metadata.@type` - the type of metadata. For example, the type string
+   *        for
+   *        {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}
+   *        is
+   *        `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata`.
+   *     * `metadata.<field_name>` - any field in metadata.value.
+   *        `metadata.@type` must be specified first, if filtering on metadata
+   *        fields.
+   *     * `error` - Error associated with the long-running operation.
+   *     * `response.@type` - the type of response.
+   *     * `response.<field_name>` - any field in response.value.
+   *
+   *   You can combine multiple expressions by enclosing each expression in
+   *   parentheses. By default, expressions are combined with AND logic. However,
+   *   you can specify AND, OR, and NOT logic explicitly.
+   *
+   *   Here are a few examples:
+   *
+   *     * `done:true` - The operation is complete.
+   *     * `(metadata.@type=` \
+   *       `type.googleapis.com/google.spanner.admin.instance.v1.CreateInstancePartitionMetadata)
+   *       AND` \
+   *       `(metadata.instance_partition.name:custom-instance-partition) AND` \
+   *       `(metadata.start_time < \"2021-03-28T14:50:00Z\") AND` \
+   *       `(error:*)` - Return operations where:
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.instance.v1.CreateInstancePartitionMetadata|CreateInstancePartitionMetadata}.
+   *       * The instance partition name contains "custom-instance-partition".
+   *       * The operation started before 2021-03-28T14:50:00Z.
+   *       * The operation resulted in an error.
+   * @param {number} [request.pageSize]
+   *   Optional. Number of operations to be returned in the response. If 0 or
+   *   less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
+   * @param {google.protobuf.Timestamp} [request.instancePartitionDeadline]
+   *   Optional. Deadline used while retrieving metadata for instance partition
+   *   operations. Instance partitions whose operation metadata cannot be
+   *   retrieved within this deadline will be added to
+   *   {@link protos.ListInstancePartitionOperationsResponse.unreachable|unreachable} in
+   *   {@link protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsResponse|ListInstancePartitionOperationsResponse}.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+   *   When you iterate the returned iterable, each element will be an object representing
+   *   {@link protos.google.longrunning.Operation|Operation}. The API will be called under the hood as needed, once per the page,
+   *   so you can stop the iteration when you don't need more results.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listInstancePartitionOperationsAsync(
+    request?: protos.google.spanner.admin.instance.v1.IListInstancePartitionOperationsRequest,
+    options?: CallOptions
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings =
+      this._defaults['listInstancePartitionOperations'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listInstancePartitionOperations.asyncIterate(
+      this.innerApiCalls['listInstancePartitionOperations'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
   // --------------------
   // -- Path templates --
@@ -2824,6 +4068,67 @@ export class InstanceAdminClient {
     return this.pathTemplates.instanceConfigPathTemplate.match(
       instanceConfigName
     ).instance_config;
+  }
+
+  /**
+   * Return a fully-qualified instancePartition resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} instance_partition
+   * @returns {string} Resource name string.
+   */
+  instancePartitionPath(
+    project: string,
+    instance: string,
+    instancePartition: string
+  ) {
+    return this.pathTemplates.instancePartitionPathTemplate.render({
+      project: project,
+      instance: instance,
+      instance_partition: instancePartition,
+    });
+  }
+
+  /**
+   * Parse the project from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromInstancePartitionName(instancePartitionName: string) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(
+      instancePartitionName
+    ).project;
+  }
+
+  /**
+   * Parse the instance from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromInstancePartitionName(instancePartitionName: string) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(
+      instancePartitionName
+    ).instance;
+  }
+
+  /**
+   * Parse the instance_partition from InstancePartition resource.
+   *
+   * @param {string} instancePartitionName
+   *   A fully-qualified path representing InstancePartition resource.
+   * @returns {string} A string representing the instance_partition.
+   */
+  matchInstancePartitionFromInstancePartitionName(
+    instancePartitionName: string
+  ) {
+    return this.pathTemplates.instancePartitionPathTemplate.match(
+      instancePartitionName
+    ).instance_partition;
   }
 
   /**
