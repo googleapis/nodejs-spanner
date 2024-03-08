@@ -11,6 +11,7 @@
     "node": ">=14.0.0"
   },
   "scripts": {
+    "test-with-archived": "mocha system-test --timeout 1600000", 
     "test": "mocha system-test/spanner.test.js --timeout 1600000"
   },
   "dependencies": {
