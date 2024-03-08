@@ -377,6 +377,10 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'BYTES':
       decoded = Buffer.from(decoded, 'base64');
       break;
+    case spannerClient.spanner.v1.TypeCode.FLOAT32:
+    case 'FLOAT32':
+      decoded = new Float(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
     case 'FLOAT64':
       decoded = new Float(decoded);
@@ -531,6 +535,7 @@ const TypeCode: {
   bool: 'BOOL',
   int64: 'INT64',
   pgOid: 'INT64',
+  float32: 'FLOAT32',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
   pgNumeric: 'NUMERIC',
