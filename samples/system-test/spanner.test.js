@@ -57,7 +57,7 @@ const INSTANCE_ID =
   process.env.SPANNERTEST_INSTANCE || `${PREFIX}-${CURRENT_TIME}`;
 const SAMPLE_INSTANCE_ID = `${PREFIX}-my-sample-instance-${CURRENT_TIME}`;
 const SAMPLE_INSTANCE_CONFIG_ID = `custom-my-sample-instance-config-${CURRENT_TIME}`;
-const BASE_INSTANCE_CONFIG_ID = 'regional-us-west2';
+const BASE_INSTANCE_CONFIG_ID = 'regional-us-central1';
 const INSTANCE_ALREADY_EXISTS = !!process.env.SPANNERTEST_INSTANCE;
 const DATABASE_ID = `test-database-${CURRENT_TIME}`;
 const PG_DATABASE_ID = `test-pg-database-${CURRENT_TIME}`;
