@@ -607,7 +607,13 @@ function getType(value: Value): Type {
     is.infinite(value) || (is.number(value) && isNaN(value));
 
   if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
-    return {type: 'float64'};
+    if (value.valueOf() % 1!=0) {
+      if (Float32Array.of(value).length === 1) {
+        return {type: 'float32'};
+      } else if (Float64Array.of(value).length === 1) {
+        return {type: 'float64'};
+      }
+    }
   }
 
   if (is.number(value) || value instanceof Int) {
