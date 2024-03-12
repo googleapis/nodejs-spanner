@@ -44,6 +44,7 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
         AvailableDates         ARRAY<DATE>,
         LastContactDate        Date,
         OutdoorVenue           BOOL,
+        RatingScore            FLOAT32,
         PopularityScore        FLOAT64,
         LastUpdateTime TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true)
       ) PRIMARY KEY (VenueId)`,
@@ -101,6 +102,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates1,
       LastContactDate: '2018-09-02',
       OutdoorVenue: false,
+      RatingScore: Spanner.float(0.90432),
       PopularityScore: Spanner.float(0.85543),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -112,6 +114,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates2,
       LastContactDate: '2019-01-15',
       OutdoorVenue: true,
+      RatingScore: Spanner.float(0.93081),
       PopularityScore: Spanner.float(0.98716),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -123,6 +126,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates3,
       LastContactDate: '2018-10-01',
       OutdoorVenue: false,
+      RatingScore: Spanner.float(0.98738),
       PopularityScore: Spanner.float(0.72598),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -139,6 +143,64 @@ async function insertData(instanceId, databaseId, projectId) {
     database.close();
   }
   // [END spanner_insert_datatypes_data]
+}
+
+async function queryWithFloat32(instanceId, databaseId, projectId) {
+  // [START spanner_query_with_float_parameter]
+  // Imports the Google Cloud client library.
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database.
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const fieldType = {
+    type: 'float32',
+  };
+
+  const exampleFloat = Spanner.float(0.9);
+
+  const query = {
+    sql: `SELECT VenueId, VenueName, RatingScore FROM Venues
+            WHERE RatingScore > @ratingScore`,
+    params: {
+      ratingScore: exampleFloat,
+    },
+    types: {
+      ratingScore: fieldType,
+    },
+  };
+
+  // Queries rows from the Venues table.
+  try {
+    const [rows] = await database.run(query);
+
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
+          ` RatingScore: ${json.PopularityScore}`
+      );
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_query_with_float_parameter]
 }
 
 async function queryWithArray(instanceId, databaseId, projectId) {
@@ -653,6 +715,12 @@ require('yargs')
     "Query data from the sample 'Venues' table with a DATE datatype.",
     {},
     opts => queryWithDate(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'queryWithFloat32 <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a FLOAT32 datatype.",
+    {},
+    opts => queryWithFloat32(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
     'queryWithFloat <instanceName> <databaseName> <projectId>',
