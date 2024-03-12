@@ -119,6 +119,21 @@ abstract class WrappedNumber {
 }
 
 /**
+ * @typedef Float32
+ * @see Spanner.float32
+ */
+export class Float32 extends WrappedNumber {
+  value: number;
+  constructor(value: number) {
+    super();
+    this.value = value;
+  }
+  valueOf(): number {
+    return Number(this.value);
+  }
+}
+
+/**
  * @typedef Float
  * @see Spanner.float
  */
@@ -791,6 +806,7 @@ export const codec = {
   convertProtoTimestampToDate,
   createTypeObject,
   SpannerDate,
+  Float32,
   Float,
   Int,
   Numeric,

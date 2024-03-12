@@ -387,65 +387,6 @@ async function queryWithDate(instanceId, databaseId, projectId) {
   }
   // [END spanner_query_with_date_parameter]
 }
-
-async function queryWithFloat32(instanceId, databaseId, projectId) {
-  // [START spanner_query_with_float_parameter]
-  // Imports the Google Cloud client library.
-  const {Spanner} = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  const fieldType = {
-    type: 'float32',
-  };
-
-  const exampleFloat = Spanner.float(0.9);
-
-  const query = {
-    sql: `SELECT VenueId, VenueName, RatingScore FROM Venues
-            WHERE RatingScore > @ratingScore`,
-    params: {
-      ratingScore: exampleFloat,
-    },
-    types: {
-      ratingScore: fieldType,
-    },
-  };
-
-  // Queries rows from the Venues table.
-  try {
-    const [rows] = await database.run(query);
-
-    rows.forEach(row => {
-      const json = row.toJSON();
-      console.log(
-        `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
-          ` RatingScore: ${json.PopularityScore}`
-      );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
-  // [END spanner_query_with_float_parameter]
-}
-
 async function queryWithFloat(instanceId, databaseId, projectId) {
   // [START spanner_query_with_float_parameter]
   // Imports the Google Cloud client library.
@@ -814,6 +755,7 @@ require('yargs')
   .example('node $0 queryWithBool "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithBytes "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithDate "my-instance" "my-database" "my-project-id"')
+  .example('node $0 queryWithFloat32 "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithFloat "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithInt "my-instance" "my-database" "my-project-id"')
   .example(
