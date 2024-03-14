@@ -82,6 +82,7 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'date',
+      'float32',
       'float',
       'instance',
       'instanceConfig',
