@@ -494,6 +494,23 @@ describe('Spanner', () => {
     });
   });
 
+  describe('float32', () => {
+    it('should create a Float32 instance', () => {
+      const value = {};
+      const customValue = {};
+
+      fakeCodec.Float = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const float = Spanner.float32(value);
+      assert.strictEqual(float, customValue);
+    });
+  });
+
   describe('int', () => {
     it('should create an Int instance', () => {
       const value = {};

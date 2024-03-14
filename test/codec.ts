@@ -163,6 +163,23 @@ describe('codec', () => {
     });
   });
 
+  describe('Float32', () => {
+    it('should store the value', () => {
+      const value = 8;
+      const float = new codec.Float32(value);
+
+      assert.strictEqual(float.value, value);
+    });
+
+    it('should return as a float', () => {
+      const value = '8.2';
+      const float = new codec.Float32(value);
+
+      assert.strictEqual(float.valueOf(), Number(value));
+      assert.strictEqual(float + 2, Number(value) + 2);
+    });
+  });
+
   describe('Int', () => {
     it('should stringify the value', () => {
       const value = 8;
