@@ -731,7 +731,8 @@ require('yargs')
     'queryWithFloat32 <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a FLOAT32 datatype.",
     {},
-    opts => queryWithFloat32(opts.instanceName, opts.databaseName, opts.projectId)
+    opts =>
+      queryWithFloat32(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
     'queryWithInt <instanceName> <databaseName> <projectId>',
@@ -814,7 +815,9 @@ require('yargs')
   .example('node $0 queryWithBool "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithBytes "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithDate "my-instance" "my-database" "my-project-id"')
-  .example('node $0 queryWithFloat32 "my-instance" "my-database" "my-project-id"')
+  .example(
+    'node $0 queryWithFloat32 "my-instance" "my-database" "my-project-id"'
+  )
   .example('node $0 queryWithFloat "my-instance" "my-database" "my-project-id"')
   .example('node $0 queryWithInt "my-instance" "my-database" "my-project-id"')
   .example(
