@@ -500,15 +500,15 @@ describe('Spanner', () => {
       const value = {};
       const customValue = {};
 
-      fakeCodec.Float = class {
+      fakeCodec.Float32 = class {
         constructor(value_) {
           assert.strictEqual(value_, value);
           return customValue;
         }
       };
 
-      const float = Spanner.float32(value);
-      assert.strictEqual(float, customValue);
+      const float32 = Spanner.float32(value);
+      assert.strictEqual(float32, customValue);
     });
   });
 

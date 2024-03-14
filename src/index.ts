@@ -1681,7 +1681,7 @@ class Spanner extends GrpcService {
    * @example
    * ```
    * const {Spanner} = require('@google-cloud/spanner');
-   * const float = Spanner.float(10);
+   * const float = Spanner.float32(10);
    * ```
    */
   static float32(value): Float32 {
