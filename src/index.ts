@@ -1676,7 +1676,7 @@ class Spanner extends GrpcService {
    * Helper function to get a Cloud Spanner Float32 object.
    *
    * @param {string|number} value The float as a number or string.
-   * @returns {Float}
+   * @returns {Float32}
    *
    * @example
    * ```
