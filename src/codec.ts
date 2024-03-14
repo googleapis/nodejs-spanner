@@ -394,7 +394,7 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
       break;
     case spannerClient.spanner.v1.TypeCode.FLOAT32:
     case 'FLOAT32':
-      decoded = new Float(decoded);
+      decoded = new Float32(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
     case 'FLOAT64':

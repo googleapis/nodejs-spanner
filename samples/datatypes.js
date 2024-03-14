@@ -108,7 +108,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates1,
       LastContactDate: '2018-09-02',
       OutdoorVenue: false,
-      RatingScore: Spanner.float(0.90432),
+      RatingScore: Spanner.float32(0.90432),
       PopularityScore: Spanner.float(0.85543),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -120,7 +120,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates2,
       LastContactDate: '2019-01-15',
       OutdoorVenue: true,
-      RatingScore: Spanner.float(0.93081),
+      RatingScore: Spanner.float32(0.93081),
       PopularityScore: Spanner.float(0.98716),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -132,7 +132,7 @@ async function insertData(instanceId, databaseId, projectId) {
       AvailableDates: availableDates3,
       LastContactDate: '2018-10-01',
       OutdoorVenue: false,
-      RatingScore: Spanner.float(0.98738),
+      RatingScore: Spanner.float32(0.98738),
       PopularityScore: Spanner.float(0.72598),
       LastUpdateTime: 'spanner.commit_timestamp()',
     },
@@ -387,6 +387,7 @@ async function queryWithDate(instanceId, databaseId, projectId) {
   }
   // [END spanner_query_with_date_parameter]
 }
+
 async function queryWithFloat(instanceId, databaseId, projectId) {
   // [START spanner_query_with_float_parameter]
   // Imports the Google Cloud client library.
@@ -443,6 +444,64 @@ async function queryWithFloat(instanceId, databaseId, projectId) {
     database.close();
   }
   // [END spanner_query_with_float_parameter]
+}
+
+async function queryWithFloat32(instanceId, databaseId, projectId) {
+  // [START spanner_query_with_float32_parameter]
+  // Imports the Google Cloud client library.
+  const {Spanner} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database.
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  const fieldType = {
+    type: 'float32',
+  };
+
+  const exampleFloat = Spanner.float32(0.9);
+
+  const query = {
+    sql: `SELECT VenueId, VenueName, RatingScore FROM Venues
+            WHERE RatingScore > @ratingScore`,
+    params: {
+      ratingScore: exampleFloat,
+    },
+    types: {
+      ratingScore: fieldType,
+    },
+  };
+
+  // Queries rows from the Venues table.
+  try {
+    const [rows] = await database.run(query);
+
+    rows.forEach(row => {
+      const json = row.toJSON();
+      console.log(
+        `VenueId: ${json.VenueId}, VenueName: ${json.VenueName},` +
+          ` RatingScore: ${json.RatingScore}`
+      );
+    });
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_query_with_float32_parameter]
 }
 
 async function queryWithInt(instanceId, databaseId, projectId) {
@@ -663,16 +722,16 @@ require('yargs')
     opts => queryWithDate(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    'queryWithFloat32 <instanceName> <databaseName> <projectId>',
-    "Query data from the sample 'Venues' table with a FLOAT32 datatype.",
-    {},
-    opts => queryWithFloat32(opts.instanceName, opts.databaseName, opts.projectId)
-  )
-  .command(
     'queryWithFloat <instanceName> <databaseName> <projectId>',
     "Query data from the sample 'Venues' table with a FLOAT64 datatype.",
     {},
     opts => queryWithFloat(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'queryWithFloat32 <instanceName> <databaseName> <projectId>',
+    "Query data from the sample 'Venues' table with a FLOAT32 datatype.",
+    {},
+    opts => queryWithFloat32(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
     'queryWithInt <instanceName> <databaseName> <projectId>',
