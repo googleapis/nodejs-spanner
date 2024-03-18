@@ -544,6 +544,17 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it('should decode FLOAT32', () => {
+      const value = 'Infinity';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.FLOAT32,
+      });
+
+      assert(decoded instanceof codec.Float32);
+      assert.strictEqual(decoded.value, value);
+    });
+
     it('should decode FLOAT64', () => {
       const value = 'Infinity';
 
@@ -887,6 +898,14 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
+    it('should encode FLOAT32', () => {
+      const value = new codec.Float32(10);
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, 10);
+    });
+
     it('should encode FLOAT64', () => {
       const value = new codec.Float(10);
 
@@ -1125,6 +1144,9 @@ describe('codec', () => {
         },
         int64: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        },
+        float32: {
+          code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT32],
         },
         float64: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT64],
