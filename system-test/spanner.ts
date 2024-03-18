@@ -403,6 +403,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 IntArray        ARRAY<INT64>,
                 NumericArray    ARRAY< NUMERIC >,
@@ -431,6 +432,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -459,6 +461,7 @@ describe('Spanner', () => {
                   "BytesArray"      BYTEA[],
                   "BoolArray"       BOOL[],
                   "FloatArray"      DOUBLE PRECISION[],
+                  "Float32Array"    DOUBLE PRECISION[],
                   "IntArray"        BIGINT[],
                   "NumericArray"    NUMERIC[],
                   "StringArray"     VARCHAR[],
@@ -4860,6 +4863,235 @@ describe('Spanner', () => {
               },
             };
             oidQuery(done, PG_DATABASE, query, null);
+          });
+        });
+
+        describe('float32', () => {
+          const float32Query = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              assert.strictEqual(queriedValue, value);
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: 2.2,
+              },
+            };
+            float32Query(done, DATABASE, query, 2.2);
+          });
+
+          it('POSTGRESQL should bind the value', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 2.2,
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: 'float64',
+              },
+            };
+            float32Query(done, DATABASE, query, null);
+          });
+
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'float64',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+            const values = [null, 1.1, 2.3, 3.5, null];
+
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return is.number(val) ? {value: val} : val;
+              });
+
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+            const values = [];
+
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float64',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float64',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, null);
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind Infinity', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: Infinity,
+              },
+            };
+            float32Query(done, DATABASE, query, 'Infinity');
+          });
+
+          it('POSTGRESQL should bind Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Infinity,
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 'Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind -Infinity', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: -Infinity,
+              },
+            };
+            float32Query(done, DATABASE, query, '-Infinity');
+          });
+
+          it('POSTGRESQL should bind -Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: -Infinity,
+              },
+            };
+            float32Query(done, PG_DATABASE, query, '-Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind NaN', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: NaN,
+              },
+            };
+            float32Query(done, DATABASE, query, 'NaN');
+          });
+
+          it('POSTGRESQL should bind NaN', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: NaN,
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 'NaN');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', done => {
+            const values = [Infinity, -Infinity, NaN];
+
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return is.number(val) ? {value: val + ''} : val;
+              });
+
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
+              done();
+            });
           });
         });
 
