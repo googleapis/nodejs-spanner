@@ -4906,7 +4906,7 @@ describe('Spanner', () => {
                 v: null,
               },
               types: {
-                v: 'float64',
+                v: 'float32',
               },
             };
             float32Query(done, DATABASE, query, null);
@@ -4922,7 +4922,7 @@ describe('Spanner', () => {
                 p1: null,
               },
               types: {
-                p1: 'float64',
+                p1: 'float32',
               },
             };
             float32Query(done, PG_DATABASE, query, null);
@@ -4964,7 +4964,7 @@ describe('Spanner', () => {
               types: {
                 v: {
                   type: 'array',
-                  child: 'float64',
+                  child: 'float32',
                 },
               },
             };
@@ -4985,7 +4985,7 @@ describe('Spanner', () => {
               types: {
                 v: {
                   type: 'array',
-                  child: 'float64',
+                  child: 'float32',
                 },
               },
             };

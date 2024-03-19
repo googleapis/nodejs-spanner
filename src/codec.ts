@@ -587,6 +587,7 @@ interface FieldType extends Type {
 /**
  * @typedef {object} ParamType
  * @property {string} type The param type. Must be one of the following:
+ *     - float32
  *     - float64
  *     - int64
  *     - numeric

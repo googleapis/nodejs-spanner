@@ -171,7 +171,7 @@ describe('codec', () => {
       assert.strictEqual(float.value, value);
     });
 
-    it('should return as a float', () => {
+    it('should return as a float32', () => {
       const value = '8.2';
       const float = new codec.Float32(value);
 
