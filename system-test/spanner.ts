@@ -3738,6 +3738,7 @@ describe('Spanner', () => {
                 (
                   SingerId     STRING(1024) NOT NULL,
                   Name         STRING(1024),
+                  Float32      FLOAT32,
                   Float        FLOAT64,
                   Int          INT64,
                   Info         BYTES( MAX),
@@ -3757,6 +3758,7 @@ describe('Spanner', () => {
               (
                 "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
                 "Name"     VARCHAR(1024),
+                "Float32"  DOUBLE PRECISION,
                 "Float"    DOUBLE PRECISION,
                 "Int"      BIGINT,
                 "Info"     BYTEA,
