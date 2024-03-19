@@ -423,6 +423,7 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
+                Float32Value    FLOAT32,
                 FloatValue      FLOAT64,
                 JsonValue       JSON,
                 IntValue        INT64,
@@ -432,6 +433,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -450,6 +452,7 @@ describe('Spanner', () => {
                   "Key"             VARCHAR NOT NULL PRIMARY KEY,
                   "BytesValue"      BYTEA,
                   "BoolValue"       BOOL,
+                  "Float32Value"    DOUBLE PRECISION,
                   "FloatValue"      DOUBLE PRECISION,
                   "IntValue"        BIGINT,
                   "NumericValue"    NUMERIC,
@@ -459,6 +462,7 @@ describe('Spanner', () => {
                   "JsonbValue"      JSONB,
                   "BytesArray"      BYTEA[],
                   "BoolArray"       BOOL[],
+                  "Float32Array"    DOUBLE PRECISION[],
                   "FloatArray"      DOUBLE PRECISION[],
                   "IntArray"        BIGINT[],
                   "NumericArray"    NUMERIC[],
@@ -896,6 +900,154 @@ describe('Spanner', () => {
             queriedValue = rows[0][0].value.value;
           }
           assert.strictEqual(queriedValue, null);
+          done();
+        });
+      });
+    });
+
+    describe('float32s', () => {
+      const float32Insert = (done, dialect, value) => {
+        insert({Float32Value: value}, dialect, (err, row) => {
+          assert.ifError(err);
+          if (typeof value === 'object' && value !== null) {
+            value = value.value;
+          }
+          assert.deepStrictEqual(row.toJSON().Float32Value, value);
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write float32 values', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
+      });
+
+      it('POSTGRESQL should write float32 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, 8.2);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null float32 values', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null float32 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float32(8));
+      });
+
+      it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, Spanner.float32(8));
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle Infinity', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
+      });
+
+      it('POSTGRESQL should handle Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle -Infinity', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
+      });
+
+      it('POSTGRESQL should handle -Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, -Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
+      });
+
+      it('POSTGRESQL should handle NaN', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, NaN);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty float64 array values', done => {
+        insert({Float32Array: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, []);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write empty float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({Float32Array: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null float64 array values', done => {
+        insert(
+          {Float32Array: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({Float32Array: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write float64 array values', done => {
+        const values = [1.2, 2.3, 3.4];
+
+        insert(
+          {Float32Array: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().Float32Array, values);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write float64 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1.2, 2.3, 3.4];
+
+        insert({Float32Array: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, values);
           done();
         });
       });
