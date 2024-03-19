@@ -31,6 +31,7 @@ import {
   InstanceConfig,
   Session,
   protos,
+  Float32,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -4303,6 +4304,7 @@ describe('Spanner', () => {
     describe('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
+      const FLOAT32 = 8.1;
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
@@ -4315,6 +4317,7 @@ describe('Spanner', () => {
       const GOOGLE_SQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
+        Float32: FLOAT32,
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4328,6 +4331,7 @@ describe('Spanner', () => {
       const POSTGRESQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
+        Float32: FLOAT32,
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4470,14 +4474,15 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 10);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
-        assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
-        assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'DOB');
+        assert.strictEqual(metadata.rowType!.fields![8].name, 'Accents');
+        assert.strictEqual(metadata.rowType!.fields![9].name, 'PhoneNumbers');
+        assert.strictEqual(metadata.rowType!.fields![10].name, 'HasGear');
       });
 
       it('POSTGRESQL should return metadata', async function () {
@@ -4494,11 +4499,12 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 7);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'HasGear');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'HasGear');
       });
 
       const invalidQueries = (done, database) => {
