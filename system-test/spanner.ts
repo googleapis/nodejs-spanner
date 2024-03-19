@@ -31,7 +31,6 @@ import {
   InstanceConfig,
   Session,
   protos,
-  Float32,
 } from '../src';
 import {Key} from '../src/table';
 import {
