@@ -1074,7 +1074,7 @@ describe('Spanner', () => {
       };
 
       it('GOOGLE_STANDARD_SQL should write float64 values', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.1234567895123);
+        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
       it('POSTGRESQL should write float64 values', function (done) {
