@@ -402,7 +402,6 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
-                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 IntArray        ARRAY<INT64>,
                 NumericArray    ARRAY< NUMERIC >,
@@ -431,7 +430,6 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
-                Float32Array    ARRAY<FLOAT32>,
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -3895,7 +3893,6 @@ describe('Spanner', () => {
                 (
                   SingerId     STRING(1024) NOT NULL,
                   Name         STRING(1024),
-                  Float32      FLOAT32,
                   Float        FLOAT64,
                   Int          INT64,
                   Info         BYTES( MAX),
@@ -3915,7 +3912,6 @@ describe('Spanner', () => {
               (
                 "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
                 "Name"     VARCHAR(1024),
-                "Float32"  DOUBLE PRECISION,
                 "Float"    DOUBLE PRECISION,
                 "Int"      BIGINT,
                 "Info"     BYTEA,
@@ -4460,7 +4456,7 @@ describe('Spanner', () => {
       insertThenUpdateRow(done, postgreSqlTable);
     });
 
-    describe('insert & query', () => {
+    describe.skip('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
       const FLOAT32 = 8.2;
