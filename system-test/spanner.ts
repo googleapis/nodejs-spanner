@@ -211,12 +211,12 @@ describe('Spanner', () => {
          * Not to exceed quota
          * @see {@link https://cloud.google.com/spanner/quotas#administrative_limits}
          */
-        // const limit = pLimit(5);
-        // await Promise.all(
-        //   RESOURCES_TO_CLEAN.map(resource =>
-        //     limit(() => resource.delete(GAX_OPTIONS))
-        //   )
-        // );
+        const limit = pLimit(5);
+        await Promise.all(
+          RESOURCES_TO_CLEAN.map(resource =>
+            limit(() => resource.delete(GAX_OPTIONS))
+          )
+        );
       }
     } catch (err) {
       console.error('Cleanup failed:', err);

@@ -598,6 +598,7 @@ class Table {
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    
     this._mutate('insert', rows, options, callback!);
   }
   /**
@@ -1049,6 +1050,7 @@ class Table {
         callback(err);
         return;
       }
+      
       transaction![method](this.name, rows as Key[]);
       transaction!.commit(options, callback);
     });

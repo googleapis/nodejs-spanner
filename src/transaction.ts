@@ -1292,7 +1292,7 @@ export class Snapshot extends EventEmitter {
           typeMap[param] = codec.getType(value);
         }
         fields[param] = codec.encode(value);
-      }); 
+      });
 
       params.fields = fields;
     }
@@ -2370,6 +2370,7 @@ export class Transaction extends Dml {
           ].join('\n\n')
         );
       }
+      
       const values = columns.map(column => row[column]);
       return codec.convertToListValue(values);
     });

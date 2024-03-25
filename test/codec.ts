@@ -166,17 +166,17 @@ describe('codec', () => {
   describe('Float32', () => {
     it('should store the value', () => {
       const value = 8;
-      const float = new codec.Float32(value);
+      const float32 = new codec.Float32(value);
 
-      assert.strictEqual(float.value, value);
+      assert.strictEqual(float32.value, value);
     });
 
     it('should return as a float32', () => {
       const value = '8.2';
-      const float = new codec.Float32(value);
+      const float32 = new codec.Float32(value);
 
-      assert.strictEqual(float.valueOf(), Number(value));
-      assert.strictEqual(float + 2, Number(value) + 2);
+      assert.strictEqual(float32.valueOf(), Number(value));
+      assert.strictEqual(float32 + 2, Number(value) + 2);
     });
   });
 
@@ -989,6 +989,12 @@ describe('codec', () => {
       assert.deepStrictEqual(codec.getType(-Infinity), {type: 'float64'});
       assert.deepStrictEqual(codec.getType(2.2), {type: 'float64'});
       assert.deepStrictEqual(codec.getType(new codec.Float(1.1)), {
+        type: 'float64',
+      });
+    });
+
+    it('should determine if the value is a float32', () => {
+      assert.deepStrictEqual(codec.getType(new codec.Float32(1.1)), {
         type: 'float64',
       });
     });
