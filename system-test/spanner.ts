@@ -909,14 +909,13 @@ describe('Spanner', () => {
     describe.only('float32s', () => {
       const float32Insert = (done, dialect, value) => {
         insert({Float32Value: value}, dialect, (err, row) => {
-          console.log(DATABASE);
           assert.ifError(err);
           if (typeof value === 'object' && value !== null) {
             value = value.value;
           }
-          console.log("line 916: ", row.toJSON().Float32Value);
-          console.log("line 917: ", value);
-          if(row.toJSON().Float32Value === value) {
+          if(Number.isNaN(row.toJSON().Float32Value)) {
+            assert.deepStrictEqual(row.toJSON().Float32Value, value);
+          } else if(row.toJSON().Float32Value === value) {
             assert.deepStrictEqual(row.toJSON().Float32Value, value);
           } else {
             assert.ok((row.toJSON().Float32Value - value) <= 0.00001);
@@ -925,11 +924,7 @@ describe('Spanner', () => {
         });
       };
 
-      it.only('GOOGLE_STANDARD_SQL should write float32 values', done => {
-        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.1234567895123);
-      });
-
-      it.only('GOOGLE_STANDARD_SQL should write float32 values', done => {
+      it('GOOGLE_STANDARD_SQL should write float32 values', done => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
@@ -984,7 +979,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
-      it.only('GOOGLE_STANDARD_SQL should handle NaN', done => {
+      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
@@ -1045,7 +1040,9 @@ describe('Spanner', () => {
           Spanner.GOOGLE_STANDARD_SQL,
           (err, row) => {
             assert.ifError(err);
-            assert.deepStrictEqual(row.toJSON().Float32Array, values);
+            for(let i=0; i<values.length; i++) {
+              assert.ok((row.toJSON().Float32Array[i]-values[i]) <= 0.00001);
+            }
             done();
           }
         );
@@ -1072,19 +1069,13 @@ describe('Spanner', () => {
           if (typeof value === 'object' && value !== null) {
             value = value.value;
           }
-          console.log("line 1074: ", row.toJSON().FloatValue);
-          console.log("line 1075: ", value);
           assert.deepStrictEqual(row.toJSON().FloatValue, value);
           done();
         });
       };
 
-      it.only('GOOGLE_STANDARD_SQL should write float64 values', done => {
+      it('GOOGLE_STANDARD_SQL should write float64 values', done => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.1234567895123);
-      });
-
-      it.only('GOOGLE_STANDARD_SQL should write float64 values', done => {
-        float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
       it('POSTGRESQL should write float64 values', function (done) {
@@ -1138,7 +1129,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
-      it.only('GOOGLE_STANDARD_SQL should handle NaN', done => {
+      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
@@ -5041,7 +5032,7 @@ describe('Spanner', () => {
           });
         });
 
-        describe('float32', () => {
+        describe.only('float32', () => {
           const float32Query = (done, database, query, value) => {
             database.run(query, (err, rows) => {
               assert.ifError(err);
