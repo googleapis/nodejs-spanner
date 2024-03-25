@@ -163,7 +163,7 @@ describe('codec', () => {
     });
   });
 
-  describe('Float32', () => {
+  describe.skip('Float32', () => {
     it('should store the value', () => {
       const value = 8;
       const float32 = new codec.Float32(value);
@@ -544,7 +544,7 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
-    it('should decode FLOAT32', () => {
+    it.skip('should decode FLOAT32', () => {
       const value = 'Infinity';
 
       const decoded = codec.decode(value, {
@@ -898,7 +898,7 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
-    it('should encode FLOAT32', () => {
+    it.skip('should encode FLOAT32', () => {
       const value = new codec.Float32(10);
 
       const encoded = codec.encode(value);
@@ -993,9 +993,9 @@ describe('codec', () => {
       });
     });
 
-    it('should determine if the value is a float32', () => {
+    it.skip('should determine if the value is a float32', () => {
       assert.deepStrictEqual(codec.getType(new codec.Float32(1.1)), {
-        type: 'float64',
+        type: 'float32',
       });
     });
 

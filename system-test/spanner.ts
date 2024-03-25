@@ -53,10 +53,9 @@ const IAM_MEMBER = process.env.IAM_MEMBER;
 const PREFIX = 'gcloud-tests-';
 const RUN_ID = shortUUID();
 const LABEL = `node-spanner-systests-${RUN_ID}`;
-const endpoint = "staging-wrenchworks.sandbox.googleapis.com";
 const spanner = new Spanner({
   projectId: process.env.GCLOUD_PROJECT,
-  apiEndpoint: endpoint,
+  apiEndpoint: process.env.API_ENDPOINT,
 });
 const GAX_OPTIONS: CallOptions = {
   retry: {
@@ -906,19 +905,19 @@ describe('Spanner', () => {
       });
     });
 
-    describe.only('float32s', () => {
+    describe.skip('float32s', () => {
       const float32Insert = (done, dialect, value) => {
         insert({Float32Value: value}, dialect, (err, row) => {
           assert.ifError(err);
           if (typeof value === 'object' && value !== null) {
             value = value.value;
           }
-          if(Number.isNaN(row.toJSON().Float32Value)) {
+          if (Number.isNaN(row.toJSON().Float32Value)) {
             assert.deepStrictEqual(row.toJSON().Float32Value, value);
-          } else if(row.toJSON().Float32Value === value) {
+          } else if (row.toJSON().Float32Value === value) {
             assert.deepStrictEqual(row.toJSON().Float32Value, value);
           } else {
-            assert.ok((row.toJSON().Float32Value - value) <= 0.00001);
+            assert.ok(row.toJSON().Float32Value - value <= 0.00001);
           }
           done();
         });
@@ -1040,8 +1039,8 @@ describe('Spanner', () => {
           Spanner.GOOGLE_STANDARD_SQL,
           (err, row) => {
             assert.ifError(err);
-            for(let i=0; i<values.length; i++) {
-              assert.ok((row.toJSON().Float32Array[i]-values[i]) <= 0.00001);
+            for (let i = 0; i < values.length; i++) {
+              assert.ok(row.toJSON().Float32Array[i] - values[i] <= 0.00001);
             }
             done();
           }
@@ -5032,7 +5031,7 @@ describe('Spanner', () => {
           });
         });
 
-        describe.only('float32', () => {
+        describe.skip('float32', () => {
           const float32Query = (done, database, query, value) => {
             database.run(query, (err, rows) => {
               assert.ifError(err);

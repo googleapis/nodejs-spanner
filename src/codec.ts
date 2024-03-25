@@ -622,7 +622,7 @@ function getType(value: Value): Type {
   const isSpecialNumber =
     is.infinite(value) || (is.number(value) && isNaN(value));
 
-  if(value instanceof Float32) {
+  if (value instanceof Float32) {
     return {type: 'float32'};
   }
 

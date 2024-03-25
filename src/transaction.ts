@@ -2370,7 +2370,7 @@ export class Transaction extends Dml {
           ].join('\n\n')
         );
       }
-      
+
       const values = columns.map(column => row[column]);
       return codec.convertToListValue(values);
     });
