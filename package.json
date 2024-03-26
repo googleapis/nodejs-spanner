@@ -99,7 +99,7 @@
     "codecov": "^3.0.2",
     "concat-stream": "^2.0.0",
     "dedent": "^1.0.0",
-    "execa": "^5.0.0",
+    "execa": "^8.0.0",
     "gapic-tools": "^0.4.0",
     "gts": "^5.0.0",
     "jsdoc": "^4.0.0",
