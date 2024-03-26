@@ -31,6 +31,7 @@ import {
   InstanceConfig,
   Session,
   protos,
+  Float,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -379,7 +380,6 @@ describe('Spanner', () => {
             callback(err);
             return;
           }
-
           callback(null, rows.shift(), insertResp, readResp);
         });
       });
@@ -387,6 +387,7 @@ describe('Spanner', () => {
 
     before(async () => {
       if (IS_EMULATOR_ENABLED) {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -414,6 +415,7 @@ describe('Spanner', () => {
         );
         await googleSqlOperationUpdateDDL.promise();
       } else {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -442,6 +444,7 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
           `
                 CREATE TABLE ${TABLE_NAME}
@@ -895,6 +898,163 @@ describe('Spanner', () => {
             queriedValue = rows[0][0].value.value;
           }
           assert.strictEqual(queriedValue, null);
+          done();
+        });
+      });
+    });
+
+    // TODO: Enable when the float32 feature has been released.
+    describe.skip('float32s', () => {
+      const float32Insert = (done, dialect, value) => {
+        insert({Float32Value: value}, dialect, (err, row) => {
+          assert.ifError(err);
+          if (typeof value === 'object' && value !== null) {
+            value = value.value;
+          }
+          if (Number.isNaN(row.toJSON().Float32Value)) {
+            assert.deepStrictEqual(row.toJSON().Float32Value, value);
+          } else if (row.toJSON().Float32Value === value) {
+            assert.deepStrictEqual(row.toJSON().Float32Value, value);
+          } else {
+            assert.ok(row.toJSON().Float32Value - value <= 0.00001);
+          }
+          done();
+        });
+      };
+
+      it('GOOGLE_STANDARD_SQL should write float32 values', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
+      });
+
+      it('POSTGRESQL should write float32 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, 8.2);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null float32 values', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
+      });
+
+      it('POSTGRESQL should write null float32 values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, null);
+      });
+
+      it('GOOGLE_STANDARD_SQL should accept a Float object with an Int-like value', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float32(8));
+      });
+
+      it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, Spanner.float32(8));
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle Infinity', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
+      });
+
+      it('POSTGRESQL should handle Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle -Infinity', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
+      });
+
+      it('POSTGRESQL should handle -Infinity', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, -Infinity);
+      });
+
+      it('GOOGLE_STANDARD_SQL should handle NaN', done => {
+        float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
+      });
+
+      it('POSTGRESQL should handle NaN', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        float32Insert(done, Spanner.POSTGRESQL, NaN);
+      });
+
+      it('GOOGLE_STANDARD_SQL should write empty float32 array values', done => {
+        insert({Float32Array: []}, Spanner.GOOGLE_STANDARD_SQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, []);
+          done();
+        });
+      });
+
+      it('POSTGRESQL should write empty float32 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({Float32Array: []}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, []);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null float32 array values', done => {
+        insert(
+          {Float32Array: [null]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write null float32 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        insert({Float32Array: [null]}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
+          done();
+        });
+      });
+
+      it('GOOGLE_STANDARD_SQL should write float32 array values', done => {
+        const values = [1.2, 2.3, 3.4];
+
+        insert(
+          {Float32Array: values},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            for (let i = 0; i < values.length; i++) {
+              assert.ok(row.toJSON().Float32Array[i] - values[i] <= 0.00001);
+            }
+            done();
+          }
+        );
+      });
+
+      it('POSTGRESQL should write float32 array values', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const values = [1.2, 2.3, 3.4];
+
+        insert({Float32Array: values}, Spanner.POSTGRESQL, (err, row) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(row.toJSON().Float32Array, values);
           done();
         });
       });
@@ -3732,6 +3892,7 @@ describe('Spanner', () => {
     const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
     before(async () => {
+      // TODO: Add column Float32 FLOAT32 while using float32 feature.
       const googleSqlCreateTable = await googleSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
                 (
@@ -3751,6 +3912,7 @@ describe('Spanner', () => {
       await onPromiseOperationComplete(googleSqlCreateTable);
 
       if (!IS_EMULATOR_ENABLED) {
+        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
         const postgreSqlCreateTable = await postgreSqlTable.create(
           `CREATE TABLE ${TABLE_NAME}
               (
@@ -4303,6 +4465,7 @@ describe('Spanner', () => {
     describe('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
+      // const FLOAT32 = 8.2; // TODO: Uncomment while using float32 feature.
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
@@ -4315,6 +4478,7 @@ describe('Spanner', () => {
       const GOOGLE_SQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
+        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4328,6 +4492,7 @@ describe('Spanner', () => {
       const POSTGRESQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
+        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4470,6 +4635,8 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 10);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        // TODO: Uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
         assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
         assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
         assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
@@ -4494,6 +4661,8 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 7);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
+        // uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
         assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
         assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
         assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
@@ -4860,6 +5029,320 @@ describe('Spanner', () => {
               },
             };
             oidQuery(done, PG_DATABASE, query, null);
+          });
+        });
+
+        // TODO: Enable when the float32 feature has been released.
+        describe.skip('float32', () => {
+          const float32Query = (done, database, query, value) => {
+            database.run(query, (err, rows) => {
+              assert.ifError(err);
+              let queriedValue = rows[0][0].value;
+              if (rows[0][0].value) {
+                queriedValue = rows[0][0].value.value;
+              }
+              if (Number.isNaN(queriedValue)) {
+                assert.deepStrictEqual(queriedValue, value);
+              } else if (queriedValue === value) {
+                assert.deepStrictEqual(queriedValue, value);
+              } else {
+                assert.ok(queriedValue - value <= 0.00001);
+              }
+              done();
+            });
+          };
+
+          it('GOOGLE_STANDARD_SQL should bind the value when param type float32 is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: 2.2,
+              },
+              types: {
+                v: 'float32',
+              },
+            };
+            float32Query(done, DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value when spanner.float32 is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: Spanner.float32(2.2),
+              },
+            };
+            float32Query(done, DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value as float64 when param type is not specified', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: 2.2,
+              },
+            };
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value instanceof Float, true);
+              done();
+            });
+          });
+
+          it('POSTGRESQL should bind the value when param type float32 is used', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: 2.2,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 2.2);
+          });
+
+          it('POSTGRESQL should bind the value when Spanner.float32 is used', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Spanner.float32(2.2),
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should allow for null values', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: 'float32',
+              },
+            };
+            float32Query(done, DATABASE, query, null);
+          });
+
+          it('POSTGRESQL should allow for null values', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: null,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, null);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind arrays', done => {
+            const values = [null, 1.1, 2.3, 3.5, null];
+
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return is.number(val) ? Spanner.float32(val) : val;
+              });
+
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                if (rows[0][0].value[i] === null || expected[i] === null) {
+                  assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+                } else {
+                  assert.ok(
+                    rows[0][0].value[i] - expected[i]!['value'] <= 0.00001
+                  );
+                }
+              }
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind empty arrays', done => {
+            const values = [];
+
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, values);
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind null arrays', done => {
+            const query: ExecuteSqlRequest = {
+              sql: 'SELECT @v',
+              params: {
+                v: null,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.deepStrictEqual(rows![0][0].value, null);
+              done();
+            });
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind Infinity', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: Infinity,
+              },
+              types: {
+                v: 'float32',
+              },
+            };
+            float32Query(done, DATABASE, query, 'Infinity');
+          });
+
+          it('POSTGRESQL should bind Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Infinity,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 'Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind -Infinity', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: -Infinity,
+              },
+              types: {
+                v: 'float32',
+              },
+            };
+            float32Query(done, DATABASE, query, '-Infinity');
+          });
+
+          it('POSTGRESQL should bind -Infinity', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: -Infinity,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, '-Infinity');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind NaN', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: NaN,
+              },
+              types: {
+                v: 'float32',
+              },
+            };
+            float32Query(done, DATABASE, query, 'NaN');
+          });
+
+          it('POSTGRESQL should bind NaN', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: NaN,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 'NaN');
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind an array of Infinity and NaN', done => {
+            const values = [Infinity, -Infinity, NaN];
+
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
+              },
+            };
+
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+
+              const expected = values.map(val => {
+                return is.number(val) ? {value: val + ''} : val;
+              });
+
+              assert.strictEqual(
+                JSON.stringify(rows[0][0].value),
+                JSON.stringify(expected)
+              );
+              done();
+            });
           });
         });
 
