@@ -4,6 +4,16 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.6.0](https://github.com/googleapis/nodejs-spanner/compare/v7.5.0...v7.6.0) (2024-03-26)
+
+
+### Features
+
+* Add instance partition support to spanner instance proto ([#2001](https://github.com/googleapis/nodejs-spanner/issues/2001)) ([4381047](https://github.com/googleapis/nodejs-spanner/commit/43810478e81d3a234e7fa94af90fd49ca379dd98))
+* Managed Autoscaler ([#2015](https://github.com/googleapis/nodejs-spanner/issues/2015)) ([547ca1b](https://github.com/googleapis/nodejs-spanner/commit/547ca1b0da8c5c5e28f85fbd4ea16af21e20c980))
+* **spanner:** Add a sample for max commit delays ([#1993](https://github.com/googleapis/nodejs-spanner/issues/1993)) ([91c7204](https://github.com/googleapis/nodejs-spanner/commit/91c7204e2c8f62e229d7a2b2a0ff059d421dd984))
+* **spanner:** Add support for float32 ([#2020](https://github.com/googleapis/nodejs-spanner/issues/2020)) ([99e2c1d](https://github.com/googleapis/nodejs-spanner/commit/99e2c1d4791a5ca86fdccb3f600aa4592efe0a45))
+
 ## [7.5.0](https://github.com/googleapis/nodejs-spanner/compare/v7.4.0...v7.5.0) (2024-03-04)
 
 
