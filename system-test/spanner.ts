@@ -387,6 +387,7 @@ describe('Spanner', () => {
 
     before(async () => {
       if (IS_EMULATOR_ENABLED) {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -414,6 +415,7 @@ describe('Spanner', () => {
         );
         await googleSqlOperationUpdateDDL.promise();
       } else {
+        // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
           `
               CREATE TABLE ${TABLE_NAME}
@@ -442,6 +444,7 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
         const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
           `
                 CREATE TABLE ${TABLE_NAME}
@@ -3889,6 +3892,7 @@ describe('Spanner', () => {
     const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
     before(async () => {
+      // TODO: Add column Float32 FLOAT32 while using float32 feature.
       const googleSqlCreateTable = await googleSqlTable.create(
         `CREATE TABLE ${TABLE_NAME}
                 (
@@ -3908,6 +3912,7 @@ describe('Spanner', () => {
       await onPromiseOperationComplete(googleSqlCreateTable);
 
       if (!IS_EMULATOR_ENABLED) {
+        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
         const postgreSqlCreateTable = await postgreSqlTable.create(
           `CREATE TABLE ${TABLE_NAME}
               (
