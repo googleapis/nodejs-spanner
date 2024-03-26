@@ -31,7 +31,6 @@ import {
   InstanceConfig,
   Session,
   protos,
-  Float32,
   Float,
 } from '../src';
 import {Key} from '../src/table';
@@ -47,7 +46,6 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
-import { types } from 'protobufjs';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -5065,7 +5063,7 @@ describe('Spanner', () => {
               },
               types: {
                 v: 'float32',
-              }
+              },
             };
             float32Query(done, DATABASE, query, 2.2);
           });
@@ -5175,11 +5173,13 @@ describe('Spanner', () => {
                 return is.number(val) ? Spanner.float32(val) : val;
               });
 
-              for(let i=0;i<rows[0][0].value.length;i++) {
-                if(rows[0][0].value[i] === null || expected[i] === null) {
+              for (let i = 0; i < rows[0][0].value.length; i++) {
+                if (rows[0][0].value[i] === null || expected[i] === null) {
                   assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
                 } else {
-                  assert.ok((rows[0][0].value[i] - expected[i]!['value']) <= 0.00001);
+                  assert.ok(
+                    rows[0][0].value[i] - expected[i]!['value'] <= 0.00001
+                  );
                 }
               }
               done();
