@@ -395,7 +395,6 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
-                // Float32Value    FLOAT32, // TODO: Uncomment while using float32 feature.
                 FloatValue      FLOAT64,
                 IntValue        INT64,
                 NumericValue    NUMERIC,
@@ -404,7 +403,6 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
-                // Float32Array    ARRAY<FLOAT32>, // TODO: Uncomment while using float32 feature.
                 FloatArray      ARRAY<FLOAT64>,
                 IntArray        ARRAY<INT64>,
                 NumericArray    ARRAY< NUMERIC >,
@@ -424,7 +422,6 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
-                // Float32Value    FLOAT32, // TODO: Uncomment while using float32 feature.
                 FloatValue      FLOAT64,
                 JsonValue       JSON,
                 IntValue        INT64,
@@ -434,7 +431,6 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
-                // Float32Array    ARRAY<FLOAT32>, // TODO: Uncomment while using float32 feature.
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -453,7 +449,6 @@ describe('Spanner', () => {
                   "Key"             VARCHAR NOT NULL PRIMARY KEY,
                   "BytesValue"      BYTEA,
                   "BoolValue"       BOOL,
-                  // "Float32Value"    DOUBLE PRECISION, // TODO: Uncomment while using float32 feature.
                   "FloatValue"      DOUBLE PRECISION,
                   "IntValue"        BIGINT,
                   "NumericValue"    NUMERIC,
@@ -463,7 +458,6 @@ describe('Spanner', () => {
                   "JsonbValue"      JSONB,
                   "BytesArray"      BYTEA[],
                   "BoolArray"       BOOL[],
-                  // "Float32Array"    DOUBLE PRECISION[], // TODO: Uncomment while using float32 feature.
                   "FloatArray"      DOUBLE PRECISION[],
                   "IntArray"        BIGINT[],
                   "NumericArray"    NUMERIC[],
@@ -3900,7 +3894,6 @@ describe('Spanner', () => {
                 (
                   SingerId     STRING(1024) NOT NULL,
                   Name         STRING(1024),
-                  // Float32      FLOAT32, // TODO: Uncomment while using float32 feature.
                   Float        FLOAT64,
                   Int          INT64,
                   Info         BYTES( MAX),
@@ -3920,7 +3913,6 @@ describe('Spanner', () => {
               (
                 "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
                 "Name"     VARCHAR(1024),
-                // "Float32"  DOUBLE PRECISION, // TODO: Uncomment while using float32 feature.
                 "Float"    DOUBLE PRECISION,
                 "Int"      BIGINT,
                 "Info"     BYTEA,
