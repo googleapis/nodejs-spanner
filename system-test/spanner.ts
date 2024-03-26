@@ -31,6 +31,8 @@ import {
   InstanceConfig,
   Session,
   protos,
+  Float32,
+  Float,
 } from '../src';
 import {Key} from '../src/table';
 import {
@@ -45,6 +47,7 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+import { types } from 'protobufjs';
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -394,6 +397,7 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
+                // Float32Value    FLOAT32, // TODO: Uncomment while using float32 feature.
                 FloatValue      FLOAT64,
                 IntValue        INT64,
                 NumericValue    NUMERIC,
@@ -402,6 +406,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                // Float32Array    ARRAY<FLOAT32>, // TODO: Uncomment while using float32 feature.
                 FloatArray      ARRAY<FLOAT64>,
                 IntArray        ARRAY<INT64>,
                 NumericArray    ARRAY< NUMERIC >,
@@ -421,6 +426,7 @@ describe('Spanner', () => {
                 BytesValue      BYTES( MAX),
                 BoolValue       BOOL,
                 DateValue       DATE,
+                // Float32Value    FLOAT32, // TODO: Uncomment while using float32 feature.
                 FloatValue      FLOAT64,
                 JsonValue       JSON,
                 IntValue        INT64,
@@ -430,6 +436,7 @@ describe('Spanner', () => {
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
+                // Float32Array    ARRAY<FLOAT32>, // TODO: Uncomment while using float32 feature.
                 FloatArray      ARRAY<FLOAT64>,
                 JsonArray       ARRAY<JSON>,
                 IntArray        ARRAY<INT64>,
@@ -448,6 +455,7 @@ describe('Spanner', () => {
                   "Key"             VARCHAR NOT NULL PRIMARY KEY,
                   "BytesValue"      BYTEA,
                   "BoolValue"       BOOL,
+                  // "Float32Value"    DOUBLE PRECISION, // TODO: Uncomment while using float32 feature.
                   "FloatValue"      DOUBLE PRECISION,
                   "IntValue"        BIGINT,
                   "NumericValue"    NUMERIC,
@@ -457,7 +465,7 @@ describe('Spanner', () => {
                   "JsonbValue"      JSONB,
                   "BytesArray"      BYTEA[],
                   "BoolArray"       BOOL[],
-                  "Float32Array"    DOUBLE PRECISION[],
+                  // "Float32Array"    DOUBLE PRECISION[], // TODO: Uncomment while using float32 feature.
                   "FloatArray"      DOUBLE PRECISION[],
                   "IntArray"        BIGINT[],
                   "NumericArray"    NUMERIC[],
@@ -900,6 +908,7 @@ describe('Spanner', () => {
       });
     });
 
+    // TODO: Enable when the float32 feature has been released.
     describe.skip('float32s', () => {
       const float32Insert = (done, dialect, value) => {
         insert({Float32Value: value}, dialect, (err, row) => {
@@ -3893,6 +3902,7 @@ describe('Spanner', () => {
                 (
                   SingerId     STRING(1024) NOT NULL,
                   Name         STRING(1024),
+                  // Float32      FLOAT32, // TODO: Uncomment while using float32 feature.
                   Float        FLOAT64,
                   Int          INT64,
                   Info         BYTES( MAX),
@@ -3912,6 +3922,7 @@ describe('Spanner', () => {
               (
                 "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
                 "Name"     VARCHAR(1024),
+                // "Float32"  DOUBLE PRECISION, // TODO: Uncomment while using float32 feature.
                 "Float"    DOUBLE PRECISION,
                 "Int"      BIGINT,
                 "Info"     BYTEA,
@@ -4456,10 +4467,10 @@ describe('Spanner', () => {
       insertThenUpdateRow(done, postgreSqlTable);
     });
 
-    describe.skip('insert & query', () => {
+    describe('insert & query', () => {
       const ID = generateName('id');
       const NAME = generateName('name');
-      const FLOAT32 = 8.2;
+      // const FLOAT32 = 8.2; // TODO: Uncomment while using float32 feature.
       const FLOAT = 8.2;
       const INT = 2;
       const INFO = Buffer.from(generateName('info'));
@@ -4472,7 +4483,7 @@ describe('Spanner', () => {
       const GOOGLE_SQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
-        Float32: FLOAT32,
+        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4486,7 +4497,7 @@ describe('Spanner', () => {
       const POSTGRESQL_INSERT_ROW = {
         SingerId: ID,
         Name: NAME,
-        Float32: FLOAT32,
+        // Float32: FLOAT32, // TODO: Uncomment while using float32 feature.
         Float: FLOAT,
         Int: INT,
         Info: INFO,
@@ -4629,15 +4640,16 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 10);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'DOB');
-        assert.strictEqual(metadata.rowType!.fields![8].name, 'Accents');
-        assert.strictEqual(metadata.rowType!.fields![9].name, 'PhoneNumbers');
-        assert.strictEqual(metadata.rowType!.fields![10].name, 'HasGear');
+        // TODO: Uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'DOB');
+        assert.strictEqual(metadata.rowType!.fields![7].name, 'Accents');
+        assert.strictEqual(metadata.rowType!.fields![8].name, 'PhoneNumbers');
+        assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
       });
 
       it('POSTGRESQL should return metadata', async function () {
@@ -4654,12 +4666,13 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields!.length, 7);
         assert.strictEqual(metadata.rowType!.fields![0].name, 'SingerId');
         assert.strictEqual(metadata.rowType!.fields![1].name, 'Name');
-        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
-        assert.strictEqual(metadata.rowType!.fields![3].name, 'Float');
-        assert.strictEqual(metadata.rowType!.fields![4].name, 'Int');
-        assert.strictEqual(metadata.rowType!.fields![5].name, 'Info');
-        assert.strictEqual(metadata.rowType!.fields![6].name, 'Created');
-        assert.strictEqual(metadata.rowType!.fields![7].name, 'HasGear');
+        // uncomment while using float32 feature and increase the index by 1 for all the asserts below this.
+        // assert.strictEqual(metadata.rowType!.fields![2].name, 'Float32');
+        assert.strictEqual(metadata.rowType!.fields![2].name, 'Float');
+        assert.strictEqual(metadata.rowType!.fields![3].name, 'Int');
+        assert.strictEqual(metadata.rowType!.fields![4].name, 'Info');
+        assert.strictEqual(metadata.rowType!.fields![5].name, 'Created');
+        assert.strictEqual(metadata.rowType!.fields![6].name, 'HasGear');
       });
 
       const invalidQueries = (done, database) => {
@@ -5024,6 +5037,7 @@ describe('Spanner', () => {
           });
         });
 
+        // TODO: Enable when the float32 feature has been released.
         describe.skip('float32', () => {
           const float32Query = (done, database, query, value) => {
             database.run(query, (err, rows) => {
@@ -5032,22 +5046,55 @@ describe('Spanner', () => {
               if (rows[0][0].value) {
                 queriedValue = rows[0][0].value.value;
               }
-              assert.strictEqual(queriedValue, value);
+              if (Number.isNaN(queriedValue)) {
+                assert.deepStrictEqual(queriedValue, value);
+              } else if (queriedValue === value) {
+                assert.deepStrictEqual(queriedValue, value);
+              } else {
+                assert.ok(queriedValue - value <= 0.00001);
+              }
               done();
             });
           };
 
-          it('GOOGLE_STANDARD_SQL should bind the value', done => {
+          it('GOOGLE_STANDARD_SQL should bind the value when param type float32 is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: 2.2,
+              },
+              types: {
+                v: 'float32',
+              }
+            };
+            float32Query(done, DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value when spanner.float32 is used', done => {
+            const query = {
+              sql: 'SELECT @v',
+              params: {
+                v: Spanner.float32(2.2),
+              },
+            };
+            float32Query(done, DATABASE, query, 2.2);
+          });
+
+          it('GOOGLE_STANDARD_SQL should bind the value as float64 when param type is not specified', done => {
             const query = {
               sql: 'SELECT @v',
               params: {
                 v: 2.2,
               },
             };
-            float32Query(done, DATABASE, query, 2.2);
+            DATABASE.run(query, (err, rows) => {
+              assert.ifError(err);
+              assert.strictEqual(rows[0][0].value instanceof Float, true);
+              done();
+            });
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value when param type float32 is used', function (done) {
             if (IS_EMULATOR_ENABLED) {
               this.skip();
             }
@@ -5055,6 +5102,22 @@ describe('Spanner', () => {
               sql: 'SELECT $1',
               params: {
                 p1: 2.2,
+              },
+              types: {
+                p1: 'float32',
+              },
+            };
+            float32Query(done, PG_DATABASE, query, 2.2);
+          });
+
+          it('POSTGRESQL should bind the value when Spanner.float32 is used', function (done) {
+            if (IS_EMULATOR_ENABLED) {
+              this.skip();
+            }
+            const query = {
+              sql: 'SELECT $1',
+              params: {
+                p1: Spanner.float32(2.2),
               },
             };
             float32Query(done, PG_DATABASE, query, 2.2);
@@ -5097,19 +5160,28 @@ describe('Spanner', () => {
               params: {
                 v: values,
               },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
+              },
             };
 
             DATABASE.run(query, (err, rows) => {
               assert.ifError(err);
 
               const expected = values.map(val => {
-                return is.number(val) ? {value: val} : val;
+                return is.number(val) ? Spanner.float32(val) : val;
               });
 
-              assert.strictEqual(
-                JSON.stringify(rows[0][0].value),
-                JSON.stringify(expected)
-              );
+              for(let i=0;i<rows[0][0].value.length;i++) {
+                if(rows[0][0].value[i] === null || expected[i] === null) {
+                  assert.deepStrictEqual(rows[0][0].value[i], expected[i]);
+                } else {
+                  assert.ok((rows[0][0].value[i] - expected[i]!['value']) <= 0.00001);
+                }
+              }
               done();
             });
           });
@@ -5164,6 +5236,9 @@ describe('Spanner', () => {
               params: {
                 v: Infinity,
               },
+              types: {
+                v: 'float32',
+              },
             };
             float32Query(done, DATABASE, query, 'Infinity');
           });
@@ -5177,6 +5252,9 @@ describe('Spanner', () => {
               params: {
                 p1: Infinity,
               },
+              types: {
+                p1: 'float32',
+              },
             };
             float32Query(done, PG_DATABASE, query, 'Infinity');
           });
@@ -5186,6 +5264,9 @@ describe('Spanner', () => {
               sql: 'SELECT @v',
               params: {
                 v: -Infinity,
+              },
+              types: {
+                v: 'float32',
               },
             };
             float32Query(done, DATABASE, query, '-Infinity');
@@ -5200,6 +5281,9 @@ describe('Spanner', () => {
               params: {
                 p1: -Infinity,
               },
+              types: {
+                p1: 'float32',
+              },
             };
             float32Query(done, PG_DATABASE, query, '-Infinity');
           });
@@ -5209,6 +5293,9 @@ describe('Spanner', () => {
               sql: 'SELECT @v',
               params: {
                 v: NaN,
+              },
+              types: {
+                v: 'float32',
               },
             };
             float32Query(done, DATABASE, query, 'NaN');
@@ -5223,6 +5310,9 @@ describe('Spanner', () => {
               params: {
                 p1: NaN,
               },
+              types: {
+                p1: 'float32',
+              },
             };
             float32Query(done, PG_DATABASE, query, 'NaN');
           });
@@ -5234,6 +5324,12 @@ describe('Spanner', () => {
               sql: 'SELECT @v',
               params: {
                 v: values,
+              },
+              types: {
+                v: {
+                  type: 'array',
+                  child: 'float32',
+                },
               },
             };
 
