@@ -1,7 +1,7 @@
 {
   "name": "@google-cloud/spanner",
   "description": "Cloud Spanner Client Library for Node.js",
-  "version": "7.5.0",
+  "version": "7.6.0",
   "license": "Apache-2.0",
   "author": "Google Inc.",
   "engines": {
@@ -30,6 +30,7 @@
     "docs": "jsdoc -c .jsdoc.js",
     "predocs": "npm run compile",
     "lint": "gts check",
+    "samples-test-with-archived": "cd samples/ && npm link ../ && npm test-with-archived && cd ../",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "system-test": "mocha build/system-test --timeout 1600000",
     "cleanup": "mocha scripts/cleanup.js --timeout 30000",

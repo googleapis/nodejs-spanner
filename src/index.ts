@@ -26,6 +26,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {
   codec,
+  Float32,
   Float,
   Int,
   Numeric,
@@ -1672,6 +1673,22 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner Float32 object.
+   *
+   * @param {string|number} value The float as a number or string.
+   * @returns {Float32}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const float = Spanner.float32(10);
+   * ```
+   */
+  static float32(value): Float32 {
+    return new codec.Float32(value);
+  }
+
+  /**
    * Helper function to get a Cloud Spanner Float64 object.
    *
    * @param {string|number} value The float as a number or string.
@@ -1786,6 +1803,7 @@ class Spanner extends GrpcService {
 promisifyAll(Spanner, {
   exclude: [
     'date',
+    'float32',
     'float',
     'instance',
     'instanceConfig',
@@ -1946,4 +1964,4 @@ import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};
-export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

@@ -119,6 +119,21 @@ abstract class WrappedNumber {
 }
 
 /**
+ * @typedef Float32
+ * @see Spanner.float32
+ */
+export class Float32 extends WrappedNumber {
+  value: number;
+  constructor(value: number) {
+    super();
+    this.value = value;
+  }
+  valueOf(): number {
+    return Number(this.value);
+  }
+}
+
+/**
  * @typedef Float
  * @see Spanner.float
  */
@@ -377,6 +392,10 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'BYTES':
       decoded = Buffer.from(decoded, 'base64');
       break;
+    case spannerClient.spanner.v1.TypeCode.FLOAT32:
+    case 'FLOAT32':
+      decoded = new Float32(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
     case 'FLOAT64':
       decoded = new Float(decoded);
@@ -531,6 +550,7 @@ const TypeCode: {
   bool: 'BOOL',
   int64: 'INT64',
   pgOid: 'INT64',
+  float32: 'FLOAT32',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
   pgNumeric: 'NUMERIC',
@@ -567,6 +587,7 @@ interface FieldType extends Type {
 /**
  * @typedef {object} ParamType
  * @property {string} type The param type. Must be one of the following:
+ *     - float32
  *     - float64
  *     - int64
  *     - numeric
@@ -600,6 +621,10 @@ interface FieldType extends Type {
 function getType(value: Value): Type {
   const isSpecialNumber =
     is.infinite(value) || (is.number(value) && isNaN(value));
+
+  if (value instanceof Float32) {
+    return {type: 'float32'};
+  }
 
   if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
     return {type: 'float64'};
@@ -780,6 +805,7 @@ export const codec = {
   convertProtoTimestampToDate,
   createTypeObject,
   SpannerDate,
+  Float32,
   Float,
   Int,
   Numeric,
