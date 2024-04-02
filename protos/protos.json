@@ -1119,8 +1119,20 @@
                   1001
                 ],
                 [
+                  1002,
+                  1002
+                ],
+                [
+                  9990,
+                  9990
+                ],
+                [
                   9995,
                   9999
+                ],
+                [
+                  10000,
+                  10000
                 ]
               ],
               "reserved": [
@@ -4633,6 +4645,10 @@
                           "type": "string",
                           "id": 1
                         },
+                        "spannerOptions": {
+                          "type": "SpannerOptions",
+                          "id": 2
+                        },
                         "start": {
                           "type": "StartTransactionAction",
                           "id": 10
@@ -5253,7 +5269,7 @@
                             "listCloudBackupOperations",
                             "getOperation",
                             "cancelOperation",
-                            "reconfigureCloudDatabase"
+                            "changeQuorumCloudDatabase"
                           ]
                         }
                       },
@@ -5366,8 +5382,8 @@
                           "type": "CancelOperationAction",
                           "id": 26
                         },
-                        "reconfigureCloudDatabase": {
-                          "type": "ReconfigureCloudDatabaseAction",
+                        "changeQuorumCloudDatabase": {
+                          "type": "ChangeQuorumCloudDatabaseAction",
                           "id": 28
                         }
                       }
@@ -5746,7 +5762,7 @@
                         }
                       }
                     },
-                    "ReconfigureCloudDatabaseAction": {
+                    "ChangeQuorumCloudDatabaseAction": {
                       "oneofs": {
                         "_databaseUri": {
                           "oneof": [
@@ -5892,6 +5908,10 @@
                         "databaseId": {
                           "type": "string",
                           "id": 5
+                        },
+                        "encryptionConfig": {
+                          "type": "google.spanner.admin.database.v1.EncryptionConfig",
+                          "id": 7
                         }
                       }
                     },
@@ -5949,6 +5969,10 @@
                           "options": {
                             "proto3_optional": true
                           }
+                        },
+                        "encryptionConfig": {
+                          "type": "google.spanner.admin.database.v1.EncryptionConfig",
+                          "id": 7
                         }
                       }
                     },
@@ -6771,6 +6795,22 @@
                       "fields": {
                         "heartbeatTime": {
                           "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "SpannerOptions": {
+                      "fields": {
+                        "sessionPoolOptions": {
+                          "type": "SessionPoolOptions",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "SessionPoolOptions": {
+                      "fields": {
+                        "useMultiplexed": {
+                          "type": "bool",
                           "id": 1
                         }
                       }
@@ -8367,7 +8407,10 @@
               "rule": "repeated",
               "type": "google.api.FieldBehavior",
               "id": 1052,
-              "extend": "google.protobuf.FieldOptions"
+              "extend": "google.protobuf.FieldOptions",
+              "options": {
+                "packed": false
+              }
             },
             "FieldBehavior": {
               "values": {
@@ -8562,6 +8605,11 @@
               "id": 1050,
               "extend": "google.protobuf.ServiceOptions"
             },
+            "apiVersion": {
+              "type": "string",
+              "id": 525000001,
+              "extend": "google.protobuf.ServiceOptions"
+            },
             "CommonLanguageSettings": {
               "fields": {
                 "referenceDocsUri": {
@@ -8670,6 +8718,10 @@
                 "protoReferenceDocumentationUri": {
                   "type": "string",
                   "id": 110
+                },
+                "restReferenceDocumentationUri": {
+                  "type": "string",
+                  "id": 111
                 }
               }
             },
