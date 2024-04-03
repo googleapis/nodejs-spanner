@@ -11807,6 +11807,13 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** FulfillmentPeriod enum. */
+                    enum FulfillmentPeriod {
+                        FULFILLMENT_PERIOD_UNSPECIFIED = 0,
+                        FULFILLMENT_PERIOD_NORMAL = 1,
+                        FULFILLMENT_PERIOD_EXTENDED = 2
+                    }
+
                     /** Represents an InstanceAdmin */
                     class InstanceAdmin extends $protobuf.rpc.Service {
 
@@ -14558,6 +14565,9 @@ export namespace google {
 
                         /** CreateInstanceMetadata endTime */
                         endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata expectedFulfillmentPeriod */
+                        expectedFulfillmentPeriod?: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod|null);
                     }
 
                     /** Represents a CreateInstanceMetadata. */
@@ -14580,6 +14590,9 @@ export namespace google {
 
                         /** CreateInstanceMetadata endTime. */
                         public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata expectedFulfillmentPeriod. */
+                        public expectedFulfillmentPeriod: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod);
 
                         /**
                          * Creates a new CreateInstanceMetadata instance using the specified properties.
@@ -14673,6 +14686,9 @@ export namespace google {
 
                         /** UpdateInstanceMetadata endTime */
                         endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata expectedFulfillmentPeriod */
+                        expectedFulfillmentPeriod?: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod|null);
                     }
 
                     /** Represents an UpdateInstanceMetadata. */
@@ -14695,6 +14711,9 @@ export namespace google {
 
                         /** UpdateInstanceMetadata endTime. */
                         public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata expectedFulfillmentPeriod. */
+                        public expectedFulfillmentPeriod: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod);
 
                         /**
                          * Creates a new UpdateInstanceMetadata instance using the specified properties.
