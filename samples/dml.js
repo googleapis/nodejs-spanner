@@ -68,7 +68,7 @@ function insertUsingDml(instanceId, databaseId, projectId) {
 }
 
 async function insertUsingGetTransaction(instanceId, databaseId, projectId) {
-  // [START spanner_dml_standard_insert]
+  // [START spanner_dml_standard_insert_using_getTransaction]
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -117,7 +117,7 @@ async function insertUsingGetTransaction(instanceId, databaseId, projectId) {
       database.close();
     }
   });
-  // [END spanner_dml_standard_insert]
+  // [END spanner_dml_standard_insert_using_getTransaction]
 }
 
 function updateUsingDml(instanceId, databaseId, projectId) {

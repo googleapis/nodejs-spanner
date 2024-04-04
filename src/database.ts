@@ -2002,8 +2002,12 @@ class Database extends common.GrpcServiceObject {
   ): void;
   getTransaction(
     optionsOrRunFn: GetTransactionOptions | GetTransactionCallback,
-    callback?: GetTransactionCallback
+    fn?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    const callback =
+      typeof optionsOrRunFn === 'function'
+        ? (optionsOrRunFn as RunTransactionCallback)
+        : fn;
     const options =
       typeof optionsOrRunFn === 'object' && optionsOrRunFn
         ? (optionsOrRunFn as RunTransactionOptions)
