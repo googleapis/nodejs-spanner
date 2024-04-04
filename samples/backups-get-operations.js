@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@ async function getBackupOperations(
   projectId
 ) {
   // [START spanner_list_backup_operations]
+
   // Imports the Google Cloud client library
   const {Spanner, protos} = require('@google-cloud/spanner');
 
@@ -38,12 +39,13 @@ async function getBackupOperations(
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance
-  const instance = spanner.instance(instanceId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List create backup operations
   try {
-    const [backupOperations] = await instance.getBackupOperations({
+    const [backupOperations] = await databaseAdminClient.listBackupOperations({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
       filter:
         '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) ' +
         `AND (metadata.database:${databaseId})`,
@@ -69,7 +71,8 @@ async function getBackupOperations(
       '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
         `AND (metadata.source_backup:${backupId})`
     );
-    const [backupOperations] = await instance.getBackupOperations({
+    const [backupOperations] = await databaseAdminClient.listBackupOperations({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
       filter:
         '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
         `AND (metadata.source_backup:${backupId})`,

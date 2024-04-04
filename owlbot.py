@@ -53,6 +53,12 @@ if staging.is_dir():
         _tracked_paths.add(library)
         s.copy([library], excludes=excludes)
 
+    # Copy the spanner/executor library.
+    for version in ['v1']:
+        library = staging / 'executor' / version
+        _tracked_paths.add(library)
+        s.copy([library], excludes=excludes)
+
     # The staging directory should never be merged into the main branch.
     shutil.rmtree(staging)
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@ async function restoreBackupWithEncryptionKey(
   keyName
 ) {
   // [START spanner_restore_backup_with_encryption_key]
+
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -41,35 +42,39 @@ async function restoreBackupWithEncryptionKey(
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Restore the database
   console.log(
-    `Restoring database ${database.formattedName_} from backup ${backupId}.`
+    `Restoring database ${databaseAdminClient.databasePath(
+      projectId,
+      instanceId,
+      databaseId
+    )} from backup ${backupId}.`
   );
-  const [, restoreOperation] = await database.restore(
-    `projects/${projectId}/instances/${instanceId}/backups/${backupId}`,
-    {
-      encryptionConfig: {
-        encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
-        kmsKeyName: keyName,
-      },
-    }
-  );
+  const [restoreOperation] = await databaseAdminClient.restoreDatabase({
+    parent: databaseAdminClient.instancePath(projectId, instanceId),
+    databaseId: databaseId,
+    backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+    encryptionConfig: {
+      encryptionType: 'CUSTOMER_MANAGED_ENCRYPTION',
+      kmsKeyName: keyName,
+    },
+  });
 
   // Wait for restore to complete
   console.log('Waiting for database restore to complete...');
   await restoreOperation.promise();
 
   console.log('Database restored from backup.');
-  const restoreInfo = await database.getRestoreInfo();
-  const [data] = await database.get();
+  const [metadata] = await databaseAdminClient.getDatabase({
+    name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+  });
   console.log(
-    `Database ${restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${restoreInfo.backupInfo.backup} ` +
-      `using encryption key ${data.metadata.encryptionConfig.kmsKeyName}.`
+    `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
+      `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
+      `using encryption key ${metadata.encryptionConfig.kmsKeyName}.`
   );
   // [END spanner_restore_backup_with_encryption_key]
 }

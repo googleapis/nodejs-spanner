@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,38 +15,51 @@
 
 'use strict';
 
+// creates an instance using Instance Admin Client
 async function createInstance(instanceId, projectId) {
   // [START spanner_create_instance]
+
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
 
   // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  const instance = spanner.instance(instanceId);
+  const instanceAdminClient = await spanner.getInstanceAdminClient();
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   **/
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
 
   // Creates a new instance
   try {
-    console.log(`Creating instance ${instance.formattedName_}.`);
-    const [, operation] = await instance.create({
-      config: 'regional-us-west1',
-      nodes: 1,
-      displayName: 'This is a display name.',
-      labels: {
-        ['cloud_spanner_samples']: 'true',
-        created: Math.round(Date.now() / 1000).toString(), // current time
+    console.log(
+      `Creating instance ${instanceAdminClient.instancePath(
+        projectId,
+        instanceId
+      )}.`
+    );
+    const [operation] = await instanceAdminClient.createInstance({
+      instanceId: instanceId,
+      parent: instanceAdminClient.projectPath(projectId),
+      instance: {
+        config: instanceAdminClient.instanceConfigPath(
+          projectId,
+          'regional-us-central1'
+        ),
+        nodeCount: 1,
+        displayName: 'Display name for the instance.',
+        labels: {
+          cloud_spanner_samples: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
       },
     });
 
-    console.log(`Waiting for operation on ${instance.id} to complete...`);
+    console.log(`Waiting for operation on ${instanceId} to complete...`);
     await operation.promise();
 
     console.log(`Created instance ${instanceId}.`);
@@ -64,7 +77,7 @@ require('yargs')
   .demand(1)
   .command(
     'createInstance <instanceName> <projectId>',
-    'Creates an example instance in a Cloud Spanner instance.',
+    'Creates an example instance in a Cloud Spanner instance using Instance Admin Client.',
     {},
     opts => createInstance(opts.instanceName, opts.projectId)
   )

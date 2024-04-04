@@ -2,8 +2,6 @@
 **/node_modules
 /.coverage
 /coverage
-/.idea
-/.vscode
 /.nyc_output
 /docs/
 /out/

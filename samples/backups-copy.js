@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,15 +37,15 @@ function main(
   const {Spanner} = require('@google-cloud/spanner');
   const {PreciseDate} = require('@google-cloud/precise-date');
 
-  // Instantiates a client
+  // Creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  async function spannerCopyBackup() {
-    // Gets a reference to a Cloud Spanner instance and backup
-    const instance = spanner.instance(instanceId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  async function spannerCopyBackup() {
     // Expire copy backup 14 days in the future
     const expireTime = Spanner.timestamp(
       Date.now() + 1000 * 60 * 60 * 24 * 14
@@ -54,31 +54,34 @@ function main(
     // Copy the source backup
     try {
       console.log(`Creating copy of the source backup ${sourceBackupPath}.`);
-      const [, operation] = await instance.copyBackup(
-        sourceBackupPath,
-        backupId,
-        {
-          expireTime: expireTime,
-        }
-      );
+      const [operation] = await databaseAdminClient.copyBackup({
+        parent: databaseAdminClient.instancePath(projectId, instanceId),
+        sourceBackup: sourceBackupPath,
+        backupId: backupId,
+        expireTime: expireTime,
+      });
 
       console.log(
-        `Waiting for backup copy ${
-          instance.backup(backupId).formattedName_
-        } to complete...`
+        `Waiting for backup copy ${databaseAdminClient.backupPath(
+          projectId,
+          instanceId,
+          backupId
+        )} to complete...`
       );
       await operation.promise();
 
       // Verify the copy backup is ready
-      const copyBackup = instance.backup(backupId);
-      const [copyBackupInfo] = await copyBackup.getMetadata();
-      if (copyBackupInfo.state === 'READY') {
+      const [copyBackup] = await databaseAdminClient.getBackup({
+        name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      });
+
+      if (copyBackup.state === 'READY') {
         console.log(
-          `Backup copy ${copyBackupInfo.name} of size ` +
-            `${copyBackupInfo.sizeBytes} bytes was created at ` +
-            `${new PreciseDate(copyBackupInfo.createTime).toISOString()} ` +
+          `Backup copy ${copyBackup.name} of size ` +
+            `${copyBackup.sizeBytes} bytes was created at ` +
+            `${new PreciseDate(copyBackup.createTime).toISOString()} ` +
             'with version time ' +
-            `${new PreciseDate(copyBackupInfo.versionTime).toISOString()}`
+            `${new PreciseDate(copyBackup.versionTime).toISOString()}`
         );
       } else {
         console.error('ERROR: Copy of backup is not ready.');

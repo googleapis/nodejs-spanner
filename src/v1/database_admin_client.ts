@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import type {
 import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/database_admin_client_config.json`.
@@ -58,6 +59,8 @@ export class DatabaseAdminClient {
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
+  private _universeDomain: string;
+  private _servicePath: string;
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -116,8 +119,27 @@ export class DatabaseAdminClient {
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof DatabaseAdminClient;
+    if (
+      opts?.universe_domain &&
+      opts?.universeDomain &&
+      opts?.universe_domain !== opts?.universeDomain
+    ) {
+      throw new Error(
+        'Please set either universe_domain or universeDomain, but not both.'
+      );
+    }
+    const universeDomainEnvVar =
+      typeof process === 'object' && typeof process.env === 'object'
+        ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
+        : undefined;
+    this._universeDomain =
+      opts?.universeDomain ??
+      opts?.universe_domain ??
+      universeDomainEnvVar ??
+      'googleapis.com';
+    this._servicePath = 'spanner.' + this._universeDomain;
     const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+      opts?.servicePath || opts?.apiEndpoint || this._servicePath;
     this._providedCustomServicePath = !!(
       opts?.servicePath || opts?.apiEndpoint
     );
@@ -132,7 +154,7 @@ export class DatabaseAdminClient {
     opts.numericEnums = true;
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
-    if (servicePath !== staticMembers.servicePath && !('scopes' in opts)) {
+    if (servicePath !== this._servicePath && !('scopes' in opts)) {
       opts['scopes'] = staticMembers.scopes;
     }
 
@@ -157,16 +179,16 @@ export class DatabaseAdminClient {
     this.auth.useJWTAccessWithScope = true;
 
     // Set defaultServicePath on the auth object.
-    this.auth.defaultServicePath = staticMembers.servicePath;
+    this.auth.defaultServicePath = this._servicePath;
 
     // Set the default scopes in auth client if needed.
-    if (servicePath === staticMembers.servicePath) {
+    if (servicePath === this._servicePath) {
       this.auth.defaultScopes = staticMembers.scopes;
     }
 
     // Determine the client header string.
     const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
-    if (typeof process !== 'undefined' && 'versions' in process) {
+    if (typeof process === 'object' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
       clientHeader.push(`gl-web/${this._gaxModule.version}`);
@@ -468,19 +490,50 @@ export class DatabaseAdminClient {
 
   /**
    * The DNS address for this API service.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static servicePath is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'spanner.googleapis.com';
   }
 
   /**
-   * The DNS address for this API service - same as servicePath(),
-   * exists for compatibility reasons.
+   * The DNS address for this API service - same as servicePath.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static apiEndpoint is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'spanner.googleapis.com';
+  }
+
+  /**
+   * The DNS address for this API service.
+   * @returns {string} The DNS address for this service.
+   */
+  get apiEndpoint() {
+    return this._servicePath;
+  }
+
+  get universeDomain() {
+    return this._universeDomain;
   }
 
   /**
@@ -1395,6 +1448,22 @@ export class DatabaseAdminClient {
    *   Google default encryption.
    * @param {google.spanner.admin.database.v1.DatabaseDialect} [request.databaseDialect]
    *   Optional. The dialect of the Cloud Spanner Database.
+   * @param {Buffer} [request.protoDescriptors]
+   *   Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
+   *   'extra_statements' above.
+   *   Contains a protobuf-serialized
+   *   [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   *   To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   *   run `protoc` with --include_imports and --descriptor_set_out. For example,
+   *   to generate for moon/shot/app.proto, run
+   *   ```
+   *   $protoc  --proto_path=/app_path --proto_path=/lib_path \
+   *            --include_imports \
+   *            --descriptor_set_out=descriptors.data \
+   *            moon/shot/app.proto
+   *   ```
+   *   For more details, see protobuffer [self
+   *   description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1727,6 +1796,21 @@ export class DatabaseAdminClient {
    *   underscore. If the named operation already exists,
    *   {@link protos.google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} returns
    *   `ALREADY_EXISTS`.
+   * @param {Buffer} [request.protoDescriptors]
+   *   Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
+   *   Contains a protobuf-serialized
+   *   [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
+   *   To generate it, [install](https://grpc.io/docs/protoc-installation/) and
+   *   run `protoc` with --include_imports and --descriptor_set_out. For example,
+   *   to generate for moon/shot/app.proto, run
+   *   ```
+   *   $protoc  --proto_path=/app_path --proto_path=/lib_path \
+   *            --include_imports \
+   *            --descriptor_set_out=descriptors.data \
+   *            moon/shot/app.proto
+   *   ```
+   *   For more details, see protobuffer [self
+   *   description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.

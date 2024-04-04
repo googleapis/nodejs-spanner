@@ -119,6 +119,21 @@ abstract class WrappedNumber {
 }
 
 /**
+ * @typedef Float32
+ * @see Spanner.float32
+ */
+export class Float32 extends WrappedNumber {
+  value: number;
+  constructor(value: number) {
+    super();
+    this.value = value;
+  }
+  valueOf(): number {
+    return Number(this.value);
+  }
+}
+
+/**
  * @typedef Float
  * @see Spanner.float
  */
@@ -250,6 +265,25 @@ export class PGJsonb {
 }
 
 /**
+ * @typedef PGOid
+ * @see Spanner.pgOid
+ */
+export class PGOid extends WrappedNumber {
+  value: string;
+  constructor(value: string) {
+    super();
+    this.value = value.toString();
+  }
+  valueOf(): number {
+    const num = Number(this.value);
+    if (num > Number.MAX_SAFE_INTEGER) {
+      throw new GoogleError(`PG.OID ${this.value} is out of bounds.`);
+    }
+    return num;
+  }
+}
+
+/**
  * @typedef JSONOptions
  * @property {boolean} [wrapNumbers=false] Indicates if the numbers should be
  *     wrapped in Int/Float wrappers.
@@ -358,12 +392,24 @@ function decode(value: Value, type: spannerClient.spanner.v1.Type): Value {
     case 'BYTES':
       decoded = Buffer.from(decoded, 'base64');
       break;
+    case spannerClient.spanner.v1.TypeCode.FLOAT32:
+    case 'FLOAT32':
+      decoded = new Float32(decoded);
+      break;
     case spannerClient.spanner.v1.TypeCode.FLOAT64:
     case 'FLOAT64':
       decoded = new Float(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.INT64:
     case 'INT64':
+      if (
+        type.typeAnnotation ===
+          spannerClient.spanner.v1.TypeAnnotationCode.PG_OID ||
+        type.typeAnnotation === 'PG_OID'
+      ) {
+        decoded = new PGOid(decoded);
+        break;
+      }
       decoded = new Int(decoded);
       break;
     case spannerClient.spanner.v1.TypeCode.NUMERIC:
@@ -503,6 +549,8 @@ const TypeCode: {
   unspecified: 'TYPE_CODE_UNSPECIFIED',
   bool: 'BOOL',
   int64: 'INT64',
+  pgOid: 'INT64',
+  float32: 'FLOAT32',
   float64: 'FLOAT64',
   numeric: 'NUMERIC',
   pgNumeric: 'NUMERIC',
@@ -539,6 +587,7 @@ interface FieldType extends Type {
 /**
  * @typedef {object} ParamType
  * @property {string} type The param type. Must be one of the following:
+ *     - float32
  *     - float64
  *     - int64
  *     - numeric
@@ -573,6 +622,10 @@ function getType(value: Value): Type {
   const isSpecialNumber =
     is.infinite(value) || (is.number(value) && isNaN(value));
 
+  if (value instanceof Float32) {
+    return {type: 'float32'};
+  }
+
   if (is.decimal(value) || isSpecialNumber || value instanceof Float) {
     return {type: 'float64'};
   }
@@ -591,6 +644,10 @@ function getType(value: Value): Type {
 
   if (value instanceof PGJsonb) {
     return {type: 'pgJsonb'};
+  }
+
+  if (value instanceof PGOid) {
+    return {type: 'pgOid'};
   }
 
   if (is.boolean(value)) {
@@ -736,6 +793,8 @@ function createTypeObject(
       spannerClient.spanner.v1.TypeAnnotationCode.PG_NUMERIC;
   } else if (friendlyType.type === 'jsonb') {
     type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_JSONB;
+  } else if (friendlyType.type === 'pgOid') {
+    type.typeAnnotation = spannerClient.spanner.v1.TypeAnnotationCode.PG_OID;
   }
   return type;
 }
@@ -746,11 +805,13 @@ export const codec = {
   convertProtoTimestampToDate,
   createTypeObject,
   SpannerDate,
+  Float32,
   Float,
   Int,
   Numeric,
   PGNumeric,
   PGJsonb,
+  PGOid,
   convertFieldsToJson,
   decode,
   encode,

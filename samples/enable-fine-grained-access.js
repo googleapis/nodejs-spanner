@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ function main(
   // databaseRole = 'parent';
   // title = 'condition title';
   // Imports the Google Cloud Spanner client library
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
   // Instantiates a client
   const spanner = new Spanner({
@@ -45,11 +45,19 @@ function main(
   });
 
   async function enableFineGrainedAccess() {
-    // Gets a reference to a Cloud Spanner instance and database.
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
-    const [policy] = await database.getIamPolicy({requestedPolicyVersion: 3});
+    const [policy] = await databaseAdminClient.getIamPolicy({
+      resource: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      options: (protos.google.iam.v1.GetPolicyOptions = {
+        requestedPolicyVersion: 3,
+      }),
+    });
     if (policy.version < 3) {
       policy.version = 3;
     }
@@ -63,10 +71,26 @@ function main(
       },
     };
     policy.bindings.push(newBinding);
-    await database.setIamPolicy({policy: policy});
+    await databaseAdminClient.setIamPolicy({
+      resource: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      policy: policy,
+    });
     // Requested Policy Version is Optional. The maximum policy version that will be used to format the policy.
     // Valid values are 0, 1, and 3. Requests specifying an invalid value will be rejected.
-    const newPolicy = await database.getIamPolicy({requestedPolicyVersion: 3});
+    const newPolicy = await databaseAdminClient.getIamPolicy({
+      resource: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      options: (protos.google.iam.v1.GetPolicyOptions = {
+        requestedPolicyVersion: 3,
+      }),
+    });
     console.log(newPolicy);
   }
   enableFineGrainedAccess();

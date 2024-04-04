@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,35 +31,33 @@ function main(
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
 
-  // Imports the Google Cloud Spanner client library
-  const {Spanner} = require('@google-cloud/spanner');
+  // Imports the Google Cloud client library
+  const {Spanner, protos} = require('@google-cloud/spanner');
 
-  // Instantiates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
+
   async function createPgDatabase() {
-    // Gets a reference to a Cloud Spanner instance
-    const instance = spanner.instance(instanceId);
-
-    // Set Dialect as PostgreSQL
-    const request = {
-      databaseDialect: Spanner.POSTGRESQL,
-    };
-
     // Creates a PostgreSQL database. PostgreSQL create requests may not contain any additional
     // DDL statements. We need to execute these separately after the database has been created.
-    const [database, operationCreate] = await instance.createDatabase(
-      databaseId,
-      request
-    );
+    const [operationCreate] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE "' + databaseId + '"',
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      databaseDialect:
+        protos.google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL,
+    });
 
-    console.log(`Waiting for operation on ${database.id} to complete...`);
+    console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operationCreate.promise();
-    await database.getMetadata();
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+    });
     console.log(
-      `Created database ${databaseId} on instance ${instanceId} with dialect ${database.metadata.databaseDialect}.`
+      `Created database ${databaseId} on instance ${instanceId} with dialect ${metadata.databaseDialect}.`
     );
 
     // Create a couple of tables using a separate request. We must use PostgreSQL style DDL as the
@@ -80,7 +78,14 @@ function main(
         PRIMARY KEY (AlbumId)
         );`,
     ];
-    const [operationUpdateDDL] = await database.updateSchema(statements);
+    const [operationUpdateDDL] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: [statements],
+    });
     await operationUpdateDDL.promise();
     console.log('Updated schema');
   }
