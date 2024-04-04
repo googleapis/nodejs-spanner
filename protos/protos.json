@@ -3205,6 +3205,13 @@
                             }
                           }
                         },
+                        "FulfillmentPeriod": {
+                          "values": {
+                            "FULFILLMENT_PERIOD_UNSPECIFIED": 0,
+                            "FULFILLMENT_PERIOD_NORMAL": 1,
+                            "FULFILLMENT_PERIOD_EXTENDED": 2
+                          }
+                        },
                         "InstanceAdmin": {
                           "options": {
                             "(google.api.default_host)": "spanner.googleapis.com",
@@ -4198,6 +4205,10 @@
                             "endTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 4
+                            },
+                            "expectedFulfillmentPeriod": {
+                              "type": "FulfillmentPeriod",
+                              "id": 5
                             }
                           }
                         },
@@ -4218,6 +4229,10 @@
                             "endTime": {
                               "type": "google.protobuf.Timestamp",
                               "id": 4
+                            },
+                            "expectedFulfillmentPeriod": {
+                              "type": "FulfillmentPeriod",
+                              "id": 5
                             }
                           }
                         },
@@ -4644,6 +4659,10 @@
                         "databasePath": {
                           "type": "string",
                           "id": 1
+                        },
+                        "spannerOptions": {
+                          "type": "SpannerOptions",
+                          "id": 2
                         },
                         "start": {
                           "type": "StartTransactionAction",
@@ -5265,7 +5284,7 @@
                             "listCloudBackupOperations",
                             "getOperation",
                             "cancelOperation",
-                            "reconfigureCloudDatabase"
+                            "changeQuorumCloudDatabase"
                           ]
                         }
                       },
@@ -5378,8 +5397,8 @@
                           "type": "CancelOperationAction",
                           "id": 26
                         },
-                        "reconfigureCloudDatabase": {
-                          "type": "ReconfigureCloudDatabaseAction",
+                        "changeQuorumCloudDatabase": {
+                          "type": "ChangeQuorumCloudDatabaseAction",
                           "id": 28
                         }
                       }
@@ -5758,7 +5777,7 @@
                         }
                       }
                     },
-                    "ReconfigureCloudDatabaseAction": {
+                    "ChangeQuorumCloudDatabaseAction": {
                       "oneofs": {
                         "_databaseUri": {
                           "oneof": [
@@ -5904,6 +5923,10 @@
                         "databaseId": {
                           "type": "string",
                           "id": 5
+                        },
+                        "encryptionConfig": {
+                          "type": "google.spanner.admin.database.v1.EncryptionConfig",
+                          "id": 7
                         }
                       }
                     },
@@ -5961,6 +5984,10 @@
                           "options": {
                             "proto3_optional": true
                           }
+                        },
+                        "encryptionConfig": {
+                          "type": "google.spanner.admin.database.v1.EncryptionConfig",
+                          "id": 7
                         }
                       }
                     },
@@ -6783,6 +6810,22 @@
                       "fields": {
                         "heartbeatTime": {
                           "type": "google.protobuf.Timestamp",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "SpannerOptions": {
+                      "fields": {
+                        "sessionPoolOptions": {
+                          "type": "SessionPoolOptions",
+                          "id": 1
+                        }
+                      }
+                    },
+                    "SessionPoolOptions": {
+                      "fields": {
+                        "useMultiplexed": {
+                          "type": "bool",
                           "id": 1
                         }
                       }
