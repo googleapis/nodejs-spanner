@@ -224,6 +224,12 @@ export interface GetIamPolicyOptions {
   gaxOptions?: CallOptions;
 }
 
+/**
+ * @typedef {object} GetTransactionOptions
+ */
+interface GetTransactionOptions extends RunTransactionOptions {
+  optimisticLock?: boolean;
+}
 export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
@@ -1989,12 +1995,23 @@ class Database extends common.GrpcServiceObject {
    * });
    * ```
    */
-  getTransaction(): Promise<[Transaction]>;
-  getTransaction(callback: GetTransactionCallback): void;
+  getTransaction(callback: GetTransactionCallback): Promise<[Transaction]>;
   getTransaction(
+    options: GetTransactionOptions,
+    callback: GetTransactionCallback
+  ): void;
+  getTransaction(
+    optionsOrRunFn: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    const options =
+      typeof optionsOrRunFn === 'object' && optionsOrRunFn
+        ? (optionsOrRunFn as RunTransactionOptions)
+        : {};
     this.pool_.getSession((err, session, transaction) => {
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
