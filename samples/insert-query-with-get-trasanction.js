@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // sample-metadata:
-//  title: Calls a server side function on a Spanner PostgreSQL database.
+//  title: Perform a dml insert query using getTransaction method with optimisticLock
 //  usage: node insert-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 async function main(instanceId, databaseId, projectId) {
