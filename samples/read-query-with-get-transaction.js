@@ -14,7 +14,7 @@
 
 // sample-metadata:
 //  title: Calls a server side function on a Spanner PostgreSQL database.
-//  usage: node insert-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+//  usage: node read-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 async function main(instanceId, databaseId, projectId) {
   // [START spanner_read_query_with_get_transaction]
