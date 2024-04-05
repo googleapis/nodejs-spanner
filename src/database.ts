@@ -226,6 +226,8 @@ export interface GetIamPolicyOptions {
 
 /**
  * @typedef {object} GetTransactionOptions
+ * * @property {boolean} [optimisticLock] The maximum amount of time (in ms) that a
+ *     {@link Transaction} should be ran for.
  */
 interface GetTransactionOptions extends RunTransactionOptions {
   optimisticLock?: boolean;
