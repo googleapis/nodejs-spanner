@@ -16,8 +16,8 @@
 //  title: Calls a server side function on a Spanner PostgreSQL database.
 //  usage: node insert-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
-async function main (instanceId, databaseId, projectId) {
-  // [START spanner_insert_query_with_get_transaction]
+async function main(instanceId, databaseId, projectId) {
+  // [START spanner_read_query_with_get_transaction]
   // Imports the Google Cloud client library.
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -30,36 +30,36 @@ async function main (instanceId, databaseId, projectId) {
 
   // Creates a client
   const spanner = new Spanner({
-      projectId: projectId,
+    projectId: projectId,
   });
 
   async function readTransaction() {
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
 
-      // Gets a reference to a Cloud Spanner instance and database
-      const instance = spanner.instance(instanceId);
-      const database = instance.database(databaseId);
-    
-      const options = {
-        optimisticLock: true,
-      };
-    
-      let promise = await database.getTransaction(options).then();
-      let transaction = promise[0];
-    
-      try {
-        await transaction.run("SELECT * FROM Singers").then(results => {
-          const rows = results[0].map(row => row.toJSON());
-          console.log(rows);
-        });
-      } catch (err) {
-        console.error('ERROR:', err);
-      }
-    
-      await transaction.commit();
-    
-      transaction.end();
+    const options = {
+      optimisticLock: true,
+    };
+
+    const promise = await database.getTransaction(options).then();
+    const transaction = promise[0];
+
+    try {
+      await transaction.run('SELECT * FROM Singers').then(results => {
+        const rows = results[0].map(row => row.toJSON());
+        console.log(rows);
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
+
+    await transaction.commit();
+
+    transaction.end();
   }
   readTransaction();
+  // [END spanner_read_query_with_get_transaction]
 }
 
 process.on('unhandledRejection', err => {

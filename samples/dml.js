@@ -705,18 +705,6 @@ require('yargs')
     {},
     opts => insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
-
-  .command(
-    'insertUsingGetTransaction <instanceName> <databaseName> <projectId>',
-    'Inserts one record using DML into an example Cloud Spanner table.',
-    {},
-    opts =>
-      insertUsingGetTransaction(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
-  )
   .command(
     'updateUsingDml <instanceName> <databaseName> <projectId>',
     'Updates one record using DML.',
