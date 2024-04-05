@@ -19,7 +19,7 @@
 async function main (instanceId, databaseId, projectId) {
   // [START spanner_insert_query_with_get_transaction]
   // Imports the Google Cloud client library.
-  const {Spanner} = require('../build/src');
+  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
