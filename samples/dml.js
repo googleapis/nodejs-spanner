@@ -67,59 +67,6 @@ function insertUsingDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_standard_insert]
 }
 
-async function insertUsingGetTransaction(instanceId, databaseId, projectId) {
-  // [START spanner_dml_standard_insert_using_getTransaction]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  const options = {
-    optimisticLock: true,
-  };
-
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-  database.getTransaction(options, async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    try {
-      const [rowCount] = await transaction.runUpdate({
-        sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
-        params: {
-          firstName: 'Virginia',
-          lastName: 'Watson',
-        },
-      });
-
-      console.log(
-        `Successfully inserted ${rowCount} record into the Singers table.`
-      );
-
-      await transaction.commit();
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      database.close();
-    }
-  });
-  // [END spanner_dml_standard_insert_using_getTransaction]
-}
-
 function updateUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_update]
   // Imports the Google Cloud client library
