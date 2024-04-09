@@ -2917,6 +2917,9 @@ export namespace google {
 
             /** ServiceOptions .google.api.oauthScopes */
             ".google.api.oauthScopes"?: (string|null);
+
+            /** ServiceOptions .google.api.apiVersion */
+            ".google.api.apiVersion"?: (string|null);
         }
 
         /** Represents a ServiceOptions. */
@@ -11804,6 +11807,13 @@ export namespace google {
                         public static getTypeUrl(typeUrlPrefix?: string): string;
                     }
 
+                    /** FulfillmentPeriod enum. */
+                    enum FulfillmentPeriod {
+                        FULFILLMENT_PERIOD_UNSPECIFIED = 0,
+                        FULFILLMENT_PERIOD_NORMAL = 1,
+                        FULFILLMENT_PERIOD_EXTENDED = 2
+                    }
+
                     /** Represents an InstanceAdmin */
                     class InstanceAdmin extends $protobuf.rpc.Service {
 
@@ -14555,6 +14565,9 @@ export namespace google {
 
                         /** CreateInstanceMetadata endTime */
                         endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata expectedFulfillmentPeriod */
+                        expectedFulfillmentPeriod?: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod|null);
                     }
 
                     /** Represents a CreateInstanceMetadata. */
@@ -14577,6 +14590,9 @@ export namespace google {
 
                         /** CreateInstanceMetadata endTime. */
                         public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** CreateInstanceMetadata expectedFulfillmentPeriod. */
+                        public expectedFulfillmentPeriod: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod);
 
                         /**
                          * Creates a new CreateInstanceMetadata instance using the specified properties.
@@ -14670,6 +14686,9 @@ export namespace google {
 
                         /** UpdateInstanceMetadata endTime */
                         endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata expectedFulfillmentPeriod */
+                        expectedFulfillmentPeriod?: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod|null);
                     }
 
                     /** Represents an UpdateInstanceMetadata. */
@@ -14692,6 +14711,9 @@ export namespace google {
 
                         /** UpdateInstanceMetadata endTime. */
                         public endTime?: (google.protobuf.ITimestamp|null);
+
+                        /** UpdateInstanceMetadata expectedFulfillmentPeriod. */
+                        public expectedFulfillmentPeriod: (google.spanner.admin.instance.v1.FulfillmentPeriod|keyof typeof google.spanner.admin.instance.v1.FulfillmentPeriod);
 
                         /**
                          * Creates a new UpdateInstanceMetadata instance using the specified properties.
@@ -16521,6 +16543,9 @@ export namespace google {
                     /** SpannerAction databasePath */
                     databasePath?: (string|null);
 
+                    /** SpannerAction spannerOptions */
+                    spannerOptions?: (google.spanner.executor.v1.ISpannerOptions|null);
+
                     /** SpannerAction start */
                     start?: (google.spanner.executor.v1.IStartTransactionAction|null);
 
@@ -16581,6 +16606,9 @@ export namespace google {
 
                     /** SpannerAction databasePath. */
                     public databasePath: string;
+
+                    /** SpannerAction spannerOptions. */
+                    public spannerOptions?: (google.spanner.executor.v1.ISpannerOptions|null);
 
                     /** SpannerAction start. */
                     public start?: (google.spanner.executor.v1.IStartTransactionAction|null);
@@ -19281,8 +19309,8 @@ export namespace google {
                     /** AdminAction cancelOperation */
                     cancelOperation?: (google.spanner.executor.v1.ICancelOperationAction|null);
 
-                    /** AdminAction reconfigureCloudDatabase */
-                    reconfigureCloudDatabase?: (google.spanner.executor.v1.IReconfigureCloudDatabaseAction|null);
+                    /** AdminAction changeQuorumCloudDatabase */
+                    changeQuorumCloudDatabase?: (google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction|null);
                 }
 
                 /** Represents an AdminAction. */
@@ -19375,11 +19403,11 @@ export namespace google {
                     /** AdminAction cancelOperation. */
                     public cancelOperation?: (google.spanner.executor.v1.ICancelOperationAction|null);
 
-                    /** AdminAction reconfigureCloudDatabase. */
-                    public reconfigureCloudDatabase?: (google.spanner.executor.v1.IReconfigureCloudDatabaseAction|null);
+                    /** AdminAction changeQuorumCloudDatabase. */
+                    public changeQuorumCloudDatabase?: (google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction|null);
 
                     /** AdminAction action. */
-                    public action?: ("createUserInstanceConfig"|"updateUserInstanceConfig"|"deleteUserInstanceConfig"|"getCloudInstanceConfig"|"listInstanceConfigs"|"createCloudInstance"|"updateCloudInstance"|"deleteCloudInstance"|"listCloudInstances"|"getCloudInstance"|"createCloudDatabase"|"updateCloudDatabaseDdl"|"updateCloudDatabase"|"dropCloudDatabase"|"listCloudDatabases"|"listCloudDatabaseOperations"|"restoreCloudDatabase"|"getCloudDatabase"|"createCloudBackup"|"copyCloudBackup"|"getCloudBackup"|"updateCloudBackup"|"deleteCloudBackup"|"listCloudBackups"|"listCloudBackupOperations"|"getOperation"|"cancelOperation"|"reconfigureCloudDatabase");
+                    public action?: ("createUserInstanceConfig"|"updateUserInstanceConfig"|"deleteUserInstanceConfig"|"getCloudInstanceConfig"|"listInstanceConfigs"|"createCloudInstance"|"updateCloudInstance"|"deleteCloudInstance"|"listCloudInstances"|"getCloudInstance"|"createCloudDatabase"|"updateCloudDatabaseDdl"|"updateCloudDatabase"|"dropCloudDatabase"|"listCloudDatabases"|"listCloudDatabaseOperations"|"restoreCloudDatabase"|"getCloudDatabase"|"createCloudBackup"|"copyCloudBackup"|"getCloudBackup"|"updateCloudBackup"|"deleteCloudBackup"|"listCloudBackups"|"listCloudBackupOperations"|"getOperation"|"cancelOperation"|"changeQuorumCloudDatabase");
 
                     /**
                      * Creates a new AdminAction instance using the specified properties.
@@ -20896,106 +20924,106 @@ export namespace google {
                     public static getTypeUrl(typeUrlPrefix?: string): string;
                 }
 
-                /** Properties of a ReconfigureCloudDatabaseAction. */
-                interface IReconfigureCloudDatabaseAction {
+                /** Properties of a ChangeQuorumCloudDatabaseAction. */
+                interface IChangeQuorumCloudDatabaseAction {
 
-                    /** ReconfigureCloudDatabaseAction databaseUri */
+                    /** ChangeQuorumCloudDatabaseAction databaseUri */
                     databaseUri?: (string|null);
 
-                    /** ReconfigureCloudDatabaseAction servingLocations */
+                    /** ChangeQuorumCloudDatabaseAction servingLocations */
                     servingLocations?: (string[]|null);
                 }
 
-                /** Represents a ReconfigureCloudDatabaseAction. */
-                class ReconfigureCloudDatabaseAction implements IReconfigureCloudDatabaseAction {
+                /** Represents a ChangeQuorumCloudDatabaseAction. */
+                class ChangeQuorumCloudDatabaseAction implements IChangeQuorumCloudDatabaseAction {
 
                     /**
-                     * Constructs a new ReconfigureCloudDatabaseAction.
+                     * Constructs a new ChangeQuorumCloudDatabaseAction.
                      * @param [properties] Properties to set
                      */
-                    constructor(properties?: google.spanner.executor.v1.IReconfigureCloudDatabaseAction);
+                    constructor(properties?: google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction);
 
-                    /** ReconfigureCloudDatabaseAction databaseUri. */
+                    /** ChangeQuorumCloudDatabaseAction databaseUri. */
                     public databaseUri?: (string|null);
 
-                    /** ReconfigureCloudDatabaseAction servingLocations. */
+                    /** ChangeQuorumCloudDatabaseAction servingLocations. */
                     public servingLocations: string[];
 
-                    /** ReconfigureCloudDatabaseAction _databaseUri. */
+                    /** ChangeQuorumCloudDatabaseAction _databaseUri. */
                     public _databaseUri?: "databaseUri";
 
                     /**
-                     * Creates a new ReconfigureCloudDatabaseAction instance using the specified properties.
+                     * Creates a new ChangeQuorumCloudDatabaseAction instance using the specified properties.
                      * @param [properties] Properties to set
-                     * @returns ReconfigureCloudDatabaseAction instance
+                     * @returns ChangeQuorumCloudDatabaseAction instance
                      */
-                    public static create(properties?: google.spanner.executor.v1.IReconfigureCloudDatabaseAction): google.spanner.executor.v1.ReconfigureCloudDatabaseAction;
+                    public static create(properties?: google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction): google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction;
 
                     /**
-                     * Encodes the specified ReconfigureCloudDatabaseAction message. Does not implicitly {@link google.spanner.executor.v1.ReconfigureCloudDatabaseAction.verify|verify} messages.
-                     * @param message ReconfigureCloudDatabaseAction message or plain object to encode
+                     * Encodes the specified ChangeQuorumCloudDatabaseAction message. Does not implicitly {@link google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.verify|verify} messages.
+                     * @param message ChangeQuorumCloudDatabaseAction message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encode(message: google.spanner.executor.v1.IReconfigureCloudDatabaseAction, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encode(message: google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
-                     * Encodes the specified ReconfigureCloudDatabaseAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.ReconfigureCloudDatabaseAction.verify|verify} messages.
-                     * @param message ReconfigureCloudDatabaseAction message or plain object to encode
+                     * Encodes the specified ChangeQuorumCloudDatabaseAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction.verify|verify} messages.
+                     * @param message ChangeQuorumCloudDatabaseAction message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encodeDelimited(message: google.spanner.executor.v1.IReconfigureCloudDatabaseAction, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encodeDelimited(message: google.spanner.executor.v1.IChangeQuorumCloudDatabaseAction, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
-                     * Decodes a ReconfigureCloudDatabaseAction message from the specified reader or buffer.
+                     * Decodes a ChangeQuorumCloudDatabaseAction message from the specified reader or buffer.
                      * @param reader Reader or buffer to decode from
                      * @param [length] Message length if known beforehand
-                     * @returns ReconfigureCloudDatabaseAction
+                     * @returns ChangeQuorumCloudDatabaseAction
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.ReconfigureCloudDatabaseAction;
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction;
 
                     /**
-                     * Decodes a ReconfigureCloudDatabaseAction message from the specified reader or buffer, length delimited.
+                     * Decodes a ChangeQuorumCloudDatabaseAction message from the specified reader or buffer, length delimited.
                      * @param reader Reader or buffer to decode from
-                     * @returns ReconfigureCloudDatabaseAction
+                     * @returns ChangeQuorumCloudDatabaseAction
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.ReconfigureCloudDatabaseAction;
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction;
 
                     /**
-                     * Verifies a ReconfigureCloudDatabaseAction message.
+                     * Verifies a ChangeQuorumCloudDatabaseAction message.
                      * @param message Plain object to verify
                      * @returns `null` if valid, otherwise the reason why it is not
                      */
                     public static verify(message: { [k: string]: any }): (string|null);
 
                     /**
-                     * Creates a ReconfigureCloudDatabaseAction message from a plain object. Also converts values to their respective internal types.
+                     * Creates a ChangeQuorumCloudDatabaseAction message from a plain object. Also converts values to their respective internal types.
                      * @param object Plain object
-                     * @returns ReconfigureCloudDatabaseAction
+                     * @returns ChangeQuorumCloudDatabaseAction
                      */
-                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.ReconfigureCloudDatabaseAction;
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction;
 
                     /**
-                     * Creates a plain object from a ReconfigureCloudDatabaseAction message. Also converts values to other types if specified.
-                     * @param message ReconfigureCloudDatabaseAction
+                     * Creates a plain object from a ChangeQuorumCloudDatabaseAction message. Also converts values to other types if specified.
+                     * @param message ChangeQuorumCloudDatabaseAction
                      * @param [options] Conversion options
                      * @returns Plain object
                      */
-                    public static toObject(message: google.spanner.executor.v1.ReconfigureCloudDatabaseAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                    public static toObject(message: google.spanner.executor.v1.ChangeQuorumCloudDatabaseAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                     /**
-                     * Converts this ReconfigureCloudDatabaseAction to JSON.
+                     * Converts this ChangeQuorumCloudDatabaseAction to JSON.
                      * @returns JSON object
                      */
                     public toJSON(): { [k: string]: any };
 
                     /**
-                     * Gets the default type url for ReconfigureCloudDatabaseAction
+                     * Gets the default type url for ChangeQuorumCloudDatabaseAction
                      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                      * @returns The default type url
                      */
@@ -21482,6 +21510,9 @@ export namespace google {
 
                     /** RestoreCloudDatabaseAction databaseId */
                     databaseId?: (string|null);
+
+                    /** RestoreCloudDatabaseAction encryptionConfig */
+                    encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
                 }
 
                 /** Represents a RestoreCloudDatabaseAction. */
@@ -21507,6 +21538,9 @@ export namespace google {
 
                     /** RestoreCloudDatabaseAction databaseId. */
                     public databaseId: string;
+
+                    /** RestoreCloudDatabaseAction encryptionConfig. */
+                    public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
 
                     /**
                      * Creates a new RestoreCloudDatabaseAction instance using the specified properties.
@@ -21715,6 +21749,9 @@ export namespace google {
 
                     /** CreateCloudBackupAction versionTime */
                     versionTime?: (google.protobuf.ITimestamp|null);
+
+                    /** CreateCloudBackupAction encryptionConfig */
+                    encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
                 }
 
                 /** Represents a CreateCloudBackupAction. */
@@ -21743,6 +21780,9 @@ export namespace google {
 
                     /** CreateCloudBackupAction versionTime. */
                     public versionTime?: (google.protobuf.ITimestamp|null);
+
+                    /** CreateCloudBackupAction encryptionConfig. */
+                    public encryptionConfig?: (google.spanner.admin.database.v1.IEncryptionConfig|null);
 
                     /** CreateCloudBackupAction _versionTime. */
                     public _versionTime?: "versionTime";
@@ -25423,6 +25463,200 @@ export namespace google {
 
                     /**
                      * Gets the default type url for HeartbeatRecord
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a SpannerOptions. */
+                interface ISpannerOptions {
+
+                    /** SpannerOptions sessionPoolOptions */
+                    sessionPoolOptions?: (google.spanner.executor.v1.ISessionPoolOptions|null);
+                }
+
+                /** Represents a SpannerOptions. */
+                class SpannerOptions implements ISpannerOptions {
+
+                    /**
+                     * Constructs a new SpannerOptions.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.ISpannerOptions);
+
+                    /** SpannerOptions sessionPoolOptions. */
+                    public sessionPoolOptions?: (google.spanner.executor.v1.ISessionPoolOptions|null);
+
+                    /**
+                     * Creates a new SpannerOptions instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns SpannerOptions instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.ISpannerOptions): google.spanner.executor.v1.SpannerOptions;
+
+                    /**
+                     * Encodes the specified SpannerOptions message. Does not implicitly {@link google.spanner.executor.v1.SpannerOptions.verify|verify} messages.
+                     * @param message SpannerOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.ISpannerOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified SpannerOptions message, length delimited. Does not implicitly {@link google.spanner.executor.v1.SpannerOptions.verify|verify} messages.
+                     * @param message SpannerOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.ISpannerOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a SpannerOptions message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns SpannerOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.SpannerOptions;
+
+                    /**
+                     * Decodes a SpannerOptions message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns SpannerOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.SpannerOptions;
+
+                    /**
+                     * Verifies a SpannerOptions message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a SpannerOptions message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns SpannerOptions
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.SpannerOptions;
+
+                    /**
+                     * Creates a plain object from a SpannerOptions message. Also converts values to other types if specified.
+                     * @param message SpannerOptions
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.SpannerOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this SpannerOptions to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for SpannerOptions
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a SessionPoolOptions. */
+                interface ISessionPoolOptions {
+
+                    /** SessionPoolOptions useMultiplexed */
+                    useMultiplexed?: (boolean|null);
+                }
+
+                /** Represents a SessionPoolOptions. */
+                class SessionPoolOptions implements ISessionPoolOptions {
+
+                    /**
+                     * Constructs a new SessionPoolOptions.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.ISessionPoolOptions);
+
+                    /** SessionPoolOptions useMultiplexed. */
+                    public useMultiplexed: boolean;
+
+                    /**
+                     * Creates a new SessionPoolOptions instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns SessionPoolOptions instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.ISessionPoolOptions): google.spanner.executor.v1.SessionPoolOptions;
+
+                    /**
+                     * Encodes the specified SessionPoolOptions message. Does not implicitly {@link google.spanner.executor.v1.SessionPoolOptions.verify|verify} messages.
+                     * @param message SessionPoolOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.ISessionPoolOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified SessionPoolOptions message, length delimited. Does not implicitly {@link google.spanner.executor.v1.SessionPoolOptions.verify|verify} messages.
+                     * @param message SessionPoolOptions message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.ISessionPoolOptions, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a SessionPoolOptions message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns SessionPoolOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.SessionPoolOptions;
+
+                    /**
+                     * Decodes a SessionPoolOptions message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns SessionPoolOptions
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.SessionPoolOptions;
+
+                    /**
+                     * Verifies a SessionPoolOptions message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a SessionPoolOptions message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns SessionPoolOptions
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.SessionPoolOptions;
+
+                    /**
+                     * Creates a plain object from a SessionPoolOptions message. Also converts values to other types if specified.
+                     * @param message SessionPoolOptions
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.SessionPoolOptions, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this SessionPoolOptions to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for SessionPoolOptions
                      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                      * @returns The default type url
                      */
@@ -32818,6 +33052,9 @@ export namespace google {
 
             /** Publishing protoReferenceDocumentationUri */
             protoReferenceDocumentationUri?: (string|null);
+
+            /** Publishing restReferenceDocumentationUri */
+            restReferenceDocumentationUri?: (string|null);
         }
 
         /** Represents a Publishing. */
@@ -32858,6 +33095,9 @@ export namespace google {
 
             /** Publishing protoReferenceDocumentationUri. */
             public protoReferenceDocumentationUri: string;
+
+            /** Publishing restReferenceDocumentationUri. */
+            public restReferenceDocumentationUri: string;
 
             /**
              * Creates a new Publishing instance using the specified properties.
