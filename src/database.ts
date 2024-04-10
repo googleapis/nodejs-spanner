@@ -97,7 +97,6 @@ import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
-import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
@@ -231,7 +230,7 @@ export interface GetIamPolicyOptions {
  *     {@link Transaction} should use while running.
  */
 
-export interface GetTransactionOptions extends Omit<RunTransactionOptions, 'timeout'> {}
+export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
 
 export type CreateSessionCallback = ResourceCallback<
   Session,
@@ -2001,13 +2000,11 @@ class Database extends common.GrpcServiceObject {
   getTransaction(
     optionsOrCallback?: GetTransactionOptions
   ): Promise<[Transaction]>;
-  getTransaction(
-    callback: GetTransactionCallback
-  ): void;
+  getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
     optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
-    ): void | Promise<[Transaction]> {
+  ): void | Promise<[Transaction]> {
     const runFn =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as GetTransactionCallback)
