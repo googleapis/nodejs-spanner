@@ -97,6 +97,7 @@ import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
+import IRequestOptions = google.spanner.v1.IRequestOptions;
 
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
@@ -229,9 +230,9 @@ export interface GetIamPolicyOptions {
  * * @property {boolean} [optimisticLock] The optimistic lock a
  *     {@link Transaction} should use while running.
  */
-interface GetTransactionOptions extends RunTransactionOptions {
-  optimisticLock?: boolean;
-}
+
+export interface GetTransactionOptions extends Omit<RunTransactionOptions, 'timeout'> {}
+
 export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
@@ -1997,31 +1998,36 @@ class Database extends common.GrpcServiceObject {
    * });
    * ```
    */
-  getTransaction(callback: GetTransactionCallback): Promise<[Transaction]>;
   getTransaction(
-    options: GetTransactionOptions,
+    optionsOrCallback?: GetTransactionOptions
+  ): Promise<[Transaction]>;
+  getTransaction(
     callback: GetTransactionCallback
   ): void;
   getTransaction(
-    optionsOrRunFn: GetTransactionOptions | GetTransactionCallback,
-    fn?: GetTransactionCallback
-  ): void | Promise<[Transaction]> {
-    const callback =
-      typeof optionsOrRunFn === 'function'
-        ? (optionsOrRunFn as RunTransactionCallback)
-        : fn;
+    optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
+    callback?: GetTransactionCallback
+    ): void | Promise<[Transaction]> {
+    const runFn =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetTransactionCallback)
+        : callback;
     const options =
-      typeof optionsOrRunFn === 'object' && optionsOrRunFn
-        ? (optionsOrRunFn as RunTransactionOptions)
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as GetTransactionOptions)
         : {};
     this.pool_.getSession((err, session, transaction) => {
+      transaction!.requestOptions = Object.assign(
+        transaction!.requestOptions || {},
+        options.requestOptions
+      );
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err as grpc.ServiceError | null, transaction);
+      runFn!(err as grpc.ServiceError | null, transaction);
     });
   }
 

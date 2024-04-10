@@ -56,13 +56,13 @@ async function main(instanceId, databaseId, projectId) {
       console.log(
         `Successfully inserted ${rowCount} records into the Singers table`
       );
+      await transaction.commit();
     } catch (err) {
       console.error('ERROR:', err);
+    } finally {
+      // End the transaction
+      transaction.end();
     }
-
-    await transaction.commit();
-
-    transaction.end();
   }
   writeTransaction();
   // [END spanner_insert_query_with_get_transaction]
