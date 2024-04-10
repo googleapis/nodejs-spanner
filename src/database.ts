@@ -2009,10 +2009,12 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as GetTransactionCallback)
         : callback;
+    console.log("line 2013 database.ts: ", runFn);
     const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
+    console.log("line 2019 database.ts: ", options);
     this.pool_.getSession((err, session, transaction) => {
       transaction!.requestOptions = Object.assign(
         transaction!.requestOptions || {},

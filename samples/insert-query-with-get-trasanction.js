@@ -42,7 +42,7 @@ async function main(instanceId, databaseId, projectId) {
       optimisticLock: true,
     };
 
-    const promise = await database.getTransaction(options).then();
+    const promise = await database.getTransaction(options);
     const transaction = promise[0];
 
     try {
