@@ -305,11 +305,12 @@ class Database extends common.GrpcServiceObject {
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
+  databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
   constructor(
     instance: Instance,
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
   ) {
     const methods = {
       /**
@@ -427,6 +428,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
+    this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -1467,6 +1469,30 @@ class Database extends common.GrpcServiceObject {
 
     const [metadata] = await this.getMetadata(gaxOptions);
     return metadata.state || undefined;
+  }
+
+  /**
+   * Get this database's dialect. 
+   * 
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getDatabaseDialect
+   *
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @returns {google.spanner.admin.database.v1.DatabaseDialect} Returns the database dialect
+   */
+  getDatabaseDialect(
+    gaxOptions?: CallOptions
+  ): (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null)
+  {
+    if (this.databaseDialect == databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED || this.databaseDialect == null || this.databaseDialect == undefined) {
+      this.getMetadata(gaxOptions || {}, (err, metadata) => {
+        this.databaseDialect = metadata?.databaseDialect;
+      });
+    }
+    return this.databaseDialect || databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
   }
 
   /**

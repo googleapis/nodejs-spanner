@@ -67,6 +67,7 @@ describe('Table', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let TableCached: any;
   let table;
+  let tableWithSchema;
   let transaction: FakeTransaction;
 
   const DATABASE = {
@@ -75,6 +76,7 @@ describe('Table', () => {
   };
 
   const NAME = 'table-name';
+  const NAMEWITHSCHEMA = 'schema.' + NAME;
 
   before(() => {
     Table = proxyquire('../src/table.js', {
@@ -86,6 +88,7 @@ describe('Table', () => {
   beforeEach(() => {
     extend(Table, TableCached);
     table = new Table(DATABASE, NAME);
+    tableWithSchema = new Table(DATABASE, NAMEWITHSCHEMA);
     transaction = new FakeTransaction();
   });
 
@@ -209,12 +212,15 @@ describe('Table', () => {
   });
 
   describe('delete', () => {
-    it('should update the schema on the database', () => {
+    it('should update the schema on the database for GoogleSQL', () => {
       const updateSchemaReturnValue = {};
 
       function callback() {}
 
       table.database = {
+        getDatabaseDialect: (gaxOptions) => {
+          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+        },
         updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
           assert.strictEqual(callback_, callback);
@@ -226,9 +232,73 @@ describe('Table', () => {
       assert.strictEqual(returnValue, updateSchemaReturnValue);
     });
 
+    it('should update the schema on the database for GoogleSQL with schema in the table name', () => {
+      const updateSchemaReturnValue = {};
+
+      function callback() {}
+
+      tableWithSchema.database = {
+        getDatabaseDialect: (gaxOptions) => {
+          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+        },
+        updateSchema: (schema, gaxOptions, callback_) => {
+          assert.strictEqual(schema, 'DROP TABLE `' + 'schema' + '`.`' + table.name + '`');
+          assert.strictEqual(callback_, callback);
+          return updateSchemaReturnValue;
+        },
+      };
+
+      const returnValue = tableWithSchema.delete(callback);
+      assert.strictEqual(returnValue, updateSchemaReturnValue);
+    });
+
+    it('should update the schema on the database for PostgresSQL', () => {
+      const updateSchemaReturnValue = {};
+
+      function callback() {}
+
+      table.database = {
+        getDatabaseDialect: (gaxOptions) => {
+          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL
+        },
+        updateSchema: (schema, gaxOptions, callback_) => {
+          assert.strictEqual(schema, `DROP TABLE "${table.name}"`);
+          assert.strictEqual(callback_, callback);
+          return updateSchemaReturnValue;
+        },
+      };
+
+      const returnValue = table.delete(callback);
+      assert.strictEqual(returnValue, updateSchemaReturnValue);
+    });
+
+    it('should update the schema on the database for PostgresSQL with schema in the table name', () => {
+      const updateSchemaReturnValue = {};
+
+      function callback() {}
+
+      tableWithSchema.database = {
+        getDatabaseDialect: (gaxOptions) => {
+          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL
+        },
+        updateSchema: (schema, gaxOptions, callback_) => {
+          assert.strictEqual(schema, `DROP TABLE "schema"."${table.name}"`);
+          assert.strictEqual(callback_, callback);
+          return updateSchemaReturnValue;
+        },
+      };
+
+      const returnValue = tableWithSchema.delete(callback);
+      assert.strictEqual(returnValue, updateSchemaReturnValue);
+    });
+
     it('should accept and pass gaxOptions to updateSchema', done => {
       const gaxOptions = {};
       table.database = {
+        getDatabaseDialect: (gaxOptionsFromTable) => {
+          assert.strictEqual(gaxOptionsFromTable, gaxOptions);
+          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+        },
         updateSchema: (schema, gaxOptionsFromTable) => {
           assert.strictEqual(gaxOptionsFromTable, gaxOptions);
           done();

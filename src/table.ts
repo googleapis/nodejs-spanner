@@ -28,7 +28,7 @@ import {
   ReadCallback,
   CommitCallback,
 } from './transaction';
-import {google as databaseAdmin} from '../protos/protos';
+import {google as databaseAdmin, google} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
 
@@ -341,9 +341,23 @@ class Table {
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+  
+    var databaseDialect = this.database.getDatabaseDialect(gaxOptions);
+    
+    const parts = this.name.split('.');
+    const schema = parts.length === 2 ? parts[0] : null;
+    const table = parts.length === 2 ? parts[1] : this.name;
+    
+    let dropStatement = 'DROP TABLE `' + table + '`';
 
+    if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL) {
+      dropStatement = schema ? `DROP TABLE "${schema}"."${table}"` : `DROP TABLE "${table}"`;
+    } else if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL) { 
+      dropStatement = schema ? 'DROP TABLE `' + schema + '`.`' + table + '`' : dropStatement;
+    }
+    
     return this.database.updateSchema(
-      'DROP TABLE `' + this.name + '`',
+      dropStatement,
       gaxOptions,
       callback!
     );
