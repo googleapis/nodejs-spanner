@@ -44,7 +44,7 @@ async function main(instanceId, databaseId, projectId) {
       requestOptions: {
         priority: Priority.PRIORITY_LOW,
       },
-    }
+    };
 
     const promise = await database.getTransaction(options);
     const transaction = promise[0];
