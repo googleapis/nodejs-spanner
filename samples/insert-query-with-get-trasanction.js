@@ -19,7 +19,8 @@
 async function main(instanceId, databaseId, projectId) {
   // [START spanner_insert_query_with_get_transaction]
   // Imports the Google Cloud client library.
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner, protos} = require('@google-cloud/spanner');
+  const Priority = protos.google.spanner.v1.RequestOptions.Priority;
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -40,7 +41,10 @@ async function main(instanceId, databaseId, projectId) {
 
     const options = {
       optimisticLock: true,
-    };
+      requestOptions: {
+        priority: Priority.PRIORITY_LOW,
+      },
+    }
 
     const promise = await database.getTransaction(options);
     const transaction = promise[0];

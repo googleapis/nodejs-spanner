@@ -2014,10 +2014,12 @@ class Database extends common.GrpcServiceObject {
         ? (optionsOrCallback as GetTransactionOptions)
         : {};
     this.pool_.getSession((err, session, transaction) => {
-      transaction!.requestOptions = Object.assign(
-        transaction!.requestOptions || {},
-        options.requestOptions
-      );
+      if(options.requestOptions) {
+        transaction!.requestOptions = Object.assign(
+          transaction!.requestOptions || {},
+          options.requestOptions
+        );
+      }
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
