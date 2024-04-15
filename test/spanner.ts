@@ -3286,6 +3286,22 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    it('should use optimistic lock for getTransaction', async () => {
+      const database = newTestDatabase();
+      const promise = await database.getTransaction({optimisticLock: true});
+      const transaction = promise[0];
+      await transaction.run('SELECT 1').then(results => {
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.readWrite!.readLockMode,
+          'OPTIMISTIC'
+        );
+      });
+    });
+
     it('should reuse a session for optimistic and pessimistic locks', async () => {
       const database = newTestDatabase({min: 1, max: 1});
       let session1;
