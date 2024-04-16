@@ -3286,9 +3286,9 @@ describe('Spanner with mock server', () => {
       });
     });
 
-    it('should use optimistic lock for getTransaction', async () => {
+    it('should use optimistic lock and transaction tag for getTransaction', async () => {
       const database = newTestDatabase();
-      const promise = await database.getTransaction({optimisticLock: true});
+      const promise = await database.getTransaction({optimisticLock: true, requestOptions: {transactionTag: 'transaction-tag'}});
       const transaction = promise[0];
       await transaction.run('SELECT 1').then(results => {
         const request = spannerMock.getRequests().find(val => {
@@ -3298,6 +3298,9 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(
           request.transaction!.begin!.readWrite!.readLockMode,
           'OPTIMISTIC'
+        );
+        assert.strictEqual(
+          request.requestOptions?.transactionTag, 'transaction-tag'
         );
       });
     });
