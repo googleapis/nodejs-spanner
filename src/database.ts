@@ -2005,7 +2005,7 @@ class Database extends common.GrpcServiceObject {
     optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
-    const runFn =
+    const cb =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as GetTransactionCallback)
         : callback;
@@ -2026,7 +2026,7 @@ class Database extends common.GrpcServiceObject {
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      runFn!(err as grpc.ServiceError | null, transaction);
+      cb!(err as grpc.ServiceError | null, transaction);
     });
   }
 
