@@ -8895,7 +8895,9 @@ describe('Spanner', () => {
       });
 
       it('GOOGLE_STANDARD_SQL should use getTransaction for executing sql', async () => {
-        const promiseArray = await DATABASE.getTransaction({optimisticLock: true});
+        const promiseArray = await DATABASE.getTransaction({
+          optimisticLock: true,
+        });
         const transaction = promiseArray[0];
 
         try {
