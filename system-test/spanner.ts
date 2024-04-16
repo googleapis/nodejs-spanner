@@ -8901,15 +8901,13 @@ describe('Spanner', () => {
         try {
           const [rows] = await transaction!.run('SELECT * FROM TxnTable');
           assert.strictEqual(rows.length, googleSqlRecords.length);
-        }
-        catch (err) {
+        } catch (err) {
           if ((err as grpc.ServiceError).code === grpc.status.ABORTED) {
-            assert.ok(err, "Transaction is aborted");
+            assert.ok(err, 'Transaction is aborted');
           } else {
-            console.log("ERROR: ", err);
+            console.log('ERROR: ', err);
           }
-        }
-        finally{
+        } finally {
           transaction.end();
         }
       });
