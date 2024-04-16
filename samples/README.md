@@ -52,7 +52,6 @@ and automatic, synchronous replication for high availability.
   * [Reads data using an existing storing index.](#reads-data-using-an-existing-storing-index.)
   * [Read data using an existing index.](#read-data-using-an-existing-index.)
   * [Indexing](#indexing)
-  * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Creates a user-managed instance configuration.](#creates-a-user-managed-instance-configuration.)
   * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
@@ -96,7 +95,6 @@ and automatic, synchronous replication for high availability.
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
-  * [Calls a server side function on a Spanner PostgreSQL database.](#calls-a-server-side-function-on-a-spanner-postgresql-database.)
   * [Sets a request tag for a single query](#sets-a-request-tag-for-a-single-query)
   * [Run Batch update with RPC priority](#run-batch-update-with-rpc-priority)
   * [Run partitioned update with RPC priority](#run-partitioned-update-with-rpc-priority)
@@ -770,23 +768,6 @@ __Usage:__
 
 
 `node samples/indexing.js`
-
-
------
-
-
-
-
-### Calls a server side function on a Spanner PostgreSQL database.
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/insert-query-with-get-trasanction.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/insert-query-with-get-trasanction.js,samples/README.md)
-
-__Usage:__
-
-
-`node insert-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1518,23 +1499,6 @@ __Usage:__
 
 
 `node read-data-with-database-role.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
-
-
------
-
-
-
-
-### Calls a server side function on a Spanner PostgreSQL database.
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/read-query-with-get-transaction.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/read-query-with-get-transaction.js,samples/README.md)
-
-__Usage:__
-
-
-`node insert-query-with-get-transaction.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
