@@ -8895,17 +8895,16 @@ describe('Spanner', () => {
       });
 
       it('GOOGLE_STANDARD_SQL should use getTransaction for executing sql', async () => {
-        const promise = await DATABASE.getTransaction({optimisticLock: true});
-        const transaction = promise[0];
+        const promiseArray = await DATABASE.getTransaction({optimisticLock: true});
+        const transaction = promiseArray[0];
 
         try {
           const [rows] = await transaction!.run('SELECT * FROM TxnTable');
           assert.strictEqual(rows.length, googleSqlRecords.length);
         } catch (err) {
+          // flaky failures are acceptable here as long as the error is not due to a lock conflict
           if ((err as grpc.ServiceError).code === grpc.status.ABORTED) {
             assert.ok(err, 'Transaction is aborted');
-          } else {
-            console.log('ERROR: ', err);
           }
         } finally {
           transaction.end();

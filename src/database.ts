@@ -229,7 +229,6 @@ export interface GetIamPolicyOptions {
  * * @property {boolean} [optimisticLock] The optimistic lock a
  *     {@link Transaction} should use while running.
  */
-
 export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
 
 export type CreateSessionCallback = ResourceCallback<
