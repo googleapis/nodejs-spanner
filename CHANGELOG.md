@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.7.0](https://github.com/googleapis/nodejs-spanner/compare/v7.6.0...v7.7.0) (2024-04-17)
+
+
+### Features
+
+* OptimisticLock option for getTransaction method ([#2028](https://github.com/googleapis/nodejs-spanner/issues/2028)) ([dacf869](https://github.com/googleapis/nodejs-spanner/commit/dacf8697b20752041684710982035b4c97837d28))
+* **spanner:** Adding `EXPECTED_FULFILLMENT_PERIOD` to the indicate instance creation times (with `FULFILLMENT_PERIOD_NORMAL` or `FULFILLMENT_PERIOD_EXTENDED` ENUM) with the extended instance creation time triggered by On-Demand Capacity Feature ([#2024](https://github.com/googleapis/nodejs-spanner/issues/2024)) ([5292e03](https://github.com/googleapis/nodejs-spanner/commit/5292e035c5278ba6806f9e1eb84809ed893b1e37))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.2 ([#2026](https://github.com/googleapis/nodejs-spanner/issues/2026)) ([0ee9831](https://github.com/googleapis/nodejs-spanner/commit/0ee98319f291f552a0afc52629d12af9969d1d10))
+
 ## [7.6.0](https://github.com/googleapis/nodejs-spanner/compare/v7.5.0...v7.6.0) (2024-03-26)
 
 
