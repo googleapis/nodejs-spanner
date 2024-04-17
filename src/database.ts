@@ -224,6 +224,13 @@ export interface GetIamPolicyOptions {
   gaxOptions?: CallOptions;
 }
 
+/**
+ * @typedef {object} GetTransactionOptions
+ * * @property {boolean} [optimisticLock] The optimistic lock a
+ *     {@link Transaction} should use while running.
+ */
+export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
+
 export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
@@ -2015,16 +2022,36 @@ class Database extends common.GrpcServiceObject {
    * });
    * ```
    */
-  getTransaction(): Promise<[Transaction]>;
+  getTransaction(
+    optionsOrCallback?: GetTransactionOptions
+  ): Promise<[Transaction]>;
   getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
+    optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetTransactionCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as GetTransactionOptions)
+        : {};
     this.pool_.getSession((err, session, transaction) => {
+      if (options.requestOptions) {
+        transaction!.requestOptions = Object.assign(
+          transaction!.requestOptions || {},
+          options.requestOptions
+        );
+      }
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err as grpc.ServiceError | null, transaction);
+      cb!(err as grpc.ServiceError | null, transaction);
     });
   }
 
