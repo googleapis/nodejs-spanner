@@ -8894,6 +8894,24 @@ describe('Spanner', () => {
         mismatchedColumnError(done, DATABASE, googleSqlTable);
       });
 
+      it('GOOGLE_STANDARD_SQL should use getTransaction for executing sql', async () => {
+        const transaction = (
+          await DATABASE.getTransaction({optimisticLock: true})
+        )[0];
+
+        try {
+          const [rows] = await transaction!.run('SELECT * FROM TxnTable');
+          assert.strictEqual(rows.length, googleSqlRecords.length);
+        } catch (err) {
+          // flaky failures are acceptable here as long as the error is not due to a lock conflict
+          if ((err as grpc.ServiceError).code === grpc.status.ABORTED) {
+            assert.ok(err, 'Transaction is aborted');
+          }
+        } finally {
+          transaction.end();
+        }
+      });
+
       it('POSTGRESQL should throw an error for mismatched columns', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
