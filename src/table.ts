@@ -31,6 +31,7 @@ import {
 import {google as databaseAdmin, google} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
+import { MetadataCallback, MetadataResponse } from '@google-cloud/common';
 
 export type Key = string | string[];
 
@@ -341,26 +342,56 @@ class Table {
       typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
-  
-    var databaseDialect = this.database.getDatabaseDialect(gaxOptions);
-    
-    const parts = this.name.split('.');
-    const schema = parts.length === 2 ? parts[0] : null;
-    const table = parts.length === 2 ? parts[1] : this.name;
-    
-    let dropStatement = 'DROP TABLE `' + table + '`';
 
-    if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL) {
-      dropStatement = schema ? `DROP TABLE "${schema}"."${table}"` : `DROP TABLE "${table}"`;
-    } else if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL) { 
-      dropStatement = schema ? 'DROP TABLE `' + schema + '`.`' + table + '`' : dropStatement;
-    }
+    let dropStatement = 'DROP TABLE `' + this.name + '`';
+  
+    this.database.getDatabaseDialect(gaxOptions).then(result => {
+      console.log("line 351 table.ts: ", result);
+      // if (Array.isArray(result) && result.includes('POSTGRESQL')) {
+      //   dropStatement = 'DROP TABLE "' + this.name + '"';
+      //   // console.log("line 352 table.ts: ", dropStatement);
+      // } else if (Array.isArray(result) && result.includes('GOOGLE_STANDARD_SQL')) {
+      //   dropStatement = 'DROP TABLE `' + this.name + '`';
+      // } else {
+      //   console.log("Unknown or unexpected database dialect:", result);
+      //   return;
+      // }
+      // console.log("line 359: ", dropStatement);
+      // try {
+      //   this.database.updateSchema(
+      //     dropStatement,
+      //     gaxOptions,
+      //     callback!
+      //   );
+      // } catch(err) {
+      //   console.log("ERROR: ", err);
+      // }
+    }).catch(err => {
+      console.log("ERROR: ", err);
+    });
+    // console.log("line 352 table.ts: ", this.database.getDatabaseDialect(gaxOptions).then(result => {
+    //   console.log("line 350 table.ts: ", result);
+    // }));
     
-    return this.database.updateSchema(
-      dropStatement,
-      gaxOptions,
-      callback!
-    );
+    // const parts = this.name.split('.');
+    // const schema = parts.length === 2 ? parts[0] : null;
+    // const table = parts.length === 2 ? parts[1] : this.name;
+    
+    // let dropStatement = 'DROP TABLE `' + this.name + '`';
+
+    // if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL) {
+    //   dropStatement = schema ? `DROP TABLE "${schema}"."${table}"` : `DROP TABLE "${table}"`;
+    // } else if (databaseDialect == google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL) { 
+    //   dropStatement = schema ? 'DROP TABLE `' + schema + '`.`' + table + '`' : dropStatement;
+    // }
+
+    // console.log("line 374 table.ts: ", dropStatement);
+    
+    // return this.database.updateSchema(
+    //   dropStatement,
+    //   gaxOptions,
+    //   callback!
+    // );
   }
   /**
    * @typedef {array} DeleteRowsResponse

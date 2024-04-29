@@ -19,6 +19,8 @@ import {
   ExistsCallback,
   GetConfig,
   Metadata,
+  MetadataCallback,
+  MetadataResponse,
   ServiceObjectConfig,
 } from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -120,6 +122,11 @@ type CreateBatchTransactionResponse = [
   google.spanner.v1.ITransaction | google.spanner.v1.ISession,
 ];
 type DatabaseResponse = [Database, r.Response];
+// type DialectResponse = Database["databaseDialect"];
+// type DialectCallback = NormalCallback<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null>;
+export interface DialectCallback {
+  (err: Error | null, dialect:google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null): void;
+}
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
 
 type GetSnapshotCallback = NormalCallback<Snapshot>;
@@ -155,6 +162,8 @@ type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
 export type GetDatabaseRolesOptions = PagedOptionsWithFilter;
+export type DatabaseDialectResponse = MetadataResponse;
+export type DatabaseDialectCallback = MetadataCallback;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -1490,16 +1499,40 @@ class Database extends common.GrpcServiceObject {
    *     for more details.
    * @returns {google.spanner.admin.database.v1.DatabaseDialect} Returns the database dialect
    */
+
+  
+  getDatabaseDialect(gaxOptions?: CallOptions): Promise<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null>;
+  getDatabaseDialect(callback: DialectCallback): void;
+  getDatabaseDialect(gaxOptions: CallOptions, callback: DialectCallback): void;
   getDatabaseDialect(
-    gaxOptions?: CallOptions
-  ): (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null)
-  {
+    gaxOptionsOrCallback?: CallOptions | DialectCallback,
+    cb?: DialectCallback
+  ): Promise<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null> | void {
+
+    const gaxOptions =
+      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+    const callback =
+      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
+    // console.log(gaxOptionsOrCallback);
+    // (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null)
     if (this.databaseDialect == databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED || this.databaseDialect == null || this.databaseDialect == undefined) {
-      this.getMetadata(gaxOptions || {}, (err, metadata) => {
-        this.databaseDialect = metadata?.databaseDialect;
-      });
+      this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
+      callback(null, this.databaseDialect);
+      // this.getMetadata(gaxOptions || {}, (err, metadata) => {
+      //   if(err) {
+      //     callback(err);
+      //     return ;
+      //   } else {
+      //     this.databaseDialect = metadata?.databaseDialect;
+      //     console.log("line 1514 database.ts: ", this.databaseDialect);
+      //     callback(null, this.databaseDialect);
+      //   }
+      // });
+      // console.log("line 1515 database.ts: ", this.databaseDialect);
+      // return this.databaseDialect;
+    } else {
+      callback(null, this.databaseDialect);
     }
-    return this.databaseDialect || databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
   }
 
   /**
