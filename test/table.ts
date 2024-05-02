@@ -218,8 +218,9 @@ describe('Table', () => {
       function callback() {}
 
       table.database = {
-        getDatabaseDialect: (gaxOptions) => {
-          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+        getDatabaseDialect: gaxOptions => {
+          return google.spanner.admin.database.v1.DatabaseDialect
+            .GOOGLE_STANDARD_SQL;
         },
         updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
@@ -238,11 +239,15 @@ describe('Table', () => {
       function callback() {}
 
       tableWithSchema.database = {
-        getDatabaseDialect: (gaxOptions) => {
-          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+        getDatabaseDialect: gaxOptions => {
+          return google.spanner.admin.database.v1.DatabaseDialect
+            .GOOGLE_STANDARD_SQL;
         },
         updateSchema: (schema, gaxOptions, callback_) => {
-          assert.strictEqual(schema, 'DROP TABLE `' + 'schema' + '`.`' + table.name + '`');
+          assert.strictEqual(
+            schema,
+            'DROP TABLE `' + 'schema' + '`.`' + table.name + '`'
+          );
           assert.strictEqual(callback_, callback);
           return updateSchemaReturnValue;
         },
@@ -258,8 +263,8 @@ describe('Table', () => {
       function callback() {}
 
       table.database = {
-        getDatabaseDialect: (gaxOptions) => {
-          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL
+        getDatabaseDialect: gaxOptions => {
+          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
         },
         updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, `DROP TABLE "${table.name}"`);
@@ -278,8 +283,8 @@ describe('Table', () => {
       function callback() {}
 
       tableWithSchema.database = {
-        getDatabaseDialect: (gaxOptions) => {
-          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL
+        getDatabaseDialect: gaxOptions => {
+          return google.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
         },
         updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, `DROP TABLE "schema"."${table.name}"`);
@@ -295,9 +300,10 @@ describe('Table', () => {
     it('should accept and pass gaxOptions to updateSchema', done => {
       const gaxOptions = {};
       table.database = {
-        getDatabaseDialect: (gaxOptionsFromTable) => {
+        getDatabaseDialect: gaxOptionsFromTable => {
           assert.strictEqual(gaxOptionsFromTable, gaxOptions);
-          return google.spanner.admin.database.v1.DatabaseDialect.GOOGLE_STANDARD_SQL
+          return google.spanner.admin.database.v1.DatabaseDialect
+            .GOOGLE_STANDARD_SQL;
         },
         updateSchema: (schema, gaxOptionsFromTable) => {
           assert.strictEqual(gaxOptionsFromTable, gaxOptions);

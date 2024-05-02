@@ -125,7 +125,13 @@ type DatabaseResponse = [Database, r.Response];
 // type DialectResponse = Database["databaseDialect"];
 // type DialectCallback = NormalCallback<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null>;
 export interface DialectCallback {
-  (err: Error | null, dialect:google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null): void;
+  (
+    err: Error | null,
+    dialect:
+      | google.spanner.admin.database.v1.DatabaseDialect
+      | keyof typeof google.spanner.admin.database.v1.DatabaseDialect
+      | null
+  ): void;
 }
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
 
@@ -139,6 +145,10 @@ export interface SessionPoolConstructor {
     options?: SessionPoolOptions | null
   ): SessionPoolInterface;
 }
+
+export type GetDatabaseDialectCallback = NormalCallback<
+  EnumKey<typeof google.spanner.admin.database.v1.DatabaseDialect>
+>;
 
 export interface SetIamPolicyRequest {
   policy: Policy | null;
@@ -175,7 +185,15 @@ type IDatabaseTranslatedEnum = Omit<
     typeof databaseAdmin.spanner.admin.database.v1.Database.State
   >,
   'restoreInfo'
-> & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
+> &
+  Omit<
+    TranslateEnumKeys<
+      databaseAdmin.spanner.admin.database.v1.IDatabase,
+      'databaseDialect',
+      typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+    >,
+    'restoreInfo'
+  > & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
 
 /**
  * IRestoreInfo structure with restore source type enum translated to string form.
@@ -321,12 +339,14 @@ class Database extends common.GrpcServiceObject {
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
-  databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
+  databaseDialect?: EnumKey<
+    typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+  > | null;
   constructor(
     instance: Instance,
     name: string,
     poolOptions?: SessionPoolConstructor | SessionPoolOptions,
-    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions,
+    queryOptions?: spannerClient.spanner.v1.ExecuteSqlRequest.IQueryOptions
   ) {
     const methods = {
       /**
@@ -444,7 +464,7 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
+    // this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -1488,8 +1508,8 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Get this database's dialect. 
-   * 
+   * Get this database's dialect.
+   *
    * @see {@link #getMetadata}
    *
    * @method Database#getDatabaseDialect
@@ -1500,39 +1520,40 @@ class Database extends common.GrpcServiceObject {
    * @returns {google.spanner.admin.database.v1.DatabaseDialect} Returns the database dialect
    */
 
-  
-  getDatabaseDialect(gaxOptions?: CallOptions): Promise<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null>;
-  getDatabaseDialect(callback: DialectCallback): void;
-  getDatabaseDialect(gaxOptions: CallOptions, callback: DialectCallback): void;
   getDatabaseDialect(
-    gaxOptionsOrCallback?: CallOptions | DialectCallback,
-    cb?: DialectCallback
-  ): Promise<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null> | void {
-
+    options?: CallOptions
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  >;
+  getDatabaseDialect(callback: GetDatabaseDialectCallback): void;
+  getDatabaseDialect(
+    options: CallOptions,
+    callback: GetDatabaseDialectCallback
+  ): void;
+  async getDatabaseDialect(
+    optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
+    cb?: GetDatabaseDialectCallback
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  > {
     const gaxOptions =
-      typeof gaxOptionsOrCallback === 'object' ? gaxOptionsOrCallback : {};
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+
     const callback =
-      typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
-    // console.log(gaxOptionsOrCallback);
-    // (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null)
-    if (this.databaseDialect == databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED || this.databaseDialect == null || this.databaseDialect == undefined) {
-      this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL;
-      callback(null, this.databaseDialect);
-      // this.getMetadata(gaxOptions || {}, (err, metadata) => {
-      //   if(err) {
-      //     callback(err);
-      //     return ;
-      //   } else {
-      //     this.databaseDialect = metadata?.databaseDialect;
-      //     console.log("line 1514 database.ts: ", this.databaseDialect);
-      //     callback(null, this.databaseDialect);
-      //   }
-      // });
-      // console.log("line 1515 database.ts: ", this.databaseDialect);
-      // return this.databaseDialect;
-    } else {
-      callback(null, this.databaseDialect);
+      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+
+    if (
+      this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+      this.databaseDialect === null ||
+      this.databaseDialect === undefined
+    ) {
+      const [metadata] = await this.getMetadata(gaxOptions);
+      this.databaseDialect = metadata.databaseDialect;
     }
+    callback(null, this.databaseDialect);
+    return this.databaseDialect || undefined;
   }
 
   /**
