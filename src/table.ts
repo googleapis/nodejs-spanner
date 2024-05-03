@@ -350,9 +350,9 @@ class Table {
 
     let dropStatement = 'DROP TABLE `' + this.name + '`';
 
-    this.database
-      .getDatabaseDialect(gaxOptions)
-      .then(result => {
+    const performDelete = async (): Promise<void | DropTableResponse> => {
+        const result = await this.database.getDatabaseDialect(gaxOptions);
+  
         if (result && result.includes('POSTGRESQL')) {
           dropStatement = schema
             ? `DROP TABLE "${schema}"."${table}"`
@@ -362,12 +362,19 @@ class Table {
             ? 'DROP TABLE `' + schema + '`.`' + table + '`'
             : dropStatement;
         }
-        return this.database.updateSchema(dropStatement, gaxOptions, callback!);
-      })
-      .catch(err => {
-        console.log('ERROR: ', err);
-        return Promise.reject(err);
-      });
+
+        const updateSchemaResult = callback
+          ? this.database.updateSchema(dropStatement, gaxOptions, callback)
+          : this.database.updateSchema(dropStatement, gaxOptions);
+
+        return updateSchemaResult as Promise<DropTableResponse | void>;
+    }
+      
+    if (!callback) {
+      return performDelete() as Promise<DropTableResponse>;
+    } else {
+      performDelete();
+    }
   }
   /**
    * @typedef {array} DeleteRowsResponse
