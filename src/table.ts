@@ -351,25 +351,25 @@ class Table {
     let dropStatement = 'DROP TABLE `' + this.name + '`';
 
     const performDelete = async (): Promise<void | DropTableResponse> => {
-        const result = await this.database.getDatabaseDialect(gaxOptions);
-  
-        if (result && result.includes('POSTGRESQL')) {
-          dropStatement = schema
-            ? `DROP TABLE "${schema}"."${table}"`
-            : `DROP TABLE "${table}"`;
-        } else if (result && result.includes('GOOGLE_STANDARD_SQL')) {
-          dropStatement = schema
-            ? 'DROP TABLE `' + schema + '`.`' + table + '`'
-            : dropStatement;
-        }
+      const result = await this.database.getDatabaseDialect(gaxOptions);
 
-        const updateSchemaResult = callback
-          ? this.database.updateSchema(dropStatement, gaxOptions, callback)
-          : this.database.updateSchema(dropStatement, gaxOptions);
+      if (result && result.includes('POSTGRESQL')) {
+        dropStatement = schema
+          ? `DROP TABLE "${schema}"."${table}"`
+          : `DROP TABLE "${table}"`;
+      } else if (result && result.includes('GOOGLE_STANDARD_SQL')) {
+        dropStatement = schema
+          ? 'DROP TABLE `' + schema + '`.`' + table + '`'
+          : dropStatement;
+      }
 
-        return updateSchemaResult as Promise<DropTableResponse | void>;
-    }
-      
+      const updateSchemaResult = callback
+        ? this.database.updateSchema(dropStatement, gaxOptions, callback)
+        : this.database.updateSchema(dropStatement, gaxOptions);
+
+      return updateSchemaResult as Promise<DropTableResponse | void>;
+    };
+
     if (!callback) {
       return performDelete() as Promise<DropTableResponse>;
     } else {
