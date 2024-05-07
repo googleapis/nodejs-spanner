@@ -55,7 +55,9 @@ function main(instanceId, databaseId, projectId) {
         databaseId
       )}:`
     );
-    console.log(`Proto Descriptors: ${getDatabaseDdlResponse.protoDescriptors}`);
+    console.log(
+      `Proto Descriptors: ${getDatabaseDdlResponse.protoDescriptors}`
+    );
     getDatabaseDdlResponse.statements.forEach(element => {
       console.log(element);
     });
