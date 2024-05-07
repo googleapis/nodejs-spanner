@@ -75,7 +75,7 @@ $root.spanner = (function () {
               i < keys.length;
               ++i
             )
-              if (properties[keys[i]] != null)
+              if (properties[keys[i]] !== null)
                 this[keys[i]] = properties[keys[i]];
         }
 
@@ -137,24 +137,24 @@ $root.spanner = (function () {
         SingerInfo.encode = function encode(message, writer) {
           if (!writer) writer = $Writer.create();
           if (
-            message.singerId != null &&
+            message.singerId !== null &&
             Object.hasOwnProperty.call(message, 'singerId')
           )
             writer.uint32(/* id 1, wireType 0 =*/ 8).int64(message.singerId);
           if (
-            message.birthDate != null &&
+            message.birthDate !== null &&
             Object.hasOwnProperty.call(message, 'birthDate')
           )
             writer.uint32(/* id 2, wireType 2 =*/ 18).string(message.birthDate);
           if (
-            message.nationality != null &&
+            message.nationality !== null &&
             Object.hasOwnProperty.call(message, 'nationality')
           )
             writer
               .uint32(/* id 3, wireType 2 =*/ 26)
               .string(message.nationality);
           if (
-            message.genre != null &&
+            message.genre !== null &&
             Object.hasOwnProperty.call(message, 'genre')
           )
             writer.uint32(/* id 4, wireType 0 =*/ 32).int32(message.genre);
@@ -242,7 +242,7 @@ $root.spanner = (function () {
         SingerInfo.verify = function verify(message) {
           if (typeof message !== 'object' || message === null)
             return 'object expected';
-          if (message.singerId != null && message.hasOwnProperty('singerId'))
+          if (message.singerId !== null && message.hasOwnProperty('singerId'))
             if (
               !$util.isInteger(message.singerId) &&
               !(
@@ -252,16 +252,16 @@ $root.spanner = (function () {
               )
             )
               return 'singerId: integer|Long expected';
-          if (message.birthDate != null && message.hasOwnProperty('birthDate'))
+          if (message.birthDate !== null && message.hasOwnProperty('birthDate'))
             if (!$util.isString(message.birthDate))
               return 'birthDate: string expected';
           if (
-            message.nationality != null &&
+            message.nationality !== null &&
             message.hasOwnProperty('nationality')
           )
             if (!$util.isString(message.nationality))
               return 'nationality: string expected';
-          if (message.genre != null && message.hasOwnProperty('genre'))
+          if (message.genre !== null && message.hasOwnProperty('genre'))
             switch (message.genre) {
               default:
                 return 'genre: enum value expected';
@@ -286,7 +286,7 @@ $root.spanner = (function () {
           if (object instanceof $root.spanner.examples.music.SingerInfo)
             return object;
           var message = new $root.spanner.examples.music.SingerInfo();
-          if (object.singerId != null)
+          if (object.singerId !== null)
             if ($util.Long)
               (message.singerId = $util.Long.fromValue(
                 object.singerId
@@ -300,9 +300,9 @@ $root.spanner = (function () {
                 object.singerId.low >>> 0,
                 object.singerId.high >>> 0
               ).toNumber();
-          if (object.birthDate != null)
+          if (object.birthDate !== null)
             message.birthDate = String(object.birthDate);
-          if (object.nationality != null)
+          if (object.nationality !== null)
             message.nationality = String(object.nationality);
           switch (object.genre) {
             default:
@@ -357,7 +357,7 @@ $root.spanner = (function () {
             object.nationality = '';
             object.genre = options.enums === String ? 'POP' : 0;
           }
-          if (message.singerId != null && message.hasOwnProperty('singerId'))
+          if (message.singerId !== null && message.hasOwnProperty('singerId'))
             if (typeof message.singerId === 'number')
               object.singerId =
                 options.longs === String
@@ -373,14 +373,14 @@ $root.spanner = (function () {
                       message.singerId.high >>> 0
                     ).toNumber()
                   : message.singerId;
-          if (message.birthDate != null && message.hasOwnProperty('birthDate'))
+          if (message.birthDate !== null && message.hasOwnProperty('birthDate'))
             object.birthDate = message.birthDate;
           if (
-            message.nationality != null &&
+            message.nationality !== null &&
             message.hasOwnProperty('nationality')
           )
             object.nationality = message.nationality;
-          if (message.genre != null && message.hasOwnProperty('genre'))
+          if (message.genre !== null && message.hasOwnProperty('genre'))
             object.genre =
               options.enums === String
                 ? $root.spanner.examples.music.Genre[message.genre] ===
