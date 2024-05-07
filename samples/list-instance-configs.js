@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,11 +34,15 @@ function main(projectId) {
     projectId: projectId,
   });
 
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
   async function listInstanceConfigs() {
     // Lists all available instance configurations in the project.
     // See https://cloud.google.com/spanner/docs/instance-configurations#configuration for a list of all available
     // configurations.
-    const [instanceConfigs] = await spanner.getInstanceConfigs();
+    const [instanceConfigs] = await instanceAdminClient.listInstanceConfigs({
+      parent: instanceAdminClient.projectPath(projectId),
+    });
     console.log(`Available instance configs for project ${projectId}:`);
     instanceConfigs.forEach(instanceConfig => {
       console.log(

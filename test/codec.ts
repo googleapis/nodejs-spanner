@@ -169,6 +169,23 @@ describe('codec', () => {
     });
   });
 
+  describe.skip('Float32', () => {
+    it('should store the value', () => {
+      const value = 8;
+      const float32 = new codec.Float32(value);
+
+      assert.strictEqual(float32.value, value);
+    });
+
+    it('should return as a float32', () => {
+      const value = '8.2';
+      const float32 = new codec.Float32(value);
+
+      assert.strictEqual(float32.valueOf(), Number(value));
+      assert.strictEqual(float32 + 2, Number(value) + 2);
+    });
+  });
+
   describe('Int', () => {
     it('should stringify the value', () => {
       const value = 8;
@@ -194,6 +211,35 @@ describe('codec', () => {
           int.valueOf();
         },
         new RegExp('Integer ' + value + ' is out of bounds.')
+      );
+    });
+  });
+
+  describe('PGOid', () => {
+    it('should stringify the value', () => {
+      const value = 8;
+      const oid = new codec.PGOid(value);
+
+      assert.strictEqual(oid.value, '8');
+    });
+
+    it('should return as a number', () => {
+      const value = 8;
+      const oid = new codec.PGOid(value);
+
+      assert.strictEqual(oid.valueOf(), 8);
+      assert.strictEqual(oid + 2, 10);
+    });
+
+    it('should throw if number is out of bounds', () => {
+      const value = '9223372036854775807';
+      const oid = new codec.PGOid(value);
+
+      assert.throws(
+        () => {
+          oid.valueOf();
+        },
+        new RegExp('PG.OID ' + value + ' is out of bounds.')
       );
     });
   });
@@ -634,6 +680,17 @@ describe('codec', () => {
       assert.deepStrictEqual(decoded, expected);
     });
 
+    it.skip('should decode FLOAT32', () => {
+      const value = 'Infinity';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.FLOAT32,
+      });
+
+      assert(decoded instanceof codec.Float32);
+      assert.strictEqual(decoded.value, value);
+    });
+
     it('should decode FLOAT64', () => {
       const value = 'Infinity';
 
@@ -735,6 +792,18 @@ describe('codec', () => {
       });
 
       assert.deepStrictEqual(decoded.toString(), expected);
+    });
+
+    it('should decode PG OID', () => {
+      const value = '64';
+
+      const decoded = codec.decode(value, {
+        code: google.spanner.v1.TypeCode.INT64,
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
+      });
+
+      assert(decoded instanceof codec.PGOid);
+      assert.strictEqual(decoded.value, value);
     });
 
     it('should decode TIMESTAMP', () => {
@@ -993,6 +1062,22 @@ describe('codec', () => {
       assert.strictEqual(encoded, '10');
     });
 
+    it('should encode PG OID', () => {
+      const value = new codec.PGOid(10);
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, '10');
+    });
+
+    it.skip('should encode FLOAT32', () => {
+      const value = new codec.Float32(10);
+
+      const encoded = codec.encode(value);
+
+      assert.strictEqual(encoded, 10);
+    });
+
     it('should encode FLOAT64', () => {
       const value = new codec.Float(10);
 
@@ -1080,6 +1165,12 @@ describe('codec', () => {
       });
     });
 
+    it.skip('should determine if the value is a float32', () => {
+      assert.deepStrictEqual(codec.getType(new codec.Float32(1.1)), {
+        type: 'float32',
+      });
+    });
+
     it('should determine if the value is an int', () => {
       assert.deepStrictEqual(codec.getType(1234), {type: 'int64'});
       assert.deepStrictEqual(codec.getType(new codec.Int(1)), {type: 'int64'});
@@ -1158,6 +1249,12 @@ describe('codec', () => {
         type: 'pgNumeric',
       });
     });
+
+    it('should determine if the value is a PGOid', () => {
+      assert.deepStrictEqual(codec.getType(new codec.PGOid(5678)), {
+        type: 'pgOid',
+      });
+    });
   });
 
   describe('convertToListValue', () => {
@@ -1225,6 +1322,9 @@ describe('codec', () => {
         },
         int64: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        },
+        float32: {
+          code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT32],
         },
         float64: {
           code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.FLOAT64],
@@ -1381,6 +1481,24 @@ describe('codec', () => {
       assert.deepStrictEqual(type, {
         code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.NUMERIC],
         typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_NUMERIC,
+      });
+    });
+
+    it('should set code and typeAnnotation for pgOid string', () => {
+      const type = codec.createTypeObject('pgOid');
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
+      });
+    });
+
+    it('should set code and typeAnnotation for pgOid friendlyType object', () => {
+      const type = codec.createTypeObject({type: 'pgOid'});
+
+      assert.deepStrictEqual(type, {
+        code: google.spanner.v1.TypeCode[google.spanner.v1.TypeCode.INT64],
+        typeAnnotation: google.spanner.v1.TypeAnnotationCode.PG_OID,
       });
     });
   });

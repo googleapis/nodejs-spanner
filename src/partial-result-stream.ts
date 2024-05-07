@@ -285,8 +285,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
   }
 
-  _clearPendingValues() {
-    this._values = [];
+  _resetPendingValues() {
     if (this._pendingValueForResume) {
       this._pendingValue = this._pendingValueForResume;
     } else {
@@ -533,7 +532,9 @@ export function partialResultStream(
     });
   };
   const makeRequest = (): void => {
-    partialRSStream._clearPendingValues();
+    if (is.defined(lastResumeToken) && lastResumeToken.length > 0) {
+      partialRSStream._resetPendingValues();
+    }
     lastRequestStream = requestFn(lastResumeToken);
     lastRequestStream.on('end', endListener);
     requestsStream.add(lastRequestStream);

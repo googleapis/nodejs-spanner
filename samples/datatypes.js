@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 async function createVenuesTable(instanceId, databaseId, projectId) {
   // [START spanner_create_table_with_datatypes]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
 
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
@@ -26,14 +24,15 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance';
   // const databaseId = 'my-database';
 
-  // Creates a client
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   const request = [
     `CREATE TABLE Venues (
@@ -50,7 +49,14 @@ async function createVenuesTable(instanceId, databaseId, projectId) {
   ];
 
   // Creates a table in an existing database.
-  const [operation] = await database.updateSchema(request);
+  const [operation] = await databaseAdminClient.updateDatabaseDdl({
+    database: databaseAdminClient.databasePath(
+      projectId,
+      instanceId,
+      databaseId
+    ),
+    statements: request,
+  });
 
   console.log(`Waiting for operation on ${databaseId} to complete...`);
 
@@ -610,7 +616,6 @@ async function queryWithTimestamp(instanceId, databaseId, projectId) {
 const {addNumericColumn} = require('./numeric-add-column');
 const {updateWithNumericData} = require('./numeric-update-data');
 const {queryWithNumericParameter} = require('./numeric-query-parameter');
-
 const {addJsonColumn} = require('./json-add-column');
 const {updateWithJsonData} = require('./json-update-data');
 const {queryWithJsonParameter} = require('./json-query-parameter');
@@ -758,6 +763,7 @@ require('yargs')
   .example(
     'node $0 queryWithNumericParameter "my-instance" "my-database" "my-project-id"'
   )
+  .example('node $0 addJsonColumn "my-instance" "my-database" "my-project-id"')
   .wrap(120)
   .recommendCommands()
   .epilogue('For more information, see https://cloud.google.com/spanner/docs')

@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@
 function main(instanceId, databaseId, projectId) {
   // [START spanner_alter_table_with_foreign_key_delete_cascade]
 
-  // Imports the Google Cloud client library
-  const {Spanner} = require('@google-cloud/spanner');
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -31,23 +28,32 @@ function main(instanceId, databaseId, projectId) {
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
 
-  // Creates a client
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
+
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and a database. The database does not need to exist.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function alterTableWithForeignKeyDeleteCascade() {
-    const [operation] = await database.updateSchema([
+    const request = [
       `ALTER TABLE ShoppingCarts
-      ADD CONSTRAINT FKShoppingCartsCustomerName
-      FOREIGN KEY (CustomerName)
-      REFERENCES Customers(CustomerName)
-      ON DELETE CASCADE`,
-    ]);
+        ADD CONSTRAINT FKShoppingCartsCustomerName
+        FOREIGN KEY (CustomerName)
+        REFERENCES Customers(CustomerName)
+        ON DELETE CASCADE`,
+    ];
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log(`Waiting for operation on ${databaseId} to complete...`);
     await operation.promise();

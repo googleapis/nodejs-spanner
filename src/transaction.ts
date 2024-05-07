@@ -106,6 +106,7 @@ export interface RequestOptions {
 export interface CommitOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
+  maxCommitDelay?: spannerClient.protobuf.IDuration;
   gaxOptions?: CallOptions;
 }
 
@@ -1851,6 +1852,9 @@ export class Transaction extends Dml {
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
+   * @property {spannerClient.proto.IDuration} maxCommitDelay Maximum amount
+   *     of delay the commit is willing to incur in order to improve
+   *     throughput. Value should be between 0ms and 500ms.
    * @property {object} [gaxOptions] The request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -1940,6 +1944,12 @@ export class Transaction extends Dml {
       (options as CommitOptions).returnCommitStats
     ) {
       reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
+    }
+    if (
+      'maxCommitDelay' in options &&
+      (options as CommitOptions).maxCommitDelay
+    ) {
+      reqOpts.maxCommitDelay = (options as CommitOptions).maxCommitDelay;
     }
     reqOpts.requestOptions = Object.assign(
       requestOptions || {},

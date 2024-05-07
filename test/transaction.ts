@@ -1635,7 +1635,14 @@ describe('Transaction', () => {
       });
 
       it('should accept commit options', done => {
-        const options = {returnCommitStats: true};
+        const maxCommitDelay = new google.protobuf.Duration({
+          seconds: 0, // 0 seconds
+          nanos: 100000000, // 100,000,000 nanoseconds = 100 milliseconds
+        });
+        const options = {
+          returnCommitStats: true,
+          maxCommitDelay: maxCommitDelay,
+        };
         transaction.request = config => {
           assert.strictEqual(config.reqOpts.returnCommitStats, true);
           done();

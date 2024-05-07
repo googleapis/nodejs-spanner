@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 
 function main(projectId) {
   // [START spanner_get_instance_config]
+
   /**
    * TODO(developer): Uncomment the following line before running the sample.
    */
@@ -34,11 +35,15 @@ function main(projectId) {
     projectId: projectId,
   });
 
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
   async function getInstanceConfig() {
     // Get the instance config for the multi-region North America 6 (NAM6).
     // See https://cloud.google.com/spanner/docs/instance-configurations#configuration for a list of all available
     // configurations.
-    const [instanceConfig] = await spanner.getInstanceConfig('nam6');
+    const [instanceConfig] = await instanceAdminClient.getInstanceConfig({
+      name: instanceAdminClient.instanceConfigPath(projectId, 'nam6'),
+    });
     console.log(
       `Available leader options for instance config ${instanceConfig.name} ('${
         instanceConfig.displayName

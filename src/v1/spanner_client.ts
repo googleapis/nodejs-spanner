@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import type {
 import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+
 /**
  * Client JSON configuration object, loaded from
  * `src/v1/spanner_client_config.json`.
@@ -53,6 +54,8 @@ export class SpannerClient {
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
+  private _universeDomain: string;
+  private _servicePath: string;
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -110,8 +113,27 @@ export class SpannerClient {
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SpannerClient;
+    if (
+      opts?.universe_domain &&
+      opts?.universeDomain &&
+      opts?.universe_domain !== opts?.universeDomain
+    ) {
+      throw new Error(
+        'Please set either universe_domain or universeDomain, but not both.'
+      );
+    }
+    const universeDomainEnvVar =
+      typeof process === 'object' && typeof process.env === 'object'
+        ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
+        : undefined;
+    this._universeDomain =
+      opts?.universeDomain ??
+      opts?.universe_domain ??
+      universeDomainEnvVar ??
+      'googleapis.com';
+    this._servicePath = 'spanner.' + this._universeDomain;
     const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+      opts?.servicePath || opts?.apiEndpoint || this._servicePath;
     this._providedCustomServicePath = !!(
       opts?.servicePath || opts?.apiEndpoint
     );
@@ -126,7 +148,7 @@ export class SpannerClient {
     opts.numericEnums = true;
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
-    if (servicePath !== staticMembers.servicePath && !('scopes' in opts)) {
+    if (servicePath !== this._servicePath && !('scopes' in opts)) {
       opts['scopes'] = staticMembers.scopes;
     }
 
@@ -151,16 +173,16 @@ export class SpannerClient {
     this.auth.useJWTAccessWithScope = true;
 
     // Set defaultServicePath on the auth object.
-    this.auth.defaultServicePath = staticMembers.servicePath;
+    this.auth.defaultServicePath = this._servicePath;
 
     // Set the default scopes in auth client if needed.
-    if (servicePath === staticMembers.servicePath) {
+    if (servicePath === this._servicePath) {
       this.auth.defaultScopes = staticMembers.scopes;
     }
 
     // Determine the client header string.
     const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
-    if (typeof process !== 'undefined' && 'versions' in process) {
+    if (typeof process === 'object' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
       clientHeader.push(`gl-web/${this._gaxModule.version}`);
@@ -204,15 +226,18 @@ export class SpannerClient {
     this.descriptors.stream = {
       executeStreamingSql: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
-        !!opts.fallback
+        !!opts.fallback,
+        /* gaxStreamingRetries: */ false
       ),
       streamingRead: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
-        !!opts.fallback
+        !!opts.fallback,
+        /* gaxStreamingRetries: */ false
       ),
       batchWrite: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
-        !!opts.fallback
+        !!opts.fallback,
+        /* gaxStreamingRetries: */ false
       ),
     };
 
@@ -329,19 +354,50 @@ export class SpannerClient {
 
   /**
    * The DNS address for this API service.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static servicePath is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'spanner.googleapis.com';
   }
 
   /**
-   * The DNS address for this API service - same as servicePath(),
-   * exists for compatibility reasons.
+   * The DNS address for this API service - same as servicePath.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static apiEndpoint is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'spanner.googleapis.com';
+  }
+
+  /**
+   * The DNS address for this API service.
+   * @returns {string} The DNS address for this service.
+   */
+  get apiEndpoint() {
+    return this._servicePath;
+  }
+
+  get universeDomain() {
+    return this._universeDomain;
   }
 
   /**
@@ -1310,6 +1366,12 @@ export class SpannerClient {
    *   If `true`, then statistics related to the transaction will be included in
    *   the {@link protos.google.spanner.v1.CommitResponse.commit_stats|CommitResponse}.
    *   Default value is `false`.
+   * @param {google.protobuf.Duration} [request.maxCommitDelay]
+   *   Optional. The amount of latency this request is willing to incur in order
+   *   to improve throughput. If this field is not set, Spanner assumes requests
+   *   are relatively latency sensitive and automatically determines an
+   *   appropriate delay time. You can specify a batching delay value between 0
+   *   and 500 ms.
    * @param {google.spanner.v1.RequestOptions} request.requestOptions
    *   Common options for this request.
    * @param {object} [options]
@@ -1499,9 +1561,10 @@ export class SpannerClient {
    * @param {string} request.sql
    *   Required. The query request to generate partitions for. The request will
    *   fail if the query is not root partitionable. For a query to be root
-   *   partitionable, it needs to satisfy a few conditions. For example, the first
-   *   operator in the query execution plan must be a distributed union operator.
-   *   For more information about other conditions, see [Read data in
+   *   partitionable, it needs to satisfy a few conditions. For example, if the
+   *   query execution plan contains a distributed union operator, then it must be
+   *   the first operator in the plan. For more information about other
+   *   conditions, see [Read data in
    *   parallel](https://cloud.google.com/spanner/docs/reads#read_data_in_parallel).
    *
    *   The query request must not contain DML commands, such as INSERT, UPDATE, or
@@ -1958,6 +2021,19 @@ export class SpannerClient {
    *   Common options for this request.
    * @param {number[]} request.mutationGroups
    *   Required. The groups of mutations to be applied.
+   * @param {boolean} [request.excludeTxnFromChangeStreams]
+   *   Optional. When `exclude_txn_from_change_streams` is set to `true`:
+   *    * Mutations from all transactions in this batch write operation will not
+   *    be recorded in change streams with DDL option `allow_txn_exclusion=true`
+   *    that are tracking columns modified by these transactions.
+   *    * Mutations from all transactions in this batch write operation will be
+   *    recorded in change streams with DDL option `allow_txn_exclusion=false or
+   *    not set` that are tracking columns modified by these transactions.
+   *
+   *   When `exclude_txn_from_change_streams` is set to `false` or not set,
+   *   mutations from all transactions in this batch write operation will be
+   *   recorded in all change streams that are tracking columns modified by these
+   *   transactions.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}

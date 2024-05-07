@@ -573,24 +573,21 @@ message CreateDatabaseRequest {
   // Optional. The dialect of the Cloud Spanner Database.
   DatabaseDialect database_dialect = 5 [(google.api.field_behavior) = OPTIONAL];
 
-  // Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
+  // Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
   // 'extra_statements' above.
   // Contains a protobuf-serialized
   // [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
   // To generate it, [install](https://grpc.io/docs/protoc-installation/) and
   // run `protoc` with --include_imports and --descriptor_set_out. For example,
   // to generate for moon/shot/app.proto, run
-  // """
+  // ```
   // $protoc  --proto_path=/app_path --proto_path=/lib_path \
   //          --include_imports \
   //          --descriptor_set_out=descriptors.data \
   //          moon/shot/app.proto
-  // """
+  // ```
   // For more details, see protobuffer [self
   // description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-  // (--
-  // TODO(b/236424835) remove visibility check before launch.
-  // --)
   bytes proto_descriptors = 6 [(google.api.field_behavior) = OPTIONAL];
 }
 
@@ -695,24 +692,20 @@ message UpdateDatabaseDdlRequest {
   // `ALREADY_EXISTS`.
   string operation_id = 3;
 
-  // Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements in
-  // 'extra_statements' above.
+  // Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
   // Contains a protobuf-serialized
   // [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
   // To generate it, [install](https://grpc.io/docs/protoc-installation/) and
   // run `protoc` with --include_imports and --descriptor_set_out. For example,
   // to generate for moon/shot/app.proto, run
-  // """
+  // ```
   // $protoc  --proto_path=/app_path --proto_path=/lib_path \
   //          --include_imports \
   //          --descriptor_set_out=descriptors.data \
   //          moon/shot/app.proto
-  // """
+  // ```
   // For more details, see protobuffer [self
   // description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-  // (--
-  // TODO(b/236424835) remove visibility check before launch.
-  // --)
   bytes proto_descriptors = 4 [(google.api.field_behavior) = OPTIONAL];
 }
 
@@ -808,9 +801,6 @@ message GetDatabaseDdlResponse {
   // [google.protobuf.FileDescriptorSet](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto).
   // For more details, see protobuffer [self
   // description](https://developers.google.com/protocol-buffers/docs/techniques#self-description).
-  // (--
-  // TODO(b/236424835) remove visibility check before launch.
-  // --)
   bytes proto_descriptors = 2;
 }
 

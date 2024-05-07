@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,22 +31,28 @@ function main(
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
 
-  // Imports the Google Cloud Spanner client library
+  // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Instantiates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  async function pgAddColumn() {
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  async function pgAddColumn() {
     const request = ['ALTER TABLE Albums ADD COLUMN MarketingBudget BIGINT'];
 
     // Alter existing table to add a column.
-    const [operation] = await database.updateSchema(request);
+    const [operation] = await databaseAdminClient.updateDatabaseDdl({
+      database: databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      ),
+      statements: request,
+    });
 
     console.log(`Waiting for operation on ${databaseId} to complete...`);
 

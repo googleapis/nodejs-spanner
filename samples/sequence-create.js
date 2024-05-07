@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,9 +36,8 @@ async function main(instanceId, databaseId, projectId) {
   });
 
   async function createSequence(instanceId, databaseId) {
-    // Gets a reference to a Cloud Spanner instance and database
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+    // Gets a reference to a Cloud Spanner Database Admin Client object
+    const databaseAdminClient = spanner.getDatabaseAdminClient();
 
     const request = [
       "CREATE SEQUENCE Seq OPTIONS (sequence_kind = 'bit_reversed_positive')",
@@ -47,7 +46,14 @@ async function main(instanceId, databaseId, projectId) {
 
     // Creates a new table with sequence
     try {
-      const [operation] = await database.updateSchema(request);
+      const [operation] = await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        statements: request,
+      });
 
       console.log('Waiting for operation to complete...');
       await operation.promise();
@@ -58,6 +64,11 @@ async function main(instanceId, databaseId, projectId) {
     } catch (err) {
       console.error('ERROR:', err);
     }
+
+    // Gets a reference to a Cloud Spanner instance and database
+    const instance = spanner.instance(instanceId);
+    const database = instance.database(databaseId);
+
     database.runTransaction(async (err, transaction) => {
       if (err) {
         console.error(err);

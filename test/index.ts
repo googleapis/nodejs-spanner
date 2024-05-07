@@ -84,6 +84,7 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'date',
+      'float32',
       'float',
       'instance',
       'instanceConfig',
@@ -93,6 +94,8 @@ const fakePfy = extend({}, pfy, {
       'pgJsonb',
       'operation',
       'timestamp',
+      'getInstanceAdminClient',
+      'getDatabaseAdminClient',
     ]);
   },
 });
@@ -255,7 +258,7 @@ describe('Spanner', () => {
       const options = getFake(spanner).calledWith_[1];
 
       assert.deepStrictEqual(config, {
-        baseUrl: fakeV1.SpannerClient.servicePath,
+        baseUrl: 'spanner.googleapis.com',
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
           Operations: {
@@ -491,6 +494,23 @@ describe('Spanner', () => {
 
       const float = Spanner.float(value);
       assert.strictEqual(float, customValue);
+    });
+  });
+
+  describe.skip('float32', () => {
+    it('should create a Float32 instance', () => {
+      const value = {};
+      const customValue = {};
+
+      fakeCodec.Float32 = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const float32 = Spanner.float32(value);
+      assert.strictEqual(float32, customValue);
     });
   });
 
