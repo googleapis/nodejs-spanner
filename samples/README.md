@@ -31,12 +31,10 @@ and automatic, synchronous replication for high availability.
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
   * [Database-create-with-encryption-key](#database-create-with-encryption-key)
-  * [Creates a new database with a proto column and enum](#creates-a-new-database-with-a-proto-column-and-enum)
   * [Database-create-with-version-retention-period](#database-create-with-version-retention-period)
   * [Gets the schema definition of an existing database](#gets-the-schema-definition-of-an-existing-database)
   * [Gets the default leader option of an existing database](#gets-the-default-leader-option-of-an-existing-database)
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
-  * [Database-update-with-proto-descriptor](#database-update-with-proto-descriptor)
   * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
   * [Runs an execute sql request with directed read options](#runs-an-execute-sql-request-with-directed-read-options)
@@ -94,10 +92,6 @@ and automatic, synchronous replication for high availability.
   * [Alters a sequence in a PostgreSQL database.](#alters-a-sequence-in-a-postgresql-database.)
   * [Creates sequence in PostgreSQL database.](#creates-sequence-in-postgresql-database.)
   * [Drops a sequence in PostgreSQL database.](#drops-a-sequence-in-postgresql-database.)
-  * [Proto-column-dml-insert](#proto-column-dml-insert)
-  * [Proto-column-mutation-insert](#proto-column-mutation-insert)
-  * [Proto-column-query](#proto-column-query)
-  * [Proto-column-read](#proto-column-read)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
@@ -424,23 +418,6 @@ __Usage:__
 
 
 
-### Creates a new database with a proto column and enum
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-proto-descriptor.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-create-with-proto-descriptor.js,samples/README.md)
-
-__Usage:__
-
-
-`node database-create-with-proto-descriptor.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
-
-
------
-
-
-
-
 ### Database-create-with-version-retention-period
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-create-with-version-retention-period.js).
@@ -502,23 +479,6 @@ __Usage:__
 
 
 `node database-update-default-leader.js <INSTANCE_ID> <DATABASE_ID> <DEFAULT_LEADER> <PROJECT_ID>`
-
-
------
-
-
-
-
-### Database-update-with-proto-descriptor
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/database-update-with-proto-descriptor.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/database-update-with-proto-descriptor.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/database-update-with-proto-descriptor.js`
 
 
 -----
@@ -1488,74 +1448,6 @@ __Usage:__
 
 
 `node pg-sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
-
-
------
-
-
-
-
-### Proto-column-dml-insert
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-column-dml-insert.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-column-dml-insert.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/proto-column-dml-insert.js`
-
-
------
-
-
-
-
-### Proto-column-mutation-insert
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-column-mutation-insert.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-column-mutation-insert.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/proto-column-mutation-insert.js`
-
-
------
-
-
-
-
-### Proto-column-query
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-column-query.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-column-query.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/proto-column-query.js`
-
-
------
-
-
-
-
-### Proto-column-read
-
-View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-column-read.js).
-
-[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-column-read.js,samples/README.md)
-
-__Usage:__
-
-
-`node samples/proto-column-read.js`
 
 
 -----
