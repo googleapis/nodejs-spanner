@@ -73,9 +73,6 @@ describe('Table', () => {
   const DATABASE = {
     runTransaction: (opts, callback) => callback(null, transaction),
     getSnapshot: (options, callback) => callback(null, transaction),
-    getDatabaseDialect: (options, callback) =>
-      callback(null, 'GOOGLE_STANDARD_SQL'),
-    updateSchema: (options, callback) => callback(null),
   };
 
   const NAME = 'table-name';
