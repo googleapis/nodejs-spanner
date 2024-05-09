@@ -27,6 +27,7 @@ import * as through from 'through2';
 import {TimestampBounds} from '../src/transaction';
 import {google} from '../protos/protos';
 import RequestOptions = google.spanner.v1.RequestOptions;
+import { domNode } from 'is';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -73,6 +74,8 @@ describe('Table', () => {
   const DATABASE = {
     runTransaction: (opts, callback) => callback(null, transaction),
     getSnapshot: (options, callback) => callback(null, transaction),
+    getDatabaseDialect: (options, callback) => callback(null, 'GOOGLE_STANDARD_SQL'),
+    updateSchema: (options, callback) => callback(null)
   };
 
   const NAME = 'table-name';
@@ -212,53 +215,45 @@ describe('Table', () => {
   });
 
   describe('delete', () => {
-    it('should update the schema on the database for GoogleSQL', () => {
-      const updateSchemaReturnValue = {};
-
-      function callback() {}
-
-      table.database = {
-        getDatabaseDialect: gaxOptions => {
-          return google.spanner.admin.database.v1.DatabaseDialect
-            .GOOGLE_STANDARD_SQL;
-        },
-        updateSchema: (schema, gaxOptions, callback_) => {
-          assert.strictEqual(schema, 'DROP TABLE `' + table.name + '`');
-          assert.strictEqual(callback_, callback);
-          return updateSchemaReturnValue;
-        },
-      };
-
-      const returnValue = table.delete(callback);
-      assert.strictEqual(returnValue, updateSchemaReturnValue);
+    it('should update the schema on the database for GoogleSQL using await', async () => {
+      sandbox.stub(table.database, 'getDatabaseDialect').resolves('GOOGLE_STANDARD_SQL');
+      const stub = sandbox.stub(table.database, 'updateSchema').resolves();
+      await table.delete();
+      sinon.assert.calledOnce(stub);
+      assert.strictEqual(stub.args[0][0], 'DROP TABLE `table-name`');
     });
 
-    it('should update the schema on the database for GoogleSQL with schema in the table name', () => {
-      const updateSchemaReturnValue = {};
+    it('should update the schema on the database for GoogleSQL using callbacks', () => {
 
       function callback() {}
 
-      tableWithSchema.database = {
-        getDatabaseDialect: gaxOptions => {
-          return google.spanner.admin.database.v1.DatabaseDialect
-            .GOOGLE_STANDARD_SQL;
-        },
+      sandbox.stub(table.database, 'getDatabaseDialect').resolves('GOOGLE_STANDARD_SQL');
+      // const stub = sandbox.stub(table.database, 'updateSchema').resolves();
+      table.database = {
         updateSchema: (schema, gaxOptions, callback_) => {
-          assert.strictEqual(
-            schema,
-            'DROP TABLE `' + 'schema' + '`.`' + table.name + '`'
-          );
+          assert.strictEqual(schema, `DROP TABLE "${table.name}"`);
           assert.strictEqual(callback_, callback);
-          return updateSchemaReturnValue;
+          return undefined;
         },
       };
+      const returnValue = table.delete(callback);
+      assert.strictEqual(returnValue, undefined);
+    });  
+
+    it('should update the schema on the database for GoogleSQL with schema in the table name', () => {
+
+      function callback() {}
+
+      sandbox.stub(tableWithSchema.database, 'getDatabaseDialect').resolves('GOOGLE_STANDARD_SQL');
+      const stub = sandbox.stub(tableWithSchema.database, 'updateSchema').resolves();
+      sinon.assert.calledOnce(stub);
+      assert.strictEqual(stub.args[0][0], 'DROP TABLE `table-name`');
 
       const returnValue = tableWithSchema.delete(callback);
-      assert.strictEqual(returnValue, updateSchemaReturnValue);
+      assert.strictEqual(returnValue, undefined);
     });
 
     it('should update the schema on the database for PostgresSQL', () => {
-      const updateSchemaReturnValue = {};
 
       function callback() {}
 
@@ -269,12 +264,12 @@ describe('Table', () => {
         updateSchema: (schema, gaxOptions, callback_) => {
           assert.strictEqual(schema, `DROP TABLE "${table.name}"`);
           assert.strictEqual(callback_, callback);
-          return updateSchemaReturnValue;
+          return undefined;
         },
       };
 
       const returnValue = table.delete(callback);
-      assert.strictEqual(returnValue, updateSchemaReturnValue);
+      assert.strictEqual(returnValue, undefined);
     });
 
     it('should update the schema on the database for PostgresSQL with schema in the table name', () => {

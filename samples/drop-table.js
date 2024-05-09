@@ -1,12 +1,18 @@
 'use strict';
 
 async function main(instanceId = 'my-instance', databaseId = 'my-database') {
-  const {Spanner} = require('@google-cloud/spanner');
+  const {Spanner} = require('../build/src');
   const spanner = new Spanner();
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
   const table = database.table('Albums');
-  await table.delete();
+  // table.delete((err, res));
+  table.delete((err, op) => {
+    if (err) {
+        console.log(err);
+    }
+    console.log("inside callback");
+});
 }
 
 process.on('unhandledRejection', err => {
