@@ -3437,8 +3437,8 @@ class Database extends common.GrpcServiceObject {
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    console.log("line 3440: ", gaxOpts);
-    console.log("line 3441: ", callback);
+    console.log('line 3440: ', gaxOpts);
+    console.log('line 3441: ', callback);
 
     if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {

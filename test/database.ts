@@ -2798,7 +2798,9 @@ describe('Database', () => {
 
   describe('getDatabaseDialect', () => {
     it('should get database dialect from database metadata', async () => {
-      database.getMetadata = async () => [{databaseDialect: 'GOOGLE_STANDARD_SQL'}];
+      database.getMetadata = async () => [
+        {databaseDialect: 'GOOGLE_STANDARD_SQL'},
+      ];
       const result = await database.getDatabaseDialect();
       assert.strictEqual(result, 'GOOGLE_STANDARD_SQL');
     });
