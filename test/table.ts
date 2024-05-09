@@ -287,7 +287,7 @@ describe('Table', () => {
           return 'POSTGRESQL';
         },
         updateSchema: (schema, gaxOptions, callback_) => {
-          assert.strictEqual(schema, 'DROP TABLE `table-name`');
+          assert.strictEqual(schema, 'DROP TABLE "table-name"');
           assert.strictEqual(callback_, callback);
         },
       };
