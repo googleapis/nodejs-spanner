@@ -216,14 +216,6 @@ describe('Table', () => {
 
   describe('delete', () => {
     it('should update the schema on the database for GoogleSQL using await', async () => {
-      // sandbox
-      //   .stub(table.database, 'getDatabaseDialect')
-      //   .resolves('GOOGLE_STANDARD_SQL');
-      // const stub = sandbox.stub(table.database, 'updateSchema').resolves();
-      // await table.delete();
-      // sinon.assert.calledOnce(stub);
-      // assert.strictEqual(stub.args[0][0], 'DROP TABLE `table-name`');
-
       table.database = {
         getDatabaseDialect: gaxOptions => {
           return 'GOOGLE_STANDARD_SQL';
@@ -251,16 +243,6 @@ describe('Table', () => {
     });
 
     it('should update the schema on the database for GoogleSQL with schema in the table name using await', async () => {
-      // sandbox
-      //   .stub(tableWithSchema.database, 'getDatabaseDialect')
-      //   .resolves('GOOGLE_STANDARD_SQL');
-      // const stub = sandbox
-      //   .stub(tableWithSchema.database, 'updateSchema')
-      //   .resolves();
-      
-      // await table.delete();
-      // sinon.assert.calledOnce(stub);
-      // assert.strictEqual(stub.args[0][0], 'DROP TABLE `table-name`');
       tableWithSchema.database = {
         getDatabaseDialect: gaxOptions => {
           return 'GOOGLE_STANDARD_SQL';
