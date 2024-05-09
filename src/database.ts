@@ -122,8 +122,6 @@ type CreateBatchTransactionResponse = [
   google.spanner.v1.ITransaction | google.spanner.v1.ISession,
 ];
 type DatabaseResponse = [Database, r.Response];
-// type DialectResponse = Database["databaseDialect"];
-// type DialectCallback = NormalCallback<google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null>;
 export interface DialectCallback {
   (
     err: Error | null,
@@ -464,7 +462,6 @@ class Database extends common.GrpcServiceObject {
       Object.assign({}, queryOptions),
       Database.getEnvironmentQueryOptions()
     );
-    // this.databaseDialect = databaseAdmin.spanner.admin.database.v1.DatabaseDialect.DATABASE_DIALECT_UNSPECIFIED;
   }
   /**
    * @typedef {array} SetDatabaseMetadataResponse
@@ -1517,7 +1514,10 @@ class Database extends common.GrpcServiceObject {
    * @param {object} [gaxOptions] Request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
-   * @returns {google.spanner.admin.database.v1.DatabaseDialect} Returns the database dialect
+   * @param {GetDatabaseDialectCallback} [callback] Callback function.
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.DatabaseDialect> | undefined>}
+   *     When resolved, contains the database dialect of the database if the dialect
+   *     is defined.
    */
 
   getDatabaseDialect(
@@ -3436,9 +3436,6 @@ class Database extends common.GrpcServiceObject {
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
     const callback =
       typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-
-    console.log('line 3440: ', gaxOpts);
-    console.log('line 3441: ', callback);
 
     if (typeof statements === 'string' || Array.isArray(statements)) {
       statements = {
