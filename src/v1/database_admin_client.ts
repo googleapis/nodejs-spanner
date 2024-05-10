@@ -46,7 +46,7 @@ const version = require('../../../package.json').version;
  *  The Cloud Spanner Database Admin API can be used to:
  *    * create, drop, and list databases
  *    * update the schema of pre-existing databases
- *    * create, delete and list backups for a database
+ *    * create, delete, copy and list backups for a database
  *    * restore a database from an existing backup
  * @class
  * @memberof v1
@@ -1139,7 +1139,8 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
   /**
-   * Gets metadata on a pending or completed {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
+   * Gets metadata on a pending or completed
+   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1229,7 +1230,8 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.getBackup(request, options, callback);
   }
   /**
-   * Updates a pending or completed {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
+   * Updates a pending or completed
+   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1326,7 +1328,8 @@ export class DatabaseAdminClient {
     return this.innerApiCalls.updateBackup(request, options, callback);
   }
   /**
-   * Deletes a pending or completed {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
+   * Deletes a pending or completed
+   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1422,8 +1425,8 @@ export class DatabaseAdminClient {
    * have a name of the format `<database_name>/operations/<operation_id>` and
    * can be used to track preparation of the database. The
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
-   * {@link protos.google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}. The
-   * {@link protos.google.longrunning.Operation.response|response} field type is
+   * {@link protos.google.spanner.admin.database.v1.CreateDatabaseMetadata|CreateDatabaseMetadata}.
+   * The {@link protos.google.longrunning.Operation.response|response} field type is
    * {@link protos.google.spanner.admin.database.v1.Database|Database}, if successful.
    *
    * @param {Object} request
@@ -1443,8 +1446,8 @@ export class DatabaseAdminClient {
    *   statements execute atomically with the creation of the database:
    *   if there is an error in any statement, the database is not created.
    * @param {google.spanner.admin.database.v1.EncryptionConfig} [request.encryptionConfig]
-   *   Optional. The encryption configuration for the database. If this field is not
-   *   specified, Cloud Spanner will encrypt/decrypt all data at rest using
+   *   Optional. The encryption configuration for the database. If this field is
+   *   not specified, Cloud Spanner will encrypt/decrypt all data at rest using
    *   Google default encryption.
    * @param {google.spanner.admin.database.v1.DatabaseDialect} [request.databaseDialect]
    *   Optional. The dialect of the Cloud Spanner Database.
@@ -1768,7 +1771,8 @@ export class DatabaseAdminClient {
    * the format `<database_name>/operations/<operation_id>` and can be used to
    * track execution of the schema change(s). The
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
-   * {@link protos.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.  The operation has no response.
+   * {@link protos.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata|UpdateDatabaseDdlMetadata}.
+   * The operation has no response.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1784,18 +1788,20 @@ export class DatabaseAdminClient {
    *
    *   Specifying an explicit operation ID simplifies determining
    *   whether the statements were executed in the event that the
-   *   {@link protos.google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} call is replayed,
-   *   or the return value is otherwise lost: the {@link protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database} and
-   *   `operation_id` fields can be combined to form the
+   *   {@link protos.google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   call is replayed, or the return value is otherwise lost: the
+   *   {@link protos.google.spanner.admin.database.v1.UpdateDatabaseDdlRequest.database|database}
+   *   and `operation_id` fields can be combined to form the
    *   {@link protos.google.longrunning.Operation.name|name} of the resulting
-   *   {@link protos.google.longrunning.Operation|longrunning.Operation}: `<database>/operations/<operation_id>`.
+   *   {@link protos.google.longrunning.Operation|longrunning.Operation}:
+   *   `<database>/operations/<operation_id>`.
    *
    *   `operation_id` should be unique within the database, and must be
    *   a valid identifier: `{@link protos.a-z0-9_|a-z}*`. Note that
    *   automatically-generated operation IDs always begin with an
    *   underscore. If the named operation already exists,
-   *   {@link protos.google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl} returns
-   *   `ALREADY_EXISTS`.
+   *   {@link protos.google.spanner.admin.database.v1.DatabaseAdmin.UpdateDatabaseDdl|UpdateDatabaseDdl}
+   *   returns `ALREADY_EXISTS`.
    * @param {Buffer} [request.protoDescriptors]
    *   Optional. Proto descriptors used by CREATE/ALTER PROTO BUNDLE statements.
    *   Contains a protobuf-serialized
@@ -1943,12 +1949,12 @@ export class DatabaseAdminClient {
    * `projects/<project>/instances/<instance>/backups/<backup>/operations/<operation_id>`
    * and can be used to track creation of the backup. The
    * {@link protos.google.longrunning.Operation.metadata|metadata} field type is
-   * {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}. The
-   * {@link protos.google.longrunning.Operation.response|response} field type is
-   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
-   * creation and delete the backup.
-   * There can be only one pending backup creation per database. Backup creation
-   * of different databases can run concurrently.
+   * {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   * The {@link protos.google.longrunning.Operation.response|response} field type is
+   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}, if successful.
+   * Cancelling the returned operation will stop the creation and delete the
+   * backup. There can be only one pending backup creation per database. Backup
+   * creation of different databases can run concurrently.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -1966,11 +1972,11 @@ export class DatabaseAdminClient {
    * @param {google.spanner.admin.database.v1.Backup} request.backup
    *   Required. The backup to create.
    * @param {google.spanner.admin.database.v1.CreateBackupEncryptionConfig} [request.encryptionConfig]
-   *   Optional. The encryption configuration used to encrypt the backup. If this field is
-   *   not specified, the backup will use the same
-   *   encryption configuration as the database by default, namely
-   *   {@link protos.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type|encryption_type} =
-   *   `USE_DATABASE_ENCRYPTION`.
+   *   Optional. The encryption configuration used to encrypt the backup. If this
+   *   field is not specified, the backup will use the same encryption
+   *   configuration as the database by default, namely
+   *   {@link protos.google.spanner.admin.database.v1.CreateBackupEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_DATABASE_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2106,15 +2112,16 @@ export class DatabaseAdminClient {
    * The {@link protos.google.longrunning.Operation.metadata|metadata} field type is
    * {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
    * The {@link protos.google.longrunning.Operation.response|response} field type is
-   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}, if successful. Cancelling the returned operation will stop the
-   * copying and delete the backup.
-   * Concurrent CopyBackup requests can run on the same source backup.
+   * {@link protos.google.spanner.admin.database.v1.Backup|Backup}, if successful.
+   * Cancelling the returned operation will stop the copying and delete the
+   * destination backup. Concurrent CopyBackup requests can run on the same
+   * source backup.
    *
    * @param {Object} request
    *   The request object that will be sent.
    * @param {string} request.parent
-   *   Required. The name of the destination instance that will contain the backup copy.
-   *   Values are of the form: `projects/<project>/instances/<instance>`.
+   *   Required. The name of the destination instance that will contain the backup
+   *   copy. Values are of the form: `projects/<project>/instances/<instance>`.
    * @param {string} request.backupId
    *   Required. The id of the backup copy.
    *   The `backup_id` appended to `parent` forms the full backup_uri of the form
@@ -2133,11 +2140,11 @@ export class DatabaseAdminClient {
    *   passed, the backup is eligible to be automatically deleted by Cloud Spanner
    *   to free the resources used by the backup.
    * @param {google.spanner.admin.database.v1.CopyBackupEncryptionConfig} [request.encryptionConfig]
-   *   Optional. The encryption configuration used to encrypt the backup. If this field is
-   *   not specified, the backup will use the same
-   *   encryption configuration as the source backup by default, namely
-   *   {@link protos.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type|encryption_type} =
-   *   `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   *   Optional. The encryption configuration used to encrypt the backup. If this
+   *   field is not specified, the backup will use the same encryption
+   *   configuration as the source backup by default, namely
+   *   {@link protos.google.spanner.admin.database.v1.CopyBackupEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2299,12 +2306,12 @@ export class DatabaseAdminClient {
    *   Name of the backup from which to restore.  Values are of the form
    *   `projects/<project>/instances/<instance>/backups/<backup>`.
    * @param {google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig} [request.encryptionConfig]
-   *   Optional. An encryption configuration describing the encryption type and key
-   *   resources in Cloud KMS used to encrypt/decrypt the database to restore to.
-   *   If this field is not specified, the restored database will use
-   *   the same encryption configuration as the backup by default, namely
-   *   {@link protos.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type|encryption_type} =
-   *   `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
+   *   Optional. An encryption configuration describing the encryption type and
+   *   key resources in Cloud KMS used to encrypt/decrypt the database to restore
+   *   to. If this field is not specified, the restored database will use the same
+   *   encryption configuration as the backup by default, namely
+   *   {@link protos.google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.encryption_type|encryption_type}
+   *   = `USE_CONFIG_DEFAULT_OR_BACKUP_ENCRYPTION`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2443,8 +2450,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2544,8 +2552,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2593,8 +2602,9 @@ export class DatabaseAdminClient {
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabasesResponse|ListDatabasesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2645,7 +2655,9 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
@@ -2677,9 +2689,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -2783,7 +2796,9 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
@@ -2815,9 +2830,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -2869,7 +2885,9 @@ export class DatabaseAdminClient {
    *   must be one of: `<`, `>`, `<=`, `>=`, `!=`, `=`, or `:`.
    *   Colon `:` is the contains operator. Filter rules are not case sensitive.
    *
-   *   The following fields in the {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for filtering:
+   *   The following fields in the
+   *   {@link protos.google.spanner.admin.database.v1.Backup|Backup} are eligible for
+   *   filtering:
    *
    *     * `name`
    *     * `database`
@@ -2901,9 +2919,10 @@ export class DatabaseAdminClient {
    *   less, defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse} to the same `parent` and with the same
-   *   `filter`.
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupsResponse|ListBackupsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -2965,7 +2984,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first, if filtering on metadata
@@ -2987,7 +3008,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -2999,8 +3021,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -3114,7 +3137,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first, if filtering on metadata
@@ -3136,7 +3161,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -3148,8 +3174,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -3207,7 +3234,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.RestoreDatabaseMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first, if filtering on metadata
@@ -3229,7 +3258,8 @@ export class DatabaseAdminClient {
    *       `(metadata.name:restored_howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Return operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.RestoreDatabaseMetadata|RestoreDatabaseMetadata}.
    *       * The database is restored from a backup.
    *       * The backup name contains "backup_howl".
    *       * The restored database's name contains "restored_howl".
@@ -3241,8 +3271,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseOperationsResponse|ListDatabaseOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -3306,7 +3337,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first if filtering on metadata
@@ -3324,14 +3357,15 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *        `metadata.database:prod` - Returns operations where:
-   *        * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
-   *        * The database the backup was taken from has a name containing the
-   *        string "prod".
+   *        * The operation's metadata type is
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The source database name of backup contains the string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3339,9 +3373,9 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test) AND` \
    *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
-   *       * The source backup of the copied backup name contains the string
-   *       "test".
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup name contains the string "test".
    *       * The operation started before 2022-01-18T14:50:00Z.
    *       * The operation resulted in an error.
    *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
@@ -3351,12 +3385,13 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test_bkp)) AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata matches either of criteria:
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
-   *         database the backup was taken from has name containing string
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *         AND the source database name of the backup contains the string
    *         "test_db"
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
-   *         backup the backup was copied from has name containing string
-   *         "test_bkp"
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}
+   *         AND the source backup name contains the string "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -3364,8 +3399,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -3475,7 +3511,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first if filtering on metadata
@@ -3493,14 +3531,15 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *        `metadata.database:prod` - Returns operations where:
-   *        * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
-   *        * The database the backup was taken from has a name containing the
-   *        string "prod".
+   *        * The operation's metadata type is
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The source database name of backup contains the string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3508,9 +3547,9 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test) AND` \
    *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
-   *       * The source backup of the copied backup name contains the string
-   *       "test".
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup name contains the string "test".
    *       * The operation started before 2022-01-18T14:50:00Z.
    *       * The operation resulted in an error.
    *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
@@ -3520,12 +3559,13 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test_bkp)) AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata matches either of criteria:
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
-   *         database the backup was taken from has name containing string
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *         AND the source database name of the backup contains the string
    *         "test_db"
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
-   *         backup the backup was copied from has name containing string
-   *         "test_bkp"
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}
+   *         AND the source backup name contains the string "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -3533,8 +3573,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -3592,7 +3633,9 @@ export class DatabaseAdminClient {
    *     * `name` - The name of the long-running operation
    *     * `done` - False if the operation is in progress, else true.
    *     * `metadata.@type` - the type of metadata. For example, the type string
-   *        for {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} is
+   *        for
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *        is
    *        `type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata`.
    *     * `metadata.<field_name>` - any field in metadata.value.
    *        `metadata.@type` must be specified first if filtering on metadata
@@ -3610,14 +3653,15 @@ export class DatabaseAdminClient {
    *     * `done:true` - The operation is complete.
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *        `metadata.database:prod` - Returns operations where:
-   *        * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
-   *        * The database the backup was taken from has a name containing the
-   *        string "prod".
+   *        * The operation's metadata type is
+   *        {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *        * The source database name of backup contains the string "prod".
    *     * `(metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
    *       `(metadata.name:howl) AND` \
    *       `(metadata.progress.start_time < \"2018-03-28T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}.
    *       * The backup name contains the string "howl".
    *       * The operation started before 2018-03-28T14:50:00Z.
    *       * The operation resulted in an error.
@@ -3625,9 +3669,9 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test) AND` \
    *       `(metadata.progress.start_time < \"2022-01-18T14:50:00Z\") AND` \
    *       `(error:*)` - Returns operations where:
-   *       * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
-   *       * The source backup of the copied backup name contains the string
-   *       "test".
+   *       * The operation's metadata type is
+   *       {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}.
+   *       * The source backup name contains the string "test".
    *       * The operation started before 2022-01-18T14:50:00Z.
    *       * The operation resulted in an error.
    *     * `((metadata.@type=type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) AND` \
@@ -3637,12 +3681,13 @@ export class DatabaseAdminClient {
    *       `(metadata.source_backup:test_bkp)) AND` \
    *       `(error:*)` - Returns operations where:
    *       * The operation's metadata matches either of criteria:
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata} AND the
-   *         database the backup was taken from has name containing string
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CreateBackupMetadata|CreateBackupMetadata}
+   *         AND the source database name of the backup contains the string
    *         "test_db"
-   *         * The operation's metadata type is {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata} AND the
-   *         backup the backup was copied from has name containing string
-   *         "test_bkp"
+   *         * The operation's metadata type is
+   *         {@link protos.google.spanner.admin.database.v1.CopyBackupMetadata|CopyBackupMetadata}
+   *         AND the source backup name contains the string "test_bkp"
    *       * The operation resulted in an error.
    * @param {number} request.pageSize
    *   Number of operations to be returned in the response. If 0 or
@@ -3650,8 +3695,9 @@ export class DatabaseAdminClient {
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
    *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse.next_page_token|next_page_token}
-   *   from a previous {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse} to the
-   *   same `parent` and with the same `filter`.
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupOperationsResponse|ListBackupOperationsResponse}
+   *   to the same `parent` and with the same `filter`.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
@@ -3691,14 +3737,15 @@ export class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The database whose roles should be listed.
    *   Values are of the form
-   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
    * @param {number} request.pageSize
    *   Number of database roles to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -3793,14 +3840,15 @@ export class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The database whose roles should be listed.
    *   Values are of the form
-   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
    * @param {number} request.pageSize
    *   Number of database roles to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
@@ -3843,14 +3891,15 @@ export class DatabaseAdminClient {
    * @param {string} request.parent
    *   Required. The database whose roles should be listed.
    *   Values are of the form
-   *   `projects/<project>/instances/<instance>/databases/<database>/databaseRoles`.
+   *   `projects/<project>/instances/<instance>/databases/<database>`.
    * @param {number} request.pageSize
    *   Number of database roles to be returned in the response. If 0 or less,
    *   defaults to the server's maximum allowed page size.
    * @param {string} request.pageToken
    *   If non-empty, `page_token` should contain a
-   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token} from a
-   *   previous {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListDatabaseRolesResponse|ListDatabaseRolesResponse}.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}

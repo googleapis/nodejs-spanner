@@ -6558,6 +6558,9 @@ export namespace google {
                         /** Backup encryptionInfo */
                         encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
 
+                        /** Backup encryptionInformation */
+                        encryptionInformation?: (google.spanner.admin.database.v1.IEncryptionInfo[]|null);
+
                         /** Backup databaseDialect */
                         databaseDialect?: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect|null);
 
@@ -6603,6 +6606,9 @@ export namespace google {
 
                         /** Backup encryptionInfo. */
                         public encryptionInfo?: (google.spanner.admin.database.v1.IEncryptionInfo|null);
+
+                        /** Backup encryptionInformation. */
+                        public encryptionInformation: google.spanner.admin.database.v1.IEncryptionInfo[];
 
                         /** Backup databaseDialect. */
                         public databaseDialect: (google.spanner.admin.database.v1.DatabaseDialect|keyof typeof google.spanner.admin.database.v1.DatabaseDialect);
@@ -8023,6 +8029,9 @@ export namespace google {
 
                         /** CreateBackupEncryptionConfig kmsKeyName */
                         kmsKeyName?: (string|null);
+
+                        /** CreateBackupEncryptionConfig kmsKeyNames */
+                        kmsKeyNames?: (string[]|null);
                     }
 
                     /** Represents a CreateBackupEncryptionConfig. */
@@ -8039,6 +8048,9 @@ export namespace google {
 
                         /** CreateBackupEncryptionConfig kmsKeyName. */
                         public kmsKeyName: string;
+
+                        /** CreateBackupEncryptionConfig kmsKeyNames. */
+                        public kmsKeyNames: string[];
 
                         /**
                          * Creates a new CreateBackupEncryptionConfig instance using the specified properties.
@@ -8137,6 +8149,9 @@ export namespace google {
 
                         /** CopyBackupEncryptionConfig kmsKeyName */
                         kmsKeyName?: (string|null);
+
+                        /** CopyBackupEncryptionConfig kmsKeyNames */
+                        kmsKeyNames?: (string[]|null);
                     }
 
                     /** Represents a CopyBackupEncryptionConfig. */
@@ -8153,6 +8168,9 @@ export namespace google {
 
                         /** CopyBackupEncryptionConfig kmsKeyName. */
                         public kmsKeyName: string;
+
+                        /** CopyBackupEncryptionConfig kmsKeyNames. */
+                        public kmsKeyNames: string[];
 
                         /**
                          * Creates a new CopyBackupEncryptionConfig instance using the specified properties.
@@ -8357,6 +8375,9 @@ export namespace google {
 
                         /** EncryptionConfig kmsKeyName */
                         kmsKeyName?: (string|null);
+
+                        /** EncryptionConfig kmsKeyNames */
+                        kmsKeyNames?: (string[]|null);
                     }
 
                     /** Represents an EncryptionConfig. */
@@ -8370,6 +8391,9 @@ export namespace google {
 
                         /** EncryptionConfig kmsKeyName. */
                         public kmsKeyName: string;
+
+                        /** EncryptionConfig kmsKeyNames. */
+                        public kmsKeyNames: string[];
 
                         /**
                          * Creates a new EncryptionConfig instance using the specified properties.
@@ -11036,6 +11060,9 @@ export namespace google {
 
                         /** RestoreDatabaseEncryptionConfig kmsKeyName */
                         kmsKeyName?: (string|null);
+
+                        /** RestoreDatabaseEncryptionConfig kmsKeyNames */
+                        kmsKeyNames?: (string[]|null);
                     }
 
                     /** Represents a RestoreDatabaseEncryptionConfig. */
@@ -11052,6 +11079,9 @@ export namespace google {
 
                         /** RestoreDatabaseEncryptionConfig kmsKeyName. */
                         public kmsKeyName: string;
+
+                        /** RestoreDatabaseEncryptionConfig kmsKeyNames. */
+                        public kmsKeyNames: string[];
 
                         /**
                          * Creates a new RestoreDatabaseEncryptionConfig instance using the specified properties.

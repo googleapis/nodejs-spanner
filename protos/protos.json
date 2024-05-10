@@ -1690,6 +1690,14 @@
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
+                            "encryptionInformation": {
+                              "rule": "repeated",
+                              "type": "EncryptionInfo",
+                              "id": 13,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "databaseDialect": {
                               "type": "DatabaseDialect",
                               "id": 10,
@@ -2008,6 +2016,15 @@
                                 "(google.api.field_behavior)": "OPTIONAL",
                                 "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
                               }
+                            },
+                            "kmsKeyNames": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
                             }
                           },
                           "nested": {
@@ -2033,6 +2050,15 @@
                             "kmsKeyName": {
                               "type": "string",
                               "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            },
+                            "kmsKeyNames": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3,
                               "options": {
                                 "(google.api.field_behavior)": "OPTIONAL",
                                 "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
@@ -2071,6 +2097,14 @@
                             "kmsKeyName": {
                               "type": "string",
                               "id": 2,
+                              "options": {
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            },
+                            "kmsKeyNames": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3,
                               "options": {
                                 "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
                               }
@@ -3048,6 +3082,15 @@
                             "kmsKeyName": {
                               "type": "string",
                               "id": 2,
+                              "options": {
+                                "(google.api.field_behavior)": "OPTIONAL",
+                                "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
+                              }
+                            },
+                            "kmsKeyNames": {
+                              "rule": "repeated",
+                              "type": "string",
+                              "id": 3,
                               "options": {
                                 "(google.api.field_behavior)": "OPTIONAL",
                                 "(google.api.resource_reference).type": "cloudkms.googleapis.com/CryptoKey"
