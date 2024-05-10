@@ -28,11 +28,9 @@ import {
   ReadCallback,
   CommitCallback,
 } from './transaction';
-import {google as databaseAdmin, google} from '../protos/protos';
+import {google as databaseAdmin} from '../protos/protos';
 import {Schema, LongRunningCallback} from './common';
 import IRequestOptions = databaseAdmin.spanner.v1.IRequestOptions;
-import {MetadataCallback, MetadataResponse} from '@google-cloud/common';
-import {promise} from 'sinon';
 
 export type Key = string | string[];
 
