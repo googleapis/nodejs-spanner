@@ -47,7 +47,7 @@ import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseM
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
 const singer = require('../test/data/singer');
-const music = singer.spanner.examples.music;
+const music = singer.examples.spanner.music;
 import {util} from 'protobufjs';
 import Long = util.Long;
 const fs = require('fs');
@@ -150,8 +150,8 @@ describe('Spanner', () => {
         schema: [
           `
         CREATE PROTO BUNDLE (
-            spanner.examples.music.SingerInfo,
-            spanner.examples.music.Genre,
+            examples.spanner.music.SingerInfo,
+            examples.spanner.music.Genre,
             )`,
           `
           CREATE TABLE ${TABLE_NAME} (
@@ -476,8 +476,8 @@ describe('Spanner', () => {
                 NumericValue    NUMERIC,
                 StringValue     STRING( MAX),
                 TimestampValue  TIMESTAMP,
-                ProtoMessageValue spanner.examples.music.SingerInfo,
-                ProtoEnumValue spanner.examples.music.Genre,
+                ProtoMessageValue examples.spanner.music.SingerInfo,
+                ProtoEnumValue examples.spanner.music.Genre,
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
@@ -487,8 +487,8 @@ describe('Spanner', () => {
                 NumericArray    ARRAY< NUMERIC >,
                 StringArray     ARRAY<STRING(MAX)>,
                 TimestampArray  ARRAY< TIMESTAMP >,
-                ProtoMessageArray ARRAY<spanner.examples.music.SingerInfo>,
-                ProtoEnumArray ARRAY<spanner.examples.music.Genre>,
+                ProtoMessageArray ARRAY<examples.spanner.music.SingerInfo>,
+                ProtoEnumArray ARRAY<examples.spanner.music.Genre>,
                 CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
             `
@@ -1909,7 +1909,7 @@ describe('Spanner', () => {
           nationality: 'Country1',
         }),
         messageFunction: music.SingerInfo,
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       };
 
       it('GOOGLE_STANDARD_SQL should write protoMessage values', done => {
@@ -2015,7 +2015,7 @@ describe('Spanner', () => {
       const enumParams = {
         value: music.Genre.JAZZ,
         enumObject: music.Genre,
-        fullName: 'spanner.examples.music.Genre',
+        fullName: 'examples.spanner.music.Genre',
       };
 
       it('GOOGLE_STANDARD_SQL should write protoEnum values', done => {

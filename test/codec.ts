@@ -26,7 +26,7 @@ import {GoogleError} from 'google-gax';
 import {util} from 'protobufjs';
 import Long = util.Long;
 const singer = require('./data/singer');
-const music = singer.spanner.examples.music;
+const music = singer.examples.spanner.music;
 const is = require('is');
 
 describe('codec', () => {
@@ -317,7 +317,7 @@ describe('codec', () => {
         nationality: 'Country1',
       }),
       messageFunction: music.SingerInfo,
-      fullName: 'spanner.examples.music.SingerInfo',
+      fullName: 'examples.spanner.music.SingerInfo',
     };
 
     it('should store value as buffer', () => {
@@ -334,7 +334,7 @@ describe('codec', () => {
               genre: music.Genre.POP,
               birthDate: 'January',
             },
-            fullName: 'spanner.examples.music.SingerInfo',
+            fullName: 'examples.spanner.music.SingerInfo',
           });
         },
         new GoogleError(`protoMessageParams cannot be used to construct 
@@ -354,7 +354,7 @@ describe('codec', () => {
     it('toJSON without messageFunction', () => {
       const message = new codec.ProtoMessage({
         value: music.SingerInfo.encode(protoMessageParams.value).finish(),
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       });
       assert.deepEqual(message.toJSON(), message.value.toString());
     });
@@ -364,7 +364,7 @@ describe('codec', () => {
     const enumParams = {
       value: music.Genre.JAZZ,
       enumObject: music.Genre,
-      fullName: 'spanner.examples.music.Genre',
+      fullName: 'examples.spanner.music.Genre',
     };
 
     it('should store value as string', () => {
@@ -377,7 +377,7 @@ describe('codec', () => {
         () => {
           new codec.ProtoEnum({
             value: 'POP',
-            fullName: 'spanner.examples.music.Genre',
+            fullName: 'examples.spanner.music.Genre',
           });
         },
         new GoogleError(`protoEnumParams cannot be used for constructing the
@@ -395,7 +395,7 @@ describe('codec', () => {
       assert.deepEqual(
         new codec.ProtoEnum({
           value: music.Genre.JAZZ,
-          fullName: 'spanner.examples.music.Genre',
+          fullName: 'examples.spanner.music.Genre',
         }).toJSON(),
         1
       );
@@ -653,7 +653,7 @@ describe('codec', () => {
           nationality: 'Country1',
         }),
         messageFunction: music.SingerInfo,
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       });
       const encoded = expected.value.toString('base64');
 
@@ -661,7 +661,7 @@ describe('codec', () => {
         encoded,
         {
           code: google.spanner.v1.TypeCode.PROTO,
-          protoTypeFqn: 'spanner.examples.music.SingerInfo',
+          protoTypeFqn: 'examples.spanner.music.SingerInfo',
         },
         music.SingerInfo
       );
@@ -952,7 +952,7 @@ describe('codec', () => {
       const protoMessage = new codec.ProtoMessage({
         value: singerInfo,
         messageFunction: music.SingerInfo,
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       });
 
       const encoded = codec.encode(protoMessage);
@@ -968,7 +968,7 @@ describe('codec', () => {
       const protoEnum = new codec.ProtoEnum({
         value: genre,
         enumObject: music.Genre,
-        fullName: 'spanner.examples.music.Genre',
+        fullName: 'examples.spanner.music.Genre',
       });
 
       const encoded = codec.encode(protoEnum);

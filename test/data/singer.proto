@@ -14,7 +14,7 @@
 
 syntax = "proto2";
 
-package spanner.examples.music;
+package examples.spanner.music;
 
 message SingerInfo {
   optional int64 singer_id = 1;

@@ -25,26 +25,26 @@ var $Reader = $protobuf.Reader,
 // Exported root namespace
 var $root = $protobuf.roots['default'] || ($protobuf.roots['default'] = {});
 
-$root.spanner = (function () {
+$root.examples = (function () {
   /**
-   * Namespace spanner.
-   * @exports spanner
+   * Namespace examples.
+   * @exports examples
    * @namespace
    */
-  var spanner = {};
+  var examples = {};
 
-  spanner.examples = (function () {
+  examples.spanner = (function () {
     /**
-     * Namespace examples.
-     * @memberof spanner
+     * Namespace spanner.
+     * @memberof examples
      * @namespace
      */
-    var examples = {};
+    var spanner = {};
 
-    examples.music = (function () {
+    spanner.music = (function () {
       /**
        * Namespace music.
-       * @memberof spanner.examples
+       * @memberof examples.spanner
        * @namespace
        */
       var music = {};
@@ -52,21 +52,21 @@ $root.spanner = (function () {
       music.SingerInfo = (function () {
         /**
          * Properties of a SingerInfo.
-         * @memberof spanner.examples.music
+         * @memberof examples.spanner.music
          * @interface ISingerInfo
          * @property {number|Long|null} [singerId] SingerInfo singerId
          * @property {string|null} [birthDate] SingerInfo birthDate
          * @property {string|null} [nationality] SingerInfo nationality
-         * @property {spanner.examples.music.Genre|null} [genre] SingerInfo genre
+         * @property {examples.spanner.music.Genre|null} [genre] SingerInfo genre
          */
 
         /**
          * Constructs a new SingerInfo.
-         * @memberof spanner.examples.music
+         * @memberof examples.spanner.music
          * @classdesc Represents a SingerInfo.
          * @implements ISingerInfo
          * @constructor
-         * @param {spanner.examples.music.ISingerInfo=} [properties] Properties to set
+         * @param {examples.spanner.music.ISingerInfo=} [properties] Properties to set
          */
         function SingerInfo(properties) {
           if (properties)
@@ -82,7 +82,7 @@ $root.spanner = (function () {
         /**
          * SingerInfo singerId.
          * @member {number|Long} singerId
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
         SingerInfo.prototype.singerId = $util.Long
@@ -92,7 +92,7 @@ $root.spanner = (function () {
         /**
          * SingerInfo birthDate.
          * @member {string} birthDate
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
         SingerInfo.prototype.birthDate = '';
@@ -100,15 +100,15 @@ $root.spanner = (function () {
         /**
          * SingerInfo nationality.
          * @member {string} nationality
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
         SingerInfo.prototype.nationality = '';
 
         /**
          * SingerInfo genre.
-         * @member {spanner.examples.music.Genre} genre
-         * @memberof spanner.examples.music.SingerInfo
+         * @member {examples.spanner.music.Genre} genre
+         * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
         SingerInfo.prototype.genre = 0;
@@ -116,21 +116,21 @@ $root.spanner = (function () {
         /**
          * Creates a new SingerInfo instance using the specified properties.
          * @function create
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
-         * @param {spanner.examples.music.ISingerInfo=} [properties] Properties to set
-         * @returns {spanner.examples.music.SingerInfo} SingerInfo instance
+         * @param {examples.spanner.music.ISingerInfo=} [properties] Properties to set
+         * @returns {examples.spanner.music.SingerInfo} SingerInfo instance
          */
         SingerInfo.create = function create(properties) {
           return new SingerInfo(properties);
         };
 
         /**
-         * Encodes the specified SingerInfo message. Does not implicitly {@link spanner.examples.music.SingerInfo.verify|verify} messages.
+         * Encodes the specified SingerInfo message. Does not implicitly {@link examples.spanner.music.SingerInfo.verify|verify} messages.
          * @function encode
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
-         * @param {spanner.examples.music.ISingerInfo} message SingerInfo message or plain object to encode
+         * @param {examples.spanner.music.ISingerInfo} message SingerInfo message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
@@ -162,11 +162,11 @@ $root.spanner = (function () {
         };
 
         /**
-         * Encodes the specified SingerInfo message, length delimited. Does not implicitly {@link spanner.examples.music.SingerInfo.verify|verify} messages.
+         * Encodes the specified SingerInfo message, length delimited. Does not implicitly {@link examples.spanner.music.SingerInfo.verify|verify} messages.
          * @function encodeDelimited
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
-         * @param {spanner.examples.music.ISingerInfo} message SingerInfo message or plain object to encode
+         * @param {examples.spanner.music.ISingerInfo} message SingerInfo message or plain object to encode
          * @param {$protobuf.Writer} [writer] Writer to encode to
          * @returns {$protobuf.Writer} Writer
          */
@@ -177,18 +177,18 @@ $root.spanner = (function () {
         /**
          * Decodes a SingerInfo message from the specified reader or buffer.
          * @function decode
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
          * @param {number} [length] Message length if known beforehand
-         * @returns {spanner.examples.music.SingerInfo} SingerInfo
+         * @returns {examples.spanner.music.SingerInfo} SingerInfo
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
         SingerInfo.decode = function decode(reader, length) {
           if (!(reader instanceof $Reader)) reader = $Reader.create(reader);
           var end = length === undefined ? reader.len : reader.pos + length,
-            message = new $root.spanner.examples.music.SingerInfo();
+            message = new $root.examples.spanner.music.SingerInfo();
           while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
@@ -219,10 +219,10 @@ $root.spanner = (function () {
         /**
          * Decodes a SingerInfo message from the specified reader or buffer, length delimited.
          * @function decodeDelimited
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
          * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-         * @returns {spanner.examples.music.SingerInfo} SingerInfo
+         * @returns {examples.spanner.music.SingerInfo} SingerInfo
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
@@ -234,7 +234,7 @@ $root.spanner = (function () {
         /**
          * Verifies a SingerInfo message.
          * @function verify
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
          * @param {Object.<string,*>} message Plain object to verify
          * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -277,15 +277,15 @@ $root.spanner = (function () {
         /**
          * Creates a SingerInfo message from a plain object. Also converts values to their respective internal types.
          * @function fromObject
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
          * @param {Object.<string,*>} object Plain object
-         * @returns {spanner.examples.music.SingerInfo} SingerInfo
+         * @returns {examples.spanner.music.SingerInfo} SingerInfo
          */
         SingerInfo.fromObject = function fromObject(object) {
-          if (object instanceof $root.spanner.examples.music.SingerInfo)
+          if (object instanceof $root.examples.spanner.music.SingerInfo)
             return object;
-          var message = new $root.spanner.examples.music.SingerInfo();
+          var message = new $root.examples.spanner.music.SingerInfo();
           if (object.singerId !== null)
             if ($util.Long)
               (message.singerId = $util.Long.fromValue(
@@ -334,9 +334,9 @@ $root.spanner = (function () {
         /**
          * Creates a plain object from a SingerInfo message. Also converts values to other types if specified.
          * @function toObject
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
-         * @param {spanner.examples.music.SingerInfo} message SingerInfo
+         * @param {examples.spanner.music.SingerInfo} message SingerInfo
          * @param {$protobuf.IConversionOptions} [options] Conversion options
          * @returns {Object.<string,*>} Plain object
          */
@@ -383,10 +383,10 @@ $root.spanner = (function () {
           if (message.genre !== null && message.hasOwnProperty('genre'))
             object.genre =
               options.enums === String
-                ? $root.spanner.examples.music.Genre[message.genre] ===
+                ? $root.examples.spanner.music.Genre[message.genre] ===
                   undefined
                   ? message.genre
-                  : $root.spanner.examples.music.Genre[message.genre]
+                  : $root.examples.spanner.music.Genre[message.genre]
                 : message.genre;
           return object;
         };
@@ -394,7 +394,7 @@ $root.spanner = (function () {
         /**
          * Converts this SingerInfo to JSON.
          * @function toJSON
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @instance
          * @returns {Object.<string,*>} JSON object
          */
@@ -405,7 +405,7 @@ $root.spanner = (function () {
         /**
          * Gets the default type url for SingerInfo
          * @function getTypeUrl
-         * @memberof spanner.examples.music.SingerInfo
+         * @memberof examples.spanner.music.SingerInfo
          * @static
          * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
          * @returns {string} The default type url
@@ -414,7 +414,7 @@ $root.spanner = (function () {
           if (typeUrlPrefix === undefined) {
             typeUrlPrefix = 'type.googleapis.com';
           }
-          return typeUrlPrefix + '/spanner.examples.music.SingerInfo';
+          return typeUrlPrefix + '/examples.spanner.music.SingerInfo';
         };
 
         return SingerInfo;
@@ -422,7 +422,7 @@ $root.spanner = (function () {
 
       /**
        * Genre enum.
-       * @name spanner.examples.music.Genre
+       * @name examples.spanner.music.Genre
        * @enum {number}
        * @property {number} POP=0 POP value
        * @property {number} JAZZ=1 JAZZ value
@@ -442,10 +442,10 @@ $root.spanner = (function () {
       return music;
     })();
 
-    return examples;
+    return spanner;
   })();
 
-  return spanner;
+  return examples;
 })();
 
 module.exports = $root;

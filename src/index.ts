@@ -1796,7 +1796,7 @@ class Spanner extends GrpcService {
    * const protoMessage = Spanner.protoMessage({
    *   value: singerInfo,
    *   messageFunction: music.SingerInfo,
-   *   fullName: "spanner.examples.music.SingerInfo"
+   *   fullName: "examples.spanner.music.SingerInfo"
    * });
    * ```
    */
@@ -1824,7 +1824,7 @@ class Spanner extends GrpcService {
    * const protoEnum = Spanner.protoEnum({
    *   value: 'ROCK',
    *   enumObject: music.Genre,
-   *   fullName: "spanner.examples.music.Genre"
+   *   fullName: "examples.spanner.music.Genre"
    * });
    * ```
    */

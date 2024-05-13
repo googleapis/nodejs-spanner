@@ -14,10 +14,10 @@
 
 import * as $protobuf from 'protobufjs';
 import Long = require('long');
-/** Namespace spanner. */
-export namespace spanner {
-  /** Namespace examples. */
-  namespace examples {
+/** Namespace examples. */
+export namespace examples {
+  /** Namespace spanner. */
+  namespace spanner {
     /** Namespace music. */
     namespace music {
       /** Properties of a SingerInfo. */
@@ -32,7 +32,7 @@ export namespace spanner {
         nationality?: string | null;
 
         /** SingerInfo genre */
-        genre?: spanner.examples.music.Genre | null;
+        genre?: examples.spanner.music.Genre | null;
       }
 
       /** Represents a SingerInfo. */
@@ -41,7 +41,7 @@ export namespace spanner {
          * Constructs a new SingerInfo.
          * @param [properties] Properties to set
          */
-        constructor(properties?: spanner.examples.music.ISingerInfo);
+        constructor(properties?: examples.spanner.music.ISingerInfo);
 
         /** SingerInfo singerId. */
         public singerId: number | Long;
@@ -53,7 +53,7 @@ export namespace spanner {
         public nationality: string;
 
         /** SingerInfo genre. */
-        public genre: spanner.examples.music.Genre;
+        public genre: examples.spanner.music.Genre;
 
         /**
          * Creates a new SingerInfo instance using the specified properties.
@@ -61,28 +61,28 @@ export namespace spanner {
          * @returns SingerInfo instance
          */
         public static create(
-          properties?: spanner.examples.music.ISingerInfo
-        ): spanner.examples.music.SingerInfo;
+          properties?: examples.spanner.music.ISingerInfo
+        ): examples.spanner.music.SingerInfo;
 
         /**
-         * Encodes the specified SingerInfo message. Does not implicitly {@link spanner.examples.music.SingerInfo.verify|verify} messages.
+         * Encodes the specified SingerInfo message. Does not implicitly {@link examples.spanner.music.SingerInfo.verify|verify} messages.
          * @param message SingerInfo message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
         public static encode(
-          message: spanner.examples.music.ISingerInfo,
+          message: examples.spanner.music.ISingerInfo,
           writer?: $protobuf.Writer
         ): $protobuf.Writer;
 
         /**
-         * Encodes the specified SingerInfo message, length delimited. Does not implicitly {@link spanner.examples.music.SingerInfo.verify|verify} messages.
+         * Encodes the specified SingerInfo message, length delimited. Does not implicitly {@link examples.spanner.music.SingerInfo.verify|verify} messages.
          * @param message SingerInfo message or plain object to encode
          * @param [writer] Writer to encode to
          * @returns Writer
          */
         public static encodeDelimited(
-          message: spanner.examples.music.ISingerInfo,
+          message: examples.spanner.music.ISingerInfo,
           writer?: $protobuf.Writer
         ): $protobuf.Writer;
 
@@ -97,7 +97,7 @@ export namespace spanner {
         public static decode(
           reader: $protobuf.Reader | Uint8Array,
           length?: number
-        ): spanner.examples.music.SingerInfo;
+        ): examples.spanner.music.SingerInfo;
 
         /**
          * Decodes a SingerInfo message from the specified reader or buffer, length delimited.
@@ -108,7 +108,7 @@ export namespace spanner {
          */
         public static decodeDelimited(
           reader: $protobuf.Reader | Uint8Array
-        ): spanner.examples.music.SingerInfo;
+        ): examples.spanner.music.SingerInfo;
 
         /**
          * Verifies a SingerInfo message.
@@ -124,7 +124,7 @@ export namespace spanner {
          */
         public static fromObject(object: {
           [k: string]: any;
-        }): spanner.examples.music.SingerInfo;
+        }): examples.spanner.music.SingerInfo;
 
         /**
          * Creates a plain object from a SingerInfo message. Also converts values to other types if specified.
@@ -133,7 +133,7 @@ export namespace spanner {
          * @returns Plain object
          */
         public static toObject(
-          message: spanner.examples.music.SingerInfo,
+          message: examples.spanner.music.SingerInfo,
           options?: $protobuf.IConversionOptions
         ): {[k: string]: any};
 

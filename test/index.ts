@@ -39,7 +39,7 @@ import {
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 const singer = require('./data/singer');
-const music = singer.spanner.examples.music;
+const music = singer.examples.spanner.music;
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
@@ -630,7 +630,7 @@ describe('Spanner', () => {
           birthDate: 'January',
         }),
         messageFunction: music.SingerInfo,
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       };
 
       const customValue = {
@@ -640,7 +640,7 @@ describe('Spanner', () => {
           birthDate: 'January',
         },
         messageFunction: music.SingerInfo,
-        fullName: 'spanner.examples.music.SingerInfo',
+        fullName: 'examples.spanner.music.SingerInfo',
       };
 
       fakeCodec.ProtoMessage = class {
@@ -660,13 +660,13 @@ describe('Spanner', () => {
       const enumParams = {
         value: music.Genre.JAZZ,
         enumObject: music.Genre,
-        fullName: 'spanner.examples.music.Genre',
+        fullName: 'examples.spanner.music.Genre',
       };
 
       const customValue = {
         value: music.Genre.JAZZ,
         enumObject: music.Genre,
-        fullName: 'spanner.examples.music.Genre',
+        fullName: 'examples.spanner.music.Genre',
       };
 
       fakeCodec.ProtoEnum = class {
