@@ -601,8 +601,11 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_partitioned_update]
 }
 
-
-async function updateUsingPartitionedDmlWithChangeStreamOption(instanceId, databaseId, projectId) {
+async function updateUsingPartitionedDmlWithChangeStreamOption(
+  instanceId,
+  databaseId,
+  projectId
+) {
   // [START spanner_dml_partitioned_update]
   // Imports the Google Cloud client library
   const {Spanner} = require('../build/src');

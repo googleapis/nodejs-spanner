@@ -3311,22 +3311,25 @@ describe('Spanner with mock server', () => {
 
     it('should use exclude transaction from change stream for runTransaction', done => {
       const database = newTestDatabase();
-      database.runTransaction({excludeTxnFromChangeStreams: true}, async (err, tx) => {
-        assert.ifError(err);
-        await tx!.run(selectSql);
-        await tx!.commit();
-        await database.close();
+      database.runTransaction(
+        {excludeTxnFromChangeStreams: true},
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
 
-        const request = spannerMock.getRequests().find(val => {
-          return (val as v1.ExecuteSqlRequest).sql;
-        }) as v1.ExecuteSqlRequest;
-        assert.ok(request, 'no ExecuteSqlRequest found');
-        assert.strictEqual(
-          request.transaction!.begin!.excludeTxnFromChangeStreams,
-          true
-        );
-        done();
-      });
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.excludeTxnFromChangeStreams,
+            true
+          );
+          done();
+        }
+      );
     });
 
     it('should use optimistic lock and transaction tag for getTransaction', async () => {
