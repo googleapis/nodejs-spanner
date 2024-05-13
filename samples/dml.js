@@ -93,7 +93,7 @@ function insertUsingDmlWithChangeStreamOption(
   const database = instance.database(databaseId);
 
   const options = {
-    optimisticLock: true,
+    excludeTxnFromChangeStreams: true,
   };
 
   database.runTransaction(options, async (err, transaction) => {
@@ -103,7 +103,7 @@ function insertUsingDmlWithChangeStreamOption(
     }
     try {
       const [rowCount] = await transaction.runUpdate({
-        sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (10, @firstName, @lastName)',
+        sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (11, @firstName, @lastName)',
         params: {
           firstName: 'Virginia',
           lastName: 'Watson',
@@ -762,6 +762,17 @@ require('yargs')
     'Inserts one record using DML into an example Cloud Spanner table.',
     {},
     opts => insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
+  )
+  .command(
+    'insertUsingDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
+    'Inserts one record using DML into an example Cloud Spanner table using option change streams.',
+    {},
+    opts =>
+      insertUsingDmlWithChangeStreamOption(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
   )
   .command(
     'insertUsingDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
