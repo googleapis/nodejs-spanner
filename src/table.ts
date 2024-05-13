@@ -350,7 +350,6 @@ class Table {
 
     const performDelete = async (): Promise<void | DropTableResponse> => {
       const result = await this.database.getDatabaseDialect(gaxOptions);
-      console.log("line 356: ", result);
 
       if (result && result.includes('POSTGRESQL')) {
         dropStatement = schema
