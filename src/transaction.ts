@@ -88,6 +88,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export interface KeyRange {

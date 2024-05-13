@@ -601,6 +601,43 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_partitioned_update]
 }
 
+
+async function updateUsingPartitionedDmlWithChangeStreamOption(instanceId, databaseId, projectId) {
+  // [START spanner_dml_partitioned_update]
+  // Imports the Google Cloud client library
+  const {Spanner} = require('../build/src');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  try {
+    const [rowCount] = await database.runPartitionedUpdate({
+      sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1',
+      excludeTxnFromChangeStreams: true,
+    });
+    console.log(`Successfully updated ${rowCount} records.`);
+  } catch (err) {
+    console.error('ERROR:', err);
+  } finally {
+    // Close the database when finished.
+    database.close();
+  }
+  // [END spanner_dml_partitioned_update]
+}
+
 async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_partitioned_delete]
   // Imports the Google Cloud client library
@@ -860,6 +897,17 @@ require('yargs')
     {},
     opts =>
       updateUsingPartitionedDml(
+        opts.instanceName,
+        opts.databaseName,
+        opts.projectId
+      )
+  )
+  .command(
+    'updateUsingPartitionedDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
+    'Updates multiple records using DML.',
+    {},
+    opts =>
+      updateUsingPartitionedDmlWithChangeStreamOption(
         opts.instanceName,
         opts.databaseName,
         opts.projectId

@@ -3106,6 +3106,9 @@ class Database extends common.GrpcServiceObject {
         if (options.optimisticLock) {
           transaction.useOptimisticLock();
         }
+        if (options.excludeTxnFromChangeStreams) {
+          transaction.excludeTxnFromChangeStreams();
+        }
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,
