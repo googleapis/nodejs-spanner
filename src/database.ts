@@ -1493,7 +1493,6 @@ class Database extends common.GrpcServiceObject {
 
   /**
    * Get this database's dialect to retrieves the dialect of the database
-   * Get this database's dialect to retrieves the dialect of the database
    *
    * @see {@link #getMetadata}
    *
