@@ -342,7 +342,9 @@ class Table {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
-    const [schema, table] = this.name.includes('.') ? this.name.split('.') : [null, this.name];
+    const [schema, table] = this.name.includes('.')
+      ? this.name.split('.')
+      : [null, this.name];
 
     let dropStatement = 'DROP TABLE `' + table + '`';
 
