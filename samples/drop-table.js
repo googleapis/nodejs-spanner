@@ -19,28 +19,28 @@
 
 'use strict';
 
-async function main(
-    instanceId = 'my-instance',
-    databaseId = 'my-database',
-  ) {
-    const {Spanner} = require('../build/src');
-    const spanner = new Spanner();
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
-    // await database.exists();
-    const table = database.table('albums');
-    // table.delete((err, op) => {
-    //     if (err) {
-    //         console.log(err);
-    //     }
-    //     console.log("inside callback");
-    // });
-    // const [operation] = await table.delete();
-    // await operation.promise();
-    table.delete().then(() => {
-        console.log("table deleted from the database.");
-    }).catch(err => {
-        console.log("err: ", err);
+async function main(instanceId = 'my-instance', databaseId = 'my-database') {
+  const {Spanner} = require('../build/src');
+  const spanner = new Spanner();
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+  // await database.exists();
+  const table = database.table('albums');
+  // table.delete((err, op) => {
+  //     if (err) {
+  //         console.log(err);
+  //     }
+  //     console.log("inside callback");
+  // });
+  // const [operation] = await table.delete();
+  // await operation.promise();
+  table
+    .delete()
+    .then(() => {
+      console.log('table deleted from the database.');
+    })
+    .catch(err => {
+      console.log('err: ', err);
     });
 }
 

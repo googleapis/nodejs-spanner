@@ -1531,7 +1531,8 @@ class Database extends common.GrpcServiceObject {
 
     if (
       this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
-      this.databaseDialect === null || this.databaseDialect === undefined
+      this.databaseDialect === null ||
+      this.databaseDialect === undefined
     ) {
       const [metadata] = await this.getMetadata(gaxOptions);
       this.databaseDialect = metadata.databaseDialect;
