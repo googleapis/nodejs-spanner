@@ -19,8 +19,6 @@ import {
   ExistsCallback,
   GetConfig,
   Metadata,
-  MetadataCallback,
-  MetadataResponse,
   ServiceObjectConfig,
 } from '@google-cloud/common';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -161,8 +159,6 @@ type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
 export type GetDatabaseRolesOptions = PagedOptionsWithFilter;
-// export type DatabaseDialectResponse = MetadataResponse;
-// export type DatabaseDialectCallback = MetadataCallback;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -1497,6 +1493,7 @@ class Database extends common.GrpcServiceObject {
 
   /**
    * Get this database's dialect to retrieves the dialect of the database
+   * Get this database's dialect to retrieves the dialect of the database
    *
    * @see {@link #getMetadata}
    *
@@ -1534,6 +1531,7 @@ class Database extends common.GrpcServiceObject {
 
     if (
       this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+      this.databaseDialect === null || this.databaseDialect === undefined
       this.databaseDialect === null || this.databaseDialect === undefined
     ) {
       const [metadata] = await this.getMetadata(gaxOptions);
