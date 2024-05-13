@@ -2417,6 +2417,10 @@ export class Transaction extends Dml {
   useOptimisticLock(): void {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
+
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
+  }
 }
 
 /*! Developer Documentation

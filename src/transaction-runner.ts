@@ -45,6 +45,7 @@ export interface RunTransactionOptions {
   timeout?: number;
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
   optimisticLock?: boolean;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 /**

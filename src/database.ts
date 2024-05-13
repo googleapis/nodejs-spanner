@@ -2989,6 +2989,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
 
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
