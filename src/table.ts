@@ -346,10 +346,11 @@ class Table {
     const schema = parts.length === 2 ? parts[0] : null;
     const table = parts.length === 2 ? parts[1] : this.name;
 
-    let dropStatement = 'DROP TABLE `' + this.name + '`';
+    let dropStatement = 'DROP TABLE `' + table + '`';
 
     const performDelete = async (): Promise<void | DropTableResponse> => {
       const result = await this.database.getDatabaseDialect(gaxOptions);
+      console.log("line 356: ", result);
 
       if (result && result.includes('POSTGRESQL')) {
         dropStatement = schema

@@ -2814,7 +2814,7 @@ describe('Database', () => {
       await database.getDatabaseDialect(options);
     });
 
-    it('should accept callback and return state', done => {
+    it('should accept callback and return database dialect', done => {
       const databaseDialect = 'GOOGLE_STANDARD_SQL';
       database.getMetadata = async () => [{databaseDialect}];
       database.getDatabaseDialect((err, result) => {

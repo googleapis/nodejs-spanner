@@ -122,15 +122,6 @@ type CreateBatchTransactionResponse = [
   google.spanner.v1.ITransaction | google.spanner.v1.ISession,
 ];
 type DatabaseResponse = [Database, r.Response];
-export interface DialectCallback {
-  (
-    err: Error | null,
-    dialect:
-      | google.spanner.admin.database.v1.DatabaseDialect
-      | keyof typeof google.spanner.admin.database.v1.DatabaseDialect
-      | null
-  ): void;
-}
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
 
 type GetSnapshotCallback = NormalCallback<Snapshot>;
@@ -170,8 +161,8 @@ type ResultSetMetadata = spannerClient.spanner.v1.ResultSetMetadata;
 
 export type GetSessionsOptions = PagedOptionsWithFilter;
 export type GetDatabaseRolesOptions = PagedOptionsWithFilter;
-export type DatabaseDialectResponse = MetadataResponse;
-export type DatabaseDialectCallback = MetadataCallback;
+// export type DatabaseDialectResponse = MetadataResponse;
+// export type DatabaseDialectCallback = MetadataCallback;
 
 /**
  * IDatabase structure with database state enum translated to string form.
@@ -1505,7 +1496,7 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Get this database's dialect.
+   * Get this database's dialect to retrieves the dialect of the database
    *
    * @see {@link #getMetadata}
    *
@@ -1541,13 +1532,9 @@ class Database extends common.GrpcServiceObject {
     const gaxOptions =
       typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
 
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-
     if (
       this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
-      this.databaseDialect === null ||
-      this.databaseDialect === undefined
+      this.databaseDialect === null || this.databaseDialect === undefined
     ) {
       const [metadata] = await this.getMetadata(gaxOptions);
       this.databaseDialect = metadata.databaseDialect;
