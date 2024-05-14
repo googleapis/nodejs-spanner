@@ -214,10 +214,10 @@ describe('Table', () => {
   describe('delete', () => {
     it('should update the schema on the database for GoogleSQL using await', async () => {
       table.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'GOOGLE_STANDARD_SQL';
         },
-        updateSchema: (schema, gaxOptions, callback_) => {
+        updateSchema: schema => {
           assert.strictEqual(schema, 'DROP TABLE `table-name`');
         },
       };
@@ -228,7 +228,7 @@ describe('Table', () => {
     it('should update the schema on the database for GoogleSQL using callbacks', () => {
       function callback() {}
       table.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'GOOGLE_STANDARD_SQL';
         },
         updateSchema: (schema, gaxOptions, callback_) => {
@@ -241,10 +241,10 @@ describe('Table', () => {
 
     it('should update the schema on the database for GoogleSQL with schema in the table name using await', async () => {
       tableWithSchema.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'GOOGLE_STANDARD_SQL';
         },
-        updateSchema: (schema, gaxOptions, callback_) => {
+        updateSchema: schema => {
           assert.strictEqual(schema, 'DROP TABLE `schema`.`table-name`');
         },
       };
@@ -255,7 +255,7 @@ describe('Table', () => {
     it('should update the schema on the database for GoogleSQL with schema in the table name using callbacks', () => {
       function callback() {}
       tableWithSchema.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'GOOGLE_STANDARD_SQL';
         },
         updateSchema: (schema, gaxOptions, callback_) => {
@@ -268,10 +268,10 @@ describe('Table', () => {
 
     it('should update the schema on the database for PostgresSQL using await', async () => {
       table.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'POSTGRESQL';
         },
-        updateSchema: (schema, gaxOptions, callback_) => {
+        updateSchema: schema => {
           assert.strictEqual(schema, `DROP TABLE "${table.name}"`);
         },
       };
@@ -283,7 +283,7 @@ describe('Table', () => {
       function callback() {}
 
       table.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'POSTGRESQL';
         },
         updateSchema: (schema, gaxOptions, callback_) => {
@@ -297,10 +297,10 @@ describe('Table', () => {
 
     it('should update the schema on the database for PostgresSQL with schema in the table name using await', async () => {
       tableWithSchema.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'POSTGRESQL';
         },
-        updateSchema: (schema, gaxOptions, callback_) => {
+        updateSchema: schema => {
           assert.strictEqual(schema, `DROP TABLE "schema"."${table.name}"`);
         },
       };
@@ -311,7 +311,7 @@ describe('Table', () => {
     it('should update the schema on the database for PostgresSQL with schema in the table name using callbacks', () => {
       function callback() {}
       tableWithSchema.database = {
-        getDatabaseDialect: gaxOptions => {
+        getDatabaseDialect: () => {
           return 'POSTGRESQL';
         },
         updateSchema: (schema, gaxOptions, callback_) => {
