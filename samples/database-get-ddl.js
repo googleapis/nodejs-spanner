@@ -40,7 +40,7 @@ function main(instanceId, databaseId, projectId) {
 
   async function getDatabaseDdl() {
     // Get the schema definition of the database.
-    const [getDatabaseDdlResponse] = await databaseAdminClient.getDatabaseDdl({
+    const [ddlStatements] = await databaseAdminClient.getDatabaseDdl({
       database: databaseAdminClient.databasePath(
         projectId,
         instanceId,
@@ -55,10 +55,7 @@ function main(instanceId, databaseId, projectId) {
         databaseId
       )}:`
     );
-    console.log(
-      `Proto Descriptors: ${getDatabaseDdlResponse.protoDescriptors}`
-    );
-    getDatabaseDdlResponse.statements.forEach(element => {
+    ddlStatements.statements.forEach(element => {
       console.log(element);
     });
   }
