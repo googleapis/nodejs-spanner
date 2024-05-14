@@ -4694,7 +4694,8 @@
                             "generateDbPartitionsRead",
                             "generateDbPartitionsQuery",
                             "executePartition",
-                            "executeChangeStreamQuery"
+                            "executeChangeStreamQuery",
+                            "queryCancellation"
                           ]
                         }
                       },
@@ -4770,6 +4771,10 @@
                         "executeChangeStreamQuery": {
                           "type": "ExecuteChangeStreamQuery",
                           "id": 50
+                        },
+                        "queryCancellation": {
+                          "type": "QueryCancellationAction",
+                          "id": 51
                         }
                       }
                     },
@@ -6169,6 +6174,18 @@
                         "operation": {
                           "type": "string",
                           "id": 1
+                        }
+                      }
+                    },
+                    "QueryCancellationAction": {
+                      "fields": {
+                        "longRunningSql": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "cancelQuery": {
+                          "type": "string",
+                          "id": 2
                         }
                       }
                     },

@@ -16623,6 +16623,9 @@ export namespace google {
 
                     /** SpannerAction executeChangeStreamQuery */
                     executeChangeStreamQuery?: (google.spanner.executor.v1.IExecuteChangeStreamQuery|null);
+
+                    /** SpannerAction queryCancellation */
+                    queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
                 }
 
                 /** Represents a SpannerAction. */
@@ -16688,8 +16691,11 @@ export namespace google {
                     /** SpannerAction executeChangeStreamQuery. */
                     public executeChangeStreamQuery?: (google.spanner.executor.v1.IExecuteChangeStreamQuery|null);
 
+                    /** SpannerAction queryCancellation. */
+                    public queryCancellation?: (google.spanner.executor.v1.IQueryCancellationAction|null);
+
                     /** SpannerAction action. */
-                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery");
+                    public action?: ("start"|"finish"|"read"|"query"|"mutation"|"dml"|"batchDml"|"write"|"partitionedUpdate"|"admin"|"startBatchTxn"|"closeBatchTxn"|"generateDbPartitionsRead"|"generateDbPartitionsQuery"|"executePartition"|"executeChangeStreamQuery"|"queryCancellation");
 
                     /**
                      * Creates a new SpannerAction instance using the specified properties.
@@ -22682,6 +22688,109 @@ export namespace google {
 
                     /**
                      * Gets the default type url for GetOperationAction
+                     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                     * @returns The default type url
+                     */
+                    public static getTypeUrl(typeUrlPrefix?: string): string;
+                }
+
+                /** Properties of a QueryCancellationAction. */
+                interface IQueryCancellationAction {
+
+                    /** QueryCancellationAction longRunningSql */
+                    longRunningSql?: (string|null);
+
+                    /** QueryCancellationAction cancelQuery */
+                    cancelQuery?: (string|null);
+                }
+
+                /** Represents a QueryCancellationAction. */
+                class QueryCancellationAction implements IQueryCancellationAction {
+
+                    /**
+                     * Constructs a new QueryCancellationAction.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: google.spanner.executor.v1.IQueryCancellationAction);
+
+                    /** QueryCancellationAction longRunningSql. */
+                    public longRunningSql: string;
+
+                    /** QueryCancellationAction cancelQuery. */
+                    public cancelQuery: string;
+
+                    /**
+                     * Creates a new QueryCancellationAction instance using the specified properties.
+                     * @param [properties] Properties to set
+                     * @returns QueryCancellationAction instance
+                     */
+                    public static create(properties?: google.spanner.executor.v1.IQueryCancellationAction): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Encodes the specified QueryCancellationAction message. Does not implicitly {@link google.spanner.executor.v1.QueryCancellationAction.verify|verify} messages.
+                     * @param message QueryCancellationAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: google.spanner.executor.v1.IQueryCancellationAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryCancellationAction message, length delimited. Does not implicitly {@link google.spanner.executor.v1.QueryCancellationAction.verify|verify} messages.
+                     * @param message QueryCancellationAction message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: google.spanner.executor.v1.IQueryCancellationAction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryCancellationAction message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryCancellationAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Decodes a QueryCancellationAction message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryCancellationAction
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Verifies a QueryCancellationAction message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryCancellationAction message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryCancellationAction
+                     */
+                    public static fromObject(object: { [k: string]: any }): google.spanner.executor.v1.QueryCancellationAction;
+
+                    /**
+                     * Creates a plain object from a QueryCancellationAction message. Also converts values to other types if specified.
+                     * @param message QueryCancellationAction
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: google.spanner.executor.v1.QueryCancellationAction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryCancellationAction to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+
+                    /**
+                     * Gets the default type url for QueryCancellationAction
                      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
                      * @returns The default type url
                      */
