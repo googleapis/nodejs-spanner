@@ -46,6 +46,11 @@ import {google} from '../protos/protos';
 import CreateDatabaseMetadata = google.spanner.admin.database.v1.CreateDatabaseMetadata;
 import CreateBackupMetadata = google.spanner.admin.database.v1.CreateBackupMetadata;
 import CreateInstanceConfigMetadata = google.spanner.admin.instance.v1.CreateInstanceConfigMetadata;
+const singer = require('../test/data/singer');
+const music = singer.examples.spanner.music;
+import {util} from 'protobufjs';
+import Long = util.Long;
+const fs = require('fs');
 
 const SKIP_BACKUPS = process.env.SKIP_BACKUPS;
 const SKIP_FGAC_TESTS = (process.env.SKIP_FGAC_TESTS || 'false').toLowerCase();
@@ -124,15 +129,42 @@ describe('Spanner', () => {
         `Not creating temp instance, using + ${instance.formattedName_}...`
       );
     }
-    const [, googleSqlOperation1] = await DATABASE.create({
-      schema: `
+
+    if (IS_EMULATOR_ENABLED) {
+      const [, googleSqlOperation1] = await DATABASE.create({
+        schema: `
           CREATE TABLE ${TABLE_NAME} (
             SingerId STRING(1024) NOT NULL,
             Name STRING(1024),
           ) PRIMARY KEY(SingerId)`,
-      gaxOptions: GAX_OPTIONS,
-    });
-    await googleSqlOperation1.promise();
+        gaxOptions: GAX_OPTIONS,
+      });
+      await googleSqlOperation1.promise();
+    } else {
+      // Reading proto descriptor file
+      const protoDescriptor = fs
+        .readFileSync('test/data/descriptors.pb')
+        .toString('base64');
+
+      const [, googleSqlOperation1] = await DATABASE.create({
+        schema: [
+          `
+        CREATE PROTO BUNDLE (
+            examples.spanner.music.SingerInfo,
+            examples.spanner.music.Genre,
+            )`,
+          `
+          CREATE TABLE ${TABLE_NAME} (
+            SingerId STRING(1024) NOT NULL,
+            Name STRING(1024),
+          ) PRIMARY KEY(SingerId)`,
+        ],
+        gaxOptions: GAX_OPTIONS,
+        protoDescriptors: protoDescriptor,
+      });
+
+      await googleSqlOperation1.promise();
+    }
     RESOURCES_TO_CLEAN.push(DATABASE);
 
     const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
@@ -346,7 +378,20 @@ describe('Spanner', () => {
     const googleSqlTable = DATABASE.table(TABLE_NAME);
     const postgreSqlTable = PG_DATABASE.table(TABLE_NAME);
 
-    function insert(insertData, dialect, callback) {
+    /**
+     *
+     * @param insertData data to insert
+     * @param dialect sql dialect
+     * @param callback
+     * @param columnsMetadataForRead Optional parameter use for read/query for
+     *      deserializing Proto messages and enum
+     */
+    function insert(
+      insertData,
+      dialect,
+      callback,
+      columnsMetadataForRead?: {}
+    ) {
       const id = generateName('id');
 
       insertData.Key = id;
@@ -357,6 +402,7 @@ describe('Spanner', () => {
         params: {
           id,
         },
+        columnsMetadata: columnsMetadataForRead,
       };
       let database = DATABASE;
       if (dialect === Spanner.POSTGRESQL) {
@@ -430,6 +476,8 @@ describe('Spanner', () => {
                 NumericValue    NUMERIC,
                 StringValue     STRING( MAX),
                 TimestampValue  TIMESTAMP,
+                ProtoMessageValue examples.spanner.music.SingerInfo,
+                ProtoEnumValue examples.spanner.music.Genre,
                 BytesArray      ARRAY<BYTES(MAX)>,
                 BoolArray       ARRAY<BOOL>,
                 DateArray       ARRAY< DATE >,
@@ -439,6 +487,8 @@ describe('Spanner', () => {
                 NumericArray    ARRAY< NUMERIC >,
                 StringArray     ARRAY<STRING(MAX)>,
                 TimestampArray  ARRAY< TIMESTAMP >,
+                ProtoMessageArray ARRAY<examples.spanner.music.SingerInfo>,
+                ProtoEnumArray ARRAY<examples.spanner.music.Genre>,
                 CommitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp= true)
               ) PRIMARY KEY (Key)
             `
@@ -1841,6 +1891,219 @@ describe('Spanner', () => {
           assert.deepStrictEqual(DateArray, values);
           done();
         });
+      });
+    });
+
+    describe('protoMessage', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
+      const protoMessageParams = {
+        value: music.SingerInfo.create({
+          singerId: new Long(1),
+          genre: music.Genre.POP,
+          birthDate: 'January',
+          nationality: 'Country1',
+        }),
+        messageFunction: music.SingerInfo,
+        fullName: 'examples.spanner.music.SingerInfo',
+      };
+
+      it('GOOGLE_STANDARD_SQL should write protoMessage values', done => {
+        const value = Spanner.protoMessage(protoMessageParams);
+        insert(
+          {ProtoMessageValue: value},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().ProtoMessageValue,
+              music.SingerInfo.toObject(protoMessageParams.value)
+            );
+            done();
+          },
+          {ProtoMessageValue: music.SingerInfo}
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write bytes in the protoMessage column', done => {
+        const value = music.SingerInfo.encode(
+          protoMessageParams.value
+        ).finish();
+        insert(
+          {ProtoMessageValue: value},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().ProtoMessageValue,
+              value.toString()
+            );
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null in the protoMessage column', done => {
+        insert(
+          {ProtoMessageValue: null},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.equal(row.toJSON().ProtoMessageValue, null);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write protoMessageArray', done => {
+        const value = Spanner.protoMessage(protoMessageParams);
+        insert(
+          {ProtoMessageArray: [value]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
+              music.SingerInfo.toObject(protoMessageParams.value),
+            ]);
+            done();
+          },
+          {ProtoMessageArray: music.SingerInfo}
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write bytes array in the protoMessageArray column', done => {
+        const value = music.SingerInfo.encode(
+          protoMessageParams.value
+        ).finish();
+        insert(
+          {ProtoMessageArray: [value]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().ProtoMessageArray, [
+              value.toString(),
+            ]);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null in the protoMessageArray column', done => {
+        insert(
+          {ProtoMessageArray: null},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.equal(row.toJSON().ProtoMessageArray, null);
+            done();
+          }
+        );
+      });
+    });
+
+    describe('protoEnum', () => {
+      before(async function () {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+      });
+
+      const enumParams = {
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
+        fullName: 'examples.spanner.music.Genre',
+      };
+
+      it('GOOGLE_STANDARD_SQL should write protoEnum values', done => {
+        const value = Spanner.protoEnum(enumParams);
+        insert(
+          {ProtoEnumValue: value},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().ProtoEnumValue,
+              Object.getPrototypeOf(music.Genre)[enumParams.value]
+            );
+            done();
+          },
+          {ProtoEnumValue: music.Genre}
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write int in the protoEnum column', done => {
+        const value = 2;
+        insert(
+          {ProtoEnumValue: value},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(
+              row.toJSON().ProtoEnumValue,
+              value.toString()
+            );
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null in the protoEnum column', done => {
+        insert(
+          {ProtoEnumValue: null},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.equal(row.toJSON().ProtoEnumValue, null);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write protoEnumArray', done => {
+        const value = Spanner.protoEnum(enumParams);
+        insert(
+          {ProtoEnumArray: [value]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [
+              Object.getPrototypeOf(music.Genre)[enumParams.value],
+            ]);
+            done();
+          },
+          {ProtoEnumArray: music.Genre}
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write int array in the protoEnumArray column', done => {
+        const value = 3;
+        insert(
+          {ProtoEnumArray: [value]},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.deepStrictEqual(row.toJSON().ProtoEnumArray, [
+              value.toString(),
+            ]);
+            done();
+          }
+        );
+      });
+
+      it('GOOGLE_STANDARD_SQL should write null in the protoEnumArray column', done => {
+        insert(
+          {ProtoEnumArray: null},
+          Spanner.GOOGLE_STANDARD_SQL,
+          (err, row) => {
+            assert.ifError(err);
+            assert.equal(row.toJSON().ProtoEnumArray, null);
+            done();
+          }
+        );
       });
     });
 
