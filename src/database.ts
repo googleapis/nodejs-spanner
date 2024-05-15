@@ -1503,8 +1503,7 @@ class Database extends common.GrpcServiceObject {
    *     for more details.
    * @param {GetDatabaseDialectCallback} [callback] Callback function.
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.DatabaseDialect> | undefined>}
-   *     When resolved, contains the database dialect of the database if the dialect
-   *     is defined.
+   * When resolved, contains the database dialect of the database if the dialect is defined.
    * @example
    * const {Spanner} = require('@google-cloud/spanner');
    * const spanner = new Spanner();
