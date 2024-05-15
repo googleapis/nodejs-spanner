@@ -70,7 +70,6 @@ export type UpsertRowsOptions = MutateRowsOptions;
 
 const GOOGLE_STANDARD_SQL = 'GOOGLE_STANDARD_SQL';
 const POSTGRESQL = 'POSTGRESQL';
-
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
