@@ -38,6 +38,8 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+const singer = require('./data/singer');
+const music = singer.examples.spanner.music;
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
@@ -616,6 +618,66 @@ describe('Spanner', () => {
 
       const pgJsonb = Spanner.pgJsonb(value);
       assert.strictEqual(pgJsonb, customValue);
+    });
+  });
+
+  describe('protoMessage', () => {
+    it('should create a ProtoMessage instance', () => {
+      const protoMessageParams = {
+        value: music.SingerInfo.create({
+          singerId: 2,
+          genre: music.Genre.POP,
+          birthDate: 'January',
+        }),
+        messageFunction: music.SingerInfo,
+        fullName: 'examples.spanner.music.SingerInfo',
+      };
+
+      const customValue = {
+        value: {
+          singerId: 2,
+          genre: music.Genre.POP,
+          birthDate: 'January',
+        },
+        messageFunction: music.SingerInfo,
+        fullName: 'examples.spanner.music.SingerInfo',
+      };
+
+      fakeCodec.ProtoMessage = class {
+        constructor(value_) {
+          assert.strictEqual(value_, protoMessageParams);
+          return customValue;
+        }
+      };
+
+      const protoMessage = Spanner.protoMessage(protoMessageParams);
+      assert.strictEqual(protoMessage, customValue);
+    });
+  });
+
+  describe('protoEnum', () => {
+    it('should create a ProtoEnum instance', () => {
+      const enumParams = {
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
+        fullName: 'examples.spanner.music.Genre',
+      };
+
+      const customValue = {
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
+        fullName: 'examples.spanner.music.Genre',
+      };
+
+      fakeCodec.ProtoEnum = class {
+        constructor(value_) {
+          assert.strictEqual(value_, enumParams);
+          return customValue;
+        }
+      };
+
+      const protoEnum = Spanner.protoEnum(enumParams);
+      assert.strictEqual(protoEnum, customValue);
     });
   });
 
