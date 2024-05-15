@@ -1492,7 +1492,7 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Get this database's dialect to retrieves the dialect of the database
+   * Retrieves the dialect of the database
    *
    * @see {@link #getMetadata}
    *
@@ -1505,6 +1505,14 @@ class Database extends common.GrpcServiceObject {
    * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.DatabaseDialect> | undefined>}
    *     When resolved, contains the database dialect of the database if the dialect
    *     is defined.
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const dialect = await database.getDatabaseDialect();
+   * const isGoogleSQL = (dialect === 'GOOGLE_STANDARD_SQL');
+   * const isPostgreSQL = (dialect === 'POSTGRESQL');
    */
 
   getDatabaseDialect(

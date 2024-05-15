@@ -68,6 +68,9 @@ export type UpsertRowsCallback = CommitCallback;
 export type UpsertRowsResponse = CommitResponse;
 export type UpsertRowsOptions = MutateRowsOptions;
 
+const GOOGLE_STANDARD_SQL = 'GOOGLE_STANDARD_SQL';
+const POSTGRESQL = 'POSTGRESQL';
+
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
@@ -351,11 +354,11 @@ class Table {
     const performDelete = async (): Promise<void | DropTableResponse> => {
       const result = await this.database.getDatabaseDialect(gaxOptions);
 
-      if (result && result.includes('POSTGRESQL')) {
+      if (result && result.includes(POSTGRESQL)) {
         dropStatement = schema
           ? `DROP TABLE "${schema}"."${table}"`
           : `DROP TABLE "${table}"`;
-      } else if (result && result.includes('GOOGLE_STANDARD_SQL')) {
+      } else if (result && result.includes(GOOGLE_STANDARD_SQL)) {
         dropStatement = schema
           ? 'DROP TABLE `' + schema + '`.`' + table + '`'
           : dropStatement;
