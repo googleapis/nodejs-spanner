@@ -1917,6 +1917,49 @@ describe('v1.SpannerClient', () => {
       assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
     });
 
+    it('invokes executeStreamingSql without error and gaxServerStreamingRetries enabled', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.ExecuteSqlRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ExecuteSqlRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.v1.PartialResultSet()
+      );
+      client.innerApiCalls.executeStreamingSql =
+        stubServerStreamingCall(expectedResponse);
+      const stream = client.executeStreamingSql(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.PartialResultSet) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.executeStreamingSql as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
     it('invokes executeStreamingSql with error', async () => {
       const client = new spannerModule.v1.SpannerClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -1992,6 +2035,12 @@ describe('v1.SpannerClient', () => {
       });
       await assert.rejects(promise, expectedError);
     });
+    it('should create a client with gaxServerStreamingRetries enabled', () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
+      });
+      assert(client);
+    });
   });
 
   describe('streamingRead', () => {
@@ -1999,6 +2048,49 @@ describe('v1.SpannerClient', () => {
       const client = new spannerModule.v1.SpannerClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.ReadRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.ReadRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.v1.PartialResultSet()
+      );
+      client.innerApiCalls.streamingRead =
+        stubServerStreamingCall(expectedResponse);
+      const stream = client.streamingRead(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.PartialResultSet) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.streamingRead as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes streamingRead without error and gaxServerStreamingRetries enabled', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
       });
       client.initialize();
       const request = generateSampleMessage(
@@ -2114,6 +2206,12 @@ describe('v1.SpannerClient', () => {
       });
       await assert.rejects(promise, expectedError);
     });
+    it('should create a client with gaxServerStreamingRetries enabled', () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
+      });
+      assert(client);
+    });
   });
 
   describe('batchWrite', () => {
@@ -2121,6 +2219,49 @@ describe('v1.SpannerClient', () => {
       const client = new spannerModule.v1.SpannerClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.v1.BatchWriteRequest',
+        ['session']
+      );
+      request.session = defaultValue1;
+      const expectedHeaderRequestParams = `session=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.v1.BatchWriteResponse()
+      );
+      client.innerApiCalls.batchWrite =
+        stubServerStreamingCall(expectedResponse);
+      const stream = client.batchWrite(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.spanner.v1.BatchWriteResponse) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.batchWrite as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes batchWrite without error and gaxServerStreamingRetries enabled', async () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
       });
       client.initialize();
       const request = generateSampleMessage(
@@ -2235,6 +2376,12 @@ describe('v1.SpannerClient', () => {
         });
       });
       await assert.rejects(promise, expectedError);
+    });
+    it('should create a client with gaxServerStreamingRetries enabled', () => {
+      const client = new spannerModule.v1.SpannerClient({
+        gaxServerStreamingRetries: true,
+      });
+      assert(client);
     });
   });
 
