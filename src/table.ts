@@ -68,6 +68,8 @@ export type UpsertRowsCallback = CommitCallback;
 export type UpsertRowsResponse = CommitResponse;
 export type UpsertRowsOptions = MutateRowsOptions;
 
+const GOOGLE_STANDARD_SQL = 'GOOGLE_STANDARD_SQL';
+const POSTGRESQL = 'POSTGRESQL';
 /**
  * Create a Table object to interact with a table in a Cloud Spanner
  * database.
@@ -342,11 +344,37 @@ class Table {
     const callback =
       typeof gaxOptionsOrCallback === 'function' ? gaxOptionsOrCallback : cb!;
 
-    return this.database.updateSchema(
-      'DROP TABLE `' + this.name + '`',
-      gaxOptions,
-      callback!
-    );
+    const [schema, table] = this.name.includes('.')
+      ? this.name.split('.')
+      : [null, this.name];
+
+    let dropStatement = 'DROP TABLE `' + table + '`';
+
+    const performDelete = async (): Promise<void | DropTableResponse> => {
+      const result = await this.database.getDatabaseDialect(gaxOptions);
+
+      if (result && result.includes(POSTGRESQL)) {
+        dropStatement = schema
+          ? `DROP TABLE "${schema}"."${table}"`
+          : `DROP TABLE "${table}"`;
+      } else if (result && result.includes(GOOGLE_STANDARD_SQL)) {
+        dropStatement = schema
+          ? 'DROP TABLE `' + schema + '`.`' + table + '`'
+          : dropStatement;
+      }
+
+      const updateSchemaResult = callback
+        ? this.database.updateSchema(dropStatement, gaxOptions, callback)
+        : this.database.updateSchema(dropStatement, gaxOptions);
+
+      return updateSchemaResult as Promise<DropTableResponse | void>;
+    };
+
+    if (!callback) {
+      return performDelete() as Promise<DropTableResponse>;
+    } else {
+      performDelete();
+    }
   }
   /**
    * @typedef {array} DeleteRowsResponse

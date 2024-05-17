@@ -64,6 +64,43 @@ export interface RequestOptions {
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. This is only needed for proto columns
+   * where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
+   */
+  columnsMetadata?: object;
 }
 
 export interface CommitOptions {
@@ -583,8 +620,14 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      request;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -610,6 +653,7 @@ export class Snapshot extends EventEmitter {
     delete request.ranges;
     delete request.requestOptions;
     delete request.directedReadOptions;
+    delete request.columnsMetadata;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -654,6 +698,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1077,8 +1122,14 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      query;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = query;
     let reqOpts;
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1103,6 +1154,7 @@ export class Snapshot extends EventEmitter {
       delete query.requestOptions;
       delete query.types;
       delete query.directedReadOptions;
+      delete query.columnsMetadata;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1152,6 +1204,7 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
