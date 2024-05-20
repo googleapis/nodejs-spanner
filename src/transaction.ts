@@ -103,7 +103,11 @@ export interface RequestOptions {
   columnsMetadata?: object;
 }
 
-export interface CommitOptions {
+export interface BeginTransactionOptions {
+  excludeTxnFromChangeStreams?: boolean;
+}
+
+export interface CommitOptions extends BeginTransactionOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
   maxCommitDelay?: spannerClient.protobuf.IDuration;
@@ -125,6 +129,9 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
+}
+
+export interface runPartitionedUpdateOptions extends ExecuteSqlRequest {
   excludeTxnFromChangeStreams?: boolean;
 }
 
@@ -389,11 +396,19 @@ export class Snapshot extends EventEmitter {
    *   });
    * ```
    */
-  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
-  begin(callback: BeginTransactionCallback): void;
-  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   begin(
-    gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
+    gaxOptions?: BeginTransactionOptions | CallOptions
+  ): Promise<BeginResponse>;
+  begin(callback: BeginTransactionCallback): void;
+  begin(
+    gaxOptions: BeginTransactionOptions | CallOptions,
+    callback: BeginTransactionCallback
+  ): void;
+  begin(
+    gaxOptionsOrCallback?:
+      | BeginTransactionOptions
+      | CallOptions
+      | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {
     const gaxOpts =
@@ -403,6 +418,19 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
+
+    const excludeTxnFromChangeStreams =
+      'excludeTxnFromChangeStreams' in gaxOpts
+        ? gaxOpts.excludeTxnFromChangeStreams
+        : false;
+
+    if (
+      excludeTxnFromChangeStreams ||
+      this._options.excludeTxnFromChangeStreams === true
+    ) {
+      options.excludeTxnFromChangeStreams = true;
+    }
+
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -1936,7 +1964,7 @@ export class Transaction extends Dml {
     } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
-      this.begin().then(() => this.commit(options, callback), callback);
+      this.begin(options).then(() => this.commit(options, callback), callback);
       return;
     }
 

@@ -62,6 +62,7 @@ import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
   ExecuteSqlRequest,
   RunCallback,
+  runPartitionedUpdateOptions,
   RunResponse,
   RunUpdateCallback,
   Snapshot,
@@ -97,6 +98,7 @@ import Policy = google.iam.v1.Policy;
 import FieldMask = google.protobuf.FieldMask;
 import IDatabase = google.spanner.admin.database.v1.IDatabase;
 import snakeCase = require('lodash.snakecase');
+import {object} from 'is';
 
 export type GetDatabaseRolesCallback = RequestCallback<
   IDatabaseRole,
@@ -2092,6 +2094,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
@@ -2711,13 +2716,15 @@ class Database extends common.GrpcServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | runPartitionedUpdateOptions
+  ): Promise<[number]>;
+  runPartitionedUpdate(
+    query: string | runPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | runPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
     this.pool_.getSession((err, session) => {
@@ -2732,33 +2739,44 @@ class Database extends common.GrpcServiceObject {
 
   _runPartitionedUpdate(
     session: Session,
-    query: string | ExecuteSqlRequest,
+    query: string | runPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
-    transaction.begin(err => {
-      if (err) {
-        this.pool_.release(session!);
-        callback!(err, 0);
-        return;
-      }
+    if (typeof query === 'string') {
+      query = {sql: query} as runPartitionedUpdateOptions;
+    }
 
-      transaction.runUpdate(query, (err, updateCount) => {
+    query = Object.assign({}, query) as runPartitionedUpdateOptions;
+
+    transaction.begin(
+      {
+        excludeTxnFromChangeStreams: query.excludeTxnFromChangeStreams,
+      },
+      err => {
         if (err) {
-          if (err.code !== grpc.status.ABORTED) {
-            this.pool_.release(session!);
-            callback!(err, 0);
-            return;
-          }
-          this._runPartitionedUpdate(session, query, callback);
-        } else {
           this.pool_.release(session!);
-          callback!(null, updateCount);
+          callback!(err, 0);
           return;
         }
-      });
-    });
+
+        transaction.runUpdate(query, (err, updateCount) => {
+          if (err) {
+            if (err.code !== grpc.status.ABORTED) {
+              this.pool_.release(session!);
+              callback!(err, 0);
+              return;
+            }
+            this._runPartitionedUpdate(session, query, callback);
+          } else {
+            this.pool_.release(session!);
+            callback!(null, updateCount);
+            return;
+          }
+        });
+      }
+    );
   }
 
   /**

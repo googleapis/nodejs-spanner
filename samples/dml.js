@@ -628,7 +628,7 @@ async function updateUsingPartitionedDmlWithChangeStreamOption(
 
   try {
     const [rowCount] = await database.runPartitionedUpdate({
-      sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 1',
+      sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 9',
       excludeTxnFromChangeStreams: true,
     });
     console.log(`Successfully updated ${rowCount} records.`);
