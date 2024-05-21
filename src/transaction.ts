@@ -396,10 +396,6 @@ export class Snapshot extends EventEmitter {
   begin(callback: BeginTransactionCallback): void;
   begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   begin(
-    gaxOptions: CallOptions,
-    callback: BeginTransactionCallback
-  ): void;
-  begin(
     gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {
