@@ -103,15 +103,16 @@ export interface RequestOptions {
   columnsMetadata?: object;
 }
 
-export interface BeginTransactionOptions {
+export interface BeginTransactionOptions extends CallOptions {
   excludeTxnFromChangeStreams?: boolean;
 }
 
-export interface CommitOptions extends BeginTransactionOptions {
+export interface CommitOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
   maxCommitDelay?: spannerClient.protobuf.IDuration;
   gaxOptions?: CallOptions;
+  excludeTxnFromChangeStreams?: true;
 }
 
 export interface Statement {
@@ -397,17 +398,16 @@ export class Snapshot extends EventEmitter {
    * ```
    */
   begin(
-    gaxOptions?: BeginTransactionOptions | CallOptions
+    gaxOptions?: BeginTransactionOptions
   ): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
   begin(
-    gaxOptions: BeginTransactionOptions | CallOptions,
+    gaxOptions: BeginTransactionOptions,
     callback: BeginTransactionCallback
   ): void;
   begin(
     gaxOptionsOrCallback?:
-      | BeginTransactionOptions
-      | CallOptions
+      BeginTransactionOptions
       | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {

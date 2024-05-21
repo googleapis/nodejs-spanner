@@ -2485,7 +2485,7 @@ describe('Database', () => {
 
       beginStub = (
         sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
-      ).callsFake(callback => callback(null));
+      ).callsFake(({}, callback) => callback(null));
 
       runUpdateStub = (
         sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
@@ -2523,7 +2523,7 @@ describe('Database', () => {
     it('should return any begin errors', done => {
       const fakeError = new Error('err');
 
-      beginStub.callsFake(callback => callback(fakeError));
+      beginStub.callsFake(({}, callback) => callback(fakeError));
 
       const releaseStub = (
         sandbox.stub(fakePool, 'release') as sinon.SinonStub
@@ -2543,8 +2543,8 @@ describe('Database', () => {
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
       const [query] = runUpdateStub.lastCall.args;
-
-      assert.strictEqual(query, QUERY);
+      assert.strictEqual(query.sql, QUERY.sql);
+      assert.deepStrictEqual(query.params, QUERY.params);
       assert.ok(fakeCallback.calledOnce);
     });
 
@@ -2587,6 +2587,32 @@ describe('Database', () => {
       database.parent.parent = {
         routeToLeaderEnabled: true,
         directedReadOptions: fakeDirectedReadOptions,
+      };
+
+      database.runPartitionedUpdate(
+        {
+          sql: QUERY.sql,
+          params: QUERY.params,
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        sql: QUERY.sql,
+        params: QUERY.params,
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
+    it('should ignore excludeTxnFromChangeStream set for client', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.parent.parent = {
+        excludeTxnFromChangeStream: true,
       };
 
       database.runPartitionedUpdate(
