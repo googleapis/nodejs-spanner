@@ -6,3 +6,5 @@ docs/
 protos/
 samples/generated/
 system-test/**/fixtures
+test/data
+samples/resource
