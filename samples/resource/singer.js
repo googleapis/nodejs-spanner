@@ -350,8 +350,8 @@ $root.examples = (function () {
                 options.longs === String
                   ? long.toString()
                   : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                  ? long.toNumber()
+                  : long;
             } else object.singerId = options.longs === String ? '0' : 0;
             object.birthDate = '';
             object.nationality = '';
@@ -368,11 +368,11 @@ $root.examples = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.singerId)
                   : options.longs === Number
-                    ? new $util.LongBits(
-                        message.singerId.low >>> 0,
-                        message.singerId.high >>> 0
-                      ).toNumber()
-                    : message.singerId;
+                  ? new $util.LongBits(
+                      message.singerId.low >>> 0,
+                      message.singerId.high >>> 0
+                    ).toNumber()
+                  : message.singerId;
           if (message.birthDate !== null && message.hasOwnProperty('birthDate'))
             object.birthDate = message.birthDate;
           if (
