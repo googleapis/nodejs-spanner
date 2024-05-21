@@ -67,64 +67,6 @@ function insertUsingDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_standard_insert]
 }
 
-function insertUsingDmlWithChangeStreamOption(
-  instanceId,
-  databaseId,
-  projectId
-) {
-  // [START spanner_dml_standard_insert]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('../build/src');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  const options = {
-    excludeTxnFromChangeStreams: true,
-  };
-
-  database.runTransaction(options, async (err, transaction) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    try {
-      const [rowCount] = await transaction.runUpdate({
-        sql: 'INSERT Singers (SingerId, FirstName, LastName) VALUES (11, @firstName, @lastName)',
-        params: {
-          firstName: 'Virginia',
-          lastName: 'Watson',
-        },
-      });
-
-      console.log(
-        `Successfully inserted ${rowCount} record into the Singers table.`
-      );
-
-      await transaction.commit();
-    } catch (err) {
-      console.error('ERROR:', err);
-    } finally {
-      // Close the database when finished.
-      database.close();
-    }
-  });
-  // [END spanner_dml_standard_insert]
-}
-
 function updateUsingDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_standard_update]
   // Imports the Google Cloud client library
@@ -601,46 +543,6 @@ async function updateUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [END spanner_dml_partitioned_update]
 }
 
-async function updateUsingPartitionedDmlWithChangeStreamOption(
-  instanceId,
-  databaseId,
-  projectId
-) {
-  // [START spanner_dml_partitioned_update]
-  // Imports the Google Cloud client library
-  const {Spanner} = require('../build/src');
-
-  /**
-   * TODO(developer): Uncomment the following lines before running the sample.
-   */
-  // const projectId = 'my-project-id';
-  // const instanceId = 'my-instance';
-  // const databaseId = 'my-database';
-
-  // Creates a client
-  const spanner = new Spanner({
-    projectId: projectId,
-  });
-
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  try {
-    const [rowCount] = await database.runPartitionedUpdate({
-      sql: 'UPDATE Albums SET MarketingBudget = 100000 WHERE SingerId > 9',
-      excludeTxnFromChangeStreams: true,
-    });
-    console.log(`Successfully updated ${rowCount} records.`);
-  } catch (err) {
-    console.error('ERROR:', err);
-  } finally {
-    // Close the database when finished.
-    database.close();
-  }
-  // [END spanner_dml_partitioned_update]
-}
-
 async function deleteUsingPartitionedDml(instanceId, databaseId, projectId) {
   // [START spanner_dml_partitioned_delete]
   // Imports the Google Cloud client library
@@ -804,28 +706,6 @@ require('yargs')
     opts => insertUsingDml(opts.instanceName, opts.databaseName, opts.projectId)
   )
   .command(
-    'insertUsingDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
-    'Inserts one record using DML into an example Cloud Spanner table using option change streams.',
-    {},
-    opts =>
-      insertUsingDmlWithChangeStreamOption(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
-  )
-  .command(
-    'insertUsingDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
-    'Inserts one record using DML into an example Cloud Spanner table using option change streams.',
-    {},
-    opts =>
-      insertUsingDmlWithChangeStreamOption(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
-  )
-  .command(
     'updateUsingDml <instanceName> <databaseName> <projectId>',
     'Updates one record using DML.',
     {},
@@ -900,17 +780,6 @@ require('yargs')
     {},
     opts =>
       updateUsingPartitionedDml(
-        opts.instanceName,
-        opts.databaseName,
-        opts.projectId
-      )
-  )
-  .command(
-    'updateUsingPartitionedDmlWithChangeStreamOption <instanceName> <databaseName> <projectId>',
-    'Updates multiple records using DML.',
-    {},
-    opts =>
-      updateUsingPartitionedDmlWithChangeStreamOption(
         opts.instanceName,
         opts.databaseName,
         opts.projectId

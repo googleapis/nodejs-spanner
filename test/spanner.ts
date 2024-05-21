@@ -3653,7 +3653,7 @@ describe('Spanner with mock server', () => {
     assert.ok(beginTxnRequest, 'beginTransaction was called');
   });
 
-  it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStream', async () => {
+  it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
     const database = newTestDatabase();
     await database.runTransactionAsync(
       {
@@ -3708,7 +3708,7 @@ describe('Spanner with mock server', () => {
     assert.ok(beginTxnRequest, 'beginTransaction was called');
   });
 
-  it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStream', async () => {
+  it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
     const database = newTestDatabase();
     await database.runTransactionAsync(
       {
@@ -3849,6 +3849,27 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(
         request.requestOptions!.transactionTag,
         'transaction-tag'
+      );
+
+      await database.close();
+    });
+
+    it('should use excludeTxnFromChangeStreams for mutations', async () => {
+      const database = newTestDatabase();
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
+          excludeTxnFromChangeStreams: true,
+        }
+      );
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
       );
 
       await database.close();
