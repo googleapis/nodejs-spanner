@@ -2750,9 +2750,6 @@ class Database extends common.GrpcServiceObject {
     query = Object.assign({}, query) as runPartitionedUpdateOptions;
 
     transaction.begin(
-      {
-        excludeTxnFromChangeStreams: query.excludeTxnFromChangeStreams,
-      },
       err => {
         if (err) {
           this.pool_.release(session!);

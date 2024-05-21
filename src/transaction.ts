@@ -420,13 +420,6 @@ export class Snapshot extends EventEmitter {
         ? gaxOpts.excludeTxnFromChangeStreams
         : false;
 
-    if (
-      excludeTxnFromChangeStreams ||
-      this._options.excludeTxnFromChangeStreams === true
-    ) {
-      options.excludeTxnFromChangeStreams = true;
-    }
-
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -1960,7 +1953,7 @@ export class Transaction extends Dml {
     } else if (!this._useInRunner) {
       reqOpts.singleUseTransaction = this._options;
     } else {
-      this.begin(options).then(() => this.commit(options, callback), callback);
+      this.begin().then(() => this.commit(options, callback), callback);
       return;
     }
 
