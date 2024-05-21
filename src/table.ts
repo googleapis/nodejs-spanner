@@ -44,8 +44,9 @@ export type CreateTableCallback = LongRunningCallback<Table>;
 export type DropTableResponse = UpdateSchemaResponse;
 export type DropTableCallback = UpdateSchemaCallback;
 
-interface MutateRowsOptions extends CommitOptions {
+interface MutateRowsOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
+  excludeTxnFromChangeStreams?: true;
 }
 
 export type DeleteRowsCallback = CommitCallback;

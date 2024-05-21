@@ -103,16 +103,11 @@ export interface RequestOptions {
   columnsMetadata?: object;
 }
 
-export interface BeginTransactionOptions extends CallOptions {
-  excludeTxnFromChangeStreams?: boolean;
-}
-
 export interface CommitOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
   maxCommitDelay?: spannerClient.protobuf.IDuration;
   gaxOptions?: CallOptions;
-  excludeTxnFromChangeStreams?: true;
 }
 
 export interface Statement {
@@ -397,14 +392,14 @@ export class Snapshot extends EventEmitter {
    *   });
    * ```
    */
-  begin(gaxOptions?: BeginTransactionOptions): Promise<BeginResponse>;
+  begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
   begin(
-    gaxOptions: BeginTransactionOptions,
+    gaxOptions: CallOptions,
     callback: BeginTransactionCallback
   ): void;
   begin(
-    gaxOptionsOrCallback?: BeginTransactionOptions | BeginTransactionCallback,
+    gaxOptionsOrCallback?: CallOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {
     const gaxOpts =
@@ -414,11 +409,6 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
-
-    const excludeTxnFromChangeStreams =
-      'excludeTxnFromChangeStreams' in gaxOpts
-        ? gaxOpts.excludeTxnFromChangeStreams
-        : false;
 
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
