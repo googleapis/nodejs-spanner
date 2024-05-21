@@ -397,18 +397,14 @@ export class Snapshot extends EventEmitter {
    *   });
    * ```
    */
-  begin(
-    gaxOptions?: BeginTransactionOptions
-  ): Promise<BeginResponse>;
+  begin(gaxOptions?: BeginTransactionOptions): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
   begin(
     gaxOptions: BeginTransactionOptions,
     callback: BeginTransactionCallback
   ): void;
   begin(
-    gaxOptionsOrCallback?:
-      BeginTransactionOptions
-      | BeginTransactionCallback,
+    gaxOptionsOrCallback?: BeginTransactionOptions | BeginTransactionCallback,
     cb?: BeginTransactionCallback
   ): void | Promise<BeginResponse> {
     const gaxOpts =
