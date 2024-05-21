@@ -2485,7 +2485,7 @@ describe('Database', () => {
 
       beginStub = (
         sandbox.stub(fakePartitionedDml, 'begin') as sinon.SinonStub
-      ).callsFake((object, callback) => callback(null));
+      ).callsFake(callback => callback(null));
 
       runUpdateStub = (
         sandbox.stub(fakePartitionedDml, 'runUpdate') as sinon.SinonStub
@@ -2523,7 +2523,7 @@ describe('Database', () => {
     it('should return any begin errors', done => {
       const fakeError = new Error('err');
 
-      beginStub.callsFake((object, callback) => callback(fakeError));
+      beginStub.callsFake(callback => callback(fakeError));
 
       const releaseStub = (
         sandbox.stub(fakePool, 'release') as sinon.SinonStub
@@ -2543,6 +2543,7 @@ describe('Database', () => {
       database.runPartitionedUpdate(QUERY, fakeCallback);
 
       const [query] = runUpdateStub.lastCall.args;
+
       assert.strictEqual(query.sql, QUERY.sql);
       assert.deepStrictEqual(query.params, QUERY.params);
       assert.ok(fakeCallback.calledOnce);
