@@ -127,7 +127,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
-export interface runPartitionedUpdateOptions extends ExecuteSqlRequest {
+export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
   excludeTxnFromChangeStreams?: boolean;
 }
 
@@ -394,6 +394,7 @@ export class Snapshot extends EventEmitter {
    */
   begin(gaxOptions?: CallOptions): Promise<BeginResponse>;
   begin(callback: BeginTransactionCallback): void;
+  begin(gaxOptions: CallOptions, callback: BeginTransactionCallback): void;
   begin(
     gaxOptions: CallOptions,
     callback: BeginTransactionCallback
