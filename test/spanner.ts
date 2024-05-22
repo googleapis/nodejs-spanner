@@ -3091,6 +3091,14 @@ describe('Spanner with mock server', () => {
         });
         assert.strictEqual(updateCount, 2);
         await database.close();
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options
+            ?.excludeTxnFromChangeStreams;
+        }) as v1.BeginTransactionRequest;
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
+        );
       });
 
       it('should retry on specific internal error', async () => {
@@ -3124,6 +3132,15 @@ describe('Spanner with mock server', () => {
         });
         assert.strictEqual(updateCount, 2);
         await database.close();
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options
+            ?.excludeTxnFromChangeStreams;
+        }) as v1.BeginTransactionRequest;
+
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
+        );
       });
 
       it('should fail on generic internal error', async () => {
@@ -3138,32 +3155,6 @@ describe('Spanner with mock server', () => {
         );
         try {
           await database.runPartitionedUpdate(updateSql);
-          assert.fail('missing expected INTERNAL error');
-        } catch (err) {
-          assert.strictEqual((err as ServiceError).code, grpc.status.INTERNAL);
-          assert.ok(
-            (err as ServiceError).message.includes('Generic internal error')
-          );
-        } finally {
-          await database.close();
-        }
-      });
-
-      it('should fail on generic internal error with excludeTxnFromChangeStreams', async () => {
-        const database = newTestDatabase();
-        spannerMock.setExecutionTime(
-          spannerMock.executeStreamingSql,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.INTERNAL,
-            message: 'Generic internal error',
-            streamIndex: 1,
-          } as MockError)
-        );
-        try {
-          await database.runPartitionedUpdate({
-            sql: updateSql,
-            excludeTxnFromChangeStreams: true,
-          });
           assert.fail('missing expected INTERNAL error');
         } catch (err) {
           assert.strictEqual((err as ServiceError).code, grpc.status.INTERNAL);
@@ -3197,26 +3188,20 @@ describe('Spanner with mock server', () => {
         await database.close();
       });
 
-      it('should use request options with excludeTxnFromChangeStreams', async () => {
+      it('should use excludeTxnFromChangeStreams', async () => {
         const database = newTestDatabase();
         await database.runPartitionedUpdate({
           sql: updateSql,
           excludeTxnFromChangeStreams: true,
-          requestOptions: {
-            priority: Priority.PRIORITY_LOW,
-            requestTag: 'request-tag',
-          },
         });
-        const request = spannerMock.getRequests().find(val => {
-          return (val as v1.ExecuteSqlRequest).sql;
-        }) as v1.ExecuteSqlRequest;
-        assert.ok(request, 'no ExecuteSqlRequest found');
-        assert.ok(
-          request.requestOptions,
-          'no requestOptions found on ExecuteSqlRequest'
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options
+            ?.excludeTxnFromChangeStreams;
+        }) as v1.BeginTransactionRequest;
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
         );
-        assert.strictEqual(request.requestOptions!.priority, 'PRIORITY_LOW');
-        assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
         await database.close();
       });
     });

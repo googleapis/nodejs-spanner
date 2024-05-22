@@ -2513,6 +2513,10 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
 
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
+  }
+
   /**
    * Execute a DML statement and get the affected row count. Unlike
    * {@link Transaction#runUpdate} after using this method you should
