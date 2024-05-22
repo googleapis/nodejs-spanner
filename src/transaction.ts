@@ -406,7 +406,6 @@ export class Snapshot extends EventEmitter {
 
     const session = this.session.formattedName_!;
     const options = this._options;
-
     const reqOpts: spannerClient.spanner.v1.IBeginTransactionRequest = {
       session,
       options,
@@ -2476,6 +2475,14 @@ export class Transaction extends Dml {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
 
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude transactions from being
+   * tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified transaction, allowing write queries to operate without being
+   * included in change streams.
+   */
   excludeTxnFromChangeStreams(): void {
     this._options.excludeTxnFromChangeStreams = true;
   }
@@ -2512,7 +2519,14 @@ export class PartitionedDml extends Dml {
     super(session);
     this._options = {partitionedDml: options};
   }
-
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude transactions from being
+   * tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified transaction, allowing write queries to operate without being
+   * included in change streams.
+   */
   excludeTxnFromChangeStreams(): void {
     this._options.excludeTxnFromChangeStreams = true;
   }
