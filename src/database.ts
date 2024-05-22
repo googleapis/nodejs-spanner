@@ -2743,12 +2743,6 @@ class Database extends common.GrpcServiceObject {
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
-    if (typeof query === 'string') {
-      query = {sql: query} as RunPartitionedUpdateOptions;
-    }
-
-    query = Object.assign({}, query) as RunPartitionedUpdateOptions;
-
     transaction.begin(err => {
       if (err) {
         this.pool_.release(session!);
