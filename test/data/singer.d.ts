@@ -44,16 +44,28 @@ export namespace examples {
         constructor(properties?: examples.spanner.music.ISingerInfo);
 
         /** SingerInfo singerId. */
-        public singerId: number | Long;
+        public singerId?: number | Long | null;
 
         /** SingerInfo birthDate. */
-        public birthDate: string;
+        public birthDate?: string | null;
 
         /** SingerInfo nationality. */
-        public nationality: string;
+        public nationality?: string | null;
 
         /** SingerInfo genre. */
-        public genre: examples.spanner.music.Genre;
+        public genre?: examples.spanner.music.Genre | null;
+
+        /** SingerInfo _singerId. */
+        public _singerId?: 'singerId';
+
+        /** SingerInfo _birthDate. */
+        public _birthDate?: 'birthDate';
+
+        /** SingerInfo _nationality. */
+        public _nationality?: 'nationality';
+
+        /** SingerInfo _genre. */
+        public _genre?: 'genre';
 
         /**
          * Creates a new SingerInfo instance using the specified properties.
