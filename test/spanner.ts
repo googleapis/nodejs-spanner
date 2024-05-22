@@ -3090,7 +3090,7 @@ describe('Spanner with mock server', () => {
           excludeTxnFromChangeStreams: true,
         });
         assert.strictEqual(updateCount, 2);
-        await database.close();
+        
         const beginTxnRequest = spannerMock.getRequests().find(val => {
           return (val as v1.BeginTransactionRequest).options
             ?.excludeTxnFromChangeStreams;
@@ -3099,6 +3099,7 @@ describe('Spanner with mock server', () => {
           beginTxnRequest.options?.excludeTxnFromChangeStreams,
           true
         );
+        await database.close();
       });
 
       it('should retry on specific internal error', async () => {
@@ -3131,7 +3132,7 @@ describe('Spanner with mock server', () => {
           excludeTxnFromChangeStreams: true,
         });
         assert.strictEqual(updateCount, 2);
-        await database.close();
+        
         const beginTxnRequest = spannerMock.getRequests().find(val => {
           return (val as v1.BeginTransactionRequest).options
             ?.excludeTxnFromChangeStreams;
@@ -3141,6 +3142,7 @@ describe('Spanner with mock server', () => {
           beginTxnRequest.options?.excludeTxnFromChangeStreams,
           true
         );
+        await database.close();
       });
 
       it('should fail on generic internal error', async () => {
@@ -3314,7 +3316,7 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 1);
     });
 
-    it('should apply blind writes only once with excludeTxnFromChangeStreams', async () => {
+    it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
       const database = newTestDatabase();
 
       await database.runTransactionAsync(
@@ -3788,6 +3790,27 @@ describe('Spanner with mock server', () => {
     assert.ok(beginTxnRequest, 'beginTransaction was called');
   });
 
+  it('should run begin transaction on blind commit with excludeTxnFromChangeStreams option', async () => {
+    const database = newTestDatabase();
+    await database.runTransactionAsync(
+      {
+        excludeTxnFromChangeStreams: true,
+      },
+      async tx => {
+      tx.insert('foo', {id: 1, name: 'One'});
+      await tx.commit();
+    });
+    await database.close();
+
+    const beginTxnRequest = spannerMock.getRequests().find(val => {
+      return (val as v1.BeginTransactionRequest).options?.readWrite;
+    }) as v1.BeginTransactionRequest;
+    assert.strictEqual(
+      beginTxnRequest.options?.excludeTxnFromChangeStreams,
+      true
+    );
+  });
+
   it('should throw error if begin transaction fails on blind commit', async () => {
     const database = newTestDatabase();
     const err = {
@@ -3803,6 +3826,42 @@ describe('Spanner with mock server', () => {
         await tx.commit();
       });
     } catch (e) {
+      assert.strictEqual(
+        (e as ServiceError).message,
+        '2 UNKNOWN: Test error'
+      );
+    } finally {
+      await database.close();
+    }
+  });
+
+  it('should throw error if begin transaction fails on blind commit with excludeTxnFromChangeStreams option', async () => {
+    const database = newTestDatabase();
+    const err = {
+      message: 'Test error',
+    } as MockError;
+    spannerMock.setExecutionTime(
+      spannerMock.beginTransaction,
+      SimulatedExecutionTime.ofError(err)
+    );
+    try {
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+        tx.insert('foo', {id: 1, name: 'One'});
+        await tx.commit();
+      });
+    } catch (e) {
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
       assert.strictEqual((e as ServiceError).message, '2 UNKNOWN: Test error');
     } finally {
       await database.close();
@@ -3847,16 +3906,13 @@ describe('Spanner with mock server', () => {
           excludeTxnFromChangeStreams: true,
         }
       );
-
       const beginTxnRequest = spannerMock.getRequests().find(val => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
-
       assert.strictEqual(
         beginTxnRequest.options?.excludeTxnFromChangeStreams,
         true
       );
-
       await database.close();
     });
 

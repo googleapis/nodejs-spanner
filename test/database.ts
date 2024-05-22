@@ -2615,14 +2615,12 @@ describe('Database', () => {
       database.parent.parent = {
         excludeTxnFromChangeStream: true,
       };
-
       database.runPartitionedUpdate(
         {
           excludeTxnFromChangeStream: true,
         },
         fakeCallback
       );
-
       const [query] = runUpdateStub.lastCall.args;
 
       assert.deepStrictEqual(query, {
