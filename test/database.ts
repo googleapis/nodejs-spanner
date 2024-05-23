@@ -2582,6 +2582,24 @@ describe('Database', () => {
       assert.ok(fakeCallback.calledOnce);
     });
 
+    it('should accept excludeTxnFromChangeStreams', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.runPartitionedUpdate(
+        {
+          excludeTxnFromChangeStream: true,
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        excludeTxnFromChangeStream: true,
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
     it('should ignore directedReadOptions set for client', () => {
       const fakeCallback = sandbox.spy();
 
@@ -2605,26 +2623,6 @@ describe('Database', () => {
         sql: QUERY.sql,
         params: QUERY.params,
         requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
-      });
-      assert.ok(fakeCallback.calledOnce);
-    });
-
-    it('should ignore excludeTxnFromChangeStreams set for client', () => {
-      const fakeCallback = sandbox.spy();
-
-      database.parent.parent = {
-        excludeTxnFromChangeStream: true,
-      };
-      database.runPartitionedUpdate(
-        {
-          excludeTxnFromChangeStream: true,
-        },
-        fakeCallback
-      );
-      const [query] = runUpdateStub.lastCall.args;
-
-      assert.deepStrictEqual(query, {
-        excludeTxnFromChangeStream: true,
       });
       assert.ok(fakeCallback.calledOnce);
     });
