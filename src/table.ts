@@ -1074,25 +1074,27 @@ class Table {
   ): void {
     const requestOptions =
       'requestOptions' in options ? options.requestOptions : {};
-    
+
     const excludeTxnFromChangeStreams =
       'excludeTxnFromChangeStreams' in options
         ? options.excludeTxnFromChangeStreams
         : false;
-    
+
     this.database.runTransaction(
       {
-      requestOptions: requestOptions,
-      excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
-    }, (err, transaction) => {
-      if (err) {
-        callback(err);
-        return;
-      }
+        requestOptions: requestOptions,
+        excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+      },
+      (err, transaction) => {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      transaction![method](this.name, rows as Key[]);
-      transaction!.commit(options, callback);
-    });
+        transaction![method](this.name, rows as Key[]);
+        transaction!.commit(options, callback);
+      }
+    );
   }
 }
 
