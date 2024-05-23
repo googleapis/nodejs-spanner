@@ -127,10 +127,6 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
-export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
-  excludeTxnFromChangeStreams?: boolean;
-}
-
 export interface KeyRange {
   startClosed?: Value[];
   startOpen?: Value[];
@@ -2476,11 +2472,11 @@ export class Transaction extends Dml {
   }
 
   /**
-   * Use option excludeTxnFromChangeStreams to exclude transactions from being
-   * tracked in change streams.
+   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
+   * from being tracked in change streams.
    *
    * Enabling this options to true will effectively disable change stream tracking
-   * for a specified transaction, allowing write queries to operate without being
+   * for a specified transaction, allowing read/write transaction to operate without being
    * included in change streams.
    */
   excludeTxnFromChangeStreams(): void {
@@ -2520,12 +2516,12 @@ export class PartitionedDml extends Dml {
     this._options = {partitionedDml: options};
   }
   /**
-   * Use option excludeTxnFromChangeStreams to exclude transactions from being
-   * tracked in change streams.
+   * Use option excludeTxnFromChangeStreams to exclude partitionedDml
+   * queries from being tracked in change streams.
    *
    * Enabling this options to true will effectively disable change stream tracking
-   * for a specified transaction, allowing write queries to operate without being
-   * included in change streams.
+   * for a specified partitionedDml query, allowing write queries to operate
+   * without being included in change streams.
    */
   excludeTxnFromChangeStreams(): void {
     this._options.excludeTxnFromChangeStreams = true;

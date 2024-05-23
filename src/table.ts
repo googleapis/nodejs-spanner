@@ -46,7 +46,7 @@ export type DropTableCallback = UpdateSchemaCallback;
 
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
-  excludeTxnFromChangeStreams?: true;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export type DeleteRowsCallback = CommitCallback;

@@ -62,7 +62,6 @@ import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
   ExecuteSqlRequest,
   RunCallback,
-  RunPartitionedUpdateOptions,
   RunResponse,
   RunUpdateCallback,
   Snapshot,
@@ -141,6 +140,10 @@ export type GetDatabaseDialectCallback = NormalCallback<
 export interface SetIamPolicyRequest {
   policy: Policy | null;
   updateMask?: FieldMask | null;
+}
+
+export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export type UpdateSchemaCallback = ResourceCallback<
