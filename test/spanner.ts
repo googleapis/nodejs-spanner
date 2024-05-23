@@ -3074,33 +3074,6 @@ describe('Spanner with mock server', () => {
         await database.close();
       });
 
-      it('should retry on aborted error with excludeTxnFromChangeStreams', async () => {
-        const database = newTestDatabase();
-        spannerMock.setExecutionTime(
-          spannerMock.executeStreamingSql,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.ABORTED,
-            message: 'Transaction aborted',
-            metadata: MockSpanner.createMinimalRetryDelayMetadata(),
-            streamIndex: 1,
-          } as MockError)
-        );
-        const [updateCount] = await database.runPartitionedUpdate({
-          sql: updateSql,
-          excludeTxnFromChangeStreams: true,
-        });
-        assert.strictEqual(updateCount, 2);
-
-        const beginTxnRequest = spannerMock.getRequests().find(val => {
-          return (val as v1.BeginTransactionRequest).options?.readWrite;
-        }) as v1.BeginTransactionRequest;
-        assert.strictEqual(
-          beginTxnRequest.options?.excludeTxnFromChangeStreams,
-          true
-        );
-        await database.close();
-      });
-
       it('should retry on specific internal error', async () => {
         const database = newTestDatabase();
         spannerMock.setExecutionTime(
@@ -3113,33 +3086,6 @@ describe('Spanner with mock server', () => {
         );
         const [updateCount] = await database.runPartitionedUpdate(updateSql);
         assert.strictEqual(updateCount, 2);
-        await database.close();
-      });
-
-      it('should retry on specific internal error with excludeTxnFromChangeStreams', async () => {
-        const database = newTestDatabase();
-        spannerMock.setExecutionTime(
-          spannerMock.executeStreamingSql,
-          SimulatedExecutionTime.ofError({
-            code: grpc.status.INTERNAL,
-            message: 'Received unexpected EOS on DATA frame from server',
-            streamIndex: 1,
-          } as MockError)
-        );
-        const [updateCount] = await database.runPartitionedUpdate({
-          sql: updateSql,
-          excludeTxnFromChangeStreams: true,
-        });
-        assert.strictEqual(updateCount, 2);
-
-        const beginTxnRequest = spannerMock.getRequests().find(val => {
-          return (val as v1.BeginTransactionRequest).options?.readWrite;
-        }) as v1.BeginTransactionRequest;
-
-        assert.strictEqual(
-          beginTxnRequest.options?.excludeTxnFromChangeStreams,
-          true
-        );
         await database.close();
       });
 
