@@ -3314,6 +3314,28 @@ describe('Spanner with mock server', () => {
       assert.strictEqual(commitRequest.mutations.length, 1);
     });
 
+    it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.insert('foo', {id: 1, value: 'One'});
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use optimistic lock for runTransactionAsync', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3337,6 +3359,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use exclude transaction from change streams for runTransactionAsync', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use optimistic lock for runTransaction', done => {
       const database = newTestDatabase();
       database.runTransaction({optimisticLock: true}, async (err, tx) => {
@@ -3355,6 +3400,29 @@ describe('Spanner with mock server', () => {
         );
         done();
       });
+    });
+
+    it('should use exclude transaction from change stream for runTransaction', done => {
+      const database = newTestDatabase();
+      database.runTransaction(
+        {excludeTxnFromChangeStreams: true},
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
+
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.excludeTxnFromChangeStreams,
+            true
+          );
+          done();
+        }
+      );
     });
 
     it('should use optimistic lock and transaction tag for getTransaction', async () => {
@@ -3493,6 +3561,33 @@ describe('Spanner with mock server', () => {
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should use beginTransaction on retry with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(
+        {excludeTxnFromChangeStreams: true},
+        async tx => {
+          await tx!.run(selectSql);
+          if (!attempts) {
+            spannerMock.abortTransaction(tx);
+          }
+          attempts++;
+          await tx!.run(insertSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use beginTransaction on retry with optimistic lock', async () => {
       const database = newTestDatabase();
       let attempts = 0;
@@ -3540,6 +3635,38 @@ describe('Spanner with mock server', () => {
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          try {
+            await tx.runUpdate(invalidSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              (e as ServiceError).message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use beginTransaction for streaming on retry for unknown reason', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(async tx => {
@@ -3561,6 +3688,38 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          try {
+            await getRowCountFromStreamingSql(tx!, {sql: invalidSql});
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              (e as ServiceError).message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
     });
 
     it('should fail if beginTransaction fails', async () => {
@@ -3629,6 +3788,28 @@ describe('Spanner with mock server', () => {
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should run begin transaction on blind commit with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should throw error if begin transaction fails on blind commit', async () => {
       const database = newTestDatabase();
       const err = {
@@ -3644,6 +3825,43 @@ describe('Spanner with mock server', () => {
           await tx.commit();
         });
       } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should throw error if begin transaction fails on blind commit with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(
+          {
+            excludeTxnFromChangeStreams: true,
+          },
+          async tx => {
+            tx.insert('foo', {id: 1, name: 'One'});
+            await tx.commit();
+          }
+        );
+      } catch (e) {
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options?.readWrite;
+        }) as v1.BeginTransactionRequest;
+
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
+        );
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
@@ -3681,6 +3899,24 @@ describe('Spanner with mock server', () => {
         'transaction-tag'
       );
 
+      await database.close();
+    });
+
+    it('should use excludeTxnFromChangeStreams for mutations', async () => {
+      const database = newTestDatabase();
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
+          excludeTxnFromChangeStreams: true,
+        }
+      );
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
       await database.close();
     });
 
