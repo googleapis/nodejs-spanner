@@ -45,6 +45,7 @@ export interface RunTransactionOptions {
   timeout?: number;
   requestOptions?: Pick<IRequestOptions, 'transactionTag'>;
   optimisticLock?: boolean;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 /**
@@ -203,6 +204,9 @@ export abstract class Runner<T> {
     );
     if (this.options.optimisticLock) {
       transaction.useOptimisticLock();
+    }
+    if (this.options.excludeTxnFromChangeStreams) {
+      transaction.excludeTxnFromChangeStreams();
     }
     if (this.attempts > 0) {
       await transaction.begin();

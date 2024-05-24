@@ -2470,6 +2470,18 @@ export class Transaction extends Dml {
   useOptimisticLock(): void {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
+
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
+   * from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified transaction, allowing read/write transaction to operate without being
+   * included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
+  }
 }
 
 /*! Developer Documentation
@@ -2502,6 +2514,17 @@ export class PartitionedDml extends Dml {
   ) {
     super(session);
     this._options = {partitionedDml: options};
+  }
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude partitionedDml
+   * queries from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified partitionedDml query, allowing write queries to operate
+   * without being included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
   }
 
   /**

@@ -142,6 +142,10 @@ export interface SetIamPolicyRequest {
   updateMask?: FieldMask | null;
 }
 
+export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
+  excludeTxnFromChangeStreams?: boolean;
+}
+
 export type UpdateSchemaCallback = ResourceCallback<
   GaxOperation,
   databaseAdmin.longrunning.IOperation
@@ -2092,6 +2096,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
@@ -2711,13 +2718,15 @@ class Database extends common.GrpcServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions
+  ): Promise<[number]>;
+  runPartitionedUpdate(
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
     this.pool_.getSession((err, session) => {
@@ -2732,11 +2741,14 @@ class Database extends common.GrpcServiceObject {
 
   _runPartitionedUpdate(
     session: Session,
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
+    if (typeof query !== 'string' && query.excludeTxnFromChangeStreams) {
+      transaction.excludeTxnFromChangeStreams();
+    }
     transaction.begin(err => {
       if (err) {
         this.pool_.release(session!);
@@ -3059,6 +3071,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
 
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
@@ -3172,6 +3187,9 @@ class Database extends common.GrpcServiceObject {
         );
         if (options.optimisticLock) {
           transaction.useOptimisticLock();
+        }
+        if (options.excludeTxnFromChangeStreams) {
+          transaction.excludeTxnFromChangeStreams();
         }
         const runner = new AsyncTransactionRunner<T>(
           session,
