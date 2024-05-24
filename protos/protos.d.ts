@@ -28776,6 +28776,12 @@ export namespace google {
 
                 /** ReadRequest dataBoostEnabled */
                 dataBoostEnabled?: (boolean|null);
+
+                /** ReadRequest orderBy */
+                orderBy?: (google.spanner.v1.ReadRequest.OrderBy|keyof typeof google.spanner.v1.ReadRequest.OrderBy|null);
+
+                /** ReadRequest lockHint */
+                lockHint?: (google.spanner.v1.ReadRequest.LockHint|keyof typeof google.spanner.v1.ReadRequest.LockHint|null);
             }
 
             /** Represents a ReadRequest. */
@@ -28822,6 +28828,12 @@ export namespace google {
 
                 /** ReadRequest dataBoostEnabled. */
                 public dataBoostEnabled: boolean;
+
+                /** ReadRequest orderBy. */
+                public orderBy: (google.spanner.v1.ReadRequest.OrderBy|keyof typeof google.spanner.v1.ReadRequest.OrderBy);
+
+                /** ReadRequest lockHint. */
+                public lockHint: (google.spanner.v1.ReadRequest.LockHint|keyof typeof google.spanner.v1.ReadRequest.LockHint);
 
                 /**
                  * Creates a new ReadRequest instance using the specified properties.
@@ -28899,6 +28911,23 @@ export namespace google {
                  * @returns The default type url
                  */
                 public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            namespace ReadRequest {
+
+                /** OrderBy enum. */
+                enum OrderBy {
+                    ORDER_BY_UNSPECIFIED = 0,
+                    ORDER_BY_PRIMARY_KEY = 1,
+                    ORDER_BY_NO_ORDER = 2
+                }
+
+                /** LockHint enum. */
+                enum LockHint {
+                    LOCK_HINT_UNSPECIFIED = 0,
+                    LOCK_HINT_SHARED = 1,
+                    LOCK_HINT_EXCLUSIVE = 2
+                }
             }
 
             /** Properties of a BeginTransactionRequest. */

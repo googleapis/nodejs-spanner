@@ -1161,6 +1161,17 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {google.spanner.v1.ReadRequest.OrderBy} [request.orderBy]
+   *   Optional. Order for the returned rows.
+   *
+   *   By default, Spanner will return result rows in primary key order except for
+   *   PartitionRead requests. For applications that do not require rows to be
+   *   returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   *   `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   *   resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * @param {google.spanner.v1.ReadRequest.LockHint} [request.lockHint]
+   *   Optional. Lock Hint for the request, it can only be used with read-write
+   *   transactions.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -1973,6 +1984,17 @@ export class SpannerClient {
    *
    *   If the field is set to `true` but the request does not set
    *   `partition_token`, the API returns an `INVALID_ARGUMENT` error.
+   * @param {google.spanner.v1.ReadRequest.OrderBy} [request.orderBy]
+   *   Optional. Order for the returned rows.
+   *
+   *   By default, Spanner will return result rows in primary key order except for
+   *   PartitionRead requests. For applications that do not require rows to be
+   *   returned in primary key (`ORDER_BY_PRIMARY_KEY`) order, setting
+   *   `ORDER_BY_NO_ORDER` option allows Spanner to optimize row retrieval,
+   *   resulting in lower latencies in certain cases (e.g. bulk point lookups).
+   * @param {google.spanner.v1.ReadRequest.LockHint} [request.lockHint]
+   *   Optional. Lock Hint for the request, it can only be used with read-write
+   *   transactions.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
