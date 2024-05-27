@@ -1,0 +1,106 @@
+/**
+ * Copyright 2024 Google LLC
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'use strict';
+
+async function main(
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
+) {
+  // [START spanner_batch_write_at_least_once]
+
+  // Imports the Google Cloud client library
+  const {Spanner, MutationGroup} = require('@google-cloud/spanner');
+
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
+  // const projectId = 'my-project-id';
+
+  // Creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  // Gets a reference to a Cloud Spanner instance and database
+  const instance = spanner.instance(instanceId);
+  const database = instance.database(databaseId);
+
+  // Create Mutation Groups
+  const mutationGroup1 = new MutationGroup();
+  mutationGroup1.insert('Singers', {
+    SingerId: '16',
+    FirstName: 'Scarlet',
+    LastName: 'Terry',
+  });
+
+  const mutationGroup2 = new MutationGroup();
+  mutationGroup2.insert('Singers', {
+    SingerId: '17',
+    FirstName: 'Marc',
+  });
+  mutationGroup2.insert('Singers', {
+    SingerId: '18',
+    FirstName: 'Catalina',
+    LastName: 'Smith',
+  });
+  mutationGroup2.insert('Albums', {
+    AlbumId: '1',
+    SingerId: '17',
+    AlbumTitle: 'Total Junk',
+  });
+  mutationGroup2.insert('Albums', {
+    AlbumId: '2',
+    SingerId: '18',
+    AlbumTitle: 'Go, Go, Go',
+  });
+
+  const options = {
+    transactionTag: 'batch-write-tag',
+  };
+
+  try {
+    database
+      .batchWrite([mutationGroup1, mutationGroup2], options)
+      .on('error', console.error)
+      .on('data', response => {
+        console.log(
+          `Mutation group indexes ${
+            response.indexes
+          } have been applied with commit timestamp ${Spanner.timestamp(
+            response.commitTimestamp
+          ).toJSON()}`
+        );
+      })
+      .on('end', () => {
+        console.log('Mutations applied successfully');
+      });
+  } catch (err) {
+    console.log(
+      `Mutation group indexes ${err.indexes} could not be applied with error code ${err.status.code} and error message ${err.status.message}`
+    );
+  }
+  // [END spanner_batch_write_at_least_once]
+}
+
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+
+main(...process.argv.slice(2));

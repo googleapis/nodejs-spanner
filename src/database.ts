@@ -60,7 +60,9 @@ import {
 } from './session-pool';
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  BatchWriteOptions,
   ExecuteSqlRequest,
+  MutationGroup,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -3210,6 +3212,110 @@ class Database extends common.GrpcServiceObject {
       }
     }
   }
+
+  /**
+   * Get a list of {@link BatchWriteResponse} as a readable object stream.
+   *
+   * @method Spanner#batchWrite
+   *
+   * @param {MutationGroup[]} [mutationGroups] The group of mutations to be applied.
+   * @param {BatchWriteOptions} [options] Options object for batch write request.
+   *
+   * @returns {ReadableStream} An object stream which emits
+   *   {@link protos.google.spanner.v1.BatchWriteResponse|BatchWriteResponse}
+   *  on 'data' event.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutationGroups = new MutationGroup();
+   * mutationGroup.insert('Singers', {
+   *  SingerId: '1',
+   *  FirstName: 'Marc',
+   *  LastName: 'Richards',
+   *  });
+   *
+   * database.batchWrite([mutationGroup])
+   *   .on('error', console.error)
+   *   .on('data', response => {
+   *        console.log('response: ', response);
+   *   })
+   *   .on('end', () => {
+   *        console.log('Request completed successfully');
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * database.batchWrite()
+   *   .on('data', response => {
+   *     this.end();
+   *   });
+   * ```
+   */
+  batchWrite(
+    mutationGroups: MutationGroup[],
+    options?: BatchWriteOptions
+  ): NodeJS.ReadableStream {
+    const proxyStream: Transform = through.obj();
+
+    this.pool_.getSession((err, session) => {
+      if (err) {
+        proxyStream.destroy(err);
+        return;
+      }
+      const gaxOpts = extend(true, {}, options?.gaxOptions);
+      const reqOpts = Object.assign(
+        {} as spannerClient.spanner.v1.BatchWriteRequest,
+        {
+          session: session!.formattedName_!,
+          mutationGroups: mutationGroups.map(mg => mg.proto()),
+          requestOptions: options?.requestOptions,
+        }
+      );
+      let dataReceived = false;
+      let dataStream = this.requestStream({
+        client: 'SpannerClient',
+        method: 'batchWrite',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      });
+      dataStream
+        .once('data', () => (dataReceived = true))
+        .once('error', err => {
+          if (
+            !dataReceived &&
+            isSessionNotFoundError(err as grpc.ServiceError)
+          ) {
+            // If there's a 'Session not found' error and we have not yet received
+            // any data, we can safely retry the writes on a new session.
+            // Register the error on the session so the pool can discard it.
+            if (session) {
+              session.lastError = err as grpc.ServiceError;
+            }
+            // Remove the current data stream from the end user stream.
+            dataStream.unpipe(proxyStream);
+            dataStream.end();
+            // Create a new stream and add it to the end user stream.
+            dataStream = this.batchWrite(mutationGroups, options);
+            dataStream.pipe(proxyStream);
+          } else {
+            proxyStream.destroy(err);
+          }
+        })
+        .once('end', () => this.pool_.release(session!))
+        .pipe(proxyStream);
+    });
+
+    return proxyStream as NodeJS.ReadableStream;
+  }
+
   /**
    * Create a Session object.
    *
@@ -3515,6 +3621,7 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
+    'batchWrite',
     'getRestoreInfo',
     'getState',
     'getDatabaseDialect',
@@ -3536,6 +3643,7 @@ callbackifyAll(Database, {
     'create',
     'batchCreateSessions',
     'batchTransaction',
+    'batchWrite',
     'close',
     'createBatchTransaction',
     'createSession',

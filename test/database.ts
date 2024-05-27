@@ -50,6 +50,7 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
+      'batchWrite',
       'getRestoreInfo',
       'getState',
       'getDatabaseDialect',

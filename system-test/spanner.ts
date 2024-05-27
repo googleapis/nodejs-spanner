@@ -38,6 +38,7 @@ import {
   ReadRequest,
   ExecuteSqlRequest,
   TimestampBounds,
+  MutationGroup,
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
@@ -4874,6 +4875,25 @@ describe('Spanner', () => {
           params: {p1: ID},
         };
         queryStreamMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+      });
+
+      // test for BATCH WRITE
+      it('Batch Write should query in stream mode', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const group = new MutationGroup();
+        group.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
+        DATABASE.batchWrite([group], {})
+          .on('data', data => {
+            assert.strictEqual(data.status.code, 0);
+          })
+          .on('end', () => {
+            done();
+          })
+          .on('error', error => {
+            done(error);
+          });
       });
 
       it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', done => {
