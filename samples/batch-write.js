@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+// sample-metadata:
+//  title: Performs batch write operation.
+//  usage: node batch-write.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
+
 'use strict';
 
 async function main(
