@@ -48,29 +48,29 @@ async function main(
   // Create Mutation Groups
   const mutationGroup1 = new MutationGroup();
   mutationGroup1.insert('Singers', {
-    SingerId: '16',
+    SingerId: 1,
     FirstName: 'Scarlet',
     LastName: 'Terry',
   });
 
   const mutationGroup2 = new MutationGroup();
   mutationGroup2.insert('Singers', {
-    SingerId: '17',
+    SingerId: 2,
     FirstName: 'Marc',
   });
   mutationGroup2.insert('Singers', {
-    SingerId: '18',
+    SingerId: 3,
     FirstName: 'Catalina',
     LastName: 'Smith',
   });
   mutationGroup2.insert('Albums', {
-    AlbumId: '1',
-    SingerId: '17',
+    AlbumId: 1,
+    SingerId: 2,
     AlbumTitle: 'Total Junk',
   });
   mutationGroup2.insert('Albums', {
-    AlbumId: '2',
-    SingerId: '18',
+    AlbumId: 2,
+    SingerId: 3,
     AlbumTitle: 'Go, Go, Go',
   });
 

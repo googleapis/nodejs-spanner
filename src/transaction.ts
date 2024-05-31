@@ -2555,7 +2555,6 @@ function buildDeleteMutation(
  *      });
  * ```
  */
-
 export class MutationGroup {
   private _proto: spannerClient.spanner.v1.BatchWriteRequest.MutationGroup;
 

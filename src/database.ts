@@ -3232,7 +3232,7 @@ class Database extends common.GrpcServiceObject {
    *
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const mutationGroups = new MutationGroup();
+   * const mutationGroup = new MutationGroup();
    * mutationGroup.insert('Singers', {
    *  SingerId: '1',
    *  FirstName: 'Marc',
@@ -3621,7 +3621,6 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
-    'batchWrite',
     'getRestoreInfo',
     'getState',
     'getDatabaseDialect',
@@ -3643,7 +3642,6 @@ callbackifyAll(Database, {
     'create',
     'batchCreateSessions',
     'batchTransaction',
-    'batchWrite',
     'close',
     'createBatchTransaction',
     'createSession',

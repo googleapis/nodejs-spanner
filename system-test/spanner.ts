@@ -4877,14 +4877,31 @@ describe('Spanner', () => {
         queryStreamMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
       });
 
-      // test for BATCH WRITE
-      it('Batch Write should query in stream mode', function (done) {
+      it('GOOGLE_STANDARD_SQL should execute mutation group using Batch write', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        const group = new MutationGroup();
-        group.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
-        DATABASE.batchWrite([group], {})
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
+        DATABASE.batchWrite([mutationGroup], {})
+          .on('data', data => {
+            assert.strictEqual(data.status.code, 0);
+          })
+          .on('end', () => {
+            done();
+          })
+          .on('error', error => {
+            done(error);
+          });
+      });
+
+      it('POSTGRESQL should execute mutation group using Batch write', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
+        PG_DATABASE.batchWrite([mutationGroup], {})
           .on('data', data => {
             assert.strictEqual(data.status.code, 0);
           })
