@@ -14,7 +14,7 @@
  */
 
 // sample-metadata:
-//  title: Performs batch write operation.
+//  title: Batch Write
 //  usage: node batch-write.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>
 
 'use strict';
