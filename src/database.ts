@@ -3642,8 +3642,8 @@ callbackifyAll(Database, {
   exclude: [
     'create',
     'batchCreateSessions',
-    'batchWrite',
     'batchTransaction',
+    'batchWrite',
     'close',
     'createBatchTransaction',
     'createSession',
