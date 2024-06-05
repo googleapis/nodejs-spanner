@@ -53,6 +53,7 @@ const fakePfy = extend({}, pfy, {
       'batchTransaction',
       'getRestoreInfo',
       'getState',
+      'batchWrite',
       'getDatabaseDialect',
       'getOperations',
       'runTransaction',

@@ -3621,6 +3621,7 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
+    'batchWrite',
     'getRestoreInfo',
     'getState',
     'getDatabaseDialect',
@@ -3641,6 +3642,7 @@ callbackifyAll(Database, {
   exclude: [
     'create',
     'batchCreateSessions',
+    'batchWrite',
     'batchTransaction',
     'close',
     'createBatchTransaction',
