@@ -27,7 +27,7 @@ and automatic, synchronous replication for high availability.
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
-  * [Performs batch write operation.](#performs-batch-write-operation.)
+  * [Batch Write](#batch-write)
   * [Batch](#batch)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
@@ -355,7 +355,7 @@ __Usage:__
 
 
 
-### Performs batch write operation.
+### Batch Write
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch-write.js).
 
