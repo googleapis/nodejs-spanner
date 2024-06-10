@@ -619,7 +619,7 @@ describe('Database', () => {
 
     it('should get a session via `getSession`', done => {
       getSessionStub.callsFake(() => {});
-      database.batchWrite(mutationGroups, options);
+      database.batchWriteAtLeastOnce(mutationGroups, options);
       assert.strictEqual(getSessionStub.callCount, 1);
       done();
     });
@@ -629,7 +629,7 @@ describe('Database', () => {
 
       getSessionStub.callsFake(callback => callback(fakeError));
 
-      database.batchWrite(mutationGroups, options).on('error', err => {
+      database.batchWriteAtLeastOnce(mutationGroups, options).on('error', err => {
         assert.strictEqual(err, fakeError);
         done();
       });
@@ -646,7 +646,7 @@ describe('Database', () => {
         }
       );
 
-      database.batchWrite(mutationGroups, options);
+      database.batchWriteAtLeastOnce(mutationGroups, options);
 
       assert.strictEqual(requestStreamStub.callCount, 1);
       const args = requestStreamStub.firstCall.args[0];
@@ -659,7 +659,7 @@ describe('Database', () => {
 
     it('should return error when passing an empty list of mutationGroups', done => {
       const fakeError = new Error('err');
-      database.batchWrite([], options).on('error', error => {
+      database.batchWriteAtLeastOnce([], options).on('error', error => {
         assert.strictEqual(error, fakeError);
         done();
       });
@@ -667,7 +667,7 @@ describe('Database', () => {
     });
 
     it('should return data when passing a valid list of mutationGroups', done => {
-      database.batchWrite(mutationGroups, options).on('data', data => {
+      database.batchWriteAtLeastOnce(mutationGroups, options).on('data', data => {
         assert.strictEqual(data, 'test');
         done();
       });
@@ -682,10 +682,9 @@ describe('Database', () => {
       let retryCount = 0;
 
       database
-        .batchWrite(mutationGroups, options)
+        .batchWriteAtLeastOnce(mutationGroups, options)
         .on('data', () => {})
         .on('error', err => {
-          console.log('err: ', err);
           assert.fail(err);
         })
         .on('end', () => {
@@ -700,7 +699,7 @@ describe('Database', () => {
     it('should release session on stream end', () => {
       const releaseStub = sandbox.stub(fakePool, 'release') as sinon.SinonStub;
 
-      database.batchWrite(mutationGroups, options);
+      database.batchWriteAtLeastOnce(mutationGroups, options);
       fakeDataStream.emit('end');
 
       assert.strictEqual(releaseStub.callCount, 1);

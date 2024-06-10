@@ -4883,7 +4883,7 @@ describe('Spanner', () => {
         }
         const mutationGroup = new MutationGroup();
         mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
-        DATABASE.batchWrite([mutationGroup], {})
+        DATABASE.batchWriteAtLeastOnce([mutationGroup], {})
           .on('data', data => {
             assert.strictEqual(data.status.code, 0);
           })
@@ -4901,7 +4901,7 @@ describe('Spanner', () => {
         }
         const mutationGroup = new MutationGroup();
         mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
-        PG_DATABASE.batchWrite([mutationGroup], {})
+        PG_DATABASE.batchWriteAtLeastOnce([mutationGroup], {})
           .on('data', data => {
             assert.strictEqual(data.status.code, 0);
           })

@@ -2468,7 +2468,7 @@ promisifyAll(Transaction, {
 });
 
 /**
- * Formats the mutations.
+ * Builds an array of protobuf Mutations from the given row(s).
  *
  * @param {string} method - CRUD method (insert, update, etc.).
  * @param {string} table - Table to perform mutations in.
@@ -2508,7 +2508,7 @@ function buildMutation(
 }
 
 /**
- * Formats a delete mutation.
+ * Builds a delete mutation.
  *
  * @param {string} table - The name of the table.
  * @param {Key[]} keys - The keys for the rows to delete.
@@ -2528,8 +2528,11 @@ function buildDeleteMutation(
 }
 
 /**
- * This class represents a group of mutations that provides guaranteed atomicity and
- * consistency across several CRUD operations.
+ * A group of mutations to be committed together.
+ * Related mutations should be placed in a group.
+ * 
+ * For example, two mutations inserting rows with the same primary
+ * key prefix in both parent and child tables are related.
  *
  * This object is created and returned from {@link Database#MutationGroup}.
  *
@@ -2545,7 +2548,7 @@ function buildDeleteMutation(
  * mutationGroup.insert('Singers', {SingerId: '123', FirstName: 'David'});
  * mutationGroup.update('Singers', {SingerId: '123', FirstName: 'Marc'});
  *
- * database.batchWrite([mutationGroup], {})
+ * database.batchWriteAtLeastOnce([mutationGroup], {})
  *    .on('error', console.error)
  *    .on('data', response => {
  *          console.log('response: ', response);

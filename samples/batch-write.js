@@ -80,7 +80,7 @@ async function main(
 
   try {
     database
-      .batchWrite([mutationGroup1, mutationGroup2], options)
+      .batchWriteAtLeastOnce([mutationGroup1, mutationGroup2], options)
       .on('error', console.error)
       .on('data', response => {
         console.log(
@@ -92,7 +92,7 @@ async function main(
         );
       })
       .on('end', () => {
-        console.log('Mutations applied successfully');
+        console.log('Request completed successfully');
       });
   } catch (err) {
     console.log(

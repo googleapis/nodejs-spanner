@@ -3214,7 +3214,20 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Get a list of {@link BatchWriteResponse} as a readable object stream.
+   * Write a batch of mutations to Spanner.
+   * 
+   * All mutations in a group are committed atomically. However, mutations across
+   * groups can be committed non-atomically in an unspecified order and thus, they
+   * must be independent of each other. Partial failure is possible, i.e., some groups
+   * may have been committed successfully, while some may have failed. The results of
+   * individual batches are streamed into the response as the batches are applied.
+   * 
+   * BatchWrite requests are not replay protected, meaning that each mutation group may
+   * be applied more than once. Replays of non-idempotent mutations may have undesirable
+   * effects. For example, replays of an insert mutation may produce an already exists
+   * error or if you use generated or commit timestamp-based keys, it may result in additional
+   * rows being added to the mutation's table. We recommend structuring your mutation groups to
+   * be idempotent to avoid this issue.
    *
    * @method Spanner#batchWrite
    *
@@ -3239,7 +3252,7 @@ class Database extends common.GrpcServiceObject {
    *  LastName: 'Richards',
    *  });
    *
-   * database.batchWrite([mutationGroup])
+   * database.batchWriteAtLeastOnce([mutationGroup])
    *   .on('error', console.error)
    *   .on('data', response => {
    *        console.log('response: ', response);
@@ -3252,13 +3265,13 @@ class Database extends common.GrpcServiceObject {
    * // If you anticipate many results, you can end a stream early to prevent
    * // unnecessary processing and API requests.
    * //-
-   * database.batchWrite()
+   * database.batchWriteAtLeastOnce()
    *   .on('data', response => {
    *     this.end();
    *   });
    * ```
    */
-  batchWrite(
+  batchWriteAtLeastOnce(
     mutationGroups: MutationGroup[],
     options?: BatchWriteOptions
   ): NodeJS.ReadableStream {
@@ -3303,7 +3316,7 @@ class Database extends common.GrpcServiceObject {
             dataStream.unpipe(proxyStream);
             dataStream.end();
             // Create a new stream and add it to the end user stream.
-            dataStream = this.batchWrite(mutationGroups, options);
+            dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
             dataStream.pipe(proxyStream);
           } else {
             proxyStream.destroy(err);
