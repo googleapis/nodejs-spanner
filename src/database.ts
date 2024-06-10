@@ -60,6 +60,7 @@ import {
 } from './session-pool';
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  CommitResponse,
   ExecuteSqlRequest,
   RunCallback,
   RunResponse,
@@ -3210,6 +3211,39 @@ class Database extends common.GrpcServiceObject {
       }
     }
   }
+
+  blindWrite<T = {}>(
+    options?: CallOptions,
+  ): Promise<T>;
+  blindWrite<T = {}>(
+    options?: CallOptions,
+  ): Promise<T>;
+
+  async blindWrite<T = {}>(
+    options?: CallOptions,
+  ): Promise<T> {
+    const getSession = this.pool_.getSession.bind(this.pool_);
+    while (true) {
+      try {
+        const [session, transaction] = await promisify(getSession)();
+        transaction!.useInRunner();
+        try {
+          return await transaction!.commit(options);
+        } finally {
+          this.pool_.release(session);
+        }
+      } catch (e) {
+        if (!isSessionNotFoundError(e as ServiceError)) {
+          throw e;
+        }
+      }
+    }
+    // let promise = await this.getTransaction();
+    // let transaction = promise[0];
+    // transaction.useInRunner();
+    // return transaction!.commit(options);
+  }
+
   /**
    * Create a Session object.
    *
