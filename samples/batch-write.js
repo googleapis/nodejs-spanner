@@ -46,6 +46,12 @@ async function main(
   const database = instance.database(databaseId);
 
   // Create Mutation Groups
+  /**
+   * Mutation Groups - A group of mutations to be committed together.
+   * A group must contain related mutations.
+   * Please see the {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.BatchWriteRequest.MutationGroup}
+   * for more details and example.
+   */
   const mutationGroup1 = new MutationGroup();
   mutationGroup1.insert('Singers', {
     SingerId: 1,
@@ -81,7 +87,11 @@ async function main(
   try {
     database
       .batchWriteAtLeastOnce([mutationGroup1, mutationGroup2], options)
-      .on('error', console.error)
+      .on('error', err => {
+        console.log(
+          `Mutation group indexes ${err.indexes} could not be applied with error code ${err.status.code} and error message ${err.status.message}`
+        );
+      })
       .on('data', response => {
         console.log(
           `Mutation group indexes ${
@@ -95,9 +105,7 @@ async function main(
         console.log('Request completed successfully');
       });
   } catch (err) {
-    console.log(
-      `Mutation group indexes ${err.indexes} could not be applied with error code ${err.status.code} and error message ${err.status.message}`
-    );
+    console.log(err);
   }
   // [END spanner_batch_write_at_least_once]
 }

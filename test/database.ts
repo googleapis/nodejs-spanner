@@ -628,11 +628,12 @@ describe('Database', () => {
       const fakeError = new Error('err');
 
       getSessionStub.callsFake(callback => callback(fakeError));
-
-      database.batchWriteAtLeastOnce(mutationGroups, options).on('error', err => {
-        assert.strictEqual(err, fakeError);
-        done();
-      });
+      database
+        .batchWriteAtLeastOnce(mutationGroups, options)
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
     });
 
     it('should call `requestStream` with correct arguments', () => {
@@ -667,10 +668,12 @@ describe('Database', () => {
     });
 
     it('should return data when passing a valid list of mutationGroups', done => {
-      database.batchWriteAtLeastOnce(mutationGroups, options).on('data', data => {
-        assert.strictEqual(data, 'test');
-        done();
-      });
+      database
+        .batchWriteAtLeastOnce(mutationGroups, options)
+        .on('data', data => {
+          assert.strictEqual(data, 'test');
+          done();
+        });
       fakeDataStream.emit('data', 'test');
     });
 
