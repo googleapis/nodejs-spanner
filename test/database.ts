@@ -51,7 +51,7 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
-      'batchWrite',
+      'batchWriteAtLeastOnce',
       'getRestoreInfo',
       'getState',
       'getDatabaseDialect',
@@ -675,6 +675,56 @@ describe('Database', () => {
           done();
         });
       fakeDataStream.emit('data', 'test');
+    });
+
+    it('should emit correct event based on valid/invalid list of mutationGroups', done => {
+      const fakeError = new Error('err');
+      const FakeMutationGroup1 = new MutationGroup();
+      FakeMutationGroup1.insert('Singers', {
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+      FakeMutationGroup1.insert('Singers', {
+        SingerId: 1000000000000000000000000000000000,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+
+      const FakeMutationGroup2 = new MutationGroup();
+      FakeMutationGroup2.insert('Singers', {
+        SingerId: 2,
+        FirstName: 'Marc',
+      });
+      FakeMutationGroup2.insert('Singers', {
+        SingerId: 3,
+        FirstName: 'Catalina',
+        LastName: 'Smith',
+      });
+      FakeMutationGroup2.insert('Albums', {
+        AlbumId: 1,
+        SingerId: 2,
+        AlbumTitle: 'Total Junk',
+      });
+      FakeMutationGroup2.insert('Albums', {
+        AlbumId: 2,
+        SingerId: 3,
+        AlbumTitle: 'Go, Go, Go',
+      });
+      database
+        .batchWriteAtLeastOnce(
+          [FakeMutationGroup1, FakeMutationGroup2],
+          options
+        )
+        .on('data', data => {
+          assert.strictEqual(data, 'testData');
+        })
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+        });
+      fakeDataStream.emit('data', 'testData');
+      fakeDataStream.emit('error', fakeError);
+      done();
     });
 
     it('should retry on "Session not found" error', done => {

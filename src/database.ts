@@ -3222,14 +3222,14 @@ class Database extends common.GrpcServiceObject {
    * may have been committed successfully, while some may have failed. The results of
    * individual batches are streamed into the response as the batches are applied.
    *
-   * BatchWrite requests are not replay protected, meaning that each mutation group may
+   * batchWriteAtLeastOnce requests are not replay protected, meaning that each mutation group may
    * be applied more than once. Replays of non-idempotent mutations may have undesirable
    * effects. For example, replays of an insert mutation may produce an already exists
    * error or if you use generated or commit timestamp-based keys, it may result in additional
    * rows being added to the mutation's table. We recommend structuring your mutation groups to
    * be idempotent to avoid this issue.
    *
-   * @method Spanner#batchWrite
+   * @method Spanner#batchWriteAtLeastOnce
    *
    * @param {MutationGroup[]} [mutationGroups] The group of mutations to be applied.
    * @param {BatchWriteOptions} [options] Options object for batch write request.
@@ -3634,7 +3634,7 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
-    'batchWrite',
+    'batchWriteAtLeastOnce',
     'getRestoreInfo',
     'getState',
     'getDatabaseDialect',
@@ -3656,7 +3656,7 @@ callbackifyAll(Database, {
     'create',
     'batchCreateSessions',
     'batchTransaction',
-    'batchWrite',
+    'batchWriteAtLeastOnce',
     'close',
     'createBatchTransaction',
     'createSession',

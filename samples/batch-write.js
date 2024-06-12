@@ -87,19 +87,22 @@ async function main(
   try {
     database
       .batchWriteAtLeastOnce([mutationGroup1, mutationGroup2], options)
-      .on('error', err => {
-        console.log(
-          `Mutation group indexes ${err.indexes} could not be applied with error code ${err.status.code} and error message ${err.status.message}`
-        );
-      })
+      .on('error', console.error)
       .on('data', response => {
-        console.log(
-          `Mutation group indexes ${
-            response.indexes
-          } have been applied with commit timestamp ${Spanner.timestamp(
-            response.commitTimestamp
-          ).toJSON()}`
-        );
+        console.log('response: ', response);
+        if (response.status.code === 0) {
+          console.log(
+            `Mutation group indexes ${
+              response.indexes
+            }, have been applied with commit timestamp ${Spanner.timestamp(
+              response.commitTimestamp
+            ).toJSON()}`
+          );
+        } else {
+          console.log(
+            `Mutation group indexes ${response.indexes}, could not be applied with error code ${response.status.code}, and error message ${response.status.message}`
+          );
+        }
       })
       .on('end', () => {
         console.log('Request completed successfully');
