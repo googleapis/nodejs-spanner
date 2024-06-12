@@ -89,7 +89,6 @@ async function main(
       .batchWriteAtLeastOnce([mutationGroup1, mutationGroup2], options)
       .on('error', console.error)
       .on('data', response => {
-        console.log('response: ', response);
         if (response.status.code === 0) {
           console.log(
             `Mutation group indexes ${
