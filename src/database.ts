@@ -60,6 +60,7 @@ import {
 } from './session-pool';
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  Mutation,
   CommitResponse,
   ExecuteSqlRequest,
   RunCallback,
@@ -3213,20 +3214,22 @@ class Database extends common.GrpcServiceObject {
   }
 
   blindWrite<T = {}>(
+    mutation: Mutation,
     options?: CallOptions,
   ): Promise<T>;
   blindWrite<T = {}>(
+    mutation: Mutation,
     options?: CallOptions,
   ): Promise<T>;
 
   async blindWrite<T = {}>(
+    mutation: Mutation,
     options?: CallOptions,
   ): Promise<T> {
     const getSession = this.pool_.getSession.bind(this.pool_);
     while (true) {
       try {
         const [session, transaction] = await promisify(getSession)();
-        transaction!.useInRunner();
         try {
           return await transaction!.commit(options);
         } finally {

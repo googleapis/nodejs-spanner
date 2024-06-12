@@ -18,7 +18,7 @@ async function main(
   mutation.insert('Singers', {SingerId: 1, FirstName: 'xyz'});
 
   try {
-    const response = await database.blindWrite();
+    const response = await database.blindWrite(mutation);
     console.log("response: ", response);
   } catch (err) {
     console.error('Error during batchWrite:', err);

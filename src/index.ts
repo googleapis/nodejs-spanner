@@ -70,7 +70,7 @@ import {
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {PartitionedDml, Snapshot, Transaction} from './transaction';
+import {Mutation, PartitionedDml, Snapshot, Transaction} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
@@ -2010,6 +2010,15 @@ export {Snapshot};
  * @type {Constructor}
  */
 export {Transaction};
+
+/**
+ * {@link Mutation} class.
+ *
+ * @name Spanner.Mutation
+ * @see Mutation
+ * @type {Constructor}
+ */
+export {Mutation};
 
 /**
  * @type {object}
