@@ -4895,6 +4895,41 @@ describe('Spanner', () => {
           });
       });
 
+      it('GOOGLE_STANDARD_SQL should execute correct event with mutation group using Batch write', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const mutationGroup1 = new MutationGroup();
+        const id = ID;
+        const name = NAME;
+
+        // Valid mutation group
+        mutationGroup1.insert(TABLE_NAME, {SingerId: id, Name: name});
+
+        // InValid mutation group with duplicate data
+        const mutationGroup2 = new MutationGroup();
+        mutationGroup2.insert(TABLE_NAME, {SingerId: id, Name: name});
+
+        // Valid mutation group with invalid signer id
+        const mutationGroup3 = new MutationGroup();
+        mutationGroup3.insert(TABLE_NAME, {SingerId: 100000000000000000000, Name: NAME});
+
+        DATABASE.batchWriteAtLeastOnce([mutationGroup1, mutationGroup2, mutationGroup3], {})
+          .on('data', data => {
+            if(data.status.code === 0) {
+              console.log("Mutation with indexes " + data.indexes + " is having success code " + data.status.code);
+            } else {
+              console.log("Mutation with indexes " + data.indexes + " is having failure code " + data.status.code);
+            }
+          })
+          .on('error', error => {
+            done(error);
+          })
+          .on('end', () => {
+            done();
+          })
+      });
+
       it('POSTGRESQL should execute mutation group using Batch write', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
