@@ -4912,14 +4912,30 @@ describe('Spanner', () => {
 
         // Valid mutation group with invalid signer id
         const mutationGroup3 = new MutationGroup();
-        mutationGroup3.insert(TABLE_NAME, {SingerId: 100000000000000000000, Name: NAME});
+        mutationGroup3.insert(TABLE_NAME, {
+          SingerId: 100000000000000000000,
+          Name: NAME,
+        });
 
-        DATABASE.batchWriteAtLeastOnce([mutationGroup1, mutationGroup2, mutationGroup3], {})
+        DATABASE.batchWriteAtLeastOnce(
+          [mutationGroup1, mutationGroup2, mutationGroup3],
+          {}
+        )
           .on('data', data => {
-            if(data.status.code === 0) {
-              console.log("Mutation with indexes " + data.indexes + " is having success code " + data.status.code);
+            if (data.status.code === 0) {
+              console.log(
+                'Mutation with indexes ' +
+                  data.indexes +
+                  ' is having success code ' +
+                  data.status.code
+              );
             } else {
-              console.log("Mutation with indexes " + data.indexes + " is having failure code " + data.status.code);
+              console.log(
+                'Mutation with indexes ' +
+                  data.indexes +
+                  ' is having failure code ' +
+                  data.status.code
+              );
             }
           })
           .on('error', error => {
@@ -4927,7 +4943,7 @@ describe('Spanner', () => {
           })
           .on('end', () => {
             done();
-          })
+          });
       });
 
       it('POSTGRESQL should execute mutation group using Batch write', function (done) {
