@@ -4895,53 +4895,49 @@ describe('Spanner', () => {
           });
       });
 
-      it('GOOGLE_STANDARD_SQL should execute correct event with mutation group using Batch write', function (done) {
+      it('GOOGLE_STANDARD_SQL should execute multiple mutation groups with success and failure using Batch write', function (done) {
         if (IS_EMULATOR_ENABLED) {
           this.skip();
         }
-        const mutationGroup1 = new MutationGroup();
-        const id = ID;
-        const name = NAME;
+        const id = generateName('id');
 
         // Valid mutation group
-        mutationGroup1.insert(TABLE_NAME, {SingerId: id, Name: name});
+        const mutationGroup1 = new MutationGroup();
+        mutationGroup1.insert(TABLE_NAME, {SingerId: id, Name: NAME});
 
         // InValid mutation group with duplicate data
         const mutationGroup2 = new MutationGroup();
-        mutationGroup2.insert(TABLE_NAME, {SingerId: id, Name: name});
+        mutationGroup2.insert(TABLE_NAME, {SingerId: id, Name: NAME});
 
         // Valid mutation group with invalid signer id
         const mutationGroup3 = new MutationGroup();
         mutationGroup3.insert(TABLE_NAME, {
-          SingerId: 100000000000000000000,
+          SingerId: null,
           Name: NAME,
         });
 
+        // Array of expected status code
+        // Code 0 is for mutation group with valid id
+        // Code 6 is for mutation group with duplicate id
+        // Code 9 is for mutation group with null id
+        const expectedStatusCode: number[] = [0,6,9];
+
+        // Array of status codes in the stream
+        let actualStatusCode: number[] = [];
+
         DATABASE.batchWriteAtLeastOnce(
-          [mutationGroup1, mutationGroup2, mutationGroup3],
-          {}
-        )
-          .on('data', data => {
-            if (data.status.code === 0) {
-              console.log(
-                'Mutation with indexes ' +
-                  data.indexes +
-                  ' is having success code ' +
-                  data.status.code
-              );
-            } else {
-              console.log(
-                'Mutation with indexes ' +
-                  data.indexes +
-                  ' is having failure code ' +
-                  data.status.code
-              );
-            }
+          [mutationGroup1, mutationGroup2, mutationGroup3]
+        ).on('data', data => {
+            actualStatusCode.push(data.status.code);
           })
           .on('error', error => {
             done(error);
           })
           .on('end', () => {
+
+            // make sure two mutation groups are failing and
+            // one mutation group is getting success
+            assert.deepStrictEqual(actualStatusCode.sort(),expectedStatusCode.sort());
             done();
           });
       });
