@@ -4920,24 +4920,29 @@ describe('Spanner', () => {
         // Code 0 is for mutation group with valid id
         // Code 6 is for mutation group with duplicate id
         // Code 9 is for mutation group with null id
-        const expectedStatusCode: number[] = [0,6,9];
+        const expectedStatusCode: number[] = [0, 6, 9];
 
         // Array of status codes in the stream
-        let actualStatusCode: number[] = [];
+        const actualStatusCode: number[] = [];
 
-        DATABASE.batchWriteAtLeastOnce(
-          [mutationGroup1, mutationGroup2, mutationGroup3]
-        ).on('data', data => {
+        DATABASE.batchWriteAtLeastOnce([
+          mutationGroup1,
+          mutationGroup2,
+          mutationGroup3,
+        ])
+          .on('data', data => {
             actualStatusCode.push(data.status.code);
           })
           .on('error', error => {
             done(error);
           })
           .on('end', () => {
-
             // make sure two mutation groups are failing and
             // one mutation group is getting success
-            assert.deepStrictEqual(actualStatusCode.sort(),expectedStatusCode.sort());
+            assert.deepStrictEqual(
+              actualStatusCode.sort(),
+              expectedStatusCode.sort()
+            );
             done();
           });
       });
