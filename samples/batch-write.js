@@ -99,7 +99,7 @@ async function main(
             ).toJSON()}`
           );
         }
-        // Mutation groups that fail to commit trigger a response with a non-zero status code. 
+        // Mutation groups that fail to commit trigger a response with a non-zero status code.
         else {
           console.log(
             `Mutation group indexes ${response.indexes}, could not be applied with error code ${response.status.code}, and error message ${response.status.message}`
