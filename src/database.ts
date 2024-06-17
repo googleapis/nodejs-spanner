@@ -133,9 +133,17 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
+export type GetDatabaseDialectCallback = NormalCallback<
+  EnumKey<typeof google.spanner.admin.database.v1.DatabaseDialect>
+>;
+
 export interface SetIamPolicyRequest {
   policy: Policy | null;
   updateMask?: FieldMask | null;
+}
+
+export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export type UpdateSchemaCallback = ResourceCallback<
@@ -166,7 +174,15 @@ type IDatabaseTranslatedEnum = Omit<
     typeof databaseAdmin.spanner.admin.database.v1.Database.State
   >,
   'restoreInfo'
-> & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
+> &
+  Omit<
+    TranslateEnumKeys<
+      databaseAdmin.spanner.admin.database.v1.IDatabase,
+      'databaseDialect',
+      typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+    >,
+    'restoreInfo'
+  > & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
 
 /**
  * IRestoreInfo structure with restore source type enum translated to string form.
@@ -223,6 +239,13 @@ export interface GetIamPolicyOptions {
   requestedPolicyVersion?: number | null;
   gaxOptions?: CallOptions;
 }
+
+/**
+ * @typedef {object} GetTransactionOptions
+ * * @property {boolean} [optimisticLock] The optimistic lock a
+ *     {@link Transaction} should use while running.
+ */
+export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
 
 export type CreateSessionCallback = ResourceCallback<
   Session,
@@ -305,6 +328,9 @@ class Database extends common.GrpcServiceObject {
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
+  databaseDialect?: EnumKey<
+    typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+  > | null;
   constructor(
     instance: Instance,
     name: string,
@@ -1470,6 +1496,61 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
+   * Retrieves the dialect of the database
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getDatabaseDialect
+   *
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {GetDatabaseDialectCallback} [callback] Callback function.
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.DatabaseDialect> | undefined>}
+   * When resolved, contains the database dialect of the database if the dialect is defined.
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const dialect = await database.getDatabaseDialect();
+   * const isGoogleSQL = (dialect === 'GOOGLE_STANDARD_SQL');
+   * const isPostgreSQL = (dialect === 'POSTGRESQL');
+   */
+
+  getDatabaseDialect(
+    options?: CallOptions
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  >;
+  getDatabaseDialect(callback: GetDatabaseDialectCallback): void;
+  getDatabaseDialect(
+    options: CallOptions,
+    callback: GetDatabaseDialectCallback
+  ): void;
+  async getDatabaseDialect(
+    optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
+    cb?: GetDatabaseDialectCallback
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  > {
+    const gaxOptions =
+      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+
+    if (
+      this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+      this.databaseDialect === null ||
+      this.databaseDialect === undefined
+    ) {
+      const [metadata] = await this.getMetadata(gaxOptions);
+      this.databaseDialect = metadata.databaseDialect;
+    }
+    return this.databaseDialect || undefined;
+  }
+
+  /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
    * @property {object} 1 The full API response.
@@ -1989,16 +2070,39 @@ class Database extends common.GrpcServiceObject {
    * });
    * ```
    */
-  getTransaction(): Promise<[Transaction]>;
+  getTransaction(
+    optionsOrCallback?: GetTransactionOptions
+  ): Promise<[Transaction]>;
   getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
+    optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetTransactionCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as GetTransactionOptions)
+        : {};
     this.pool_.getSession((err, session, transaction) => {
+      if (options.requestOptions) {
+        transaction!.requestOptions = Object.assign(
+          transaction!.requestOptions || {},
+          options.requestOptions
+        );
+      }
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
+      }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err as grpc.ServiceError | null, transaction);
+      cb!(err as grpc.ServiceError | null, transaction);
     });
   }
 
@@ -2614,13 +2718,15 @@ class Database extends common.GrpcServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions
+  ): Promise<[number]>;
+  runPartitionedUpdate(
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
     this.pool_.getSession((err, session) => {
@@ -2635,11 +2741,14 @@ class Database extends common.GrpcServiceObject {
 
   _runPartitionedUpdate(
     session: Session,
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
+    if (typeof query !== 'string' && query.excludeTxnFromChangeStreams) {
+      transaction.excludeTxnFromChangeStreams();
+    }
     transaction.begin(err => {
       if (err) {
         this.pool_.release(session!);
@@ -2962,6 +3071,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
 
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
@@ -3075,6 +3187,9 @@ class Database extends common.GrpcServiceObject {
         );
         if (options.optimisticLock) {
           transaction.useOptimisticLock();
+        }
+        if (options.excludeTxnFromChangeStreams) {
+          transaction.excludeTxnFromChangeStreams();
         }
         const runner = new AsyncTransactionRunner<T>(
           session,
@@ -3402,6 +3517,7 @@ promisifyAll(Database, {
     'batchTransaction',
     'getRestoreInfo',
     'getState',
+    'getDatabaseDialect',
     'getOperations',
     'runTransaction',
     'runTransactionAsync',

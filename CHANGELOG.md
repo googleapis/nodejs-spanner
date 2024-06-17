@@ -4,6 +4,35 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.8.0](https://github.com/googleapis/nodejs-spanner/compare/v7.7.0...v7.8.0) (2024-05-24)
+
+
+### Features
+
+* Add `RESOURCE_EXHAUSTED` to the list of retryable error codes ([#2032](https://github.com/googleapis/nodejs-spanner/issues/2032)) ([a4623c5](https://github.com/googleapis/nodejs-spanner/commit/a4623c560c16fa1f37a06cb57a5e47a1d6759d27))
+* Add support for multi region encryption config ([81fa610](https://github.com/googleapis/nodejs-spanner/commit/81fa610895fe709cbb7429896493a67407a6343c))
+* Add support for Proto columns ([#1991](https://github.com/googleapis/nodejs-spanner/issues/1991)) ([ae59c7f](https://github.com/googleapis/nodejs-spanner/commit/ae59c7f957660e08cd5965b5e67694fa1ccc0057))
+* **spanner:** Add support for change streams transaction exclusion option ([#2049](https://github.com/googleapis/nodejs-spanner/issues/2049)) ([d95cab5](https://github.com/googleapis/nodejs-spanner/commit/d95cab5abe50cdb56cbc1d6d935aee29526e1096))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.3 ([#2038](https://github.com/googleapis/nodejs-spanner/issues/2038)) ([d86c1b0](https://github.com/googleapis/nodejs-spanner/commit/d86c1b0c21c7c95e3110221b3ca6ff9ff3b4a088))
+* Drop table statement ([#2036](https://github.com/googleapis/nodejs-spanner/issues/2036)) ([f31d7b2](https://github.com/googleapis/nodejs-spanner/commit/f31d7b205d74d4a783f0d5159dd5b62efe968fe6))
+
+## [7.7.0](https://github.com/googleapis/nodejs-spanner/compare/v7.6.0...v7.7.0) (2024-04-17)
+
+
+### Features
+
+* OptimisticLock option for getTransaction method ([#2028](https://github.com/googleapis/nodejs-spanner/issues/2028)) ([dacf869](https://github.com/googleapis/nodejs-spanner/commit/dacf8697b20752041684710982035b4c97837d28))
+* **spanner:** Adding `EXPECTED_FULFILLMENT_PERIOD` to the indicate instance creation times (with `FULFILLMENT_PERIOD_NORMAL` or `FULFILLMENT_PERIOD_EXTENDED` ENUM) with the extended instance creation time triggered by On-Demand Capacity Feature ([#2024](https://github.com/googleapis/nodejs-spanner/issues/2024)) ([5292e03](https://github.com/googleapis/nodejs-spanner/commit/5292e035c5278ba6806f9e1eb84809ed893b1e37))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.2 ([#2026](https://github.com/googleapis/nodejs-spanner/issues/2026)) ([0ee9831](https://github.com/googleapis/nodejs-spanner/commit/0ee98319f291f552a0afc52629d12af9969d1d10))
+
 ## [7.6.0](https://github.com/googleapis/nodejs-spanner/compare/v7.5.0...v7.6.0) (2024-03-26)
 
 

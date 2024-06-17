@@ -52,6 +52,7 @@ const fakePfy = extend({}, pfy, {
       'batchTransaction',
       'getRestoreInfo',
       'getState',
+      'getDatabaseDialect',
       'getOperations',
       'runTransaction',
       'runTransactionAsync',
@@ -2543,7 +2544,8 @@ describe('Database', () => {
 
       const [query] = runUpdateStub.lastCall.args;
 
-      assert.strictEqual(query, QUERY);
+      assert.strictEqual(query.sql, QUERY.sql);
+      assert.deepStrictEqual(query.params, QUERY.params);
       assert.ok(fakeCallback.calledOnce);
     });
 
@@ -2576,6 +2578,24 @@ describe('Database', () => {
         sql: QUERY.sql,
         params: QUERY.params,
         requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
+    it('should accept excludeTxnFromChangeStreams', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.runPartitionedUpdate(
+        {
+          excludeTxnFromChangeStream: true,
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        excludeTxnFromChangeStream: true,
       });
       assert.ok(fakeCallback.calledOnce);
     });
@@ -2790,6 +2810,35 @@ describe('Database', () => {
       database.getState((err, result) => {
         assert.ifError(err);
         assert.strictEqual(result, state);
+        done();
+      });
+    });
+  });
+
+  describe('getDatabaseDialect', () => {
+    it('should get database dialect from database metadata', async () => {
+      database.getMetadata = async () => [
+        {databaseDialect: 'GOOGLE_STANDARD_SQL'},
+      ];
+      const result = await database.getDatabaseDialect();
+      assert.strictEqual(result, 'GOOGLE_STANDARD_SQL');
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', async () => {
+      const options = {};
+      database.getMetadata = async gaxOptions => {
+        assert.strictEqual(gaxOptions, options);
+        return [{}];
+      };
+      await database.getDatabaseDialect(options);
+    });
+
+    it('should accept callback and return database dialect', done => {
+      const databaseDialect = 'GOOGLE_STANDARD_SQL';
+      database.getMetadata = async () => [{databaseDialect}];
+      database.getDatabaseDialect((err, result) => {
+        assert.ifError(err);
+        assert.strictEqual(result, databaseDialect);
         done();
       });
     });
