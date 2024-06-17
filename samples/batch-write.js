@@ -47,10 +47,10 @@ async function main(
 
   // Create Mutation Groups
   /**
-   * Mutation Groups - A group of mutations to be committed together.
+   * Related mutations should be placed in a group, such as insert mutations for both a parent and a child row.
    * A group must contain related mutations.
-   * Please see the {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.BatchWriteRequest.MutationGroup}
-   * for more details and example.
+   * Please see {@link https://cloud.google.com/spanner/docs/reference/rpc/google.spanner.v1#google.spanner.v1.BatchWriteRequest.MutationGroup}
+   * for more details and examples.
    */
   const mutationGroup1 = new MutationGroup();
   mutationGroup1.insert('Singers', {
@@ -89,6 +89,7 @@ async function main(
       .batchWriteAtLeastOnce([mutationGroup1, mutationGroup2], options)
       .on('error', console.error)
       .on('data', response => {
+        // Check the response code of each response to determine whether the mutation group(s) were applied successfully.
         if (response.status.code === 0) {
           console.log(
             `Mutation group indexes ${
@@ -97,7 +98,9 @@ async function main(
               response.commitTimestamp
             ).toJSON()}`
           );
-        } else {
+        }
+        // Mutation groups that fail to commit trigger a response with a non-zero status code. 
+        else {
           console.log(
             `Mutation group indexes ${response.indexes}, could not be applied with error code ${response.status.code}, and error message ${response.status.message}`
           );
