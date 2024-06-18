@@ -2531,12 +2531,18 @@ function buildMutation(
 
 export class Mutation{
   private transaction: Transaction;
+  private _proto: spannerClient.spanner.v1.Mutation;
   constructor(transaction: Transaction) {
+    this._proto =
+    new spannerClient.spanner.v1.Mutation();
     this.transaction = transaction;
   }
   insert(table: string, rows: object | object[]): void {
     const queuedMutations = this.transaction?.queuedMutations();
     queuedMutations?.push(buildMutation('insert', table, rows));
+  }
+  proto(): spannerClient.spanner.v1.IMutation {
+    return this._proto;
   }
 }
 

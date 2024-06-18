@@ -3231,7 +3231,14 @@ class Database extends common.GrpcServiceObject {
       try {
         const [session, transaction] = await promisify(getSession)();
         try {
-          return await transaction!.commit(options);
+          const reqOpts = Object.assign(
+            {} as spannerClient.spanner.v1.BatchWriteRequest,
+            {
+              session: session!.formattedName_!,
+              mutation: mutation.proto(),
+            }
+          );
+          return await transaction!.commit(reqOpts);
         } finally {
           this.pool_.release(session);
         }

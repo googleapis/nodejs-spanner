@@ -18,10 +18,10 @@ async function main(
   mutation.insert('Singers', {SingerId: 1, FirstName: 'xyz'});
 
   try {
-    // const response = await database.blindWrite(mutation);
-    const response = await database.blindWrite(async transaction => {
-      await transaction.commit();
-    });
+    const response = await database.blindWrite(mutation);
+    // const response = await database.blindWrite(async transaction => {
+    //   await transaction.commit();
+    // });
     console.log("response: ", response);
   } catch (err) {
     console.error('Error during batchWrite:', err);
