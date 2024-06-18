@@ -1831,6 +1831,10 @@ export class Transaction extends Dml {
     );
   }
 
+  public queuedMutations(): spannerClient.spanner.v1.Mutation[] {
+    return this._queuedMutations;
+  }
+
   private static extractKnownMetadata(
     details: IAny[]
   ): grpc.Metadata | undefined {
@@ -2515,15 +2519,27 @@ function buildMutation(
   return mutation as spannerClient.spanner.v1.Mutation;
 }
 
+// export class Mutation{
+//   private _proto: spannerClient.spanner.v1.Mutation[];
+//   constructor() {
+//     this._proto = [new spannerClient.spanner.v1.Mutation()];
+//   }
+//   insert(table: string, rows: object | object[]): void {
+//     this._proto.push(buildMutation('insert', table, rows));
+//   }
+// }
+
 export class Mutation{
-  private _proto: spannerClient.spanner.v1.Mutation[];
-  constructor() {
-    this._proto = [new spannerClient.spanner.v1.Mutation()];
+  private transaction: Transaction;
+  constructor(transaction: Transaction) {
+    this.transaction = transaction;
   }
   insert(table: string, rows: object | object[]): void {
-    this._proto.push(buildMutation('insert', table, rows));
+    const queuedMutations = this.transaction?.queuedMutations();
+    queuedMutations?.push(buildMutation('insert', table, rows));
   }
 }
+
 
 
 /*! Developer Documentation
