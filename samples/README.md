@@ -27,6 +27,7 @@ and automatic, synchronous replication for high availability.
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
+  * [Batch Write](#batch-write)
   * [Batch](#batch)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
@@ -347,6 +348,23 @@ __Usage:__
 
 
 `node samples/backups.js`
+
+
+-----
+
+
+
+
+### Batch Write
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch-write.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/batch-write.js,samples/README.md)
+
+__Usage:__
+
+
+`node batch-write.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
