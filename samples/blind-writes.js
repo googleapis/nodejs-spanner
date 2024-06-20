@@ -6,7 +6,7 @@ async function main(
   projectId = 'my-project-id'
 ) {
   const {Spanner} = require('../build/src');
-  const {Mutation} = require('../build/src/transaction');
+  const {Mutations} = require('../build/src/transaction');
 
   const spanner = new Spanner({
     projectId: projectId,
@@ -14,14 +14,20 @@ async function main(
   const instance = spanner.instance(instanceId);
   const database = instance.database(databaseId);
 
-  const mutation = new Mutation();
-  mutation.insert('Singers', {SingerId: 1, FirstName: 'xyz'});
+  const mutations = new Mutations();
+  mutations.insert('Singers', {SingerId: 1, FirstName: 'xyz1'});
+  mutations.insert('Singers', {SingerId: 2, FirstName: 'xyz2'});
+  mutations.insert('Singers', {SingerId: 3, FirstName: 'xyz3'});
+  mutations.insert('Singers', {SingerId: 4, FirstName: 'xyz4'});
+  mutations.insert('Singers', {SingerId: 5, FirstName: 'xyz5'});
+  mutations.insert('Singers', {SingerId: 6, FirstName: 'xyz6'});
+  mutations.insert('Singers', {SingerId: 7, FirstName: 'xyz7'});
+  mutations.insert('Singers', {SingerId: 8, FirstName: 'xyz8'});
+  mutations.insert('Singers', {SingerId: 9, FirstName: 'xyz9'});
+  mutations.update('Singers', {SingerId: 9, FirstName: 'xyz19'});
 
   try {
-    const response = await database.blindWrite(mutation);
-    // const response = await database.blindWrite(async transaction => {
-    //   await transaction.commit();
-    // });
+    const response = await database.blindWrite(mutations);
     console.log("response: ", response);
   } catch (err) {
     console.error('Error during batchWrite:', err);

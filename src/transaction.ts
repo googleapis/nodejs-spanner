@@ -1831,10 +1831,6 @@ export class Transaction extends Dml {
     );
   }
 
-  public queuedMutations(): spannerClient.spanner.v1.Mutation[] {
-    return this._queuedMutations;
-  }
-
   private static extractKnownMetadata(
     details: IAny[]
   ): grpc.Metadata | undefined {
@@ -2519,32 +2515,64 @@ function buildMutation(
   return mutation as spannerClient.spanner.v1.Mutation;
 }
 
-// export class Mutation{
-//   private _proto: spannerClient.spanner.v1.Mutation[];
-//   constructor() {
-//     this._proto = [new spannerClient.spanner.v1.Mutation()];
-//   }
-//   insert(table: string, rows: object | object[]): void {
-//     this._proto.push(buildMutation('insert', table, rows));
-//   }
-// }
+function buildDeleteMutation(
+  table: string,
+  keys: Key[]
+): spannerClient.spanner.v1.Mutation {
+  const keySet: spannerClient.spanner.v1.IKeySet = {
+    keys: arrify(keys).map(codec.convertToListValue),
+  };
+  const mutation: spannerClient.spanner.v1.IMutation = {
+    delete: {table, keySet},
+  };
+  return mutation as spannerClient.spanner.v1.Mutation;
+}
 
-export class Mutation{
-  private transaction: Transaction;
-  private _proto: spannerClient.spanner.v1.Mutation;
-  constructor(transaction: Transaction) {
-    this._proto =
-    new spannerClient.spanner.v1.Mutation();
-    this.transaction = transaction;
+export class Mutations{
+  private _queuedMutations: spannerClient.spanner.v1.Mutation[];
+  constructor() {
+    this._queuedMutations = [];
   }
   insert(table: string, rows: object | object[]): void {
-    const queuedMutations = this.transaction?.queuedMutations();
-    queuedMutations?.push(buildMutation('insert', table, rows));
+    this._queuedMutations.push(buildMutation('insert', table, rows));
   }
-  proto(): spannerClient.spanner.v1.IMutation {
-    return this._proto;
+  update(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('update', table, rows));
+  }
+
+  upsert(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('insertOrUpdate', table, rows));
+  }
+
+  replace(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('replace', table, rows));
+  }
+
+  deleteRows(table: string, keys: Key[]): void {
+    this._queuedMutations.push(buildDeleteMutation(table, keys));
+  }
+  proto(): spannerClient.spanner.v1.IMutation[] {
+    return this._queuedMutations;
   }
 }
+
+// export class Mutation{
+//   private transaction: Transaction;
+//   private _proto: spannerClient.spanner.v1.Mutation;
+//   constructor(transaction: Transaction) {
+//     this._proto =
+//     new spannerClient.spanner.v1.Mutation();
+//     this.transaction = transaction;
+//     console.log("Mutation constructor called with transaction:", this.transaction);
+//   }
+//   insert(table: string, rows: object | object[]): void {
+//     const queuedMutations = this.transaction?.queuedMutations();
+//     queuedMutations?.push(buildMutation('insert', table, rows));
+//   }
+//   proto(): spannerClient.spanner.v1.IMutation {
+//     return this._proto;
+//   }
+// }
 
 
 
