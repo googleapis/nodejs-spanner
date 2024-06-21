@@ -61,8 +61,10 @@ import {
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
   BatchWriteOptions,
+  CommitResponse,
   ExecuteSqlRequest,
   MutationGroup,
+  Mutations,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -3327,6 +3329,60 @@ class Database extends common.GrpcServiceObject {
     });
 
     return proxyStream as NodeJS.ReadableStream;
+  }
+  
+  blindWrite(
+    mutations: Mutations,
+    options?: CallOptions,
+  ): Promise<CommitResponse>;
+  blindWrite(
+    mutations: Mutations,
+    options?: CallOptions,
+  ): Promise<CommitResponse>;
+  blindWrite(
+    mutations: Mutations,
+    options?: CallOptions,
+  ): void | Promise<CommitResponse> {
+    this.pool_.getSession((err, session?, transaction?) => {
+      
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+        this.blindWrite(mutations, options);
+        return;
+      }
+      // transaction.methi()
+      // transaction
+      transaction?.setQueuedMutations(mutations.proto());
+      try {
+        return transaction?.commit();
+      } finally {
+        const release = this.pool_.release.bind(this.pool_, session!);
+        release();
+      }
+    });
+
+    // const getSession = this.pool_.getSession.bind(this.pool_);
+    // const [session, transaction] = await promisify(getSession)();
+    //transaction._queuedMutations
+    // transaction._queuedMutations = mutations.proto();
+    // while (true) {
+    //   try {
+    //     const [session, transaction] = await promisify(getSession)();
+    //     transaction._queuedMutations = mutations.proto();
+    //     try {
+    //       return transaction!.commit();
+    //     } finally {
+    //       this.pool_.release(session);
+    //     }
+    //   } catch (e) {
+    //     if (!isSessionNotFoundError(e as ServiceError)) {
+    //       throw e;
+    //     }
+    //   }
+    // }
+    // let promise = await this.getTransaction();
+    // let transaction = promise[0];
+    // transaction.useInRunner();
+    // return transaction!.commit(options);
   }
 
   /**
