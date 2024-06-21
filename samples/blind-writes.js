@@ -29,7 +29,7 @@ async function main(
   const database = instance.database(databaseId);
 
   const mutations = new Mutations();
-  mutations.insert('Singers', {SingerId: 13, FirstName: 'xyz1'});
+  mutations.insert('Singers', {SingerId: 1, FirstName: 'xyz1'});
 
   try {
     const response = await database.blindWrite(mutations);
