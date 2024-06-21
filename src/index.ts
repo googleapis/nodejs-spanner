@@ -2016,7 +2016,7 @@ export {Snapshot};
  */
 export {Transaction};
 
-/** 
+/**
  * {@link MutationGroup} class.
  *
  * @name Spanner.MutationGroup

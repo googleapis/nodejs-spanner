@@ -28,7 +28,7 @@ async function main(
 
   try {
     const response = await database.blindWrite(mutations);
-    console.log("response: ", response);
+    console.log('response: ', response);
   } catch (err) {
     console.error('Error during batchWrite:', err);
   }

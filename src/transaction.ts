@@ -2458,7 +2458,7 @@ export class Transaction extends Dml {
   }
 }
 
-export class Mutations{
+export class Mutations {
   private _queuedMutations: spannerClient.spanner.v1.Mutation[];
   constructor() {
     this._queuedMutations = [];
@@ -2503,8 +2503,6 @@ export class Mutations{
 //     return this._proto;
 //   }
 // }
-
-
 
 /*! Developer Documentation
  *

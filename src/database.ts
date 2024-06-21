@@ -3213,7 +3213,6 @@ class Database extends common.GrpcServiceObject {
     }
   }
 
-
   /**
    * Write a batch of mutations to Spanner.
    *
