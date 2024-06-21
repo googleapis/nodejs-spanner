@@ -3330,21 +3330,20 @@ class Database extends common.GrpcServiceObject {
 
     return proxyStream as NodeJS.ReadableStream;
   }
-  
+
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions,
+    options?: CallOptions
   ): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions,
+    options?: CallOptions
   ): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions,
+    options?: CallOptions
   ): void | Promise<CommitResponse> {
     this.pool_.getSession((err, session?, transaction?) => {
-      
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         this.blindWrite(mutations, options);
         return;
