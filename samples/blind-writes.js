@@ -1,3 +1,17 @@
+// Copyright 2024 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 'use strict';
 
 async function main(
@@ -15,16 +29,7 @@ async function main(
   const database = instance.database(databaseId);
 
   const mutations = new Mutations();
-  mutations.insert('Singers', {SingerId: 1, FirstName: 'xyz1'});
-  mutations.insert('Singers', {SingerId: 2, FirstName: 'xyz2'});
-  mutations.insert('Singers', {SingerId: 3, FirstName: 'xyz3'});
-  mutations.insert('Singers', {SingerId: 4, FirstName: 'xyz4'});
-  mutations.insert('Singers', {SingerId: 5, FirstName: 'xyz5'});
-  mutations.insert('Singers', {SingerId: 6, FirstName: 'xyz6'});
-  mutations.insert('Singers', {SingerId: 7, FirstName: 'xyz7'});
-  mutations.insert('Singers', {SingerId: 8, FirstName: 'xyz8'});
-  mutations.insert('Singers', {SingerId: 9, FirstName: 'xyz9'});
-  mutations.update('Singers', {SingerId: 9, FirstName: 'xyz19'});
+  mutations.insert('Singers', {SingerId: 13, FirstName: 'xyz1'});
 
   try {
     const response = await database.blindWrite(mutations);
