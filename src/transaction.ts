@@ -2458,50 +2458,6 @@ export class Transaction extends Dml {
   }
 }
 
-function buildMutation(
-  method: string,
-  table: string,
-  keyVals: object | object[]
-): spannerClient.spanner.v1.Mutation {
-  const rows: object[] = arrify(keyVals);
-  const columns = Transaction.getUniqueKeys(rows);
-
-  const values = rows.map((row, index) => {
-    const keys = Object.keys(row);
-    const missingColumns = columns.filter(column => !keys.includes(column));
-
-    if (missingColumns.length > 0) {
-      throw new GoogleError(
-        [
-          `Row at index ${index} does not contain the correct number of columns.`,
-          `Missing columns: ${JSON.stringify(missingColumns)}`,
-        ].join('\n\n')
-      );
-    }
-
-    const values = columns.map(column => row[column]);
-    return codec.convertToListValue(values);
-  });
-
-  const mutation: spannerClient.spanner.v1.IMutation = {
-    [method]: {table, columns, values},
-  };
-  return mutation as spannerClient.spanner.v1.Mutation;
-}
-
-function buildDeleteMutation(
-  table: string,
-  keys: Key[]
-): spannerClient.spanner.v1.Mutation {
-  const keySet: spannerClient.spanner.v1.IKeySet = {
-    keys: arrify(keys).map(codec.convertToListValue),
-  };
-  const mutation: spannerClient.spanner.v1.IMutation = {
-    delete: {table, keySet},
-  };
-  return mutation as spannerClient.spanner.v1.Mutation;
-}
-
 export class Mutations{
   private _queuedMutations: spannerClient.spanner.v1.Mutation[];
   constructor() {
