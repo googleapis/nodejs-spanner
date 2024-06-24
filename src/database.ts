@@ -61,10 +61,11 @@ import {
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
   BatchWriteOptions,
+  CommitCallback,
   CommitResponse,
   ExecuteSqlRequest,
   MutationGroup,
-  Mutations,
+  Mutation,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -3291,6 +3292,7 @@ class Database extends common.GrpcServiceObject {
           session: session!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
       let dataReceived = false;
@@ -3331,39 +3333,89 @@ class Database extends common.GrpcServiceObject {
     return proxyStream as NodeJS.ReadableStream;
   }
 
-  blindWrite(
-    mutations: Mutations,
-    options?: CallOptions
+  /**
+   * Apply Blind Write of the Mutations
+   *
+   * writeAtLeastOnce(Blind Write) requests are not replay protected, meaning that it may apply mutations more
+   * than once, if the mutations are not idempotent, this may lead to a failure being
+   * reported when the mutation was applied once. Replays of non-idempotent mutations may
+   * have undesirable effects. For example, replays of an insert mutation may produce an
+   * already exists error. For this reason, most users of the library will prefer to use
+   * {@link runTransaction} instead.
+   *
+   * However, {@link writeAtLeastOnce()} requires only a single RPC, whereas {@link runTransaction()}
+   * requires two RPCs (one of which may be performed in advance), and so this method may be
+   * appropriate for latency sensitive and/or high throughput blind writing.
+   *
+   * We recommend structuring your mutation groups to be idempotent to avoid this issue.
+   *
+   * @param {Mutation} [mutation]  Mutations to be applied.
+   * @param {CallOptions} [options] Options object for blind write request.
+   * @param {CommitCallback} [callback] Callback function for blind write request.
+   *
+   * @returns {Promise}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutation = new Mutation();
+   * mutation.insert('Singers', {
+   *  SingerId: '1',
+   *  FirstName: 'Marc',
+   *  LastName: 'Richards',
+   *  });
+   * mutation.update('Singers', {
+   *  SingerId: '1',
+   *  FirstName: 'John',
+   *  LastName: 'Richards',
+   *  });
+   *
+   * try {
+   *  const [response, err] = await database.writeAtLeastOnce(mutation, {});
+   *  console.log(response.commitTimestamp);
+   * } catch(err) {
+   *  console.log("Error: ", err);
+   * }
+   * ```
+   */
+  writeAtLeastOnce(mutation: Mutation): Promise<CommitResponse>;
+  writeAtLeastOnce(
+    mutation: Mutation,
+    options: CallOptions
   ): Promise<CommitResponse>;
-  blindWrite(
-    mutations: Mutations,
-    options?: CallOptions
-  ): Promise<CommitResponse>;
-  async blindWrite(
-    mutations: Mutations,
-    options?: CallOptions
-  ): Promise<CommitResponse> {
-    while (true) {
-      try {
-        const getSession = this.pool_.getSession.bind(this.pool_);
-        const [session, transaction] = await promisify(getSession)();
-        transaction._queuedMutations = mutations.proto();
-        try {
-          return transaction!.commit();
-        } finally {
-          this.pool_.release(session);
-        }
-      } catch (e) {
-        if (!isSessionNotFoundError(e as ServiceError)) {
-          throw e;
-        }
+  writeAtLeastOnce(mutation: Mutation, callback: CommitCallback): void;
+  writeAtLeastOnce(
+    mutation: Mutation,
+    optionsOrCallback?: CallOptions | CommitCallback,
+    callback?: CommitCallback
+  ): void | Promise<CommitResponse> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as CommitCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as CallOptions)
+        : {};
+    this.pool_.getSession((err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+        cb
+          ? this.writeAtLeastOnce(mutation, cb)
+          : this.writeAtLeastOnce(mutation, options);
+        return;
       }
-    }
-    // let promise = await this.getTransaction();
-    // let transaction = promise[0];
-    // transaction._queuedMutations = mutations.proto();
-    // transaction.useInRunner();
-    // return transaction!.commit(options);
+      if (err) {
+        cb!(err as grpc.ServiceError);
+        return;
+      }
+      this._releaseOnEnd(session!, transaction!);
+      transaction?.setQueuedMutations(mutation.proto());
+      return transaction?.commit(options, cb!);
+    });
   }
 
   /**
@@ -3694,6 +3746,7 @@ callbackifyAll(Database, {
     'batchCreateSessions',
     'batchTransaction',
     'batchWriteAtLeastOnce',
+    'writeAtLeastOnce',
     'close',
     'createBatchTransaction',
     'createSession',
