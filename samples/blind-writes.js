@@ -29,11 +29,25 @@ async function main(
   const database = instance.database(databaseId);
 
   const mutations = new Mutations();
-  mutations.insert('Singers', {SingerId: 1, FirstName: 'xyz1'});
+  mutations.insert('Singers', {SingerId: 19, FirstName: 'xyz1'});
 
   try {
-    const response = await database.blindWrite(mutations);
+    // database.blindWrite(mutations, (err, res) => {
+    //   if(err) {
+    //     console.log(err);
+    //   } else {
+    //     console.log("responses: ", res);
+    //   }
+    // });
+    
+    const [response] = await database.blindWrite(mutations, {});
     console.log('response: ', response);
+    
+    // let promise = await database.getTransaction();
+    // let transaction = promise[0];
+    // transaction.setQueuedMutations(mutations.proto());
+    // const [commitResponse] = await transaction.commit();
+    // console.log('Transaction committed:', commitResponse);
   } catch (err) {
     console.error('Error during batchWrite:', err);
   }

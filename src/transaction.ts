@@ -1855,6 +1855,10 @@ export class Transaction extends Dml {
   //   this._queuedMutations.push(...mutations);
   // }
 
+  setQueuedMutations(mutations: spannerClient.spanner.v1.Mutation[]): void {
+    this._queuedMutations = mutations;
+  }
+
   /**
    * @typedef {object} CommitOptions
    * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
@@ -2485,7 +2489,7 @@ export class Mutations {
   deleteRows(table: string, keys: Key[]): void {
     this._queuedMutations.push(buildDeleteMutation(table, keys));
   }
-  proto(): spannerClient.spanner.v1.IMutation[] {
+  proto(): spannerClient.spanner.v1.Mutation[] {
     return this._queuedMutations;
   }
 }

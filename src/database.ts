@@ -305,6 +305,8 @@ export interface RestoreOptions {
   gaxOptions?: CallOptions;
 }
 
+export type BlindWriteCallback = NormalCallback<CommitResponse>;
+
 /**
  * Create a Database object to interact with a Cloud Spanner database.
  *
@@ -3333,38 +3335,119 @@ class Database extends common.GrpcServiceObject {
 
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions
   ): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions
+    options?: CallOptions,
   ): Promise<CommitResponse>;
+  blindWrite(
+    mutations: Mutations,
+    callback?: BlindWriteCallback,
+  ): Promise<void>;
   async blindWrite(
     mutations: Mutations,
-    options?: CallOptions
-  ): Promise<CommitResponse> {
-    while (true) {
-      try {
-        const getSession = this.pool_.getSession.bind(this.pool_);
-        const [session, transaction] = await promisify(getSession)();
-        transaction._queuedMutations = mutations.proto();
-        try {
-          return transaction!.commit();
-        } finally {
-          this.pool_.release(session);
-        }
-      } catch (e) {
-        if (!isSessionNotFoundError(e as ServiceError)) {
-          throw e;
-        }
+    optionsOrCallback?: CallOptions | BlindWriteCallback,
+    callback?: BlindWriteCallback,
+  ): Promise<void | CommitResponse> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as BlindWriteCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as CallOptions)
+        : {};
+    this.pool_.getSession(async (err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+        this.blindWrite(mutations, cb!);
+        return;
       }
-    }
-    // let promise = await this.getTransaction();
-    // let transaction = promise[0];
-    // transaction._queuedMutations = mutations.proto();
-    // transaction.useInRunner();
-    // return transaction!.commit(options);
+      if (err) {
+        cb!(err as grpc.ServiceError);
+        return;
+      }
+
+      const release = this.pool_.release.bind(this.pool_, session!);
+      transaction?.setQueuedMutations(mutations.proto());
+      const response = transaction?.commit(options);
+      release();
+      cb!(err, await (response as Promise<CommitResponse>));
+    });
   }
+
+  // blindWrite(
+  //   mutations: Mutations,
+  //   callback?: BlindWriteCallback,
+  // ): Promise<void>;
+  // blindWrite(
+  //   mutations: Mutations,
+  //   options?: CallOptions,
+  // ): Promise<CommitResponse>;
+  // async blindWrite(
+  //   mutations: Mutations,
+  //   optionsOrCallback?: CallOptions | BlindWriteCallback,
+  //   fn?: BlindWriteCallback
+  // ): Promise<void | CommitResponse> {
+
+  //   const cb =
+  //     typeof optionsOrCallback === 'function'
+  //       ? (optionsOrCallback as BlindWriteCallback)
+  //       : fn;
+  //   const options =
+  //     typeof optionsOrCallback === 'object' && optionsOrCallback
+  //       ? (optionsOrCallback as CallOptions)
+  //       : {};
+
+  //   this.pool_.getSession(async (err, session?, transaction?) => {
+  //     if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+  //       this.blindWrite(mutations, cb!);
+  //       return;
+  //     }
+  //     if (err) {
+  //       cb!(err as grpc.ServiceError);
+  //       return;
+  //     }
+
+  //     const release = this.pool_.release.bind(this.pool_, session!);
+  //     transaction?.setQueuedMutations(mutations.proto());
+  //     const response = transaction?.commit(options);
+  //     release();
+  //     cb!(err, await (response as Promise<CommitResponse>));
+  //   });
+
+  //   // this.getTransaction((err, transaction) => {
+  //   //   if(err && isSessionNotFoundError(err as grpc.ServiceError)) {
+  //   //     this.blindWrite(mutations, options);
+  //   //   }
+  //   //   transaction?.setQueuedMutations(mutations.proto());
+  //   //   transaction?.commit((err, response) => {
+  //   //     if(err) {
+  //   //       this.blindWrite(mutations, options);
+  //   //     }
+  //   //     return response;
+  //   //   });
+      
+  //   // });
+
+  //   /*
+  //   let promise = await this.getTransaction();
+
+  //   let transaction = promise[0];
+    
+  //   transaction.setQueuedMutations(mutations.proto());
+
+  //   const [commitResponse] = await transaction.commit();
+
+  //   return commitResponse as Promise<CommitResponse>;
+  //   */
+
+  //   // let promise = await this.getTransaction();
+  //   // let transaction = promise[0];
+  //   // transaction._queuedMutations = mutations.proto();
+  //   // transaction.useInRunner();
+  //   // return transaction!.commit(options);
+
+  // }
 
   /**
    * Create a Session object.
