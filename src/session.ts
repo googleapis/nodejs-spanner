@@ -44,6 +44,7 @@ import {
 import {grpc, CallOptions} from 'google-gax';
 import IRequestOptions = google.spanner.v1.IRequestOptions;
 import {Spanner} from '.';
+import {ObservabilityOptions, startTrace, setSpanError} from './instrument';
 
 export type GetSessionResponse = [Session, r.Response];
 
@@ -118,6 +119,7 @@ export class Session extends common.GrpcServiceObject {
   lastUsed?: number;
   lastError?: grpc.ServiceError;
   resourceHeader_: {[k: string]: string};
+  observabilityConfig: ObservabilityOptions | undefined;
   constructor(database: Database, name?: string) {
     const methods = {
       /**
@@ -236,25 +238,34 @@ export class Session extends common.GrpcServiceObject {
         optionsOrCallback: CreateSessionOptions | CreateSessionCallback,
         callback: CreateSessionCallback
       ) => {
-        const options =
-          typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-        callback =
-          typeof optionsOrCallback === 'function'
-            ? optionsOrCallback
-            : callback;
+        const q = {opts: this.observabilityConfig};
+        return startTrace('Session.create', q, span => {
+          const options =
+            typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+          callback =
+            typeof optionsOrCallback === 'function'
+              ? optionsOrCallback
+              : callback;
 
-        this.labels = options.labels || null;
-        this.databaseRole =
-          options.databaseRole || database.databaseRole || null;
+          this.labels = options.labels || null;
+          this.databaseRole =
+            options.databaseRole || database.databaseRole || null;
 
-        return database.createSession(options, (err, session, apiResponse) => {
-          if (err) {
-            callback(err, null, apiResponse);
-            return;
-          }
+          return database.createSession(
+            options,
+            (err, session, apiResponse) => {
+              if (err) {
+                setSpanError(span, err);
+                span.end();
+                callback(err, null, apiResponse);
+                return;
+              }
 
-          extend(this, session);
-          callback(null, this, apiResponse);
+              extend(this, session);
+              span.end();
+              callback(null, this, apiResponse);
+            }
+          );
         });
       },
     } as {} as ServiceObjectConfig);
@@ -268,6 +279,8 @@ export class Session extends common.GrpcServiceObject {
     if (name) {
       this.formattedName_ = Session.formatName_(database.formattedName_, name);
     }
+
+    this.observabilityConfig = database.observabilityConfig;
   }
   /**
    * Delete a session.
@@ -375,36 +388,44 @@ export class Session extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | GetSessionMetadataCallback,
     cb?: GetSessionMetadataCallback
   ): void | Promise<GetSessionMetadataResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Session.getMetadata', q, span => {
+      const gaxOpts =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts = {
-      name: this.formattedName_,
-    };
+      const reqOpts = {
+        name: this.formattedName_,
+      };
 
-    const headers = this.resourceHeader_;
-    if (this._getSpanner().routeToLeaderEnabled) {
-      addLeaderAwareRoutingHeader(headers);
-    }
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'getSession',
-        reqOpts,
-        gaxOpts,
-        headers: headers,
-      },
-      (err, resp) => {
-        if (resp) {
-          resp.databaseRole = resp.creatorRole;
-          delete resp.creatorRole;
-          this.metadata = resp;
-        }
-        callback!(err, resp);
+      const headers = this.resourceHeader_;
+      if (this._getSpanner().routeToLeaderEnabled) {
+        addLeaderAwareRoutingHeader(headers);
       }
-    );
+      return this.request(
+        {
+          client: 'SpannerClient',
+          method: 'getSession',
+          reqOpts,
+          gaxOpts,
+          headers: headers,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          if (resp) {
+            resp.databaseRole = resp.creatorRole;
+            delete resp.creatorRole;
+            this.metadata = resp;
+          }
+          span.end();
+          callback!(err, resp);
+        }
+      );
+    });
   }
   /**
    * Ping the session with `SELECT 1` to prevent it from expiring.
@@ -431,25 +452,34 @@ export class Session extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | KeepAliveCallback,
     cb?: KeepAliveCallback
   ): void | Promise<KeepAliveResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Session.keepAlive', q, span => {
+      const gaxOpts =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts = {
-      session: this.formattedName_,
-      sql: 'SELECT 1',
-    };
-    return this.request(
-      {
-        client: 'SpannerClient',
-        method: 'executeSql',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      callback!
-    );
+      const reqOpts = {
+        session: this.formattedName_,
+        sql: 'SELECT 1',
+      };
+      return this.request(
+        {
+          client: 'SpannerClient',
+          method: 'executeSql',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        err => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+          callback!(err);
+        }
+      );
+    });
   }
   /**
    * Create a PartitionedDml transaction.

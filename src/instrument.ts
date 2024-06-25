@@ -133,6 +133,27 @@ export function startTrace<T>(
 }
 
 /**
+ * setTracerProvider allows the caller to hook up an OpenTelemetry
+ * TracerProvider that spans generated from this library shall be attached to,
+ * instead of using the global configuration. Later on if `getTracer` is invoked and
+ * the default tracerProvider is unset, it'll use the global tracer
+ * otherwise it'll use the set TracerProvider.
+ */
+export function setTracerProvider(freshTracerProvider: TracerProvider) {}
+
+export function applyObservabilityOptions(
+  opts: observabilityOptions | undefined
+) {
+  if (!opts) {
+    return;
+  }
+
+  if (opts.tracerProvider) {
+    setTracerProvider(opts.tracerProvider);
+  }
+}
+
+/**
  * Sets the span status with err, if non-null onto the span with
  * status.code=ERROR and the message of err.toString()
  *

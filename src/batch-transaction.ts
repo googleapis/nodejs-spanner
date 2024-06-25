@@ -25,6 +25,7 @@ import {
   CLOUD_RESOURCE_HEADER,
   addLeaderAwareRoutingHeader,
 } from '../src/common';
+import {startTrace, setSpanError} from './instrument';
 
 export interface TransactionIdentifier {
   session: string | Session;
@@ -136,21 +137,30 @@ class BatchTransaction extends Snapshot {
     delete reqOpts.gaxOptions;
     delete reqOpts.types;
 
-    const headers: {[k: string]: string} = {};
-    if (this._getSpanner().routeToLeaderEnabled) {
-      addLeaderAwareRoutingHeader(headers);
-    }
+    return startTrace('BatchTransaction.createQueryPartitions', query, span => {
+      const headers: {[k: string]: string} = {};
+      if (this._getSpanner().routeToLeaderEnabled) {
+        addLeaderAwareRoutingHeader(headers);
+      }
 
-    this.createPartitions_(
-      {
-        client: 'SpannerClient',
-        method: 'partitionQuery',
-        reqOpts,
-        gaxOpts: query.gaxOptions,
-        headers: headers,
-      },
-      callback
-    );
+      this.createPartitions_(
+        {
+          client: 'SpannerClient',
+          method: 'partitionQuery',
+          reqOpts,
+          gaxOpts: query.gaxOptions,
+          headers: headers,
+        },
+        (err, partitions, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          span.end();
+          callback(err, partitions, resp);
+        }
+      );
+    });
   }
   /**
    * Generic create partition method. Handles common parameters used in both
@@ -163,37 +173,43 @@ class BatchTransaction extends Snapshot {
    * @param {function} callback Callback function.
    */
   createPartitions_(config, callback) {
-    const query = extend({}, config.reqOpts, {
-      session: this.session.formattedName_,
-      transaction: {id: this.id},
-    });
-    config.reqOpts = extend({}, query);
-    config.headers = {
-      [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
-    };
-    delete query.partitionOptions;
-    this.session.request(config, (err, resp) => {
-      if (err) {
-        callback(err, null, resp);
-        return;
-      }
-
-      const partitions = resp.partitions.map(partition => {
-        return extend({}, query, partition);
+    return startTrace('BatchTransaction.createPartitions', {}, span => {
+      const query = extend({}, config.reqOpts, {
+        session: this.session.formattedName_,
+        transaction: {id: this.id},
       });
-
-      if (resp.transaction) {
-        const {id, readTimestamp} = resp.transaction;
-
-        this.id = id;
-
-        if (readTimestamp) {
-          this.readTimestampProto = readTimestamp;
-          this.readTimestamp = new PreciseDate(readTimestamp);
+      config.reqOpts = extend({}, query);
+      config.headers = {
+        [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database)
+          .formattedName_,
+      };
+      delete query.partitionOptions;
+      this.session.request(config, (err, resp) => {
+        if (err) {
+          setSpanError(span, err);
+          span.end();
+          callback(err, null, resp);
+          return;
         }
-      }
 
-      callback(null, partitions, resp);
+        const partitions = resp.partitions.map(partition => {
+          return extend({}, query, partition);
+        });
+
+        if (resp.transaction) {
+          const {id, readTimestamp} = resp.transaction;
+
+          this.id = id;
+
+          if (readTimestamp) {
+            this.readTimestampProto = readTimestamp;
+            this.readTimestamp = new PreciseDate(readTimestamp);
+          }
+        }
+
+        span.end();
+        callback(null, partitions, resp);
+      });
     });
   }
   /**
@@ -226,29 +242,38 @@ class BatchTransaction extends Snapshot {
    * @returns {Promise<CreateReadPartitionsResponse>}
    */
   createReadPartitions(options, callback) {
-    const reqOpts = Object.assign({}, options, {
-      keySet: Snapshot.encodeKeySet(options),
+    return startTrace('BatchTransaction.createReadPartitions', {}, span => {
+      const reqOpts = Object.assign({}, options, {
+        keySet: Snapshot.encodeKeySet(options),
+      });
+
+      delete reqOpts.gaxOptions;
+      delete reqOpts.keys;
+      delete reqOpts.ranges;
+
+      const headers: {[k: string]: string} = {};
+      if (this._getSpanner().routeToLeaderEnabled) {
+        addLeaderAwareRoutingHeader(headers);
+      }
+
+      this.createPartitions_(
+        {
+          client: 'SpannerClient',
+          method: 'partitionRead',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: headers,
+        },
+        (err, partitions, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          span.end();
+          callback(err, partitions, resp);
+        }
+      );
     });
-
-    delete reqOpts.gaxOptions;
-    delete reqOpts.keys;
-    delete reqOpts.ranges;
-
-    const headers: {[k: string]: string} = {};
-    if (this._getSpanner().routeToLeaderEnabled) {
-      addLeaderAwareRoutingHeader(headers);
-    }
-
-    this.createPartitions_(
-      {
-        client: 'SpannerClient',
-        method: 'partitionRead',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: headers,
-      },
-      callback
-    );
   }
   /**
    * Executes partition.
@@ -322,6 +347,7 @@ class BatchTransaction extends Snapshot {
    * ```
    */
   executeStream(partition) {
+    // TODO: Instrument the streams with Otel.
     if (is.string(partition.table)) {
       return this.createReadStream(partition.table, partition);
     }

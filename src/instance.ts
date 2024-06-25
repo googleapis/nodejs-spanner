@@ -51,6 +51,7 @@ import {google as instanceAdmin} from '../protos/protos';
 import {google as databaseAdmin} from '../protos/protos';
 import {google as spannerClient} from '../protos/protos';
 import {CreateInstanceRequest} from './index';
+import {ObservabilityOptions, setSpanError, startTrace} from './instrument';
 
 export type IBackup = databaseAdmin.spanner.admin.database.v1.IBackup;
 export type IDatabase = databaseAdmin.spanner.admin.database.v1.IDatabase;
@@ -164,6 +165,7 @@ class Instance extends common.GrpcServiceObject {
   databases_: Map<string, Database>;
   metadata?: IInstance;
   resourceHeader_: {[k: string]: string};
+  observabilityConfig: ObservabilityOptions | undefined;
   constructor(spanner: Spanner, name: string) {
     const formattedName_ = Instance.formatName_(spanner.projectId, name);
     const methods = {
@@ -239,6 +241,7 @@ class Instance extends common.GrpcServiceObject {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.formattedName_,
     };
+    this.observabilityConfig = spanner.observabilityConfig;
   }
 
   /**
@@ -876,58 +879,69 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CreateDatabaseOptions | CreateDatabaseCallback,
     cb?: CreateDatabaseCallback
   ): void | Promise<CreateDatabaseResponse> {
-    if (!name) {
-      throw new GoogleError('A name is required to create a database.');
-    }
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as CreateDatabaseOptions);
-
-    const poolOptions = options.poolOptions;
-    const poolCtor = options.poolCtor;
-    let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
-    if (
-      databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL ===
-      options.databaseDialect
-    ) {
-      createStatement = 'CREATE DATABASE "' + name.split('/').pop() + '"';
-    }
-    const reqOpts = extend(
-      {
-        parent: this.formattedName_,
-        createStatement: createStatement,
-      },
-      options
-    );
-
-    delete reqOpts.poolOptions;
-    delete reqOpts.poolCtor;
-    delete reqOpts.gaxOptions;
-
-    if (reqOpts.schema) {
-      reqOpts.extraStatements = arrify(reqOpts.schema);
-      delete reqOpts.schema;
-    }
-    this.request(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'createDatabase',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
-      },
-      (err, operation, resp) => {
-        if (err) {
-          callback(err, null, null, resp);
-          return;
-        }
-        const database = this.database(name, poolOptions || poolCtor);
-        callback(null, database, operation, resp);
+    const q = {dbName: name, opts: this.observabilityConfig};
+    return startTrace('Instance.createDatabase', q, span => {
+      if (!name) {
+        const msg = 'A name is required to create a database.';
+        setSpanError(span, msg);
+        span.end();
+        throw new GoogleError(msg);
       }
-    );
+
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+      const options =
+        typeof optionsOrCallback === 'object'
+          ? optionsOrCallback
+          : ({} as CreateDatabaseOptions);
+
+      const poolOptions = options.poolOptions;
+      const poolCtor = options.poolCtor;
+      let createStatement = 'CREATE DATABASE `' + name.split('/').pop() + '`';
+      if (
+        databaseAdmin.spanner.admin.database.v1.DatabaseDialect.POSTGRESQL ===
+        options.databaseDialect
+      ) {
+        createStatement = 'CREATE DATABASE "' + name.split('/').pop() + '"';
+      }
+      const reqOpts = extend(
+        {
+          parent: this.formattedName_,
+          createStatement: createStatement,
+        },
+        options
+      );
+
+      delete reqOpts.poolOptions;
+      delete reqOpts.poolCtor;
+      delete reqOpts.gaxOptions;
+
+      if (reqOpts.schema) {
+        reqOpts.extraStatements = arrify(reqOpts.schema);
+        delete reqOpts.schema;
+      }
+      this.request(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'createDatabase',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, resp) => {
+          if (err) {
+            // TODO: Infer the status and code from translating the error.
+            setSpanError(span, err);
+            span.end();
+            callback(err, null, null, resp);
+            return;
+          }
+          const database = this.database(name, poolOptions || poolCtor);
+          span.end();
+          callback(null, database, operation, resp);
+        }
+      );
+    });
   }
 
   /**
@@ -1034,38 +1048,46 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | DeleteInstanceCallback,
     cb?: DeleteInstanceCallback
   ): void | Promise<DeleteInstanceResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.delete', q, span => {
+      const gaxOpts =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts = {
-      name: this.formattedName_,
-    };
-    Promise.all(
-      Array.from(this.databases_.values()).map(database => {
-        return database.close();
-      })
-    )
-      .catch(() => {})
-      .then(() => {
-        this.databases_.clear();
-        this.request<instanceAdmin.protobuf.IEmpty>(
-          {
-            client: 'InstanceAdminClient',
-            method: 'deleteInstance',
-            reqOpts,
-            gaxOpts,
-            headers: this.resourceHeader_,
-          },
-          (err, resp) => {
-            if (!err) {
-              this.parent.instances_.delete(this.id);
+      const reqOpts = {
+        name: this.formattedName_,
+      };
+      Promise.all(
+        Array.from(this.databases_.values()).map(database => {
+          return database.close();
+        })
+      )
+        .catch(() => {})
+        .then(() => {
+          this.databases_.clear();
+          this.request<instanceAdmin.protobuf.IEmpty>(
+            {
+              client: 'InstanceAdminClient',
+              method: 'deleteInstance',
+              reqOpts,
+              gaxOpts,
+              headers: this.resourceHeader_,
+            },
+            (err, resp) => {
+              if (!err) {
+                // TODO: Create a sub-span about invoking instances_.delete
+                this.parent.instances_.delete(this.id);
+              } else {
+                setSpanError(span, err);
+              }
+
+              span.end();
+              callback!(err, resp!);
             }
-            callback!(err, resp!);
-          }
-        );
-      });
+          );
+        });
+    });
   }
 
   /**
@@ -1111,21 +1133,30 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | ExistsInstanceCallback,
     cb?: ExistsInstanceCallback
   ): void | Promise<ExistsInstanceResponse> {
-    const gaxOptions =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.exists', q, span => {
+      const gaxOptions =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const NOT_FOUND = 5;
+      const NOT_FOUND = 5;
 
-    this.getMetadata({gaxOptions}, err => {
-      if (err && err.code !== NOT_FOUND) {
-        callback!(err, null);
-        return;
-      }
+      this.getMetadata({gaxOptions}, err => {
+        if (err) {
+          setSpanError(span, err);
+        }
 
-      const exists = !err || err.code !== NOT_FOUND;
-      callback!(null, exists);
+        if (err && err.code !== NOT_FOUND) {
+          span.end();
+          callback!(err, null);
+          return;
+        }
+
+        const exists = !err || err.code !== NOT_FOUND;
+        span.end();
+        callback!(null, exists);
+      });
     });
   }
 
@@ -1184,27 +1215,44 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: GetInstanceConfig | GetInstanceCallback,
     cb?: GetInstanceCallback
   ): void | Promise<GetInstanceResponse> {
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as GetInstanceConfig);
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.get', q, span => {
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+      const options =
+        typeof optionsOrCallback === 'object'
+          ? optionsOrCallback
+          : ({} as GetInstanceConfig);
 
-    const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
-    if (options.fieldNames) {
-      getMetadataOptions.fieldNames = options.fieldNames;
-    }
-    if (options.gaxOptions) {
-      getMetadataOptions.gaxOptions = options.gaxOptions;
-    }
+      const getMetadataOptions: GetInstanceMetadataOptions = new Object(null);
+      if (options.fieldNames) {
+        getMetadataOptions.fieldNames = options.fieldNames;
+      }
+      if (options.gaxOptions) {
+        getMetadataOptions.gaxOptions = options.gaxOptions;
+      }
 
-    this.getMetadata(getMetadataOptions, (err, metadata) => {
-      if (err) {
-        if (err.code === 5 && options.autoCreate) {
-          const createOptions = extend(true, {}, options);
-          delete createOptions.fieldNames;
-          delete createOptions.autoCreate;
+      this.getMetadata(getMetadataOptions, (err, metadata) => {
+        if (!err) {
+          span.end();
+          callback(null, this, metadata!);
+          return;
+        }
+
+        // Otherwise an error occurred.
+        setSpanError(span, err);
+
+        if (err.code !== 5 || !options.autoCreate) {
+          span.end();
+          callback(err);
+          return;
+        }
+
+        // Attempt to create the instance.
+        const createOptions = extend(true, {}, options);
+        delete createOptions.fieldNames;
+        delete createOptions.autoCreate;
+        return startTrace('Instance.create', q, createSpan => {
           this.create(
             createOptions,
             (
@@ -1213,23 +1261,32 @@ class Instance extends common.GrpcServiceObject {
               operation?: GaxOperation | null
             ) => {
               if (err) {
+                setSpanError(createSpan, err);
+                createSpan.end();
+                span.end();
                 callback(err);
                 return;
               }
+
+              // Otherwise attempt the creation operation.
               operation!
-                .on('error', callback)
+                .on('error', (err, obj, metadata) => {
+                  setSpanError(createSpan, err);
+                  createSpan.end();
+                  span.end();
+                  callback(err, obj, metadata);
+                })
                 .on('complete', (metadata: IInstance) => {
                   this.metadata = metadata;
+                  createSpan.end();
+                  span.end();
                   callback(null, this, metadata);
                 });
             }
           );
           return;
-        }
-        callback(err);
-        return;
-      }
-      callback(null, this, metadata!);
+        });
+      });
     });
   }
 
@@ -1313,63 +1370,73 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: GetDatabasesOptions | GetDatabasesCallback,
     cb?: GetDatabasesCallback
   ): void | Promise<GetDatabasesResponse> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object'
-        ? optionsOrCallback
-        : ({} as GetDatabasesOptions);
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.getDatabases', q, span => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const self = this;
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+      const options =
+        typeof optionsOrCallback === 'object'
+          ? optionsOrCallback
+          : ({} as GetDatabasesOptions);
 
-    const gaxOpts = extend(true, {}, options.gaxOptions);
-    let reqOpts = extend({}, options, {
-      parent: this.formattedName_,
-    });
-    delete reqOpts.gaxOptions;
+      const gaxOpts = extend(true, {}, options.gaxOptions);
+      let reqOpts = extend({}, options, {
+        parent: this.formattedName_,
+      });
+      delete reqOpts.gaxOptions;
 
-    // Copy over pageSize and pageToken values from gaxOptions.
-    // However values set on options take precedence.
-    if (gaxOpts) {
-      reqOpts = extend(
-        {},
-        {
-          pageSize: (gaxOpts as GetBackupsOptions).pageSize,
-          pageToken: (gaxOpts as GetBackupsOptions).pageToken,
-        },
-        reqOpts
-      );
-      delete (gaxOpts as GetBackupsOptions).pageSize;
-      delete (gaxOpts as GetBackupsOptions).pageToken;
-    }
-
-    this.request<
-      IDatabase,
-      databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
-    >(
-      {
-        client: 'DatabaseAdminClient',
-        method: 'listDatabases',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      (err, rowDatabases, nextPageRequest, ...args) => {
-        let databases: Database[] | null = null;
-        if (rowDatabases) {
-          databases = rowDatabases.map(database => {
-            const databaseInstance = self.database(database.name!, {min: 0});
-            databaseInstance.metadata = database;
-            return databaseInstance;
-          });
-        }
-        const nextQuery = nextPageRequest!
-          ? extend({}, options, nextPageRequest!)
-          : null;
-
-        callback(err, databases, nextQuery, ...args);
+      // Copy over pageSize and pageToken values from gaxOptions.
+      // However values set on options take precedence.
+      if (gaxOpts) {
+        reqOpts = extend(
+          {},
+          {
+            pageSize: (gaxOpts as GetBackupsOptions).pageSize,
+            pageToken: (gaxOpts as GetBackupsOptions).pageToken,
+          },
+          reqOpts
+        );
+        delete (gaxOpts as GetBackupsOptions).pageSize;
+        delete (gaxOpts as GetBackupsOptions).pageToken;
       }
-    );
+
+      this.request<
+        IDatabase,
+        databaseAdmin.spanner.admin.database.v1.IListDatabasesResponse
+      >(
+        {
+          client: 'DatabaseAdminClient',
+          method: 'listDatabases',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, rowDatabases, nextPageRequest, ...args) => {
+          let databases: Database[] | null = null;
+          if (rowDatabases) {
+            databases = rowDatabases.map(database => {
+              const databaseInstance = self.database(database.name!, {
+                min: 0,
+              });
+              databaseInstance.metadata = database;
+              return databaseInstance;
+            });
+          }
+          const nextQuery = nextPageRequest!
+            ? extend({}, options, nextPageRequest!)
+            : null;
+
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          span.end();
+          callback(err, databases, nextQuery, ...args);
+        }
+      );
+    });
   }
 
   /**
@@ -1412,6 +1479,7 @@ class Instance extends common.GrpcServiceObject {
    * ```
    */
   getDatabasesStream(options: GetDatabasesOptions = {}): NodeJS.ReadableStream {
+    // TODO: Instrument this streaming method with Otel.
     const gaxOpts = extend(true, {}, options.gaxOptions);
 
     let reqOpts = extend({}, options, {
@@ -1518,33 +1586,42 @@ class Instance extends common.GrpcServiceObject {
       | GetInstanceMetadataCallback,
     cb?: GetInstanceMetadataCallback
   ): Promise<GetInstanceMetadataResponse> | void {
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
-    const options =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const reqOpts = {
-      name: this.formattedName_,
-    };
-    if (options.fieldNames) {
-      reqOpts['fieldMask'] = {
-        paths: arrify(options['fieldNames']!).map(snakeCase),
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.getMetadata', q, span => {
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+      const options =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const reqOpts = {
+        name: this.formattedName_,
       };
-    }
-    return this.request<IInstance>(
-      {
-        client: 'InstanceAdminClient',
-        method: 'getInstance',
-        reqOpts,
-        gaxOpts: options.gaxOptions,
-        headers: this.resourceHeader_,
-      },
-      (err, resp) => {
-        if (resp) {
-          this.metadata = resp;
-        }
-        callback!(err, resp);
+      if (options.fieldNames) {
+        reqOpts['fieldMask'] = {
+          paths: arrify(options['fieldNames']!).map(snakeCase),
+        };
       }
-    );
+      return this.request<IInstance>(
+        {
+          client: 'InstanceAdminClient',
+          method: 'getInstance',
+          reqOpts,
+          gaxOpts: options.gaxOptions,
+          headers: this.resourceHeader_,
+        },
+        (err, resp) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+
+          if (resp) {
+            this.metadata = resp;
+          }
+
+          span.end();
+          callback!(err, resp);
+        }
+      );
+    });
   }
 
   /**
@@ -1610,32 +1687,41 @@ class Instance extends common.GrpcServiceObject {
     optionsOrCallback?: CallOptions | SetInstanceMetadataCallback,
     cb?: SetInstanceMetadataCallback
   ): void | Promise<SetInstanceMetadataResponse> {
-    const gaxOpts =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
-    const callback =
-      typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
+    const q = {opts: this.observabilityConfig};
+    return startTrace('Instance.setMetadata', q, span => {
+      const gaxOpts =
+        typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      const callback =
+        typeof optionsOrCallback === 'function' ? optionsOrCallback : cb!;
 
-    const reqOpts = {
-      instance: extend(
-        {
-          name: this.formattedName_,
+      const reqOpts = {
+        instance: extend(
+          {
+            name: this.formattedName_,
+          },
+          metadata
+        ),
+        fieldMask: {
+          paths: Object.keys(metadata).map(snakeCase),
         },
-        metadata
-      ),
-      fieldMask: {
-        paths: Object.keys(metadata).map(snakeCase),
-      },
-    };
-    return this.request(
-      {
-        client: 'InstanceAdminClient',
-        method: 'updateInstance',
-        reqOpts,
-        gaxOpts,
-        headers: this.resourceHeader_,
-      },
-      callback!
-    );
+      };
+      return this.request(
+        {
+          client: 'InstanceAdminClient',
+          method: 'updateInstance',
+          reqOpts,
+          gaxOpts,
+          headers: this.resourceHeader_,
+        },
+        (err, operation, apiResponse) => {
+          if (err) {
+            setSpanError(span, err);
+          }
+          span.end();
+          callback!(err, operation, apiResponse);
+        }
+      );
+    });
   }
   /**
    * Format the instance name to include the project ID.

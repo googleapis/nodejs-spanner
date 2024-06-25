@@ -30,6 +30,23 @@ import * as sp from '../src/session-pool';
 import {Transaction} from '../src/transaction';
 import {grpc} from 'google-gax';
 
+const {ContextManager} = require('@opentelemetry/api');
+const {
+  AsyncHooksContextManager,
+} = require('@opentelemetry/context-async-hooks');
+const {
+  AlwaysOnSampler,
+  NodeTracerProvider,
+  InMemorySpanExporter,
+} = require('@opentelemetry/sdk-trace-node');
+const {SimpleSpanProcessor} = require('@opentelemetry/sdk-trace-base');
+const {
+  disableContextAndManager,
+  setGlobalContextManager,
+  getTracer,
+  setTracerProvider,
+} = require('../src/instrument');
+
 let pQueueOverride: typeof PQueue | null = null;
 
 function FakePQueue(options) {
@@ -1346,6 +1363,82 @@ describe('SessionPool', () => {
       fakeHandles.forEach((fakeHandle, i) => {
         const [handle] = stub.getCall(i).args;
         assert.strictEqual(handle, fakeHandle);
+      });
+    });
+  });
+
+  describe('observability annotations on active span', () => {
+    const projectId = process.env.SPANNER_TEST_PROJECTID || 'test-project';
+    const exporter = new InMemorySpanExporter();
+    const sampler = new AlwaysOnSampler();
+
+    let provider: typeof NodeTracerProvider;
+    // let contextManager: typeof ContextManager;
+    const contextManager = new AsyncHooksContextManager();
+    setGlobalContextManager(contextManager);
+
+    beforeEach(() => {
+      provider = new NodeTracerProvider({
+        sampler: sampler,
+        exporter: exporter,
+      });
+      provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+      provider.register();
+      setTracerProvider(provider);
+
+      sessionPool.isOpen = true;
+      sessionPool._isValidSession = () => true;
+    });
+
+    afterEach(async () => {
+      exporter.forceFlush();
+      exporter.reset();
+    });
+
+    after(async () => {
+      disableContextAndManager(contextManager);
+      await provider.shutdown();
+    });
+
+    it('acquire', () => {
+      getTracer().startActiveSpan('testSessionPool.acquire', async span => {
+        const fakeSession = createSession();
+        const now = Date.now();
+
+        const stub = sandbox
+          .stub(sessionPool, '_getSession')
+          .resolves(fakeSession);
+        const session = await sessionPool._acquire();
+        const [startTime] = stub.getCall(0).args;
+
+        assert(isAround(startTime, now));
+        assert.strictEqual(session, fakeSession);
+
+        // TODO: Investigate why the context at this
+        // point is NOT the same context as was used in
+        // the "await sessionPool._acquire() call.
+        await sessionPool._release(session);
+        span.end();
+
+        const spans = exporter.getFinishedSpans();
+        assert.strictEqual(
+          spans.length,
+          1,
+          'exactly 1 span should have been exported'
+        );
+        const span0 = spans[0];
+        assert.strictEqual(!span0.events, false, 'events must be set');
+        assert.strictEqual(span0.events.length > 0, true, 'events must be set');
+        const events = span0.events;
+
+        // Sort the events by earliest time of occurence.
+        events.sort((evtA, evtB) => {
+          return evtA.time < evtB.time;
+        });
+
+        // Now check to see that we at least acquired a valid session.
+        const event0 = events[0];
+        assert.strictEqual(event0.name, 'acquired a valid session');
       });
     });
   });
