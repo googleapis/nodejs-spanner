@@ -39,10 +39,10 @@ async function main(
     //     console.log("responses: ", res);
     //   }
     // });
-    
+
     const [response] = await database.blindWrite(mutations, {});
     console.log('response: ', response);
-    
+
     // let promise = await database.getTransaction();
     // let transaction = promise[0];
     // transaction.setQueuedMutations(mutations.proto());

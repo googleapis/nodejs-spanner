@@ -3333,21 +3333,19 @@ class Database extends common.GrpcServiceObject {
     return proxyStream as NodeJS.ReadableStream;
   }
 
+  blindWrite(mutations: Mutations): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
+    options?: CallOptions
   ): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions,
-  ): Promise<CommitResponse>;
-  blindWrite(
-    mutations: Mutations,
-    callback?: BlindWriteCallback,
+    callback?: BlindWriteCallback
   ): Promise<void>;
   async blindWrite(
     mutations: Mutations,
     optionsOrCallback?: CallOptions | BlindWriteCallback,
-    callback?: BlindWriteCallback,
+    callback?: BlindWriteCallback
   ): Promise<void | CommitResponse> {
     const cb =
       typeof optionsOrCallback === 'function'
@@ -3426,14 +3424,14 @@ class Database extends common.GrpcServiceObject {
   //   //     }
   //   //     return response;
   //   //   });
-      
+
   //   // });
 
   //   /*
   //   let promise = await this.getTransaction();
 
   //   let transaction = promise[0];
-    
+
   //   transaction.setQueuedMutations(mutations.proto());
 
   //   const [commitResponse] = await transaction.commit();
