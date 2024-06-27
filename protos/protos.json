@@ -4694,7 +4694,8 @@
                             "generateDbPartitionsRead",
                             "generateDbPartitionsQuery",
                             "executePartition",
-                            "executeChangeStreamQuery"
+                            "executeChangeStreamQuery",
+                            "queryCancellation"
                           ]
                         }
                       },
@@ -4770,6 +4771,10 @@
                         "executeChangeStreamQuery": {
                           "type": "ExecuteChangeStreamQuery",
                           "id": 50
+                        },
+                        "queryCancellation": {
+                          "type": "QueryCancellationAction",
+                          "id": 51
                         }
                       }
                     },
@@ -6169,6 +6174,18 @@
                         "operation": {
                           "type": "string",
                           "id": 1
+                        }
+                      }
+                    },
+                    "QueryCancellationAction": {
+                      "fields": {
+                        "longRunningSql": {
+                          "type": "string",
+                          "id": 1
+                        },
+                        "cancelQuery": {
+                          "type": "string",
+                          "id": 2
                         }
                       }
                     },
@@ -7772,6 +7789,36 @@
                     "dataBoostEnabled": {
                       "type": "bool",
                       "id": 15
+                    },
+                    "orderBy": {
+                      "type": "OrderBy",
+                      "id": 16,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    },
+                    "lockHint": {
+                      "type": "LockHint",
+                      "id": 17,
+                      "options": {
+                        "(google.api.field_behavior)": "OPTIONAL"
+                      }
+                    }
+                  },
+                  "nested": {
+                    "OrderBy": {
+                      "values": {
+                        "ORDER_BY_UNSPECIFIED": 0,
+                        "ORDER_BY_PRIMARY_KEY": 1,
+                        "ORDER_BY_NO_ORDER": 2
+                      }
+                    },
+                    "LockHint": {
+                      "values": {
+                        "LOCK_HINT_UNSPECIFIED": 0,
+                        "LOCK_HINT_SHARED": 1,
+                        "LOCK_HINT_EXCLUSIVE": 2
+                      }
                     }
                   }
                 },
