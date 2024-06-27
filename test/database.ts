@@ -40,7 +40,7 @@ import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
-import {BatchWriteOptions} from '../src/transaction';
+import {BatchWriteOptions, Mutations} from '../src/transaction';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -757,6 +757,43 @@ describe('Database', () => {
 
       assert.strictEqual(releaseStub.callCount, 1);
       assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
+    });
+  });
+
+  describe('blindWrite', () => {
+    const mutations = new Mutations();
+    mutations.insert('MyTable', {
+      Key: 'k3',
+      Thing: 'xyz',
+    });
+    const SESSION = new FakeSession();
+    const TRANSACTION = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadWrite
+    );
+
+    let pool: FakeSessionPool;
+
+    beforeEach(() => {
+      pool = database.pool_;
+
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
+        callback => {
+          callback(null, SESSION, TRANSACTION);
+        }
+      );
+    });
+
+    it.only('should return any errors getting a session', done => {
+      const fakeErr = new Error('err');
+
+      (pool.getSession as sinon.SinonStub).callsFake(callback =>
+        callback(fakeErr)
+      );
+
+      database.blindWrite(mutations, (res, err) => {
+        assert.strictEqual(err, fakeErr);
+        done();
+      });
     });
   });
 
