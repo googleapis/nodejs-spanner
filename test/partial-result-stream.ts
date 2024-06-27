@@ -311,6 +311,38 @@ describe('PartialResultStream', () => {
         );
     });
 
+    it('should get Deadline exceeded error if timeout has reached', done => {
+      const fakeCheckpointStream = through.obj();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (fakeCheckpointStream as any).reset = () => {};
+
+      sandbox.stub(checkpointStream, 'obj').returns(fakeCheckpointStream);
+
+      const firstFakeRequestStream = through.obj();
+
+      const requestFnStub = sandbox.stub();
+
+      requestFnStub.onCall(0).callsFake(() => {
+        setTimeout(() => {
+          // This causes a new request stream to be created.
+          firstFakeRequestStream.emit('error', {
+            code: grpc.status.UNAVAILABLE,
+            message: 'Error.',
+          } as grpc.ServiceError);
+        }, 50);
+
+        return firstFakeRequestStream;
+      });
+
+      partialResultStream(requestFnStub, {gaxOptions: {timeout: 0}})
+        .on('data', row => {})
+        .on('error', err => {
+          assert.strictEqual(err.code, grpc.status.DEADLINE_EXCEEDED);
+          assert.strictEqual(requestFnStub.callCount, 1);
+          done();
+        });
+    });
+
     it('should resume if there was a retryable error', done => {
       // This test will emit four rows total:
       // - Two rows

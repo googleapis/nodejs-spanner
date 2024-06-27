@@ -22,8 +22,8 @@ import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
-import {grpc} from 'google-gax';
-import {isRetryableInternalError} from './transaction-runner';
+import {grpc, CallOptions} from 'google-gax';
+import {DeadlineError, isRetryableInternalError} from './transaction-runner';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
@@ -96,6 +96,7 @@ export interface RowOptions {
    *     };
    */
   columnsMetadata?: object;
+  gaxOptions?: CallOptions;
 }
 
 /**
@@ -491,6 +492,8 @@ export function partialResultStream(
   const maxQueued = 10;
   let lastResumeToken: ResumeToken;
   let lastRequestStream: Readable;
+  const startTime = Date.now();
+  const timeout = options?.gaxOptions?.timeout ?? Infinity;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
@@ -541,6 +544,17 @@ export function partialResultStream(
   };
 
   const retry = (err: grpc.ServiceError): void => {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= timeout) {
+      // The timeout has reached so this will flush any rows the
+      // checkpoint stream has queued. After that, we will destroy the
+      // user's stream with the Deadline exceeded error.
+      setImmediate(() =>
+        batchAndSplitOnTokenStream.destroy(new DeadlineError(err))
+      );
+      return;
+    }
+
     if (
       !(
         err.code &&

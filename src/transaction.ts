@@ -704,6 +704,7 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
       columnsMetadata,
+      gaxOptions,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1210,6 +1211,7 @@ export class Snapshot extends EventEmitter {
       jsonOptions,
       maxResumeRetries,
       columnsMetadata,
+      gaxOptions,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
