@@ -3289,6 +3289,7 @@ class Database extends common.GrpcServiceObject {
           session: session!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
       let dataReceived = false;

@@ -62,6 +62,7 @@ export interface TimestampBounds {
 export interface BatchWriteOptions {
   requestOptions?: Pick<IRequestOptions, 'priority' | 'transactionTag'>;
   gaxOptions?: CallOptions;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export interface RequestOptions {

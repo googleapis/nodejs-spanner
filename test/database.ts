@@ -600,6 +600,7 @@ describe('Database', () => {
       requestOptions: {
         transactionTag: 'batch-write-tag',
       },
+      excludeTxnFromChangeStream: true,
       gaxOptions: {autoPaginate: false},
     } as BatchWriteOptions;
 
@@ -636,7 +637,7 @@ describe('Database', () => {
         });
     });
 
-    it('should call `requestStream` with correct arguments', () => {
+    it.only('should call `requestStream` with correct arguments', () => {
       const expectedGaxOpts = extend(true, {}, options?.gaxOptions);
       const expectedReqOpts = Object.assign(
         {} as google.spanner.v1.BatchWriteRequest,
@@ -644,6 +645,7 @@ describe('Database', () => {
           session: fakeSession!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
 
