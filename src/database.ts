@@ -3337,34 +3337,45 @@ class Database extends common.GrpcServiceObject {
   blindWrite(mutations: Mutations): Promise<CommitResponse>;
   blindWrite(
     mutations: Mutations,
-    options?: CallOptions
+    options: CallOptions
   ): Promise<CommitResponse>;
-  blindWrite(mutations: Mutations, callback?: CommitCallback): void;
+  blindWrite(mutations: Mutations, callback: CommitCallback): void;
   blindWrite(
     mutations: Mutations,
     optionsOrCallback?: CallOptions | CommitCallback,
     callback?: CommitCallback
   ): void | Promise<CommitResponse> {
+    console.log("line 48: ", optionsOrCallback);
+    console.log("line 49: ", typeof optionsOrCallback);
     const cb =
       typeof optionsOrCallback === 'function'
         ? (optionsOrCallback as CommitCallback)
         : callback;
+    console.log("line 54: ", cb);
     const options =
       typeof optionsOrCallback === 'object' && optionsOrCallback
         ? (optionsOrCallback as CallOptions)
         : {};
-    this.pool_.getSession((err, session, transaction?) => {
+    console.log("line 59: ", options);
+    this.pool_.getSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         if (cb) {
           this.blindWrite(mutations, cb);
         } else {
           this.blindWrite(mutations, options);
         }
+        // this.blindWrite(mutations, cb!);
         return;
       }
       if (err) {
-        cb!(err as grpc.ServiceError);
+        if (cb) {
+          cb(err as grpc.ServiceError);
+        } else {
+          return Promise.reject(err);
+        }
         return;
+        // cb!(err as grpc.ServiceError);
+        // return;
       }
       this._releaseOnEnd(session!, transaction!);
       transaction?.setQueuedMutations(mutations.proto());

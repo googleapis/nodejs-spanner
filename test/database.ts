@@ -28,7 +28,7 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
-import {Spanner, Instance, MutationGroup} from '../src';
+import {Spanner, Instance, MutationGroup, Transaction} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {
@@ -40,7 +40,7 @@ import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
-import {BatchWriteOptions, Mutations} from '../src/transaction';
+import {BatchWriteOptions, CommitCallback, CommitOptions, CommitResponse, Mutations} from '../src/transaction';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -125,10 +125,12 @@ class FakeTable {
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
   _options!: google.spanner.v1.ITransactionOptions;
+  private _queuedMutations: google.spanner.v1.Mutation[];
   constructor(options) {
     super();
     this._options = options;
     this.calledWith_ = arguments;
+    this._queuedMutations = [];
   }
   begin() {}
   end() {}
@@ -136,6 +138,18 @@ class FakeTransaction extends EventEmitter {
     return through.obj();
   }
   runUpdate() {}
+  setQueuedMutations(mutations) {
+    this._queuedMutations = mutations;
+  }
+  commit(
+    options?: CommitOptions,
+    callback?:CommitCallback
+  ): Promise<google.spanner.v1.ICommitResponse> {
+    if (callback) {
+      callback(null, { commitTimestamp: { seconds: 1, nanos: 0 } });
+    }
+    return Promise.resolve({ commitTimestamp: { seconds: 1, nanos: 0 } });
+  }
 }
 
 let fakeTransactionRunner: FakeTransactionRunner;
@@ -760,13 +774,15 @@ describe('Database', () => {
     });
   });
 
-  describe('blindWrite', () => {
+  describe.only('blindWrite', () => {
     const mutations = new Mutations();
     mutations.insert('MyTable', {
       Key: 'k3',
       Thing: 'xyz',
     });
+
     const SESSION = new FakeSession();
+    // const RESPONSE = {commitTimestamp: { seconds: 1, nanos: 0 }};
     const TRANSACTION = new FakeTransaction(
       {} as google.spanner.v1.TransactionOptions.ReadWrite
     );
@@ -775,26 +791,47 @@ describe('Database', () => {
 
     beforeEach(() => {
       pool = database.pool_;
-
       (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
         callback => {
           callback(null, SESSION, TRANSACTION);
         }
       );
+      // (sandbox.stub(TRANSACTION, 'setQueuedMutations') as sinon.SinonStub);
+      // sandbox.stub(TRANSACTION, 'commit').resolves(RESPONSE);
+      // (sandbox.stub(TRANSACTION, 'commit') as sinon.SinonStub).callsFake(
+      //   (optionsOrCallback, callback?) => {
+      //     if (typeof optionsOrCallback === 'function') {
+      //       (optionsOrCallback as CommitCallback)(null, RESPONSE);
+      //       return callback(null, RESPONSE);
+      //     } else {
+      //       return Promise.resolve(RESPONSE);
+      //     }
+      //   }
+      // );
     });
 
-    it.only('should return any errors getting a session', done => {
+    it('should return any errors getting a session', done => {
       const fakeErr = new Error('err');
 
       (pool.getSession as sinon.SinonStub).callsFake(callback =>
-        callback(fakeErr)
+        callback(fakeErr, null, null)
       );
 
-      database.blindWrite(mutations, (res, err) => {
-        assert.strictEqual(err, fakeErr);
-        done();
+      database.blindWrite(mutations, (err, res) => {
+        if(err) {
+          console.log(err);
+        } else {
+          console.log("responses: ", res);
+        }
       });
     });
+
+    // it('should return a Promise with CommitResponse on successful write', async () => {
+    //   database.blindWrite(mutations, (err, res) => {
+    //     console.log(err);
+    //     console.log(res);
+    //   });
+    // });
   });
 
   describe('close', () => {

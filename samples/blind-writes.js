@@ -29,19 +29,19 @@ async function main(
   const database = instance.database(databaseId);
 
   const mutations = new Mutations();
-  mutations.insert('Singers', {SingerId: 4, FirstName: 'xyz1'});
+  mutations.insert('Singers', {SingerId: 1, FirstName: 'xyz1'});
 
   try {
-    // database.blindWrite(mutations, (err, res) => {
-    //   if(err) {
-    //     console.log(err);
-    //   } else {
-    //     console.log("responses: ", res);
-    //   }
-    // });
+    database.blindWrite(mutations, (err, res) => {
+      if(err) {
+        console.log(err);
+      } else {
+        console.log("responses: ", res);
+      }
+    });
 
-    const [response] = await database.blindWrite(mutations, {});
-    console.log('response: ', response.commitTimestamp);
+    // const [response] = await database.blindWrite(mutations, {});
+    // console.log('response: ', response.commitTimestamp);
 
     // let promise = await database.getTransaction();
     // let transaction = promise[0];
