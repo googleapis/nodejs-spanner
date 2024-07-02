@@ -1853,6 +1853,14 @@ export class Transaction extends Dml {
     return undefined;
   }
 
+  // setQueuedMutations(mutations: spannerClient.spanner.v1.Mutation[]): void {
+  //   this._queuedMutations.push(...mutations);
+  // }
+
+  setQueuedMutations(mutations: spannerClient.spanner.v1.Mutation[]): void {
+    this._queuedMutations = mutations;
+  }
+
   /**
    * @typedef {object} CommitOptions
    * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
@@ -2459,6 +2467,52 @@ export class Transaction extends Dml {
     this._options.excludeTxnFromChangeStreams = true;
   }
 }
+
+export class Mutations {
+  private _queuedMutations: spannerClient.spanner.v1.Mutation[];
+  constructor() {
+    this._queuedMutations = [];
+  }
+  insert(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('insert', table, rows));
+  }
+  update(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('update', table, rows));
+  }
+
+  upsert(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('insertOrUpdate', table, rows));
+  }
+
+  replace(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('replace', table, rows));
+  }
+
+  deleteRows(table: string, keys: Key[]): void {
+    this._queuedMutations.push(buildDeleteMutation(table, keys));
+  }
+  proto(): spannerClient.spanner.v1.Mutation[] {
+    return this._queuedMutations;
+  }
+}
+
+// export class Mutation{
+//   private transaction: Transaction;
+//   private _proto: spannerClient.spanner.v1.Mutation;
+//   constructor(transaction: Transaction) {
+//     this._proto =
+//     new spannerClient.spanner.v1.Mutation();
+//     this.transaction = transaction;
+//     console.log("Mutation constructor called with transaction:", this.transaction);
+//   }
+//   insert(table: string, rows: object | object[]): void {
+//     const queuedMutations = this.transaction?.queuedMutations();
+//     queuedMutations?.push(buildMutation('insert', table, rows));
+//   }
+//   proto(): spannerClient.spanner.v1.IMutation {
+//     return this._proto;
+//   }
+// }
 
 /*! Developer Documentation
  *
