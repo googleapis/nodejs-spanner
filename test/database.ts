@@ -637,7 +637,7 @@ describe('Database', () => {
         });
     });
 
-    it.only('should call `requestStream` with correct arguments', () => {
+    it('should call `requestStream` with correct arguments', () => {
       const expectedGaxOpts = extend(true, {}, options?.gaxOptions);
       const expectedReqOpts = Object.assign(
         {} as google.spanner.v1.BatchWriteRequest,
