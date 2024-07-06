@@ -600,6 +600,7 @@ describe('Database', () => {
       requestOptions: {
         transactionTag: 'batch-write-tag',
       },
+      excludeTxnFromChangeStream: true,
       gaxOptions: {autoPaginate: false},
     } as BatchWriteOptions;
 
@@ -644,6 +645,7 @@ describe('Database', () => {
           session: fakeSession!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
 
