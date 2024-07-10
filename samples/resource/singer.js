@@ -81,37 +81,82 @@ $root.examples = (function () {
 
         /**
          * SingerInfo singerId.
-         * @member {number|Long} singerId
+         * @member {number|Long|null|undefined} singerId
          * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
-        SingerInfo.prototype.singerId = $util.Long
-          ? $util.Long.fromBits(0, 0, false)
-          : 0;
+        SingerInfo.prototype.singerId = null;
 
         /**
          * SingerInfo birthDate.
-         * @member {string} birthDate
+         * @member {string|null|undefined} birthDate
          * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
-        SingerInfo.prototype.birthDate = '';
+        SingerInfo.prototype.birthDate = null;
 
         /**
          * SingerInfo nationality.
-         * @member {string} nationality
+         * @member {string|null|undefined} nationality
          * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
-        SingerInfo.prototype.nationality = '';
+        SingerInfo.prototype.nationality = null;
 
         /**
          * SingerInfo genre.
-         * @member {examples.spanner.music.Genre} genre
+         * @member {examples.spanner.music.Genre|null|undefined} genre
          * @memberof examples.spanner.music.SingerInfo
          * @instance
          */
-        SingerInfo.prototype.genre = 0;
+        SingerInfo.prototype.genre = null;
+
+        // OneOf field names bound to virtual getters and setters
+        var $oneOfFields;
+
+        /**
+         * SingerInfo _singerId.
+         * @member {"singerId"|undefined} _singerId
+         * @memberof examples.spanner.music.SingerInfo
+         * @instance
+         */
+        Object.defineProperty(SingerInfo.prototype, '_singerId', {
+          get: $util.oneOfGetter(($oneOfFields = ['singerId'])),
+          set: $util.oneOfSetter($oneOfFields),
+        });
+
+        /**
+         * SingerInfo _birthDate.
+         * @member {"birthDate"|undefined} _birthDate
+         * @memberof examples.spanner.music.SingerInfo
+         * @instance
+         */
+        Object.defineProperty(SingerInfo.prototype, '_birthDate', {
+          get: $util.oneOfGetter(($oneOfFields = ['birthDate'])),
+          set: $util.oneOfSetter($oneOfFields),
+        });
+
+        /**
+         * SingerInfo _nationality.
+         * @member {"nationality"|undefined} _nationality
+         * @memberof examples.spanner.music.SingerInfo
+         * @instance
+         */
+        Object.defineProperty(SingerInfo.prototype, '_nationality', {
+          get: $util.oneOfGetter(($oneOfFields = ['nationality'])),
+          set: $util.oneOfSetter($oneOfFields),
+        });
+
+        /**
+         * SingerInfo _genre.
+         * @member {"genre"|undefined} _genre
+         * @memberof examples.spanner.music.SingerInfo
+         * @instance
+         */
+        Object.defineProperty(SingerInfo.prototype, '_genre', {
+          get: $util.oneOfGetter(($oneOfFields = ['genre'])),
+          set: $util.oneOfSetter($oneOfFields),
+        });
 
         /**
          * Creates a new SingerInfo instance using the specified properties.
@@ -242,7 +287,9 @@ $root.examples = (function () {
         SingerInfo.verify = function verify(message) {
           if (typeof message !== 'object' || message === null)
             return 'object expected';
-          if (message.singerId !== null && message.hasOwnProperty('singerId'))
+          var properties = {};
+          if (message.singerId !== null && message.hasOwnProperty('singerId')) {
+            properties._singerId = 1;
             if (
               !$util.isInteger(message.singerId) &&
               !(
@@ -252,16 +299,25 @@ $root.examples = (function () {
               )
             )
               return 'singerId: integer|Long expected';
-          if (message.birthDate !== null && message.hasOwnProperty('birthDate'))
+          }
+          if (
+            message.birthDate !== null &&
+            message.hasOwnProperty('birthDate')
+          ) {
+            properties._birthDate = 1;
             if (!$util.isString(message.birthDate))
               return 'birthDate: string expected';
+          }
           if (
             message.nationality !== null &&
             message.hasOwnProperty('nationality')
-          )
+          ) {
+            properties._nationality = 1;
             if (!$util.isString(message.nationality))
               return 'nationality: string expected';
-          if (message.genre !== null && message.hasOwnProperty('genre'))
+          }
+          if (message.genre !== null && message.hasOwnProperty('genre')) {
+            properties._genre = 1;
             switch (message.genre) {
               default:
                 return 'genre: enum value expected';
@@ -271,6 +327,7 @@ $root.examples = (function () {
               case 3:
                 break;
             }
+          }
           return null;
         };
 
@@ -343,21 +400,7 @@ $root.examples = (function () {
         SingerInfo.toObject = function toObject(message, options) {
           if (!options) options = {};
           var object = {};
-          if (options.defaults) {
-            if ($util.Long) {
-              var long = new $util.Long(0, 0, false);
-              object.singerId =
-                options.longs === String
-                  ? long.toString()
-                  : options.longs === Number
-                    ? long.toNumber()
-                    : long;
-            } else object.singerId = options.longs === String ? '0' : 0;
-            object.birthDate = '';
-            object.nationality = '';
-            object.genre = options.enums === String ? 'POP' : 0;
-          }
-          if (message.singerId !== null && message.hasOwnProperty('singerId'))
+          if (message.singerId !== null && message.hasOwnProperty('singerId')) {
             if (typeof message.singerId === 'number')
               object.singerId =
                 options.longs === String
@@ -373,14 +416,23 @@ $root.examples = (function () {
                         message.singerId.high >>> 0
                       ).toNumber()
                     : message.singerId;
-          if (message.birthDate !== null && message.hasOwnProperty('birthDate'))
+            if (options.oneofs) object._singerId = 'singerId';
+          }
+          if (
+            message.birthDate !== null &&
+            message.hasOwnProperty('birthDate')
+          ) {
             object.birthDate = message.birthDate;
+            if (options.oneofs) object._birthDate = 'birthDate';
+          }
           if (
             message.nationality !== null &&
             message.hasOwnProperty('nationality')
-          )
+          ) {
             object.nationality = message.nationality;
-          if (message.genre !== null && message.hasOwnProperty('genre'))
+            if (options.oneofs) object._nationality = 'nationality';
+          }
+          if (message.genre !== null && message.hasOwnProperty('genre')) {
             object.genre =
               options.enums === String
                 ? $root.examples.spanner.music.Genre[message.genre] ===
@@ -388,6 +440,8 @@ $root.examples = (function () {
                   ? message.genre
                   : $root.examples.spanner.music.Genre[message.genre]
                 : message.genre;
+            if (options.oneofs) object._genre = 'genre';
+          }
           return object;
         };
 

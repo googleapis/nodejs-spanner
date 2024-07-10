@@ -38,6 +38,7 @@ import {
   ReadRequest,
   ExecuteSqlRequest,
   TimestampBounds,
+  MutationGroup,
 } from '../src/transaction';
 import {Row} from '../src/partial-result-stream';
 import {GetDatabaseConfig} from '../src/database';
@@ -4874,6 +4875,94 @@ describe('Spanner', () => {
           params: {p1: ID},
         };
         queryStreamMode(done, PG_DATABASE, query, POSTGRESQL_EXPECTED_ROW);
+      });
+
+      it('GOOGLE_STANDARD_SQL should execute mutation group using Batch write', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
+        DATABASE.batchWriteAtLeastOnce([mutationGroup], {})
+          .on('data', data => {
+            assert.strictEqual(data.status.code, 0);
+          })
+          .on('end', () => {
+            done();
+          })
+          .on('error', error => {
+            done(error);
+          });
+      });
+
+      it('GOOGLE_STANDARD_SQL should execute multiple mutation groups with success and failure using Batch write', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const id = generateName('id');
+
+        // Valid mutation group
+        const mutationGroup1 = new MutationGroup();
+        mutationGroup1.insert(TABLE_NAME, {SingerId: id, Name: NAME});
+
+        // InValid mutation group with duplicate data
+        const mutationGroup2 = new MutationGroup();
+        mutationGroup2.insert(TABLE_NAME, {SingerId: id, Name: NAME});
+
+        // Valid mutation group with invalid signer id
+        const mutationGroup3 = new MutationGroup();
+        mutationGroup3.insert(TABLE_NAME, {
+          SingerId: null,
+          Name: NAME,
+        });
+
+        // Array of expected status code
+        // Code 0 is for mutation group with valid id
+        // Code 6 is for mutation group with duplicate id
+        // Code 9 is for mutation group with null id
+        const expectedStatusCode: number[] = [0, 6, 9];
+
+        // Array of status codes in the stream
+        const actualStatusCode: number[] = [];
+
+        DATABASE.batchWriteAtLeastOnce([
+          mutationGroup1,
+          mutationGroup2,
+          mutationGroup3,
+        ])
+          .on('data', data => {
+            actualStatusCode.push(data.status.code);
+          })
+          .on('error', error => {
+            done(error);
+          })
+          .on('end', () => {
+            // make sure two mutation groups are failing and
+            // one mutation group is getting success
+            assert.deepStrictEqual(
+              actualStatusCode.sort(),
+              expectedStatusCode.sort()
+            );
+            done();
+          });
+      });
+
+      it('POSTGRESQL should execute mutation group using Batch write', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
+        const mutationGroup = new MutationGroup();
+        mutationGroup.upsert(TABLE_NAME, {SingerId: ID, Name: NAME});
+        PG_DATABASE.batchWriteAtLeastOnce([mutationGroup], {})
+          .on('data', data => {
+            assert.strictEqual(data.status.code, 0);
+          })
+          .on('end', () => {
+            done();
+          })
+          .on('error', error => {
+            done(error);
+          });
       });
 
       it('GOOGLE_STANDARD_SQL should allow "SELECT 1" queries', done => {

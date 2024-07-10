@@ -46,6 +46,7 @@ export type DropTableCallback = UpdateSchemaCallback;
 
 interface MutateRowsOptions extends CommitOptions {
   requestOptions?: Omit<IRequestOptions, 'requestTag'>;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export type DeleteRowsCallback = CommitCallback;
@@ -1073,15 +1074,27 @@ class Table {
   ): void {
     const requestOptions =
       'requestOptions' in options ? options.requestOptions : {};
-    this.database.runTransaction({requestOptions}, (err, transaction) => {
-      if (err) {
-        callback(err);
-        return;
-      }
 
-      transaction![method](this.name, rows as Key[]);
-      transaction!.commit(options, callback);
-    });
+    const excludeTxnFromChangeStreams =
+      'excludeTxnFromChangeStreams' in options
+        ? options.excludeTxnFromChangeStreams
+        : false;
+
+    this.database.runTransaction(
+      {
+        requestOptions: requestOptions,
+        excludeTxnFromChangeStreams: excludeTxnFromChangeStreams,
+      },
+      (err, transaction) => {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        transaction![method](this.name, rows as Key[]);
+        transaction!.commit(options, callback);
+      }
+    );
   }
 }
 
