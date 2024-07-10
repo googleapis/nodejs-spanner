@@ -19,59 +19,59 @@
 'use strict';
 
 function main(
-    instanceId = 'my-instance',
-    databaseId = 'my-database',
-    projectId = 'my-project-id'
+  instanceId = 'my-instance',
+  databaseId = 'my-database',
+  projectId = 'my-project-id'
 ) {
-    // [START spanner_add_column]
-    /**
-        * TODO(developer): Uncomment the following lines before running the sample.
-    */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance';
-    // const databaseId = 'my-database';
+  // [START spanner_add_column]
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
 
-    // Imports the Google Cloud client library
-    const {Spanner} = require('@google-cloud/spanner');
-  
-    // creates a client
-    const spanner = new Spanner({
-      projectId: projectId,
-    });
-  
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
 
-    // add a column to the database table
-    async function addColumn() {
-        // Creates a new index in the database
-        try {
-          const [operation] = await databaseAdminClient.updateDatabaseDdl({
-            database: databaseAdminClient.databasePath(
-              projectId,
-              instanceId,
-              databaseId
-            ),
-            statements: ['ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'],
-          });
-      
-          console.log('Waiting for operation to complete...');
-          await operation.promise();
-      
-          console.log('Added the MarketingBudget column.');
-        } catch (err) {
-          console.error('ERROR:', err);
-        } finally {
-          // Close the spanner client when finished.
-          // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
-          spanner.close();
-        }
+  // creates a client
+  const spanner = new Spanner({
+    projectId: projectId,
+  });
+
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
+
+  // add a column to the database table
+  async function addColumn() {
+    // Creates a new index in the database
+    try {
+      const [operation] = await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        statements: ['ALTER TABLE Albums ADD COLUMN MarketingBudget INT64'],
+      });
+
+      console.log('Waiting for operation to complete...');
+      await operation.promise();
+
+      console.log('Added the MarketingBudget column.');
+    } catch (err) {
+      console.error('ERROR:', err);
+    } finally {
+      // Close the spanner client when finished.
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+      spanner.close();
     }
-    addColumn();
-    // [END spanner_add_column]
+  }
+  addColumn();
+  // [END spanner_add_column]
 }
 
 process.on('unhandledRejection', err => {
-    console.error(err.message);
-    process.exitCode = 1;
+  console.error(err.message);
+  process.exitCode = 1;
 });
 main(...process.argv.slice(2));

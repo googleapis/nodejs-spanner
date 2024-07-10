@@ -15,7 +15,7 @@
 
 'use strict';
 
-async function restoreBackup(instanceId, databaseId, backupId, projectId) {
+function main(instanceId, databaseId, backupId, projectId) {
   // [START spanner_restore_backup]
   // Imports the Google Cloud client library and precise date library
   const {Spanner} = require('@google-cloud/spanner');
@@ -38,36 +38,43 @@ async function restoreBackup(instanceId, databaseId, backupId, projectId) {
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Restore the database
-  console.log(
-    `Restoring database ${databaseAdminClient.databasePath(
-      projectId,
-      instanceId,
-      databaseId
-    )} from backup ${backupId}.`
-  );
-  const [restoreOperation] = await databaseAdminClient.restoreDatabase({
-    parent: databaseAdminClient.instancePath(projectId, instanceId),
-    databaseId: databaseId,
-    backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
-  });
+  async function restoreBackup() {
+    console.log(
+      `Restoring database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )} from backup ${backupId}.`
+    );
+    const [restoreOperation] = await databaseAdminClient.restoreDatabase({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      databaseId: databaseId,
+      backup: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+    });
 
-  // Wait for restore to complete
-  console.log('Waiting for database restore to complete...');
-  await restoreOperation.promise();
+    // Wait for restore to complete
+    console.log('Waiting for database restore to complete...');
+    await restoreOperation.promise();
 
-  console.log('Database restored from backup.');
-  const [metadata] = await databaseAdminClient.getDatabase({
-    name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
-  });
-  console.log(
-    `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
-      `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
-      'with version time ' +
-      `${new PreciseDate(
-        metadata.restoreInfo.backupInfo.versionTime
-      ).toISOString()}.`
-  );
+    console.log('Database restored from backup.');
+    const [metadata] = await databaseAdminClient.getDatabase({
+      name: databaseAdminClient.databasePath(projectId, instanceId, databaseId),
+    });
+    console.log(
+      `Database ${metadata.restoreInfo.backupInfo.sourceDatabase} was restored ` +
+        `to ${databaseId} from backup ${metadata.restoreInfo.backupInfo.backup} ` +
+        'with version time ' +
+        `${new PreciseDate(
+          metadata.restoreInfo.backupInfo.versionTime
+        ).toISOString()}.`
+    );
+  }
+  restoreBackup();
   // [END spanner_restore_backup]
 }
 
-module.exports.restoreBackup = restoreBackup;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));

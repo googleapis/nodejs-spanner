@@ -19,31 +19,31 @@
 'use strict';
 
 function main(
-    instanceID = 'my-instance',
-    databaseID = 'my-database',
-    projectID = 'my-project-id'
+  instanceID = 'my-instance',
+  databaseID = 'my-database',
+  projectID = 'my-project-id'
 ) {
-    // [START spanner_create_database]
-    /**
-        * TODO(developer): Uncomment the following lines before running the sample.
-    */
-    // const projectId = 'my-project-id';
-    // const instanceId = 'my-instance';
-    // const databaseId = 'my-database';
+  // [START spanner_create_database]
+  /**
+   * TODO(developer): Uncomment the following lines before running the sample.
+   */
+  // const projectId = 'my-project-id';
+  // const instanceId = 'my-instance';
+  // const databaseId = 'my-database';
 
-    // Imports the Google Cloud client library
-    const {Spanner} = require('@google-cloud/spanner');
-  
-    // creates a client
-    const spanner = new Spanner({
-      projectId: projectID,
-    });
-  
-    const databaseAdminClient = spanner.getDatabaseAdminClient();
+  // Imports the Google Cloud client library
+  const {Spanner} = require('@google-cloud/spanner');
 
-    // creates a database
-    async function createDatabase() {
-        const createSingersTableStatement = `
+  // creates a client
+  const spanner = new Spanner({
+    projectId: projectID,
+  });
+
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
+
+  // creates a database
+  async function createDatabase() {
+    const createSingersTableStatement = `
             CREATE TABLE Singers (
             SingerId    INT64 NOT NULL,
             FirstName   STRING(1024),
@@ -51,39 +51,39 @@ function main(
             SingerInfo  BYTES(MAX),
             FullName    STRING(2048) AS (ARRAY_TO_STRING([FirstName, LastName], " ")) STORED,
             ) PRIMARY KEY (SingerId)`;
-        const createAlbumsTableStatement = `
+    const createAlbumsTableStatement = `
             CREATE TABLE Albums (
             SingerId    INT64 NOT NULL,
             AlbumId     INT64 NOT NULL,
             AlbumTitle  STRING(MAX)
             ) PRIMARY KEY (SingerId, AlbumId),
             INTERLEAVE IN PARENT Singers ON DELETE CASCADE`;
-    
-        // Creates a new database
-        try {
-        const [operation] = await databaseAdminClient.createDatabase({
-            createStatement: 'CREATE DATABASE `' + databaseID + '`',
-            extraStatements: [
-            createSingersTableStatement,
-            createAlbumsTableStatement,
-            ],
-            parent: databaseAdminClient.instancePath(projectID, instanceID),
-        });
-    
-        console.log(`Waiting for creation of ${databaseID} to complete...`);
-        await operation.promise();
-    
-        console.log(`Created database ${databaseID} on instance ${instanceID}.`);
-        } catch (err) {
-        console.error('ERROR:', err);
-        }
+
+    // Creates a new database
+    try {
+      const [operation] = await databaseAdminClient.createDatabase({
+        createStatement: 'CREATE DATABASE `' + databaseID + '`',
+        extraStatements: [
+          createSingersTableStatement,
+          createAlbumsTableStatement,
+        ],
+        parent: databaseAdminClient.instancePath(projectID, instanceID),
+      });
+
+      console.log(`Waiting for creation of ${databaseID} to complete...`);
+      await operation.promise();
+
+      console.log(`Created database ${databaseID} on instance ${instanceID}.`);
+    } catch (err) {
+      console.error('ERROR:', err);
     }
-    createDatabase();
-    // [END spanner_create_database]
+  }
+  createDatabase();
+  // [END spanner_create_database]
 }
 
 process.on('unhandledRejection', err => {
-    console.error(err.message);
-    process.exitCode = 1;
+  console.error(err.message);
+  process.exitCode = 1;
 });
 main(...process.argv.slice(2));

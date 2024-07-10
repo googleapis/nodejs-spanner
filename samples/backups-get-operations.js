@@ -15,12 +15,7 @@
 
 'use strict';
 
-async function getBackupOperations(
-  instanceId,
-  databaseId,
-  backupId,
-  projectId
-) {
+function main(instanceId, databaseId, backupId, projectId) {
   // [START spanner_list_backup_operations]
 
   // Imports the Google Cloud client library
@@ -43,55 +38,65 @@ async function getBackupOperations(
   const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // List create backup operations
-  try {
-    const [backupOperations] = await databaseAdminClient.listBackupOperations({
-      parent: databaseAdminClient.instancePath(projectId, instanceId),
-      filter:
-        '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) ' +
-        `AND (metadata.database:${databaseId})`,
-    });
-    console.log('Create Backup Operations:');
-    backupOperations.forEach(backupOperation => {
-      const metadata =
-        protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
-          backupOperation.metadata.value
-        );
-      console.log(
-        `Backup ${metadata.name} on database ${metadata.database} is ` +
-          `${metadata.progress.progressPercent}% complete.`
+  async function getBackupOperations() {
+    try {
+      const [backupOperations] = await databaseAdminClient.listBackupOperations(
+        {
+          parent: databaseAdminClient.instancePath(projectId, instanceId),
+          filter:
+            '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CreateBackupMetadata) ' +
+            `AND (metadata.database:${databaseId})`,
+        }
       );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
-  }
-
-  // List copy backup operations
-  try {
-    console.log(
-      '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
-        `AND (metadata.source_backup:${backupId})`
-    );
-    const [backupOperations] = await databaseAdminClient.listBackupOperations({
-      parent: databaseAdminClient.instancePath(projectId, instanceId),
-      filter:
+      console.log('Create Backup Operations:');
+      backupOperations.forEach(backupOperation => {
+        const metadata =
+          protos.google.spanner.admin.database.v1.CreateBackupMetadata.decode(
+            backupOperation.metadata.value
+          );
+        console.log(
+          `Backup ${metadata.name} on database ${metadata.database} is ` +
+            `${metadata.progress.progressPercent}% complete.`
+        );
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
+    // List copy backup operations
+    try {
+      console.log(
         '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
-        `AND (metadata.source_backup:${backupId})`,
-    });
-    console.log('Copy Backup Operations:');
-    backupOperations.forEach(backupOperation => {
-      const metadata =
-        protos.google.spanner.admin.database.v1.CopyBackupMetadata.decode(
-          backupOperation.metadata.value
-        );
-      console.log(
-        `Backup ${metadata.name} copied from source backup ${metadata.sourceBackup} is ` +
-          `${metadata.progress.progressPercent}% complete.`
+          `AND (metadata.source_backup:${backupId})`
       );
-    });
-  } catch (err) {
-    console.error('ERROR:', err);
+      const [backupOperations] = await databaseAdminClient.listBackupOperations(
+        {
+          parent: databaseAdminClient.instancePath(projectId, instanceId),
+          filter:
+            '(metadata.@type:type.googleapis.com/google.spanner.admin.database.v1.CopyBackupMetadata) ' +
+            `AND (metadata.source_backup:${backupId})`,
+        }
+      );
+      console.log('Copy Backup Operations:');
+      backupOperations.forEach(backupOperation => {
+        const metadata =
+          protos.google.spanner.admin.database.v1.CopyBackupMetadata.decode(
+            backupOperation.metadata.value
+          );
+        console.log(
+          `Backup ${metadata.name} copied from source backup ${metadata.sourceBackup} is ` +
+            `${metadata.progress.progressPercent}% complete.`
+        );
+      });
+    } catch (err) {
+      console.error('ERROR:', err);
+    }
   }
+  getBackupOperations();
   // [END spanner_list_backup_operations]
 }
 
-module.exports.getBackupOperations = getBackupOperations;
+process.on('unhandledRejection', err => {
+  console.error(err.message);
+  process.exitCode = 1;
+});
+main(...process.argv.slice(2));
