@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -161,16 +161,94 @@ function stubAsyncIterationCall<ResponseType>(
 
 describe('v1.InstanceAdminClient', () => {
   describe('Common methods', () => {
-    it('has servicePath', () => {
-      const servicePath =
-        instanceadminModule.v1.InstanceAdminClient.servicePath;
-      assert(servicePath);
+    it('has apiEndpoint', () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient();
+      const apiEndpoint = client.apiEndpoint;
+      assert.strictEqual(apiEndpoint, 'spanner.googleapis.com');
     });
 
-    it('has apiEndpoint', () => {
-      const apiEndpoint =
-        instanceadminModule.v1.InstanceAdminClient.apiEndpoint;
-      assert(apiEndpoint);
+    it('has universeDomain', () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient();
+      const universeDomain = client.universeDomain;
+      assert.strictEqual(universeDomain, 'googleapis.com');
+    });
+
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      it('throws DeprecationWarning if static servicePath is used', () => {
+        const stub = sinon.stub(process, 'emitWarning');
+        const servicePath =
+          instanceadminModule.v1.InstanceAdminClient.servicePath;
+        assert.strictEqual(servicePath, 'spanner.googleapis.com');
+        assert(stub.called);
+        stub.restore();
+      });
+
+      it('throws DeprecationWarning if static apiEndpoint is used', () => {
+        const stub = sinon.stub(process, 'emitWarning');
+        const apiEndpoint =
+          instanceadminModule.v1.InstanceAdminClient.apiEndpoint;
+        assert.strictEqual(apiEndpoint, 'spanner.googleapis.com');
+        assert(stub.called);
+        stub.restore();
+      });
+    }
+    it('sets apiEndpoint according to universe domain camelCase', () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        universeDomain: 'example.com',
+      });
+      const servicePath = client.apiEndpoint;
+      assert.strictEqual(servicePath, 'spanner.example.com');
+    });
+
+    it('sets apiEndpoint according to universe domain snakeCase', () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        universe_domain: 'example.com',
+      });
+      const servicePath = client.apiEndpoint;
+      assert.strictEqual(servicePath, 'spanner.example.com');
+    });
+
+    if (typeof process === 'object' && 'env' in process) {
+      describe('GOOGLE_CLOUD_UNIVERSE_DOMAIN environment variable', () => {
+        it('sets apiEndpoint from environment variable', () => {
+          const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
+          process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
+          const client = new instanceadminModule.v1.InstanceAdminClient();
+          const servicePath = client.apiEndpoint;
+          assert.strictEqual(servicePath, 'spanner.example.com');
+          if (saved) {
+            process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = saved;
+          } else {
+            delete process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
+          }
+        });
+
+        it('value configured in code has priority over environment variable', () => {
+          const saved = process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
+          process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = 'example.com';
+          const client = new instanceadminModule.v1.InstanceAdminClient({
+            universeDomain: 'configured.example.com',
+          });
+          const servicePath = client.apiEndpoint;
+          assert.strictEqual(servicePath, 'spanner.configured.example.com');
+          if (saved) {
+            process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] = saved;
+          } else {
+            delete process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'];
+          }
+        });
+      });
+    }
+    it('does not allow setting both universeDomain and universe_domain', () => {
+      assert.throws(() => {
+        new instanceadminModule.v1.InstanceAdminClient({
+          universe_domain: 'example.com',
+          universeDomain: 'example.net',
+        });
+      });
     });
 
     it('has port', () => {
@@ -1171,6 +1249,274 @@ describe('v1.InstanceAdminClient', () => {
     });
   });
 
+  describe('getInstancePartition', () => {
+    it('invokes getInstancePartition without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.InstancePartition()
+      );
+      client.innerApiCalls.getInstancePartition =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.getInstancePartition(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getInstancePartition without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.InstancePartition()
+      );
+      client.innerApiCalls.getInstancePartition =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.getInstancePartition(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.instance.v1.IInstancePartition | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getInstancePartition with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.getInstancePartition = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.getInstancePartition(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getInstancePartition with closed client', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.GetInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.GetInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getInstancePartition(request), expectedError);
+    });
+  });
+
+  describe('deleteInstancePartition', () => {
+    it('invokes deleteInstancePartition without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteInstancePartition =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.deleteInstancePartition(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstancePartition without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteInstancePartition =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.deleteInstancePartition(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.protobuf.IEmpty | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstancePartition with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.deleteInstancePartition = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.deleteInstancePartition(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteInstancePartition with closed client', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.DeleteInstancePartitionRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(
+        client.deleteInstancePartition(request),
+        expectedError
+      );
+    });
+  });
+
   describe('createInstanceConfig', () => {
     it('invokes createInstanceConfig without error', async () => {
       const client = new instanceadminModule.v1.InstanceAdminClient({
@@ -1955,6 +2301,406 @@ describe('v1.InstanceAdminClient', () => {
     });
   });
 
+  describe('createInstancePartition', () => {
+    it('invokes createInstancePartition without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.createInstancePartition =
+        stubLongRunningCall(expectedResponse);
+      const [operation] = await client.createInstancePartition(request);
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstancePartition without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.createInstancePartition =
+        stubLongRunningCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.createInstancePartition(
+          request,
+          (
+            err?: Error | null,
+            result?: LROperation<
+              protos.google.spanner.admin.instance.v1.IInstancePartition,
+              protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+            > | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const operation = (await promise) as LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.ICreateInstancePartitionMetadata
+      >;
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstancePartition with call error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.createInstancePartition = stubLongRunningCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.createInstancePartition(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createInstancePartition with LRO error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.CreateInstancePartitionRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.CreateInstancePartitionRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.createInstancePartition = stubLongRunningCall(
+        undefined,
+        undefined,
+        expectedError
+      );
+      const [operation] = await client.createInstancePartition(request);
+      await assert.rejects(operation.promise(), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes checkCreateInstancePartitionProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation =
+        await client.checkCreateInstancePartitionProgress(
+          expectedResponse.name
+        );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkCreateInstancePartitionProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkCreateInstancePartitionProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+  });
+
+  describe('updateInstancePartition', () => {
+    it('invokes updateInstancePartition without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+      );
+      request.instancePartition ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
+        ['instancePartition', 'name']
+      );
+      request.instancePartition.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateInstancePartition =
+        stubLongRunningCall(expectedResponse);
+      const [operation] = await client.updateInstancePartition(request);
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstancePartition without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+      );
+      request.instancePartition ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
+        ['instancePartition', 'name']
+      );
+      request.instancePartition.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.updateInstancePartition =
+        stubLongRunningCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.updateInstancePartition(
+          request,
+          (
+            err?: Error | null,
+            result?: LROperation<
+              protos.google.spanner.admin.instance.v1.IInstancePartition,
+              protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+            > | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const operation = (await promise) as LROperation<
+        protos.google.spanner.admin.instance.v1.IInstancePartition,
+        protos.google.spanner.admin.instance.v1.IUpdateInstancePartitionMetadata
+      >;
+      const [response] = await operation.promise();
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstancePartition with call error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+      );
+      request.instancePartition ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
+        ['instancePartition', 'name']
+      );
+      request.instancePartition.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateInstancePartition = stubLongRunningCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.updateInstancePartition(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateInstancePartition with LRO error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest()
+      );
+      request.instancePartition ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.UpdateInstancePartitionRequest',
+        ['instancePartition', 'name']
+      );
+      request.instancePartition.name = defaultValue1;
+      const expectedHeaderRequestParams = `instance_partition.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateInstancePartition = stubLongRunningCall(
+        undefined,
+        undefined,
+        expectedError
+      );
+      const [operation] = await client.updateInstancePartition(request);
+      await assert.rejects(operation.promise(), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateInstancePartition as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes checkUpdateInstancePartitionProgress without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedResponse = generateSampleMessage(
+        new operationsProtos.google.longrunning.Operation()
+      );
+      expectedResponse.name = 'test';
+      expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
+      expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')};
+
+      client.operationsClient.getOperation = stubSimpleCall(expectedResponse);
+      const decodedOperation =
+        await client.checkUpdateInstancePartitionProgress(
+          expectedResponse.name
+        );
+      assert.deepStrictEqual(decodedOperation.name, expectedResponse.name);
+      assert(decodedOperation.metadata);
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+
+    it('invokes checkUpdateInstancePartitionProgress with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const expectedError = new Error('expected');
+
+      client.operationsClient.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.checkUpdateInstancePartitionProgress(''),
+        expectedError
+      );
+      assert((client.operationsClient.getOperation as SinonStub).getCall(0));
+    });
+  });
+
   describe('listInstanceConfigs', () => {
     it('invokes listInstanceConfigs without error', async () => {
       const client = new instanceadminModule.v1.InstanceAdminClient({
@@ -2141,9 +2887,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2193,9 +2939,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2243,9 +2989,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2284,9 +3030,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstanceConfigs.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
   });
@@ -2797,9 +3543,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2847,9 +3593,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstances.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2896,9 +3642,9 @@ describe('v1.InstanceAdminClient', () => {
       assert(
         (client.descriptors.page.listInstances.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2936,6 +3682,690 @@ describe('v1.InstanceAdminClient', () => {
       );
       assert(
         (client.descriptors.page.listInstances.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
+      );
+    });
+  });
+
+  describe('listInstancePartitions', () => {
+    it('invokes listInstancePartitions without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+      ];
+      client.innerApiCalls.listInstancePartitions =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.listInstancePartitions(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitions without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+      ];
+      client.innerApiCalls.listInstancePartitions =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.listInstancePartitions(
+          request,
+          (
+            err?: Error | null,
+            result?:
+              | protos.google.spanner.admin.instance.v1.IInstancePartition[]
+              | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitions with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listInstancePartitions = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.listInstancePartitions(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitions as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitionsStream without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+      ];
+      client.descriptors.page.listInstancePartitions.createStream =
+        stubPageStreamingCall(expectedResponse);
+      const stream = client.listInstancePartitionsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.instance.v1.InstancePartition[] =
+          [];
+        stream.on(
+          'data',
+          (
+            response: protos.google.spanner.admin.instance.v1.InstancePartition
+          ) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listInstancePartitions, request)
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('invokes listInstancePartitionsStream with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstancePartitions.createStream =
+        stubPageStreamingCall(undefined, expectedError);
+      const stream = client.listInstancePartitionsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.instance.v1.InstancePartition[] =
+          [];
+        stream.on(
+          'data',
+          (
+            response: protos.google.spanner.admin.instance.v1.InstancePartition
+          ) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listInstancePartitions, request)
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstancePartitions without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.instance.v1.InstancePartition()
+        ),
+      ];
+      client.descriptors.page.listInstancePartitions.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
+      const responses: protos.google.spanner.admin.instance.v1.IInstancePartition[] =
+        [];
+      const iterable = client.listInstancePartitionsAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstancePartitions
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .asyncIterate as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstancePartitions with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstancePartitions.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
+      const iterable = client.listInstancePartitionsAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.spanner.admin.instance.v1.IInstancePartition[] =
+          [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstancePartitions
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitions
+            .asyncIterate as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+  });
+
+  describe('listInstancePartitionOperations', () => {
+    it('invokes listInstancePartitionOperations without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listInstancePartitionOperations =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.listInstancePartitionOperations(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitionOperations without error using callback', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.innerApiCalls.listInstancePartitionOperations =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.listInstancePartitionOperations(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.longrunning.IOperation[] | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitionOperations with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listInstancePartitionOperations = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(
+        client.listInstancePartitionOperations(request),
+        expectedError
+      );
+      const actualRequest = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listInstancePartitionOperations as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listInstancePartitionOperationsStream without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listInstancePartitionOperations.createStream =
+        stubPageStreamingCall(expectedResponse);
+      const stream = client.listInstancePartitionOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(
+            client.innerApiCalls.listInstancePartitionOperations,
+            request
+          )
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('invokes listInstancePartitionOperationsStream with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstancePartitionOperations.createStream =
+        stubPageStreamingCall(undefined, expectedError);
+      const stream = client.listInstancePartitionOperationsStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.longrunning.Operation[] = [];
+        stream.on('data', (response: protos.google.longrunning.Operation) => {
+          responses.push(response);
+        });
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .calledWith(
+            client.innerApiCalls.listInstancePartitionOperations,
+            request
+          )
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .createStream as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstancePartitionOperations without error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+        generateSampleMessage(new protos.google.longrunning.Operation()),
+      ];
+      client.descriptors.page.listInstancePartitionOperations.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
+      const responses: protos.google.longrunning.IOperation[] = [];
+      const iterable = client.listInstancePartitionOperationsAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .asyncIterate as SinonStub
+        )
+          .getCall(0)
+          .args[2].otherArgs.headers['x-goog-request-params'].includes(
+            expectedHeaderRequestParams
+          )
+      );
+    });
+
+    it('uses async iteration with listInstancePartitionOperations with error', async () => {
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.instance.v1.ListInstancePartitionOperationsRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listInstancePartitionOperations.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
+      const iterable = client.listInstancePartitionOperationsAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.longrunning.IOperation[] = [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (
+          client.descriptors.page.listInstancePartitionOperations
+            .asyncIterate as SinonStub
+        )
           .getCall(0)
           .args[2].otherArgs.headers['x-goog-request-params'].includes(
             expectedHeaderRequestParams
@@ -3041,6 +4471,83 @@ describe('v1.InstanceAdminClient', () => {
         assert.strictEqual(result, 'instanceConfigValue');
         assert(
           (client.pathTemplates.instanceConfigPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+    });
+
+    describe('instancePartition', () => {
+      const fakePath = '/rendered/path/instancePartition';
+      const expectedParameters = {
+        project: 'projectValue',
+        instance: 'instanceValue',
+        instance_partition: 'instancePartitionValue',
+      };
+      const client = new instanceadminModule.v1.InstanceAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      client.pathTemplates.instancePartitionPathTemplate.render = sinon
+        .stub()
+        .returns(fakePath);
+      client.pathTemplates.instancePartitionPathTemplate.match = sinon
+        .stub()
+        .returns(expectedParameters);
+
+      it('instancePartitionPath', () => {
+        const result = client.instancePartitionPath(
+          'projectValue',
+          'instanceValue',
+          'instancePartitionValue'
+        );
+        assert.strictEqual(result, fakePath);
+        assert(
+          (
+            client.pathTemplates.instancePartitionPathTemplate
+              .render as SinonStub
+          )
+            .getCall(-1)
+            .calledWith(expectedParameters)
+        );
+      });
+
+      it('matchProjectFromInstancePartitionName', () => {
+        const result = client.matchProjectFromInstancePartitionName(fakePath);
+        assert.strictEqual(result, 'projectValue');
+        assert(
+          (
+            client.pathTemplates.instancePartitionPathTemplate
+              .match as SinonStub
+          )
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchInstanceFromInstancePartitionName', () => {
+        const result = client.matchInstanceFromInstancePartitionName(fakePath);
+        assert.strictEqual(result, 'instanceValue');
+        assert(
+          (
+            client.pathTemplates.instancePartitionPathTemplate
+              .match as SinonStub
+          )
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchInstancePartitionFromInstancePartitionName', () => {
+        const result =
+          client.matchInstancePartitionFromInstancePartitionName(fakePath);
+        assert.strictEqual(result, 'instancePartitionValue');
+        assert(
+          (
+            client.pathTemplates.instancePartitionPathTemplate
+              .match as SinonStub
+          )
             .getCall(-1)
             .calledWith(fakePath)
         );

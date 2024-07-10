@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,23 +40,44 @@ function main(
   const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
+  // Creates a new instance config
   async function createInstanceConfig() {
-    // Creates a new instance config
-    const instanceConfig = spanner.instanceConfig(instanceConfigId);
-    try {
-      const [baseInstanceConfig] = await spanner.getInstanceConfig(
+    const [baseInstanceConfig] = await instanceAdminClient.getInstanceConfig({
+      name: instanceAdminClient.instanceConfigPath(
+        projectId,
         baseInstanceConfigId
+      ),
+    });
+    try {
+      console.log(
+        `Creating instance config ${instanceAdminClient.instanceConfigPath(
+          projectId,
+          instanceConfigId
+        )}.`
       );
-      console.log(`Creating instance config ${instanceConfig.formattedName_}.`);
-      const [, operation] = await instanceConfig.create({
-        displayName: instanceConfigId,
-        baseConfig: baseInstanceConfig.name,
-        replicas: baseInstanceConfig.replicas.concat(
-          baseInstanceConfig.optionalReplicas[0]
-        ),
+      const [operation] = await instanceAdminClient.createInstanceConfig({
+        instanceConfigId: instanceConfigId,
+        parent: instanceAdminClient.projectPath(projectId),
+        instanceConfig: {
+          name: instanceAdminClient.instanceConfigPath(
+            projectId,
+            instanceConfigId
+          ),
+          baseConfig: instanceAdminClient.instanceConfigPath(
+            projectId,
+            baseInstanceConfigId
+          ),
+          displayName: instanceConfigId,
+          replicas: baseInstanceConfig.replicas.concat(
+            baseInstanceConfig.optionalReplicas[0]
+          ),
+        },
       });
       console.log(
-        `Waiting for create operation for ${instanceConfig.id} to complete...`
+        `Waiting for create operation for ${instanceConfigId} to complete...`
       );
       await operation.promise();
       console.log(`Created instance config ${instanceConfigId}.`);

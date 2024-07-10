@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,22 +30,24 @@ function main(instanceId, projectId) {
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance
-  const instance = spanner.instance(instanceId);
+
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function listDatabases() {
     // Lists all databases on the instance.
-    const [databases] = await instance.getDatabases();
+    const [databases] = await databaseAdminClient.listDatabases({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+    });
     console.log(`Databases for projects/${projectId}/instances/${instanceId}:`);
     databases.forEach(database => {
-      const defaultLeader = database.metadata.defaultLeader
-        ? `(default leader = ${database.metadata.defaultLeader})`
+      const defaultLeader = database.defaultLeader
+        ? `(default leader = ${database.defaultLeader})`
         : '';
-      console.log(`\t${database.id} ${defaultLeader}`);
+      console.log(`\t${database.name} ${defaultLeader}`);
     });
   }
   listDatabases();

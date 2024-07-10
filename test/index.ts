@@ -29,6 +29,7 @@ import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as sinon from 'sinon';
 import * as spnr from '../src';
+import {protos} from '../src';
 import {Duplex} from 'stream';
 import {CreateInstanceRequest, CreateInstanceConfigRequest} from '../src/index';
 import {
@@ -37,6 +38,8 @@ import {
   GetInstancesOptions,
 } from '../src';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
+const singer = require('./data/singer');
+const music = singer.examples.spanner.music;
 
 // Verify that CLOUD_RESOURCE_HEADER is set to a correct value.
 assert.strictEqual(CLOUD_RESOURCE_HEADER, 'google-cloud-resource-prefix');
@@ -81,6 +84,7 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'date',
+      'float32',
       'float',
       'instance',
       'instanceConfig',
@@ -90,6 +94,8 @@ const fakePfy = extend({}, pfy, {
       'pgJsonb',
       'operation',
       'timestamp',
+      'getInstanceAdminClient',
+      'getDatabaseAdminClient',
     ]);
   },
 });
@@ -252,7 +258,7 @@ describe('Spanner', () => {
       const options = getFake(spanner).calledWith_[1];
 
       assert.deepStrictEqual(config, {
-        baseUrl: fakeV1.SpannerClient.servicePath,
+        baseUrl: 'spanner.googleapis.com',
         protosDir: path.resolve(__dirname, '../protos'),
         protoServices: {
           Operations: {
@@ -279,6 +285,26 @@ describe('Spanner', () => {
     it('should optionally accept routeToLeaderEnabled', () => {
       const spanner = new Spanner({routeToLeaderEnabled: false});
       assert.strictEqual(spanner.routeToLeaderEnabled, false);
+    });
+
+    it('should optionally accept directedReadOptions', () => {
+      const fakeDirectedReadOptions = {
+        includeReplicas: {
+          replicaSelections: [
+            {
+              location: 'us-west1',
+              type: protos.google.spanner.v1.DirectedReadOptions
+                .ReplicaSelection.Type.READ_ONLY,
+            },
+          ],
+          autoFailoverDisabled: true,
+        },
+      };
+
+      const spanner = new Spanner({
+        directedReadOptions: fakeDirectedReadOptions,
+      });
+      assert.strictEqual(spanner.directedReadOptions, fakeDirectedReadOptions);
     });
 
     it('should set projectFormattedName_', () => {
@@ -471,6 +497,23 @@ describe('Spanner', () => {
     });
   });
 
+  describe.skip('float32', () => {
+    it('should create a Float32 instance', () => {
+      const value = {};
+      const customValue = {};
+
+      fakeCodec.Float32 = class {
+        constructor(value_) {
+          assert.strictEqual(value_, value);
+          return customValue;
+        }
+      };
+
+      const float32 = Spanner.float32(value);
+      assert.strictEqual(float32, customValue);
+    });
+  });
+
   describe('int', () => {
     it('should create an Int instance', () => {
       const value = {};
@@ -575,6 +618,66 @@ describe('Spanner', () => {
 
       const pgJsonb = Spanner.pgJsonb(value);
       assert.strictEqual(pgJsonb, customValue);
+    });
+  });
+
+  describe('protoMessage', () => {
+    it('should create a ProtoMessage instance', () => {
+      const protoMessageParams = {
+        value: music.SingerInfo.create({
+          singerId: 2,
+          genre: music.Genre.POP,
+          birthDate: 'January',
+        }),
+        messageFunction: music.SingerInfo,
+        fullName: 'examples.spanner.music.SingerInfo',
+      };
+
+      const customValue = {
+        value: {
+          singerId: 2,
+          genre: music.Genre.POP,
+          birthDate: 'January',
+        },
+        messageFunction: music.SingerInfo,
+        fullName: 'examples.spanner.music.SingerInfo',
+      };
+
+      fakeCodec.ProtoMessage = class {
+        constructor(value_) {
+          assert.strictEqual(value_, protoMessageParams);
+          return customValue;
+        }
+      };
+
+      const protoMessage = Spanner.protoMessage(protoMessageParams);
+      assert.strictEqual(protoMessage, customValue);
+    });
+  });
+
+  describe('protoEnum', () => {
+    it('should create a ProtoEnum instance', () => {
+      const enumParams = {
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
+        fullName: 'examples.spanner.music.Genre',
+      };
+
+      const customValue = {
+        value: music.Genre.JAZZ,
+        enumObject: music.Genre,
+        fullName: 'examples.spanner.music.Genre',
+      };
+
+      fakeCodec.ProtoEnum = class {
+        constructor(value_) {
+          assert.strictEqual(value_, enumParams);
+          return customValue;
+        }
+      };
+
+      const protoEnum = Spanner.protoEnum(enumParams);
+      assert.strictEqual(protoEnum, customValue);
     });
   });
 
@@ -1105,6 +1208,7 @@ describe('Spanner', () => {
     });
 
     it('should throw if the provided config object does not have baseConfig', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {baseConfig, ...CONFIG_WITHOUT_BASE_CONFIG} = ORIGINAL_CONFIG;
       assert.throws(() => {
         spanner.createInstanceConfig(NAME, CONFIG_WITHOUT_BASE_CONFIG!);

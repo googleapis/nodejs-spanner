@@ -26,6 +26,7 @@ import * as streamEvents from 'stream-events';
 import * as through from 'through2';
 import {
   codec,
+  Float32,
   Float,
   Int,
   Numeric,
@@ -33,6 +34,10 @@ import {
   PGJsonb,
   SpannerDate,
   Struct,
+  ProtoMessage,
+  ProtoEnum,
+  IProtoMessageParams,
+  IProtoEnumParams,
 } from './codec';
 import {Backup} from './backup';
 import {Database} from './database';
@@ -46,7 +51,13 @@ import {
   CreateInstanceConfigCallback,
   CreateInstanceConfigResponse,
 } from './instance-config';
-import {grpc, GrpcClientOptions, CallOptions, GoogleError} from 'google-gax';
+import {
+  grpc,
+  GrpcClientOptions,
+  CallOptions,
+  GoogleError,
+  ClientOptions,
+} from 'google-gax';
 import {google, google as instanceAdmin} from '../protos/protos';
 import {
   PagedOptions,
@@ -59,7 +70,12 @@ import {
 import {Session} from './session';
 import {SessionPool} from './session-pool';
 import {Table} from './table';
-import {PartitionedDml, Snapshot, Transaction} from './transaction';
+import {
+  MutationGroup,
+  PartitionedDml,
+  Snapshot,
+  Transaction,
+} from './transaction';
 import grpcGcpModule = require('grpc-gcp');
 const grpcGcp = grpcGcpModule(grpc);
 import * as v1 from './v1';
@@ -108,8 +124,11 @@ export type GetInstanceConfigOperationsCallback = PagedCallback<
 
 /**
  * Session pool configuration options.
- * @property {boolean} [routeToLeaderEnabled=False] If set to true leader aware routing will be enabled.
- * Enabling leader aware routing would route all requests in RW/PDML transactions to leader region.
+ * @property {boolean} [routeToLeaderEnabled=True] If set to false leader aware routing will be disabled.
+ * Disabling leader aware routing would route all requests in RW/PDML transactions to any region.
+ * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions] Sets the DirectedReadOptions for all ReadRequests and ExecuteSqlRequests for the Client.
+ * Indicates which replicas or regions should be used for non-transactional reads or queries.
+ * DirectedReadOptions won't be set for readWrite transactions"
  */
 export interface SpannerOptions extends GrpcClientOptions {
   apiEndpoint?: string;
@@ -117,6 +136,7 @@ export interface SpannerOptions extends GrpcClientOptions {
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
   routeToLeaderEnabled?: boolean;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions | null;
 }
 export interface RequestConfig {
   client: string;
@@ -162,7 +182,7 @@ export type EnumKey<E extends {[index: string]: unknown}> = keyof E;
 export type TranslateEnumKeys<
   T,
   U extends keyof T,
-  E extends {[index: string]: unknown}
+  E extends {[index: string]: unknown},
 > = {
   [P in keyof T]: P extends U ? EnumKey<E> | null | undefined : T[P];
 };
@@ -216,7 +236,8 @@ class Spanner extends GrpcService {
   projectIdReplaced_: boolean;
   projectFormattedName_: string;
   resourceHeader_: {[k: string]: string};
-  routeToLeaderEnabled = false;
+  routeToLeaderEnabled = true;
+  directedReadOptions: google.spanner.v1.IDirectedReadOptions | null;
 
   /**
    * Placeholder used to auto populate a column with the commit timestamp.
@@ -291,6 +312,12 @@ class Spanner extends GrpcService {
       },
       options || {}
     ) as {} as SpannerOptions;
+
+    const directedReadOptions = options.directedReadOptions
+      ? options.directedReadOptions
+      : null;
+    delete options.directedReadOptions;
+
     const emulatorHost = Spanner.getSpannerEmulatorHost();
     if (
       emulatorHost &&
@@ -305,7 +332,8 @@ class Spanner extends GrpcService {
       baseUrl:
         options.apiEndpoint ||
         options.servicePath ||
-        v1.SpannerClient.servicePath,
+        // TODO: for TPC, this needs to support universeDomain
+        'spanner.googleapis.com',
       protosDir: path.resolve(__dirname, '../protos'),
       protoServices: {
         Operations: {
@@ -318,8 +346,8 @@ class Spanner extends GrpcService {
     } as {} as GrpcServiceConfig;
     super(config, options);
 
-    if (options.routeToLeaderEnabled === true) {
-      this.routeToLeaderEnabled = true;
+    if (options.routeToLeaderEnabled === false) {
+      this.routeToLeaderEnabled = false;
     }
 
     this.options = options;
@@ -332,6 +360,55 @@ class Spanner extends GrpcService {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: this.projectFormattedName_,
     };
+    this.directedReadOptions = directedReadOptions;
+  }
+
+  /**
+   * Gets the InstanceAdminClient object.
+   * The returned InstanceAdminClient object is a shared, managed instance and should not be manually closed.
+   * @returns {v1.InstanceAdminClient} The InstanceAdminClient object
+   * @example
+   *  ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner({
+   *    projectId: projectId,
+   *  });
+   * const instanceAdminClient = spanner.getInstanceAdminClient();
+   * ```
+   */
+  getInstanceAdminClient(): v1.InstanceAdminClient {
+    const clientName = 'InstanceAdminClient';
+    if (!this.clients_.has(clientName)) {
+      this.clients_.set(
+        clientName,
+        new v1[clientName](this.options as ClientOptions)
+      );
+    }
+    return this.clients_.get(clientName)! as v1.InstanceAdminClient;
+  }
+
+  /**
+   * Gets the DatabaseAdminClient object.
+   * The returned DatabaseAdminClient object is a managed, shared instance and should not be manually closed.
+   * @returns {v1.DatabaseAdminClient} The DatabaseAdminClient object.
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner({
+   *    projectId: projectId,
+   * });
+   * const databaseAdminClient = spanner.getDatabaseAdminClient();
+   * ```
+   */
+  getDatabaseAdminClient(): v1.DatabaseAdminClient {
+    const clientName = 'DatabaseAdminClient';
+    if (!this.clients_.has(clientName)) {
+      this.clients_.set(
+        clientName,
+        new v1[clientName](this.options as ClientOptions)
+      );
+    }
+    return this.clients_.get(clientName)! as v1.DatabaseAdminClient;
   }
 
   /** Closes this Spanner client and cleans up all resources used by it. */
@@ -1605,6 +1682,22 @@ class Spanner extends GrpcService {
   }
 
   /**
+   * Helper function to get a Cloud Spanner Float32 object.
+   *
+   * @param {string|number} value The float as a number or string.
+   * @returns {Float32}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const float = Spanner.float32(10);
+   * ```
+   */
+  static float32(value): Float32 {
+    return new codec.Float32(value);
+  }
+
+  /**
    * Helper function to get a Cloud Spanner Float64 object.
    *
    * @param {string|number} value The float as a number or string.
@@ -1688,6 +1781,62 @@ class Spanner extends GrpcService {
   static pgJsonb(value): PGJsonb {
     return new codec.PGJsonb(value);
   }
+
+  /**
+   * @typedef IProtoMessageParams
+   * @property {object} value Proto Message value as serialized-buffer or message object.
+   * @property {string} fullName Fully-qualified path name of proto message.
+   * @property {Function} [messageFunction] Function generated by protobufs containing
+   * helper methods for deserializing and serializing messages.
+   */
+  /**
+   * Helper function to get a Cloud Spanner proto Message object.
+   *
+   * @param {IProtoMessageParams} params The proto message value params
+   * @returns {ProtoMessage}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const protoMessage = Spanner.protoMessage({
+   *   value: singerInfo,
+   *   messageFunction: music.SingerInfo,
+   *   fullName: "examples.spanner.music.SingerInfo"
+   * });
+   * ```
+   */
+  static protoMessage(params: IProtoMessageParams): ProtoMessage {
+    return new codec.ProtoMessage(params);
+  }
+
+  /**
+   * @typedef IProtoEnumParams
+   * @property {string | number} value Proto Enum value as a string constant or
+   * an integer constant.
+   * @property {string} fullName Fully-qualified path name of proto enum.
+   * @property {object} [enumObject] An enum object generated by protobufjs-cli.
+   */
+  /**
+   * Helper function to get a Cloud Spanner proto enum object.
+   *
+   * @param {IProtoEnumParams} params The proto enum value params in the format of
+   *     @code{IProtoEnumParams}
+   * @returns {ProtoEnum}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const protoEnum = Spanner.protoEnum({
+   *   value: 'ROCK',
+   *   enumObject: music.Genre,
+   *   fullName: "examples.spanner.music.Genre"
+   * });
+   * ```
+   */
+  static protoEnum(params: IProtoEnumParams): ProtoEnum {
+    return new codec.ProtoEnum(params);
+  }
+
   /**
    * Helper function to get a Cloud Spanner Struct object.
    *
@@ -1719,6 +1868,7 @@ class Spanner extends GrpcService {
 promisifyAll(Spanner, {
   exclude: [
     'date',
+    'float32',
     'float',
     'instance',
     'instanceConfig',
@@ -1728,6 +1878,8 @@ promisifyAll(Spanner, {
     'pgJsonb',
     'operation',
     'timestamp',
+    'getInstanceAdminClient',
+    'getDatabaseAdminClient',
   ],
 });
 
@@ -1865,6 +2017,15 @@ export {Snapshot};
 export {Transaction};
 
 /**
+ * {@link MutationGroup} class.
+ *
+ * @name Spanner.MutationGroup
+ * @see MutationGroup
+ * @type {Constructor}
+ */
+export {MutationGroup};
+
+/**
  * @type {object}
  * @property {constructor} DatabaseAdminClient
  *   Reference to {@link v1.DatabaseAdminClient}
@@ -1877,4 +2038,4 @@ import * as protos from '../protos/protos';
 import IInstanceConfig = instanceAdmin.spanner.admin.instance.v1.IInstanceConfig;
 export {v1, protos};
 export default {Spanner};
-export {Float, Int, Struct, Numeric, PGNumeric, SpannerDate};
+export {Float32, Float, Int, Struct, Numeric, PGNumeric, SpannerDate};

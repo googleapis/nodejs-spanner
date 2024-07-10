@@ -27,6 +27,7 @@ and automatic, synchronous replication for high availability.
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
+  * [Batch Write](#batch-write)
   * [Batch](#batch)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
@@ -37,6 +38,7 @@ and automatic, synchronous replication for high availability.
   * [Updates the default leader of an existing database](#updates-the-default-leader-of-an-existing-database)
   * [Updates a Cloud Spanner Database.](#updates-a-cloud-spanner-database.)
   * [Datatypes](#datatypes)
+  * [Runs an execute sql request with directed read options](#runs-an-execute-sql-request-with-directed-read-options)
   * [Delete using DML returning.](#delete-using-dml-returning.)
   * [Insert using DML returning.](#insert-using-dml-returning.)
   * [Update using DML returning.](#update-using-dml-returning.)
@@ -55,6 +57,7 @@ and automatic, synchronous replication for high availability.
   * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
+  * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
   * [Json-add-column](#json-add-column)
@@ -62,6 +65,7 @@ and automatic, synchronous replication for high availability.
   * [Json-update-data](#json-update-data)
   * [Lists all databases on the selected instance](#lists-all-databases-on-the-selected-instance)
   * [Lists all the available instance configs for the selected project.](#lists-all-the-available-instance-configs-for-the-selected-project.)
+  * [Executes request with max commit delay](#executes-request-with-max-commit-delay)
   * [Numeric-add-column](#numeric-add-column)
   * [Numeric-query-parameter](#numeric-query-parameter)
   * [Numeric-update-data](#numeric-update-data)
@@ -86,6 +90,13 @@ and automatic, synchronous replication for high availability.
   * [Showcases how a Spanner PostgreSQL database orders null values in a query.](#showcases-how-a-spanner-postgresql-database-orders-null-values-in-a-query.)
   * [Execute a query with parameters on a Spanner PostgreSQL database.](#execute-a-query-with-parameters-on-a-spanner-postgresql-database.)
   * [Query the information schema metadata in a Spanner PostgreSQL database.](#query-the-information-schema-metadata-in-a-spanner-postgresql-database.)
+  * [Alters a sequence in a PostgreSQL database.](#alters-a-sequence-in-a-postgresql-database.)
+  * [Creates sequence in PostgreSQL database.](#creates-sequence-in-postgresql-database.)
+  * [Drops a sequence in PostgreSQL database.](#drops-a-sequence-in-postgresql-database.)
+  * [Proto-query-data](#proto-query-data)
+  * [Creates a new database with a proto column and enum](#creates-a-new-database-with-a-proto-column-and-enum)
+  * [Proto-update-data-dml](#proto-update-data-dml)
+  * [Proto-update-data](#proto-update-data)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
@@ -97,7 +108,13 @@ and automatic, synchronous replication for high availability.
   * [Query data with RPC Priority](#query-data-with-rpc-priority)
   * [Run transaction with RPC priority](#run-transaction-with-rpc-priority)
   * [Schema](#schema)
+  * [Alters a sequence in a GoogleSQL database.](#alters-a-sequence-in-a-googlesql-database.)
+  * [Creates sequence in GoogleSQL database.](#creates-sequence-in-googlesql-database.)
+  * [Drops a sequence in GoogleSQL database.](#drops-a-sequence-in-googlesql-database.)
   * [Struct](#struct)
+  * [Alters a table with foreign key delete cascade action](#alters-a-table-with-foreign-key-delete-cascade-action)
+  * [Creates a table with foreign key delete cascade action](#creates-a-table-with-foreign-key-delete-cascade-action)
+  * [Drops a foreign key constraint with delete cascade action](#drops-a-foreign-key-constraint-with-delete-cascade-action)
   * [Timestamp](#timestamp)
   * [Executes a read/write transaction with transaction and request tags](#executes-a-read/write-transaction-with-transaction-and-request-tags)
   * [Transaction](#transaction)
@@ -338,6 +355,23 @@ __Usage:__
 
 
 
+### Batch Write
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch-write.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/batch-write.js,samples/README.md)
+
+__Usage:__
+
+
+`node batch-write.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Batch
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch.js).
@@ -501,6 +535,23 @@ __Usage:__
 
 
 `node samples/datatypes.js`
+
+
+-----
+
+
+
+
+### Runs an execute sql request with directed read options
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/directed-reads.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/directed-reads.js,samples/README.md)
+
+__Usage:__
+
+
+`node directed-reads.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -814,6 +865,23 @@ __Usage:__
 
 
 
+### Creates a instance with autoscaling config.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-autoscaling-config.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-with-autoscaling-config.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-with-autoscaling-config.js <INSTANCE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Instance-with-processing-units
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-with-processing-units.js).
@@ -926,6 +994,23 @@ __Usage:__
 
 
 `node list-instance-configs.js <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Executes request with max commit delay
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/max-commit-delay.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/max-commit-delay.js,samples/README.md)
+
+__Usage:__
+
+
+`node max-commit-delay.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1341,6 +1426,125 @@ __Usage:__
 
 
 
+### Alters a sequence in a PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-alter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-alter.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-alter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates sequence in PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a sequence in PostgreSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/pg-sequence-drop.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/pg-sequence-drop.js,samples/README.md)
+
+__Usage:__
+
+
+`node pg-sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Proto-query-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-query-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-query-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-query-data.js`
+
+
+-----
+
+
+
+
+### Creates a new database with a proto column and enum
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-type-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-type-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node proto-type-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Proto-update-data-dml
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-update-data-dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-update-data-dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-update-data-dml.js`
+
+
+-----
+
+
+
+
+### Proto-update-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-update-data.js`
+
+
+-----
+
+
+
+
 ### Queryoptions
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/queryoptions.js).
@@ -1528,6 +1732,57 @@ __Usage:__
 
 
 
+### Alters a sequence in a GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-alter.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-alter.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-alter.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates sequence in GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-create.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a sequence in GoogleSQL database.
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/sequence-drop.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/sequence-drop.js,samples/README.md)
+
+__Usage:__
+
+
+`node sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
 ### Struct
 
 View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/struct.js).
@@ -1538,6 +1793,57 @@ __Usage:__
 
 
 `node samples/struct.js`
+
+
+-----
+
+
+
+
+### Alters a table with foreign key delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-alter-with-foreign-key-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-alter-with-foreign-key-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-alter-with-foreign-key-delete-cascade.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a table with foreign key delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-create-with-foreign-key-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-create-with-foreign-key-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-create-with-foreign-key-delete-cascade.js.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Drops a foreign key constraint with delete cascade action
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/table-drop-foreign-key-constraint-delete-cascade.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/table-drop-foreign-key-constraint-delete-cascade.js,samples/README.md)
+
+__Usage:__
+
+
+`node table-drop-foreign-key-constraint-delete-cascade.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----

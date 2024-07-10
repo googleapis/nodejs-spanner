@@ -17,6 +17,7 @@
 import {DateStruct, PreciseDate} from '@google-cloud/precise-date';
 import {promisifyAll} from '@google-cloud/promisify';
 import arrify = require('arrify');
+import Long = require('long');
 import {EventEmitter} from 'events';
 import {grpc, CallOptions, ServiceError, Status, GoogleError} from 'google-gax';
 import * as is from 'is';
@@ -58,16 +59,60 @@ export interface TimestampBounds {
   returnReadTimestamp?: boolean;
 }
 
+export interface BatchWriteOptions {
+  requestOptions?: Pick<IRequestOptions, 'priority' | 'transactionTag'>;
+  gaxOptions?: CallOptions;
+  excludeTxnFromChangeStreams?: boolean;
+}
+
 export interface RequestOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. This is only needed for proto columns
+   * where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
+   */
+  columnsMetadata?: object;
 }
 
 export interface CommitOptions {
   requestOptions?: Pick<IRequestOptions, 'priority'>;
   returnCommitStats?: boolean;
+  maxCommitDelay?: spannerClient.protobuf.IDuration;
   gaxOptions?: CallOptions;
 }
 
@@ -85,6 +130,7 @@ export interface ExecuteSqlRequest extends Statement, RequestOptions {
   queryOptions?: IQueryOptions;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface KeyRange {
@@ -101,11 +147,12 @@ export interface ReadRequest extends RequestOptions {
   keys?: string[] | string[][];
   ranges?: KeyRange[];
   keySet?: spannerClient.spanner.v1.IKeySet | null;
-  limit?: number | Long | null;
+  limit?: number | Long | string | null;
   resumeToken?: Uint8Array | null;
   partitionToken?: Uint8Array | null;
   requestOptions?: Omit<IRequestOptions, 'transactionTag'>;
   dataBoostEnabled?: boolean | null;
+  directedReadOptions?: google.spanner.v1.IDirectedReadOptions;
 }
 
 export interface BatchUpdateError extends grpc.ServiceError {
@@ -116,7 +163,7 @@ export type CommitRequest = spannerClient.spanner.v1.ICommitRequest;
 
 export type BatchUpdateResponse = [
   number[],
-  spannerClient.spanner.v1.ExecuteBatchDmlResponse
+  spannerClient.spanner.v1.ExecuteBatchDmlResponse,
 ];
 export type BeginResponse = [spannerClient.spanner.v1.ITransaction];
 
@@ -128,7 +175,7 @@ export type ReadResponse = [Rows];
 export type RunResponse = [
   Rows,
   spannerClient.spanner.v1.ResultSetStats,
-  spannerClient.spanner.v1.ResultSetMetadata
+  spannerClient.spanner.v1.ResultSetMetadata,
 ];
 export type RunUpdateResponse = [number];
 
@@ -223,7 +270,7 @@ export type CommitCallback =
 export class Snapshot extends EventEmitter {
   protected _options!: spannerClient.spanner.v1.ITransactionOptions;
   protected _seqno = 1;
-  protected _idWaiter: Readable;
+  protected _waitingRequests: Array<() => void>;
   protected _inlineBeginStarted;
   protected _useInRunner = false;
   id?: Uint8Array | string;
@@ -299,9 +346,7 @@ export class Snapshot extends EventEmitter {
     this.resourceHeader_ = {
       [CLOUD_RESOURCE_HEADER]: (this.session.parent as Database).formattedName_,
     };
-    this._idWaiter = new Readable({
-      read() {},
-    });
+    this._waitingRequests = [];
     this._inlineBeginStarted = false;
   }
 
@@ -458,6 +503,8 @@ export class Snapshot extends EventEmitter {
    *     PartitionReadRequest message used to create this partition_token.
    * @property {google.spanner.v1.RequestOptions} [requestOptions]
    *     Common options for this request.
+   * @property {google.spanner.v1.IDirectedReadOptions} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    * @property {object} [gaxOptions]
    *     Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -579,8 +626,14 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      request;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -592,6 +645,10 @@ export class Snapshot extends EventEmitter {
       transaction.singleUse = this._options;
     }
 
+    const directedReadOptions = this._getDirectedReadOptions(
+      request.directedReadOptions
+    );
+
     request = Object.assign({}, request);
 
     delete request.gaxOptions;
@@ -601,6 +658,8 @@ export class Snapshot extends EventEmitter {
     delete request.keys;
     delete request.ranges;
     delete request.requestOptions;
+    delete request.directedReadOptions;
+    delete request.columnsMetadata;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -611,6 +670,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         table,
         keySet,
@@ -644,6 +704,8 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
+      gaxOptions,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -970,7 +1032,7 @@ export class Snapshot extends EventEmitter {
    *     execution statistics for the SQL statement that
    *     produced this result set.
    * @property {string} partitionToken The partition token.
-   * @property {number} seqno The Sequence number.
+   * @property {number} seqno The Sequence number. This option is used internally and will be overridden.
    * @property {string} sql The SQL string.
    * @property {google.spanner.v1.ExecuteSqlRequest.IQueryOptions} [queryOptions]
    *     Default query options to use with the database. These options will be
@@ -994,6 +1056,8 @@ export class Snapshot extends EventEmitter {
    *     that it is not ready for any more data. Increase this value if you
    *     experience 'Stream is still not ready to receive data' errors as a
    *     result of a slow writer in your receiving stream.
+   *  @property {object} [directedReadOptions]
+   *     Indicates which replicas or regions should be used for non-transactional reads or queries.
    */
   /**
    * Create a readable object stream to receive resulting rows from a SQL
@@ -1065,9 +1129,19 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      query;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = query;
     let reqOpts;
+
+    const directedReadOptions = this._getDirectedReadOptions(
+      query.directedReadOptions
+    );
 
     const sanitizeRequest = () => {
       query = query as ExecuteSqlRequest;
@@ -1086,6 +1160,8 @@ export class Snapshot extends EventEmitter {
       delete query.maxResumeRetries;
       delete query.requestOptions;
       delete query.types;
+      delete query.directedReadOptions;
+      delete query.columnsMetadata;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1095,6 +1171,7 @@ export class Snapshot extends EventEmitter {
           this.requestOptions?.transactionTag ?? undefined,
           requestOptions
         ),
+        directedReadOptions: directedReadOptions,
         transaction,
         params,
         paramTypes,
@@ -1134,6 +1211,8 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
+      gaxOptions,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1290,6 +1369,28 @@ export class Snapshot extends EventEmitter {
   }
 
   /**
+   * Get directed read options
+   * @private
+   * @param {google.spanner.v1.IDirectedReadOptions} directedReadOptions Request directedReadOptions object.
+   */
+  protected _getDirectedReadOptions(
+    directedReadOptions:
+      | google.spanner.v1.IDirectedReadOptions
+      | null
+      | undefined
+  ) {
+    if (
+      !directedReadOptions &&
+      this._getSpanner().directedReadOptions &&
+      this._options.readOnly
+    ) {
+      return this._getSpanner().directedReadOptions;
+    }
+
+    return directedReadOptions;
+  }
+
+  /**
    * Update transaction properties from the response.
    *
    * @private
@@ -1306,7 +1407,7 @@ export class Snapshot extends EventEmitter {
       this.readTimestampProto = readTimestamp;
       this.readTimestamp = new PreciseDate(readTimestamp as DateStruct);
     }
-    this._idWaiter.emit('notify');
+    this._releaseWaitingRequests();
   }
 
   /**
@@ -1326,12 +1427,28 @@ export class Snapshot extends EventEmitter {
       this._inlineBeginStarted = true;
       return makeRequest;
     }
-    return (resumeToken?: ResumeToken): Readable =>
-      this._idWaiter.once('notify', () =>
+
+    // Queue subsequent requests.
+    return (resumeToken?: ResumeToken): Readable => {
+      const streamProxy = new Readable({
+        read() {},
+      });
+
+      this._waitingRequests.push(() => {
         makeRequest(resumeToken)
-          .on('data', chunk => this._idWaiter.emit('data', chunk))
-          .once('end', () => this._idWaiter.emit('end'))
-      );
+          .on('data', chunk => streamProxy.emit('data', chunk))
+          .on('end', () => streamProxy.emit('end'));
+      });
+
+      return streamProxy;
+    };
+  }
+
+  _releaseWaitingRequests() {
+    while (this._waitingRequests.length > 0) {
+      const request = this._waitingRequests.shift();
+      request?.();
+    }
   }
 
   /**
@@ -1743,6 +1860,9 @@ export class Transaction extends Dml {
    *     with the commit request.
    * @property {boolean} returnCommitStats Include statistics related to the
    *     transaction in the {@link CommitResponse}.
+   * @property {spannerClient.proto.IDuration} maxCommitDelay Maximum amount
+   *     of delay the commit is willing to incur in order to improve
+   *     throughput. Value should be between 0ms and 500ms.
    * @property {object} [gaxOptions] The request configuration options,
    *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
    *     for more details.
@@ -1832,6 +1952,12 @@ export class Transaction extends Dml {
       (options as CommitOptions).returnCommitStats
     ) {
       reqOpts.returnCommitStats = (options as CommitOptions).returnCommitStats;
+    }
+    if (
+      'maxCommitDelay' in options &&
+      (options as CommitOptions).maxCommitDelay
+    ) {
+      reqOpts.maxCommitDelay = (options as CommitOptions).maxCommitDelay;
     }
     reqOpts.requestOptions = Object.assign(
       requestOptions || {},
@@ -2000,14 +2126,7 @@ export class Transaction extends Dml {
    * ```
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: spannerClient.spanner.v1.IKeySet = {
-      keys: arrify(keys).map(codec.convertToListValue),
-    };
-    const mutation: spannerClient.spanner.v1.IMutation = {
-      delete: {table, keySet},
-    };
-
-    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
+    this._queuedMutations.push(buildDeleteMutation(table, keys));
   }
 
   /**
@@ -2290,31 +2409,7 @@ export class Transaction extends Dml {
     table: string,
     keyVals: object | object[]
   ): void {
-    const rows: object[] = arrify(keyVals);
-    const columns = Transaction.getUniqueKeys(rows);
-
-    const values = rows.map((row, index) => {
-      const keys = Object.keys(row);
-      const missingColumns = columns.filter(column => !keys.includes(column));
-
-      if (missingColumns.length > 0) {
-        throw new GoogleError(
-          [
-            `Row at index ${index} does not contain the correct number of columns.`,
-            `Missing columns: ${JSON.stringify(missingColumns)}`,
-          ].join('\n\n')
-        );
-      }
-
-      const values = columns.map(column => row[column]);
-      return codec.convertToListValue(values);
-    });
-
-    const mutation: spannerClient.spanner.v1.IMutation = {
-      [method]: {table, columns, values},
-    };
-
-    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
+    this._queuedMutations.push(buildMutation(method, table, keyVals));
   }
 
   /**
@@ -2352,6 +2447,18 @@ export class Transaction extends Dml {
   useOptimisticLock(): void {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
+
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
+   * from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified transaction, allowing read/write transaction to operate without being
+   * included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
+  }
 }
 
 /*! Developer Documentation
@@ -2362,6 +2469,130 @@ export class Transaction extends Dml {
 promisifyAll(Transaction, {
   exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
 });
+
+/**
+ * Builds an array of protobuf Mutations from the given row(s).
+ *
+ * @param {string} method - CRUD method (insert, update, etc.).
+ * @param {string} table - Table to perform mutations in.
+ * @param {object | object[]} keyVals - Hash of key-value pairs representing the rows.
+ * @returns {spannerClient.spanner.v1.Mutation} - The formatted mutation.
+ * @throws {GoogleError} - If a row does not contain the correct number of columns.
+ */
+function buildMutation(
+  method: string,
+  table: string,
+  keyVals: object | object[]
+): spannerClient.spanner.v1.Mutation {
+  const rows: object[] = arrify(keyVals);
+  const columns = Transaction.getUniqueKeys(rows);
+
+  const values = rows.map((row, index) => {
+    const keys = Object.keys(row);
+    const missingColumns = columns.filter(column => !keys.includes(column));
+
+    if (missingColumns.length > 0) {
+      throw new GoogleError(
+        [
+          `Row at index ${index} does not contain the correct number of columns.`,
+          `Missing columns: ${JSON.stringify(missingColumns)}`,
+        ].join('\n\n')
+      );
+    }
+
+    const values = columns.map(column => row[column]);
+    return codec.convertToListValue(values);
+  });
+
+  const mutation: spannerClient.spanner.v1.IMutation = {
+    [method]: {table, columns, values},
+  };
+  return mutation as spannerClient.spanner.v1.Mutation;
+}
+
+/**
+ * Builds a delete mutation.
+ *
+ * @param {string} table - The name of the table.
+ * @param {Key[]} keys - The keys for the rows to delete.
+ * @returns {spannerClient.spanner.v1.Mutation} - The formatted delete mutation.
+ */
+function buildDeleteMutation(
+  table: string,
+  keys: Key[]
+): spannerClient.spanner.v1.Mutation {
+  const keySet: spannerClient.spanner.v1.IKeySet = {
+    keys: arrify(keys).map(codec.convertToListValue),
+  };
+  const mutation: spannerClient.spanner.v1.IMutation = {
+    delete: {table, keySet},
+  };
+  return mutation as spannerClient.spanner.v1.Mutation;
+}
+
+/**
+ * A group of mutations to be committed together.
+ * Related mutations should be placed in a group.
+ *
+ * For example, two mutations inserting rows with the same primary
+ * key prefix in both parent and child tables are related.
+ *
+ * This object is created and returned from {@link Database#MutationGroup}.
+ *
+ * @example
+ * ```
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const mutationGroup = new MutationGroup();
+ * mutationGroup.insert('Singers', {SingerId: '123', FirstName: 'David'});
+ * mutationGroup.update('Singers', {SingerId: '123', FirstName: 'Marc'});
+ *
+ * database.batchWriteAtLeastOnce([mutationGroup], {})
+ *    .on('error', console.error)
+ *    .on('data', response => {
+ *          console.log('response: ', response);
+ *      })
+ *     .on('end', () => {
+ *          console.log('Request completed successfully');
+ *      });
+ * ```
+ */
+export class MutationGroup {
+  private _proto: spannerClient.spanner.v1.BatchWriteRequest.MutationGroup;
+
+  constructor() {
+    this._proto =
+      new spannerClient.spanner.v1.BatchWriteRequest.MutationGroup();
+  }
+
+  insert(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('insert', table, rows));
+  }
+
+  update(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('update', table, rows));
+  }
+
+  upsert(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('insertOrUpdate', table, rows));
+  }
+
+  replace(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('replace', table, rows));
+  }
+
+  deleteRows(table: string, keys: Key[]): void {
+    this._proto.mutations.push(buildDeleteMutation(table, keys));
+  }
+
+  proto(): spannerClient.spanner.v1.BatchWriteRequest.IMutationGroup {
+    return this._proto;
+  }
+}
 
 /**
  * This type of transaction is used to execute a single Partitioned DML
@@ -2384,6 +2615,17 @@ export class PartitionedDml extends Dml {
   ) {
     super(session);
     this._options = {partitionedDml: options};
+  }
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude partitionedDml
+   * queries from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified partitionedDml query, allowing write queries to operate
+   * without being included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
   }
 
   /**

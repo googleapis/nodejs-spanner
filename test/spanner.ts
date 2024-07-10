@@ -120,7 +120,6 @@ describe('Spanner with mock server', () => {
         }
       );
     });
-    server.start();
     spannerMock.putStatementResult(
       selectSql,
       mock.StatementResult.resultSet(mock.createSimpleResultSet())
@@ -1491,14 +1490,14 @@ describe('Spanner with mock server', () => {
     });
 
     describe('LeaderAwareRouting', () => {
-      let spannerWithLAREnabled: Spanner;
-      let instanceWithLAREnabled: Instance;
+      let spannerWithLARDisabled: Spanner;
+      let instanceWithLARDisabled: Instance;
 
-      function newTestDatabaseWithLAREnabled(
+      function newTestDatabaseWithLARDisabled(
         options?: SessionPoolOptions,
         queryOptions?: IQueryOptions
       ): Database {
-        return instanceWithLAREnabled.database(
+        return instanceWithLARDisabled.database(
           `database-${dbCounter++}`,
           options,
           queryOptions
@@ -1506,18 +1505,18 @@ describe('Spanner with mock server', () => {
       }
 
       before(() => {
-        spannerWithLAREnabled = new Spanner({
+        spannerWithLARDisabled = new Spanner({
           servicePath: 'localhost',
           port,
           sslCreds: grpc.credentials.createInsecure(),
-          routeToLeaderEnabled: true,
+          routeToLeaderEnabled: false,
         });
         // Gets a reference to a Cloud Spanner instance and database
-        instanceWithLAREnabled = spannerWithLAREnabled.instance('instance');
+        instanceWithLARDisabled = spannerWithLARDisabled.instance('instance');
       });
 
       it('should execute with leader aware routing enabled in a read/write transaction', async () => {
-        const database = newTestDatabaseWithLAREnabled();
+        const database = newTestDatabase();
         await database.runTransactionAsync(async tx => {
           await tx!.runUpdate({
             sql: insertSql,
@@ -1539,7 +1538,7 @@ describe('Spanner with mock server', () => {
       });
 
       it('should execute with leader aware routing disabled in a read/write transaction', async () => {
-        const database = newTestDatabase();
+        const database = newTestDatabaseWithLARDisabled();
         await database.runTransactionAsync(async tx => {
           await tx!.runUpdate({
             sql: insertSql,
@@ -3134,6 +3133,23 @@ describe('Spanner with mock server', () => {
         assert.strictEqual(request.requestOptions!.requestTag, 'request-tag');
         await database.close();
       });
+
+      it('should use excludeTxnFromChangeStreams', async () => {
+        const database = newTestDatabase();
+        await database.runPartitionedUpdate({
+          sql: updateSql,
+          excludeTxnFromChangeStreams: true,
+        });
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options
+            ?.excludeTxnFromChangeStreams;
+        }) as v1.BeginTransactionRequest;
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
+        );
+        await database.close();
+      });
     });
   });
 
@@ -3194,6 +3210,78 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should apply blind writes only once', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(async tx => {
+        attempts++;
+        if (attempts === 1) {
+          spannerMock.abortTransaction(tx);
+        }
+        tx!.insert('foo', {id: 1, value: 'One'});
+        await tx!.run(insertSql);
+        await tx.commit();
+      });
+      await database.close();
+
+      assert.strictEqual(2, attempts);
+      // Verify that we have 2 ExecuteSqlRequests. The first one should use inline-begin. The second one should use a
+      // transaction ID.
+      const firstExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.begin
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(firstExecuteSqlRequest.transaction?.begin?.readWrite);
+      const secondExecuteSqlRequest = spannerMock.getRequests().find(val => {
+        return (
+          (val as v1.ExecuteSqlRequest).sql === insertSql &&
+          (val as v1.ExecuteSqlRequest).transaction?.id
+        );
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(secondExecuteSqlRequest.transaction?.id);
+      // Verify that we have a BeginTransaction request for the retry.
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      // Verify that we have a single Commit request, and that the Commit request contains only one mutation.
+      assert.strictEqual(
+        1,
+        spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).mutations;
+        }).length
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.CommitRequest).mutations;
+      }) as v1.CommitRequest;
+      assert.ok(commitRequest, 'Commit was called');
+      assert.strictEqual(commitRequest.mutations.length, 1);
+    });
+
+    it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.insert('foo', {id: 1, value: 'One'});
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use optimistic lock for runTransactionAsync', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(
@@ -3217,6 +3305,29 @@ describe('Spanner with mock server', () => {
       );
     });
 
+    it('should use exclude transaction from change streams for runTransactionAsync', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          await tx!.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(
+        request.transaction!.begin?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use optimistic lock for runTransaction', done => {
       const database = newTestDatabase();
       database.runTransaction({optimisticLock: true}, async (err, tx) => {
@@ -3234,6 +3345,52 @@ describe('Spanner with mock server', () => {
           'OPTIMISTIC'
         );
         done();
+      });
+    });
+
+    it('should use exclude transaction from change stream for runTransaction', done => {
+      const database = newTestDatabase();
+      database.runTransaction(
+        {excludeTxnFromChangeStreams: true},
+        async (err, tx) => {
+          assert.ifError(err);
+          await tx!.run(selectSql);
+          await tx!.commit();
+          await database.close();
+
+          const request = spannerMock.getRequests().find(val => {
+            return (val as v1.ExecuteSqlRequest).sql;
+          }) as v1.ExecuteSqlRequest;
+          assert.ok(request, 'no ExecuteSqlRequest found');
+          assert.strictEqual(
+            request.transaction!.begin!.excludeTxnFromChangeStreams,
+            true
+          );
+          done();
+        }
+      );
+    });
+
+    it('should use optimistic lock and transaction tag for getTransaction', async () => {
+      const database = newTestDatabase();
+      const promise = await database.getTransaction({
+        optimisticLock: true,
+        requestOptions: {transactionTag: 'transaction-tag'},
+      });
+      const transaction = promise[0];
+      await transaction.run('SELECT 1').then(results => {
+        const request = spannerMock.getRequests().find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+        assert.ok(request, 'no ExecuteSqlRequest found');
+        assert.strictEqual(
+          request.transaction!.begin!.readWrite!.readLockMode,
+          'OPTIMISTIC'
+        );
+        assert.strictEqual(
+          request.requestOptions?.transactionTag,
+          'transaction-tag'
+        );
       });
     });
 
@@ -3296,6 +3453,40 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should handle parallel request with inline begin transaction', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(async tx => {
+        const rowCount1 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount2 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        const rowCount3 = getRowCountFromStreamingSql(tx!, {sql: selectSql});
+        await Promise.all([rowCount1, rowCount2, rowCount3]);
+        await tx.commit();
+      });
+      await database.close();
+
+      let request = spannerMock.getRequests().find(val => {
+        return (val as v1.ExecuteSqlRequest).sql;
+      }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.ok(request.transaction!.begin!.readWrite, 'ReadWrite is not set');
+      assert.strictEqual(request.sql, selectSql);
+
+      request = spannerMock
+        .getRequests()
+        .slice()
+        .reverse()
+        .find(val => {
+          return (val as v1.ExecuteSqlRequest).sql;
+        }) as v1.ExecuteSqlRequest;
+      assert.ok(request, 'no ExecuteSqlRequest found');
+      assert.strictEqual(request.sql, selectSql);
+      assert.ok(request.transaction!.id, 'TransactionID is not set.');
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(!beginTxnRequest, 'beginTransaction was called');
+    });
+
     it('should use beginTransaction on retry', async () => {
       const database = newTestDatabase();
       let attempts = 0;
@@ -3314,6 +3505,33 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction on retry with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      let attempts = 0;
+      await database.runTransactionAsync(
+        {excludeTxnFromChangeStreams: true},
+        async tx => {
+          await tx!.run(selectSql);
+          if (!attempts) {
+            spannerMock.abortTransaction(tx);
+          }
+          attempts++;
+          await tx!.run(insertSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
     });
 
     it('should use beginTransaction on retry with optimistic lock', async () => {
@@ -3363,6 +3581,38 @@ describe('Spanner with mock server', () => {
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should use beginTransaction on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          try {
+            await tx.runUpdate(invalidSql);
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              (e as ServiceError).message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should use beginTransaction for streaming on retry for unknown reason', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(async tx => {
@@ -3384,6 +3634,38 @@ describe('Spanner with mock server', () => {
         return (val as v1.BeginTransactionRequest).options?.readWrite;
       }) as v1.BeginTransactionRequest;
       assert.ok(beginTxnRequest, 'beginTransaction was called');
+    });
+
+    it('should use beginTransaction for streaming on retry for unknown reason with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          try {
+            await getRowCountFromStreamingSql(tx!, {sql: invalidSql});
+            assert.fail('missing expected error');
+          } catch (e) {
+            assert.strictEqual(
+              (e as ServiceError).message,
+              `${grpc.status.NOT_FOUND} NOT_FOUND: ${fooNotFoundErr.message}`
+            );
+          }
+          await tx.run(selectSql);
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.ok(beginTxnRequest, 'beginTransaction was called');
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
     });
 
     it('should fail if beginTransaction fails', async () => {
@@ -3452,6 +3734,28 @@ describe('Spanner with mock server', () => {
       assert.ok(beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should run begin transaction on blind commit with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      await database.runTransactionAsync(
+        {
+          excludeTxnFromChangeStreams: true,
+        },
+        async tx => {
+          tx.insert('foo', {id: 1, name: 'One'});
+          await tx.commit();
+        }
+      );
+      await database.close();
+
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
+    });
+
     it('should throw error if begin transaction fails on blind commit', async () => {
       const database = newTestDatabase();
       const err = {
@@ -3467,6 +3771,43 @@ describe('Spanner with mock server', () => {
           await tx.commit();
         });
       } catch (e) {
+        assert.strictEqual(
+          (e as ServiceError).message,
+          '2 UNKNOWN: Test error'
+        );
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should throw error if begin transaction fails on blind commit with excludeTxnFromChangeStreams', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Test error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.beginTransaction,
+        SimulatedExecutionTime.ofError(err)
+      );
+      try {
+        await database.runTransactionAsync(
+          {
+            excludeTxnFromChangeStreams: true,
+          },
+          async tx => {
+            tx.insert('foo', {id: 1, name: 'One'});
+            await tx.commit();
+          }
+        );
+      } catch (e) {
+        const beginTxnRequest = spannerMock.getRequests().find(val => {
+          return (val as v1.BeginTransactionRequest).options?.readWrite;
+        }) as v1.BeginTransactionRequest;
+
+        assert.strictEqual(
+          beginTxnRequest.options?.excludeTxnFromChangeStreams,
+          true
+        );
         assert.strictEqual(
           (e as ServiceError).message,
           '2 UNKNOWN: Test error'
@@ -3504,6 +3845,24 @@ describe('Spanner with mock server', () => {
         'transaction-tag'
       );
 
+      await database.close();
+    });
+
+    it('should use excludeTxnFromChangeStreams for mutations', async () => {
+      const database = newTestDatabase();
+      await database.table('foo').upsert(
+        {id: 1, name: 'bar'},
+        {
+          excludeTxnFromChangeStreams: true,
+        }
+      );
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.strictEqual(
+        beginTxnRequest.options?.excludeTxnFromChangeStreams,
+        true
+      );
       await database.close();
     });
 
@@ -3612,10 +3971,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked string value', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -3664,10 +4023,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked string value in an array', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -3717,10 +4076,10 @@ describe('Spanner with mock server', () => {
     });
 
     it('should return all values from PartialResultSet with chunked list value', async () => {
-      for (const includeResumeToken in [true, false]) {
+      for (const includeResumeToken of [true, false]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let errorOnIndexes: any;
-        for (errorOnIndexes in [[], [0], [1], [0, 1]]) {
+        for (errorOnIndexes of [[], [0], [1], [0, 1]]) {
           const sql = 'SELECT * FROM TestTable';
           const prs1 = PartialResultSet.create({
             resumeToken: includeResumeToken
@@ -3963,6 +4322,200 @@ describe('Spanner with mock server', () => {
         await database.close();
       }
     });
+
+    it('should clear pending values if the last partial result did not have a resume token and was not a complete row', async () => {
+      const sql = 'SELECT * FROM TestTable';
+      const prs1 = PartialResultSet.create({
+        resumeToken: undefined,
+        metadata: createMultiColumnMetadata(),
+        values: [
+          {stringValue: 'id1.1'},
+          {stringValue: 'id1.2'},
+          {stringValue: '100'},
+        ],
+        chunkedValue: false,
+      });
+      const prs2 = PartialResultSet.create({
+        resumeToken: undefined,
+        values: [
+          {boolValue: true},
+          {boolValue: true},
+          {numberValue: 0.5},
+          {stringValue: 'id2.1'},
+          {stringValue: 'id2.2'},
+        ],
+        chunkedValue: false,
+      });
+      const prs3 = PartialResultSet.create({
+        resumeToken: undefined,
+        values: [
+          {stringValue: '200'},
+          {boolValue: true},
+          {boolValue: true},
+          {numberValue: 0.5},
+        ],
+      });
+      // Let the stream return UNAVAILABLE on index 1 (so the second PartialResultSet).
+      setupResultsAndErrors(sql, [prs1, prs2, prs3], [1]);
+      const database = newTestDatabase();
+      try {
+        const [rows] = (await database.run({
+          sql,
+          json: true,
+        })) as Json[][];
+        verifyQueryResult(rows);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should not clear pending values if the last partial result had a resume token and was not a complete row', async () => {
+      for (const errorIndexes of [[1], [2]]) {
+        const sql = 'SELECT * FROM TestTable';
+        const prs1 = PartialResultSet.create({
+          resumeToken: Buffer.from('00000000'),
+          metadata: createMultiColumnMetadata(),
+          values: [
+            {stringValue: 'id1.1'},
+            {stringValue: 'id1.2'},
+            {stringValue: '100'},
+          ],
+          chunkedValue: false,
+        });
+        const prs2 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+            {stringValue: 'id2.1'},
+            {stringValue: 'id2.2'},
+          ],
+          chunkedValue: false,
+        });
+        const prs3 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {stringValue: '200'},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+          ],
+        });
+        setupResultsAndErrors(sql, [prs1, prs2, prs3], errorIndexes);
+        const database = newTestDatabase();
+        try {
+          const [rows] = (await database.run({
+            sql,
+            json: true,
+          })) as Json[][];
+          verifyQueryResult(rows);
+        } finally {
+          await database.close();
+        }
+      }
+    });
+
+    it('should not clear pending values if the last partial result was chunked and had a resume token', async () => {
+      for (const errorIndexes of [[2]]) {
+        const sql = 'SELECT * FROM TestTable';
+        const prs1 = PartialResultSet.create({
+          resumeToken: Buffer.from('00000000'),
+          metadata: createMultiColumnMetadata(),
+          values: [
+            {stringValue: 'id1.1'},
+            {stringValue: 'id1.2'},
+            {stringValue: '100'},
+          ],
+          chunkedValue: true,
+        });
+        const prs2 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            // The previous value was chunked, but it is still perfectly possible that it actually contained
+            // the entire value. So in this case the actual value was '100'.
+            {stringValue: ''},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+            {stringValue: 'id2.1'},
+            {stringValue: 'id2.2'},
+          ],
+          chunkedValue: false,
+        });
+        const prs3 = PartialResultSet.create({
+          resumeToken: undefined,
+          values: [
+            {stringValue: '200'},
+            {boolValue: true},
+            {boolValue: true},
+            {numberValue: 0.5},
+          ],
+        });
+        setupResultsAndErrors(sql, [prs1, prs2, prs3], errorIndexes);
+        const database = newTestDatabase();
+        try {
+          const [rows] = (await database.run({
+            sql,
+            json: true,
+          })) as Json[][];
+          verifyQueryResult(rows);
+        } finally {
+          await database.close();
+        }
+      }
+    });
+
+    function verifyQueryResult(rows: Json[]) {
+      assert.strictEqual(rows.length, 2);
+      assert.strictEqual(rows[0].col1, 'id1.1');
+      assert.strictEqual(rows[0].col2, 'id1.2');
+      assert.strictEqual(rows[0].col3, 100);
+      assert.strictEqual(rows[0].col4, true);
+      assert.strictEqual(rows[0].col5, true);
+      assert.strictEqual(rows[0].col6, 0.5);
+
+      assert.strictEqual(rows[1].col1, 'id2.1');
+      assert.strictEqual(rows[1].col2, 'id2.2');
+      assert.strictEqual(rows[1].col3, 200);
+      assert.strictEqual(rows[1].col4, true);
+      assert.strictEqual(rows[1].col5, true);
+      assert.strictEqual(rows[1].col6, 0.5);
+    }
+
+    function createMultiColumnMetadata() {
+      const fields = [
+        protobuf.StructType.Field.create({
+          name: 'col1',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col2',
+          type: protobuf.Type.create({code: protobuf.TypeCode.STRING}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col3',
+          type: protobuf.Type.create({code: protobuf.TypeCode.INT64}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col4',
+          type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col5',
+          type: protobuf.Type.create({code: protobuf.TypeCode.BOOL}),
+        }),
+        protobuf.StructType.Field.create({
+          name: 'col6',
+          type: protobuf.Type.create({code: protobuf.TypeCode.FLOAT64}),
+        }),
+      ];
+      return new protobuf.ResultSetMetadata({
+        rowType: new protobuf.StructType({
+          fields,
+        }),
+      });
+    }
 
     function createMetadata() {
       const fields = [
@@ -4220,9 +4773,8 @@ describe('Spanner with mock server', () => {
       const dbSpecificQuery: GetDatabaseOperationsOptions = {
         filter: dbSpecificFilter,
       };
-      const [operations1] = await instance.getDatabaseOperations(
-        dbSpecificQuery
-      );
+      const [operations1] =
+        await instance.getDatabaseOperations(dbSpecificQuery);
 
       const database = instance.database('test-database');
       const [operations2] = await database.getOperations();

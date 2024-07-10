@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,7 +24,6 @@ function main(
   projectId = 'my-project-id'
 ) {
   // [START spanner_delete_instance_config]
-
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -38,24 +37,22 @@ function main(
   const spanner = new Spanner({
     projectId: projectId,
   });
+
+  const instanceAdminClient = spanner.getInstanceAdminClient();
+
   async function deleteInstanceConfig() {
     // Deletes an instance config.
-    const instanceConfig = spanner.instanceConfig(instanceConfigId);
+
     try {
       // Delete the instance config.
-      console.log(`Deleting ${instanceConfig.id}...\n`);
-      await instanceConfig.delete();
-      // Verify that the instance config no longer exists
-      const exists = await instanceConfig.exists();
-      if (exists) {
-        console.error(
-          'Error: Instance config ',
-          instanceConfigId,
-          ' still exists'
-        );
-      } else {
-        console.log(`Deleted instance config ${instanceConfigId}.\n`);
-      }
+      console.log(`Deleting ${instanceConfigId}...\n`);
+      await instanceAdminClient.deleteInstanceConfig({
+        name: instanceAdminClient.instanceConfigPath(
+          projectId,
+          instanceConfigId
+        ),
+      });
+      console.log(`Deleted instance config ${instanceConfigId}.\n`);
     } catch (err) {
       console.error(
         'ERROR: Deleting instance config ',

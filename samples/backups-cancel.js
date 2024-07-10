@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +17,9 @@
 
 async function cancelBackup(instanceId, databaseId, backupId, projectId) {
   // [START spanner_cancel_backup_create]
-  // Imports the Google Cloud client library and precise date library
-  const {Spanner} = require('@google-cloud/spanner');
 
+  // Imports the Google Cloud client library and precise date library
+  const {Spanner, protos} = require('@google-cloud/spanner');
   /**
    * TODO(developer): Uncomment the following lines before running the sample.
    */
@@ -33,21 +33,33 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     projectId: projectId,
   });
 
-  // Gets a reference to a Cloud Spanner instance and database
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
-
-  const backup = instance.backup(backupId);
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   // Creates a new backup of the database
   try {
-    console.log(`Creating backup of database ${database.formattedName_}.`);
-    const databasePath = database.formattedName_;
+    console.log(
+      `Creating backup of database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )}.`
+    );
+
     // Expire backup one day in the future
     const expireTime = Date.now() + 1000 * 60 * 60 * 24;
-    const [, operation] = await backup.create({
-      databasePath: databasePath,
-      expireTime: expireTime,
+    const [operation] = await databaseAdminClient.createBackup({
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
+      backupId: backupId,
+      backup: (protos.google.spanner.admin.database.v1.Backup = {
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        expireTime: Spanner.timestamp(expireTime).toStruct(),
+        name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+      }),
     });
 
     // Cancel the backup
@@ -58,10 +70,12 @@ async function cancelBackup(instanceId, databaseId, backupId, projectId) {
     console.error('ERROR:', err);
   } finally {
     // Delete backup in case it got created before the cancel operation
-    await backup.delete();
-
-    // Close the database when finished.
-    await database.close();
+    await databaseAdminClient.deleteBackup({
+      name: databaseAdminClient.backupPath(projectId, instanceId, backupId),
+    });
+    // Close the spanner client when finished.
+    // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+    spanner.close();
   }
   // [END spanner_cancel_backup_create]
 }

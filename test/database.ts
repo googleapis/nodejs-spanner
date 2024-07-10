@@ -28,7 +28,7 @@ import * as through from 'through2';
 import * as pfy from '@google-cloud/promisify';
 import {grpc} from 'google-gax';
 import * as db from '../src/database';
-import {Spanner, Instance} from '../src';
+import {Spanner, Instance, MutationGroup} from '../src';
 import {MockError} from './mockserver/mockspanner';
 import {IOperation} from '../src/instance';
 import {
@@ -36,9 +36,11 @@ import {
   LEADER_AWARE_ROUTING_HEADER,
 } from '../src/common';
 import {google} from '../protos/protos';
+import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
+import {BatchWriteOptions} from '../src/transaction';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -49,8 +51,10 @@ const fakePfy = extend({}, pfy, {
     promisified = true;
     assert.deepStrictEqual(options.exclude, [
       'batchTransaction',
+      'batchWriteAtLeastOnce',
       'getRestoreInfo',
       'getState',
+      'getDatabaseDialect',
       'getOperations',
       'runTransaction',
       'runTransactionAsync',
@@ -84,14 +88,19 @@ function fakePartialResultStream(this: Function & {calledWith_: IArguments}) {
 
 class FakeSession {
   calledWith_: IArguments;
+  formattedName_: any;
   constructor() {
     this.calledWith_ = arguments;
   }
   partitionedDml(): FakeTransaction {
-    return new FakeTransaction();
+    return new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.PartitionedDml
+    );
   }
   snapshot(): FakeTransaction {
-    return new FakeTransaction();
+    return new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadOnly
+    );
   }
 }
 
@@ -115,8 +124,10 @@ class FakeTable {
 
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
-  constructor() {
+  _options!: google.spanner.v1.ITransactionOptions;
+  constructor(options) {
     super();
+    this._options = options;
     this.calledWith_ = arguments;
   }
   begin() {}
@@ -133,6 +144,7 @@ class FakeTransactionRunner {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     fakeTransactionRunner = this;
   }
   async run(): Promise<void> {}
@@ -144,6 +156,7 @@ class FakeAsyncTransactionRunner<T extends {}> {
   calledWith_: IArguments;
   constructor() {
     this.calledWith_ = arguments;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     fakeAsyncTransactionRunner = this;
   }
   async run(): Promise<T> {
@@ -435,6 +448,7 @@ describe('Database', () => {
       const error = new Error('err');
       const response = {};
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(error, response);
       });
@@ -458,6 +472,7 @@ describe('Database', () => {
         stub.withArgs(session.name).returns(fakeSessions[i]);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       sandbox.stub(database, 'request').callsFake((_, cb: any) => {
         cb(null, response);
       });
@@ -558,6 +573,192 @@ describe('Database', () => {
 
       const transaction = database.batchTransaction(identifier);
       assert.deepStrictEqual(transaction.calledWith_[0], SESSION);
+    });
+  });
+
+  describe('batchWrite', () => {
+    const mutationGroup1 = new MutationGroup();
+    mutationGroup1.insert('MyTable', {
+      Key: 'k1',
+      Thing: 'abc',
+    });
+    const mutationGroup2 = new MutationGroup();
+    mutationGroup2.insert('MyTable', {
+      Key: 'k2',
+      Thing: 'xyz',
+    });
+
+    const mutationGroups = [mutationGroup1, mutationGroup2];
+
+    let fakePool: FakeSessionPool;
+    let fakeSession: FakeSession;
+    let fakeDataStream: Transform;
+    let getSessionStub: sinon.SinonStub;
+    let requestStreamStub: sinon.SinonStub;
+
+    const options = {
+      requestOptions: {
+        transactionTag: 'batch-write-tag',
+      },
+      excludeTxnFromChangeStream: true,
+      gaxOptions: {autoPaginate: false},
+    } as BatchWriteOptions;
+
+    beforeEach(() => {
+      fakePool = database.pool_;
+      fakeSession = new FakeSession();
+      fakeDataStream = through.obj();
+
+      getSessionStub = (
+        sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
+      ).callsFake(callback => callback(null, fakeSession));
+
+      requestStreamStub = sandbox
+        .stub(database, 'requestStream')
+        .returns(fakeDataStream);
+    });
+
+    it('should get a session via `getSession`', done => {
+      getSessionStub.callsFake(() => {});
+      database.batchWriteAtLeastOnce(mutationGroups, options);
+      assert.strictEqual(getSessionStub.callCount, 1);
+      done();
+    });
+
+    it('should destroy the stream if `getSession` errors', done => {
+      const fakeError = new Error('err');
+
+      getSessionStub.callsFake(callback => callback(fakeError));
+      database
+        .batchWriteAtLeastOnce(mutationGroups, options)
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+          done();
+        });
+    });
+
+    it('should call `requestStream` with correct arguments', () => {
+      const expectedGaxOpts = extend(true, {}, options?.gaxOptions);
+      const expectedReqOpts = Object.assign(
+        {} as google.spanner.v1.BatchWriteRequest,
+        {
+          session: fakeSession!.formattedName_!,
+          mutationGroups: mutationGroups.map(mg => mg.proto()),
+          requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+        }
+      );
+
+      database.batchWriteAtLeastOnce(mutationGroups, options);
+
+      assert.strictEqual(requestStreamStub.callCount, 1);
+      const args = requestStreamStub.firstCall.args[0];
+      assert.strictEqual(args.client, 'SpannerClient');
+      assert.strictEqual(args.method, 'batchWrite');
+      assert.deepStrictEqual(args.reqOpts, expectedReqOpts);
+      assert.deepStrictEqual(args.gaxOpts, expectedGaxOpts);
+      assert.deepStrictEqual(args.headers, database.resourceHeader_);
+    });
+
+    it('should return error when passing an empty list of mutationGroups', done => {
+      const fakeError = new Error('err');
+      database.batchWriteAtLeastOnce([], options).on('error', error => {
+        assert.strictEqual(error, fakeError);
+        done();
+      });
+      fakeDataStream.emit('error', fakeError);
+    });
+
+    it('should return data when passing a valid list of mutationGroups', done => {
+      database
+        .batchWriteAtLeastOnce(mutationGroups, options)
+        .on('data', data => {
+          assert.strictEqual(data, 'test');
+          done();
+        });
+      fakeDataStream.emit('data', 'test');
+    });
+
+    it('should emit correct event based on valid/invalid list of mutationGroups', done => {
+      const fakeError = new Error('err');
+      const FakeMutationGroup1 = new MutationGroup();
+      FakeMutationGroup1.insert('Singers', {
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+      FakeMutationGroup1.insert('Singers', {
+        SingerId: 1000000000000000000000000000000000,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+
+      const FakeMutationGroup2 = new MutationGroup();
+      FakeMutationGroup2.insert('Singers', {
+        SingerId: 2,
+        FirstName: 'Marc',
+      });
+      FakeMutationGroup2.insert('Singers', {
+        SingerId: 3,
+        FirstName: 'Catalina',
+        LastName: 'Smith',
+      });
+      FakeMutationGroup2.insert('Albums', {
+        AlbumId: 1,
+        SingerId: 2,
+        AlbumTitle: 'Total Junk',
+      });
+      FakeMutationGroup2.insert('Albums', {
+        AlbumId: 2,
+        SingerId: 3,
+        AlbumTitle: 'Go, Go, Go',
+      });
+      database
+        .batchWriteAtLeastOnce(
+          [FakeMutationGroup1, FakeMutationGroup2],
+          options
+        )
+        .on('data', data => {
+          assert.strictEqual(data, 'testData');
+        })
+        .on('error', err => {
+          assert.strictEqual(err, fakeError);
+        });
+      fakeDataStream.emit('data', 'testData');
+      fakeDataStream.emit('error', fakeError);
+      done();
+    });
+
+    it('should retry on "Session not found" error', done => {
+      const sessionNotFoundError = {
+        code: grpc.status.NOT_FOUND,
+        message: 'Session not found',
+      } as grpc.ServiceError;
+      let retryCount = 0;
+
+      database
+        .batchWriteAtLeastOnce(mutationGroups, options)
+        .on('data', () => {})
+        .on('error', err => {
+          assert.fail(err);
+        })
+        .on('end', () => {
+          assert.strictEqual(retryCount, 1);
+          done();
+        });
+
+      fakeDataStream.emit('error', sessionNotFoundError);
+      retryCount++;
+    });
+
+    it('should release session on stream end', () => {
+      const releaseStub = sandbox.stub(fakePool, 'release') as sinon.SinonStub;
+
+      database.batchWriteAtLeastOnce(mutationGroups, options);
+      fakeDataStream.emit('end');
+
+      assert.strictEqual(releaseStub.callCount, 1);
+      assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
     });
   });
 
@@ -1570,8 +1771,12 @@ describe('Database', () => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
       fakeSession2 = new FakeSession();
-      fakeSnapshot = new FakeTransaction();
-      fakeSnapshot2 = new FakeTransaction();
+      fakeSnapshot = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.ReadOnly
+      );
+      fakeSnapshot2 = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.ReadOnly
+      );
       fakeStream = through.obj();
       fakeStream2 = through.obj();
 
@@ -1933,7 +2138,9 @@ describe('Database', () => {
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakeSnapshot = new FakeTransaction();
+      fakeSnapshot = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.ReadOnly
+      );
 
       beginSnapshotStub = (
         sandbox.stub(fakeSnapshot, 'begin') as sinon.SinonStub
@@ -2007,7 +2214,9 @@ describe('Database', () => {
       } as MockError;
 
       const fakeSession2 = new FakeSession();
-      const fakeSnapshot2 = new FakeTransaction();
+      const fakeSnapshot2 = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.ReadOnly
+      );
       (sandbox.stub(fakeSnapshot2, 'begin') as sinon.SinonStub).callsFake(
         callback => callback(null)
       );
@@ -2070,7 +2279,9 @@ describe('Database', () => {
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakeTransaction = new FakeTransaction();
+      fakeTransaction = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.ReadWrite
+      );
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
@@ -2425,16 +2636,33 @@ describe('Database', () => {
 
     let fakePool: FakeSessionPool;
     let fakeSession: FakeSession;
-    let fakePartitionedDml: FakeTransaction;
+    let fakePartitionedDml = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.PartitionedDml
+    );
 
     let getSessionStub;
     let beginStub;
     let runUpdateStub;
 
+    const fakeDirectedReadOptions = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     beforeEach(() => {
       fakePool = database.pool_;
       fakeSession = new FakeSession();
-      fakePartitionedDml = new FakeTransaction();
+      fakePartitionedDml = new FakeTransaction(
+        {} as google.spanner.v1.TransactionOptions.PartitionedDml
+      );
 
       getSessionStub = (
         sandbox.stub(fakePool, 'getSession') as sinon.SinonStub
@@ -2505,7 +2733,8 @@ describe('Database', () => {
 
       const [query] = runUpdateStub.lastCall.args;
 
-      assert.strictEqual(query, QUERY);
+      assert.strictEqual(query.sql, QUERY.sql);
+      assert.deepStrictEqual(query.params, QUERY.params);
       assert.ok(fakeCallback.calledOnce);
     });
 
@@ -2541,11 +2770,58 @@ describe('Database', () => {
       });
       assert.ok(fakeCallback.calledOnce);
     });
+
+    it('should accept excludeTxnFromChangeStreams', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.runPartitionedUpdate(
+        {
+          excludeTxnFromChangeStream: true,
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        excludeTxnFromChangeStream: true,
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
+
+    it('should ignore directedReadOptions set for client', () => {
+      const fakeCallback = sandbox.spy();
+
+      database.parent.parent = {
+        routeToLeaderEnabled: true,
+        directedReadOptions: fakeDirectedReadOptions,
+      };
+
+      database.runPartitionedUpdate(
+        {
+          sql: QUERY.sql,
+          params: QUERY.params,
+          requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+        },
+        fakeCallback
+      );
+
+      const [query] = runUpdateStub.lastCall.args;
+
+      assert.deepStrictEqual(query, {
+        sql: QUERY.sql,
+        params: QUERY.params,
+        requestOptions: {priority: RequestOptions.Priority.PRIORITY_LOW},
+      });
+      assert.ok(fakeCallback.calledOnce);
+    });
   });
 
   describe('runTransaction', () => {
     const SESSION = new FakeSession();
-    const TRANSACTION = new FakeTransaction();
+    const TRANSACTION = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadWrite
+    );
 
     let pool: FakeSessionPool;
 
@@ -2629,7 +2905,9 @@ describe('Database', () => {
 
   describe('runTransactionAsync', () => {
     const SESSION = new FakeSession();
-    const TRANSACTION = new FakeTransaction();
+    const TRANSACTION = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadWrite
+    );
 
     let pool: FakeSessionPool;
 
@@ -2721,6 +2999,35 @@ describe('Database', () => {
       database.getState((err, result) => {
         assert.ifError(err);
         assert.strictEqual(result, state);
+        done();
+      });
+    });
+  });
+
+  describe('getDatabaseDialect', () => {
+    it('should get database dialect from database metadata', async () => {
+      database.getMetadata = async () => [
+        {databaseDialect: 'GOOGLE_STANDARD_SQL'},
+      ];
+      const result = await database.getDatabaseDialect();
+      assert.strictEqual(result, 'GOOGLE_STANDARD_SQL');
+    });
+
+    it('should accept and pass gaxOptions to getMetadata', async () => {
+      const options = {};
+      database.getMetadata = async gaxOptions => {
+        assert.strictEqual(gaxOptions, options);
+        return [{}];
+      };
+      await database.getDatabaseDialect(options);
+    });
+
+    it('should accept callback and return database dialect', done => {
+      const databaseDialect = 'GOOGLE_STANDARD_SQL';
+      database.getMetadata = async () => [{databaseDialect}];
+      database.getDatabaseDialect((err, result) => {
+        assert.ifError(err);
+        assert.strictEqual(result, databaseDialect);
         done();
       });
     });
