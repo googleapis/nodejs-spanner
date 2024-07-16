@@ -391,10 +391,15 @@ describe('Transaction', () => {
       });
 
       it('should pass along row options', () => {
+        const gaxOptions = {
+          timeout: 60,
+        };
         const fakeOptions = {
           json: true,
           jsonOptions: {a: 'b'},
           maxResumeRetries: 10,
+          columnsMetadata: {column1: {test: 'ss'}, column2: Function},
+          gaxOptions: gaxOptions,
         };
 
         snapshot.createReadStream(TABLE, fakeOptions);
@@ -765,10 +770,15 @@ describe('Transaction', () => {
       });
 
       it('should pass along row options', () => {
+        const gaxOptions = {
+          timeout: 60,
+        };
         const expectedOptions = {
           json: true,
           jsonOptions: {a: 'b'},
           maxResumeRetries: 10,
+          columnsMetadata: {column1: {test: 'ss'}, column2: Function},
+          gaxOptions: gaxOptions,
         };
 
         const fakeQuery = Object.assign({}, QUERY, expectedOptions);

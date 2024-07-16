@@ -4,6 +4,44 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.9.1](https://github.com/googleapis/nodejs-spanner/compare/v7.9.0...v7.9.1) (2024-06-26)
+
+
+### Bug Fixes
+
+* Retry with timeout ([#2071](https://github.com/googleapis/nodejs-spanner/issues/2071)) ([a943257](https://github.com/googleapis/nodejs-spanner/commit/a943257a0402b26fd80196057a9724fd28fc5c1b))
+
+## [7.9.0](https://github.com/googleapis/nodejs-spanner/compare/v7.8.0...v7.9.0) (2024-06-21)
+
+
+### Features
+
+* **spanner:** Add support for batchWrite ([#2054](https://github.com/googleapis/nodejs-spanner/issues/2054)) ([06aab6e](https://github.com/googleapis/nodejs-spanner/commit/06aab6e39bbce9e3786f1ac631c80e8909197e92))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.4 ([#2051](https://github.com/googleapis/nodejs-spanner/issues/2051)) ([80abf06](https://github.com/googleapis/nodejs-spanner/commit/80abf06ba8ef9497318ffc597b83fb63e4408f9c))
+* **deps:** Update dependency google-gax to v4.3.5 ([#2055](https://github.com/googleapis/nodejs-spanner/issues/2055)) ([702c9b0](https://github.com/googleapis/nodejs-spanner/commit/702c9b0f34e6cc34233c5aa52b97601b19f70980))
+* **deps:** Update dependency google-gax to v4.3.6 ([#2057](https://github.com/googleapis/nodejs-spanner/issues/2057)) ([74ebf1e](https://github.com/googleapis/nodejs-spanner/commit/74ebf1e45cddf614c180295f3a761a8f84c5cb32))
+* **deps:** Update dependency google-gax to v4.3.7 ([#2068](https://github.com/googleapis/nodejs-spanner/issues/2068)) ([28fec6c](https://github.com/googleapis/nodejs-spanner/commit/28fec6ca505d78d725efc123950be978e0c84ab7))
+
+## [7.8.0](https://github.com/googleapis/nodejs-spanner/compare/v7.7.0...v7.8.0) (2024-05-24)
+
+
+### Features
+
+* Add `RESOURCE_EXHAUSTED` to the list of retryable error codes ([#2032](https://github.com/googleapis/nodejs-spanner/issues/2032)) ([a4623c5](https://github.com/googleapis/nodejs-spanner/commit/a4623c560c16fa1f37a06cb57a5e47a1d6759d27))
+* Add support for multi region encryption config ([81fa610](https://github.com/googleapis/nodejs-spanner/commit/81fa610895fe709cbb7429896493a67407a6343c))
+* Add support for Proto columns ([#1991](https://github.com/googleapis/nodejs-spanner/issues/1991)) ([ae59c7f](https://github.com/googleapis/nodejs-spanner/commit/ae59c7f957660e08cd5965b5e67694fa1ccc0057))
+* **spanner:** Add support for change streams transaction exclusion option ([#2049](https://github.com/googleapis/nodejs-spanner/issues/2049)) ([d95cab5](https://github.com/googleapis/nodejs-spanner/commit/d95cab5abe50cdb56cbc1d6d935aee29526e1096))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.3 ([#2038](https://github.com/googleapis/nodejs-spanner/issues/2038)) ([d86c1b0](https://github.com/googleapis/nodejs-spanner/commit/d86c1b0c21c7c95e3110221b3ca6ff9ff3b4a088))
+* Drop table statement ([#2036](https://github.com/googleapis/nodejs-spanner/issues/2036)) ([f31d7b2](https://github.com/googleapis/nodejs-spanner/commit/f31d7b205d74d4a783f0d5159dd5b62efe968fe6))
+
 ## [7.7.0](https://github.com/googleapis/nodejs-spanner/compare/v7.6.0...v7.7.0) (2024-04-17)
 
 

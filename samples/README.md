@@ -27,6 +27,7 @@ and automatic, synchronous replication for high availability.
   * [Backups-restore](#backups-restore)
   * [Backups-update](#backups-update)
   * [Backups](#backups)
+  * [Batch Write](#batch-write)
   * [Batch](#batch)
   * [CRUD](#crud)
   * [Creates a new database with a specific default leader](#creates-a-new-database-with-a-specific-default-leader)
@@ -92,6 +93,10 @@ and automatic, synchronous replication for high availability.
   * [Alters a sequence in a PostgreSQL database.](#alters-a-sequence-in-a-postgresql-database.)
   * [Creates sequence in PostgreSQL database.](#creates-sequence-in-postgresql-database.)
   * [Drops a sequence in PostgreSQL database.](#drops-a-sequence-in-postgresql-database.)
+  * [Proto-query-data](#proto-query-data)
+  * [Creates a new database with a proto column and enum](#creates-a-new-database-with-a-proto-column-and-enum)
+  * [Proto-update-data-dml](#proto-update-data-dml)
+  * [Proto-update-data](#proto-update-data)
   * [Queryoptions](#queryoptions)
   * [Quickstart](#quickstart)
   * [Read data with database role](#read-data-with-database-role)
@@ -343,6 +348,23 @@ __Usage:__
 
 
 `node samples/backups.js`
+
+
+-----
+
+
+
+
+### Batch Write
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/batch-write.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/batch-write.js,samples/README.md)
+
+__Usage:__
+
+
+`node batch-write.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
 
 
 -----
@@ -1448,6 +1470,74 @@ __Usage:__
 
 
 `node pg-sequence-drop.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Proto-query-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-query-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-query-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-query-data.js`
+
+
+-----
+
+
+
+
+### Creates a new database with a proto column and enum
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-type-add-column.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-type-add-column.js,samples/README.md)
+
+__Usage:__
+
+
+`node proto-type-add-column.js <INSTANCE_ID> <DATABASE_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Proto-update-data-dml
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-update-data-dml.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-update-data-dml.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-update-data-dml.js`
+
+
+-----
+
+
+
+
+### Proto-update-data
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/proto-update-data.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/proto-update-data.js,samples/README.md)
+
+__Usage:__
+
+
+`node samples/proto-update-data.js`
 
 
 -----

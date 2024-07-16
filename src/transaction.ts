@@ -59,11 +59,54 @@ export interface TimestampBounds {
   returnReadTimestamp?: boolean;
 }
 
+export interface BatchWriteOptions {
+  requestOptions?: Pick<IRequestOptions, 'priority' | 'transactionTag'>;
+  gaxOptions?: CallOptions;
+  excludeTxnFromChangeStreams?: boolean;
+}
+
 export interface RequestOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   gaxOptions?: CallOptions;
   maxResumeRetries?: number;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. This is only needed for proto columns
+   * where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
+   */
+  columnsMetadata?: object;
 }
 
 export interface CommitOptions {
@@ -583,8 +626,14 @@ export class Snapshot extends EventEmitter {
     table: string,
     request = {} as ReadRequest
   ): PartialResultStream {
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      request;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = request;
     const keySet = Snapshot.encodeKeySet(request);
     const transaction: spannerClient.spanner.v1.ITransactionSelector = {};
 
@@ -610,6 +659,7 @@ export class Snapshot extends EventEmitter {
     delete request.ranges;
     delete request.requestOptions;
     delete request.directedReadOptions;
+    delete request.columnsMetadata;
 
     const reqOpts: spannerClient.spanner.v1.IReadRequest = Object.assign(
       request,
@@ -654,6 +704,8 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
+      gaxOptions,
     })
       ?.on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -1077,8 +1129,14 @@ export class Snapshot extends EventEmitter {
       query.queryOptions
     );
 
-    const {gaxOptions, json, jsonOptions, maxResumeRetries, requestOptions} =
-      query;
+    const {
+      gaxOptions,
+      json,
+      jsonOptions,
+      maxResumeRetries,
+      requestOptions,
+      columnsMetadata,
+    } = query;
     let reqOpts;
 
     const directedReadOptions = this._getDirectedReadOptions(
@@ -1103,6 +1161,7 @@ export class Snapshot extends EventEmitter {
       delete query.requestOptions;
       delete query.types;
       delete query.directedReadOptions;
+      delete query.columnsMetadata;
 
       reqOpts = Object.assign(query, {
         session: this.session.formattedName_!,
@@ -1152,6 +1211,8 @@ export class Snapshot extends EventEmitter {
       json,
       jsonOptions,
       maxResumeRetries,
+      columnsMetadata,
+      gaxOptions,
     })
       .on('response', response => {
         if (response.metadata && response.metadata!.transaction && !this.id) {
@@ -2065,14 +2126,7 @@ export class Transaction extends Dml {
    * ```
    */
   deleteRows(table: string, keys: Key[]): void {
-    const keySet: spannerClient.spanner.v1.IKeySet = {
-      keys: arrify(keys).map(codec.convertToListValue),
-    };
-    const mutation: spannerClient.spanner.v1.IMutation = {
-      delete: {table, keySet},
-    };
-
-    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
+    this._queuedMutations.push(buildDeleteMutation(table, keys));
   }
 
   /**
@@ -2355,31 +2409,7 @@ export class Transaction extends Dml {
     table: string,
     keyVals: object | object[]
   ): void {
-    const rows: object[] = arrify(keyVals);
-    const columns = Transaction.getUniqueKeys(rows);
-
-    const values = rows.map((row, index) => {
-      const keys = Object.keys(row);
-      const missingColumns = columns.filter(column => !keys.includes(column));
-
-      if (missingColumns.length > 0) {
-        throw new GoogleError(
-          [
-            `Row at index ${index} does not contain the correct number of columns.`,
-            `Missing columns: ${JSON.stringify(missingColumns)}`,
-          ].join('\n\n')
-        );
-      }
-
-      const values = columns.map(column => row[column]);
-      return codec.convertToListValue(values);
-    });
-
-    const mutation: spannerClient.spanner.v1.IMutation = {
-      [method]: {table, columns, values},
-    };
-
-    this._queuedMutations.push(mutation as spannerClient.spanner.v1.Mutation);
+    this._queuedMutations.push(buildMutation(method, table, keyVals));
   }
 
   /**
@@ -2417,6 +2447,18 @@ export class Transaction extends Dml {
   useOptimisticLock(): void {
     this._options.readWrite!.readLockMode = ReadLockMode.OPTIMISTIC;
   }
+
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude read/write transactions
+   * from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified transaction, allowing read/write transaction to operate without being
+   * included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
+  }
 }
 
 /*! Developer Documentation
@@ -2427,6 +2469,130 @@ export class Transaction extends Dml {
 promisifyAll(Transaction, {
   exclude: ['deleteRows', 'insert', 'replace', 'update', 'upsert'],
 });
+
+/**
+ * Builds an array of protobuf Mutations from the given row(s).
+ *
+ * @param {string} method - CRUD method (insert, update, etc.).
+ * @param {string} table - Table to perform mutations in.
+ * @param {object | object[]} keyVals - Hash of key-value pairs representing the rows.
+ * @returns {spannerClient.spanner.v1.Mutation} - The formatted mutation.
+ * @throws {GoogleError} - If a row does not contain the correct number of columns.
+ */
+function buildMutation(
+  method: string,
+  table: string,
+  keyVals: object | object[]
+): spannerClient.spanner.v1.Mutation {
+  const rows: object[] = arrify(keyVals);
+  const columns = Transaction.getUniqueKeys(rows);
+
+  const values = rows.map((row, index) => {
+    const keys = Object.keys(row);
+    const missingColumns = columns.filter(column => !keys.includes(column));
+
+    if (missingColumns.length > 0) {
+      throw new GoogleError(
+        [
+          `Row at index ${index} does not contain the correct number of columns.`,
+          `Missing columns: ${JSON.stringify(missingColumns)}`,
+        ].join('\n\n')
+      );
+    }
+
+    const values = columns.map(column => row[column]);
+    return codec.convertToListValue(values);
+  });
+
+  const mutation: spannerClient.spanner.v1.IMutation = {
+    [method]: {table, columns, values},
+  };
+  return mutation as spannerClient.spanner.v1.Mutation;
+}
+
+/**
+ * Builds a delete mutation.
+ *
+ * @param {string} table - The name of the table.
+ * @param {Key[]} keys - The keys for the rows to delete.
+ * @returns {spannerClient.spanner.v1.Mutation} - The formatted delete mutation.
+ */
+function buildDeleteMutation(
+  table: string,
+  keys: Key[]
+): spannerClient.spanner.v1.Mutation {
+  const keySet: spannerClient.spanner.v1.IKeySet = {
+    keys: arrify(keys).map(codec.convertToListValue),
+  };
+  const mutation: spannerClient.spanner.v1.IMutation = {
+    delete: {table, keySet},
+  };
+  return mutation as spannerClient.spanner.v1.Mutation;
+}
+
+/**
+ * A group of mutations to be committed together.
+ * Related mutations should be placed in a group.
+ *
+ * For example, two mutations inserting rows with the same primary
+ * key prefix in both parent and child tables are related.
+ *
+ * This object is created and returned from {@link Database#MutationGroup}.
+ *
+ * @example
+ * ```
+ * const {Spanner} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const mutationGroup = new MutationGroup();
+ * mutationGroup.insert('Singers', {SingerId: '123', FirstName: 'David'});
+ * mutationGroup.update('Singers', {SingerId: '123', FirstName: 'Marc'});
+ *
+ * database.batchWriteAtLeastOnce([mutationGroup], {})
+ *    .on('error', console.error)
+ *    .on('data', response => {
+ *          console.log('response: ', response);
+ *      })
+ *     .on('end', () => {
+ *          console.log('Request completed successfully');
+ *      });
+ * ```
+ */
+export class MutationGroup {
+  private _proto: spannerClient.spanner.v1.BatchWriteRequest.MutationGroup;
+
+  constructor() {
+    this._proto =
+      new spannerClient.spanner.v1.BatchWriteRequest.MutationGroup();
+  }
+
+  insert(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('insert', table, rows));
+  }
+
+  update(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('update', table, rows));
+  }
+
+  upsert(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('insertOrUpdate', table, rows));
+  }
+
+  replace(table: string, rows: object | object[]): void {
+    this._proto.mutations.push(buildMutation('replace', table, rows));
+  }
+
+  deleteRows(table: string, keys: Key[]): void {
+    this._proto.mutations.push(buildDeleteMutation(table, keys));
+  }
+
+  proto(): spannerClient.spanner.v1.BatchWriteRequest.IMutationGroup {
+    return this._proto;
+  }
+}
 
 /**
  * This type of transaction is used to execute a single Partitioned DML
@@ -2449,6 +2615,17 @@ export class PartitionedDml extends Dml {
   ) {
     super(session);
     this._options = {partitionedDml: options};
+  }
+  /**
+   * Use option excludeTxnFromChangeStreams to exclude partitionedDml
+   * queries from being tracked in change streams.
+   *
+   * Enabling this options to true will effectively disable change stream tracking
+   * for a specified partitionedDml query, allowing write queries to operate
+   * without being included in change streams.
+   */
+  excludeTxnFromChangeStreams(): void {
+    this._options.excludeTxnFromChangeStreams = true;
   }
 
   /**
