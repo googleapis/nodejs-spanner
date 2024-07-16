@@ -197,6 +197,9 @@ export class SpannerExecutorProxyClient {
       backupPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/backups/{backup}'
       ),
+      backupSchedulePathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}'
+      ),
       databasePathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/databases/{database}'
       ),
@@ -481,6 +484,81 @@ export class SpannerExecutorProxyClient {
    */
   matchBackupFromBackupName(backupName: string) {
     return this.pathTemplates.backupPathTemplate.match(backupName).backup;
+  }
+
+  /**
+   * Return a fully-qualified backupSchedule resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} database
+   * @param {string} schedule
+   * @returns {string} Resource name string.
+   */
+  backupSchedulePath(
+    project: string,
+    instance: string,
+    database: string,
+    schedule: string
+  ) {
+    return this.pathTemplates.backupSchedulePathTemplate.render({
+      project: project,
+      instance: instance,
+      database: database,
+      schedule: schedule,
+    });
+  }
+
+  /**
+   * Parse the project from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).project;
+  }
+
+  /**
+   * Parse the instance from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).instance;
+  }
+
+  /**
+   * Parse the database from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the database.
+   */
+  matchDatabaseFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).database;
+  }
+
+  /**
+   * Parse the schedule from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the schedule.
+   */
+  matchScheduleFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).schedule;
   }
 
   /**
