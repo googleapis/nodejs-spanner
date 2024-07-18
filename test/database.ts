@@ -840,10 +840,8 @@ describe('Database', () => {
       try {
         database.writeAtLeastOnce(null, (err, res) => {});
       } catch (err) {
-        assert.ok(
-          (err as grpc.ServiceError).message.includes(
-            "Cannot read properties of null (reading 'proto')"
-          )
+        (err as grpc.ServiceError).message.includes(
+          "Cannot read properties of null (reading 'proto')"
         );
         done();
       }
