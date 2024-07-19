@@ -1536,23 +1536,39 @@ class Database extends common.GrpcServiceObject {
   ): void;
   async getDatabaseDialect(
     optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
-    cb?: GetDatabaseDialectCallback
+    callback?: GetDatabaseDialectCallback
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
     | undefined
   > {
     const gaxOptions =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
 
-    if (
-      this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
-      this.databaseDialect === null ||
-      this.databaseDialect === undefined
-    ) {
-      const [metadata] = await this.getMetadata(gaxOptions);
-      this.databaseDialect = metadata.databaseDialect;
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseDialectCallback)
+        : callback;
+
+    try {
+      if (
+        this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+        this.databaseDialect === null ||
+        this.databaseDialect === undefined
+      ) {
+        const [metadata] = await this.getMetadata(gaxOptions);
+        this.databaseDialect = metadata.databaseDialect;
+      }
+      if (cb) {
+        cb(null, this.databaseDialect);
+        return;
+      }
+      return this.databaseDialect || undefined;
+    } catch (err) {
+      cb!(err as grpc.ServiceError);
+      return;
     }
-    return this.databaseDialect || undefined;
   }
 
   /**
@@ -3754,6 +3770,7 @@ callbackifyAll(Database, {
     'delete',
     'exists',
     'get',
+    'getDatabaseDialect',
     'getMetadata',
     'getSchema',
     'getSessions',
