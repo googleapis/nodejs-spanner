@@ -1509,6 +1509,533 @@ describe('v1.DatabaseAdminClient', () => {
     });
   });
 
+  describe('createBackupSchedule', () => {
+    it('invokes createBackupSchedule without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupScheduleRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.createBackupSchedule =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.createBackupSchedule(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createBackupSchedule without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupScheduleRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.createBackupSchedule =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.createBackupSchedule(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IBackupSchedule | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createBackupSchedule with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupScheduleRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.createBackupSchedule = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.createBackupSchedule(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.createBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes createBackupSchedule with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.CreateBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.CreateBackupScheduleRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.createBackupSchedule(request), expectedError);
+    });
+  });
+
+  describe('getBackupSchedule', () => {
+    it('invokes getBackupSchedule without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.getBackupSchedule = stubSimpleCall(expectedResponse);
+      const [response] = await client.getBackupSchedule(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getBackupSchedule without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.getBackupSchedule =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.getBackupSchedule(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IBackupSchedule | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getBackupSchedule with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.getBackupSchedule = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.getBackupSchedule(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.getBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes getBackupSchedule with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.GetBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.GetBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.getBackupSchedule(request), expectedError);
+    });
+  });
+
+  describe('updateBackupSchedule', () => {
+    it('invokes updateBackupSchedule without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
+      );
+      request.backupSchedule ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupScheduleRequest',
+        ['backupSchedule', 'name']
+      );
+      request.backupSchedule.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.updateBackupSchedule =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.updateBackupSchedule(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateBackupSchedule without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
+      );
+      request.backupSchedule ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupScheduleRequest',
+        ['backupSchedule', 'name']
+      );
+      request.backupSchedule.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.BackupSchedule()
+      );
+      client.innerApiCalls.updateBackupSchedule =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.updateBackupSchedule(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.spanner.admin.database.v1.IBackupSchedule | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateBackupSchedule with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
+      );
+      request.backupSchedule ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupScheduleRequest',
+        ['backupSchedule', 'name']
+      );
+      request.backupSchedule.name = defaultValue1;
+      const expectedHeaderRequestParams = `backup_schedule.name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.updateBackupSchedule = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.updateBackupSchedule(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.updateBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes updateBackupSchedule with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.UpdateBackupScheduleRequest()
+      );
+      request.backupSchedule ??= {};
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.UpdateBackupScheduleRequest',
+        ['backupSchedule', 'name']
+      );
+      request.backupSchedule.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.updateBackupSchedule(request), expectedError);
+    });
+  });
+
+  describe('deleteBackupSchedule', () => {
+    it('invokes deleteBackupSchedule without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteBackupSchedule =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.deleteBackupSchedule(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteBackupSchedule without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedResponse = generateSampleMessage(
+        new protos.google.protobuf.Empty()
+      );
+      client.innerApiCalls.deleteBackupSchedule =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.deleteBackupSchedule(
+          request,
+          (
+            err?: Error | null,
+            result?: protos.google.protobuf.IEmpty | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteBackupSchedule with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedHeaderRequestParams = `name=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.deleteBackupSchedule = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.deleteBackupSchedule(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.deleteBackupSchedule as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes deleteBackupSchedule with closed client', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.DeleteBackupScheduleRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.DeleteBackupScheduleRequest',
+        ['name']
+      );
+      request.name = defaultValue1;
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.deleteBackupSchedule(request), expectedError);
+    });
+  });
+
   describe('createDatabase', () => {
     it('invokes createDatabase without error', async () => {
       const client = new databaseadminModule.v1.DatabaseAdminClient({
@@ -2850,9 +3377,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabases.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2900,9 +3427,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabases.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2949,9 +3476,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabases.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -2990,9 +3517,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabases.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
   });
@@ -3177,9 +3704,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackups.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3228,9 +3755,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackups.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3277,9 +3804,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackups.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3319,9 +3846,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackups.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
   });
@@ -3805,9 +4332,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackupOperations.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3851,9 +4378,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackupOperations.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3894,9 +4421,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackupOperations.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -3934,9 +4461,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listBackupOperations.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
   });
@@ -4124,9 +4651,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -4174,9 +4701,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabaseRoles.createStream as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -4224,9 +4751,9 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
 
@@ -4265,9 +4792,345 @@ describe('v1.DatabaseAdminClient', () => {
       assert(
         (client.descriptors.page.listDatabaseRoles.asyncIterate as SinonStub)
           .getCall(0)
-          .args[2].otherArgs.headers['x-goog-request-params'].includes(
-            expectedHeaderRequestParams
-          )
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
+      );
+    });
+  });
+
+  describe('listBackupSchedules', () => {
+    it('invokes listBackupSchedules without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+      ];
+      client.innerApiCalls.listBackupSchedules =
+        stubSimpleCall(expectedResponse);
+      const [response] = await client.listBackupSchedules(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listBackupSchedules without error using callback', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+      ];
+      client.innerApiCalls.listBackupSchedules =
+        stubSimpleCallWithCallback(expectedResponse);
+      const promise = new Promise((resolve, reject) => {
+        client.listBackupSchedules(
+          request,
+          (
+            err?: Error | null,
+            result?:
+              | protos.google.spanner.admin.database.v1.IBackupSchedule[]
+              | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      const actualRequest = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listBackupSchedules with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.innerApiCalls.listBackupSchedules = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(client.listBackupSchedules(request), expectedError);
+      const actualRequest = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[0];
+      assert.deepStrictEqual(actualRequest, request);
+      const actualHeaderRequestParams = (
+        client.innerApiCalls.listBackupSchedules as SinonStub
+      ).getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+      assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+    });
+
+    it('invokes listBackupSchedulesStream without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+      ];
+      client.descriptors.page.listBackupSchedules.createStream =
+        stubPageStreamingCall(expectedResponse);
+      const stream = client.listBackupSchedulesStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.BackupSchedule[] =
+          [];
+        stream.on(
+          'data',
+          (
+            response: protos.google.spanner.admin.database.v1.BackupSchedule
+          ) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      const responses = await promise;
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert(
+        (client.descriptors.page.listBackupSchedules.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackupSchedules, request)
+      );
+      assert(
+        (client.descriptors.page.listBackupSchedules.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
+      );
+    });
+
+    it('invokes listBackupSchedulesStream with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackupSchedules.createStream =
+        stubPageStreamingCall(undefined, expectedError);
+      const stream = client.listBackupSchedulesStream(request);
+      const promise = new Promise((resolve, reject) => {
+        const responses: protos.google.spanner.admin.database.v1.BackupSchedule[] =
+          [];
+        stream.on(
+          'data',
+          (
+            response: protos.google.spanner.admin.database.v1.BackupSchedule
+          ) => {
+            responses.push(response);
+          }
+        );
+        stream.on('end', () => {
+          resolve(responses);
+        });
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+      assert(
+        (client.descriptors.page.listBackupSchedules.createStream as SinonStub)
+          .getCall(0)
+          .calledWith(client.innerApiCalls.listBackupSchedules, request)
+      );
+      assert(
+        (client.descriptors.page.listBackupSchedules.createStream as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
+      );
+    });
+
+    it('uses async iteration with listBackupSchedules without error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedResponse = [
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+        generateSampleMessage(
+          new protos.google.spanner.admin.database.v1.BackupSchedule()
+        ),
+      ];
+      client.descriptors.page.listBackupSchedules.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
+      const responses: protos.google.spanner.admin.database.v1.IBackupSchedule[] =
+        [];
+      const iterable = client.listBackupSchedulesAsync(request);
+      for await (const resource of iterable) {
+        responses.push(resource!);
+      }
+      assert.deepStrictEqual(responses, expectedResponse);
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listBackupSchedules.asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (client.descriptors.page.listBackupSchedules.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
+      );
+    });
+
+    it('uses async iteration with listBackupSchedules with error', async () => {
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.spanner.admin.database.v1.ListBackupSchedulesRequest()
+      );
+      const defaultValue1 = getTypeDefaultValue(
+        '.google.spanner.admin.database.v1.ListBackupSchedulesRequest',
+        ['parent']
+      );
+      request.parent = defaultValue1;
+      const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+      const expectedError = new Error('expected');
+      client.descriptors.page.listBackupSchedules.asyncIterate =
+        stubAsyncIterationCall(undefined, expectedError);
+      const iterable = client.listBackupSchedulesAsync(request);
+      await assert.rejects(async () => {
+        const responses: protos.google.spanner.admin.database.v1.IBackupSchedule[] =
+          [];
+        for await (const resource of iterable) {
+          responses.push(resource!);
+        }
+      });
+      assert.deepStrictEqual(
+        (
+          client.descriptors.page.listBackupSchedules.asyncIterate as SinonStub
+        ).getCall(0).args[1],
+        request
+      );
+      assert(
+        (client.descriptors.page.listBackupSchedules.asyncIterate as SinonStub)
+          .getCall(0)
+          .args[2].otherArgs.headers[
+            'x-goog-request-params'
+          ].includes(expectedHeaderRequestParams)
       );
     });
   });
@@ -4636,6 +5499,82 @@ describe('v1.DatabaseAdminClient', () => {
         assert.strictEqual(result, 'backupValue');
         assert(
           (client.pathTemplates.backupPathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+    });
+
+    describe('backupSchedule', () => {
+      const fakePath = '/rendered/path/backupSchedule';
+      const expectedParameters = {
+        project: 'projectValue',
+        instance: 'instanceValue',
+        database: 'databaseValue',
+        schedule: 'scheduleValue',
+      };
+      const client = new databaseadminModule.v1.DatabaseAdminClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      client.pathTemplates.backupSchedulePathTemplate.render = sinon
+        .stub()
+        .returns(fakePath);
+      client.pathTemplates.backupSchedulePathTemplate.match = sinon
+        .stub()
+        .returns(expectedParameters);
+
+      it('backupSchedulePath', () => {
+        const result = client.backupSchedulePath(
+          'projectValue',
+          'instanceValue',
+          'databaseValue',
+          'scheduleValue'
+        );
+        assert.strictEqual(result, fakePath);
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.render as SinonStub)
+            .getCall(-1)
+            .calledWith(expectedParameters)
+        );
+      });
+
+      it('matchProjectFromBackupScheduleName', () => {
+        const result = client.matchProjectFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'projectValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchInstanceFromBackupScheduleName', () => {
+        const result = client.matchInstanceFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'instanceValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchDatabaseFromBackupScheduleName', () => {
+        const result = client.matchDatabaseFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'databaseValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
+            .getCall(-1)
+            .calledWith(fakePath)
+        );
+      });
+
+      it('matchScheduleFromBackupScheduleName', () => {
+        const result = client.matchScheduleFromBackupScheduleName(fakePath);
+        assert.strictEqual(result, 'scheduleValue');
+        assert(
+          (client.pathTemplates.backupSchedulePathTemplate.match as SinonStub)
             .getCall(-1)
             .calledWith(fakePath)
         );

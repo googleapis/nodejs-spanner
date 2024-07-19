@@ -18,7 +18,7 @@ import * as path from 'path';
 import {google} from '../../protos/protos';
 import {grpc, ServiceError} from 'google-gax';
 import * as protoLoader from '@grpc/proto-loader';
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import {Metadata} from '@grpc/grpc-js';
 import {Transaction} from '../../src';
 import protobuf = google.spanner.v1;

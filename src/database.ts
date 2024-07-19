@@ -60,7 +60,9 @@ import {
 } from './session-pool';
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  BatchWriteOptions,
   ExecuteSqlRequest,
+  MutationGroup,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -1531,23 +1533,39 @@ class Database extends common.GrpcServiceObject {
   ): void;
   async getDatabaseDialect(
     optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
-    cb?: GetDatabaseDialectCallback
+    callback?: GetDatabaseDialectCallback
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
     | undefined
   > {
     const gaxOptions =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
 
-    if (
-      this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
-      this.databaseDialect === null ||
-      this.databaseDialect === undefined
-    ) {
-      const [metadata] = await this.getMetadata(gaxOptions);
-      this.databaseDialect = metadata.databaseDialect;
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseDialectCallback)
+        : callback;
+
+    try {
+      if (
+        this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+        this.databaseDialect === null ||
+        this.databaseDialect === undefined
+      ) {
+        const [metadata] = await this.getMetadata(gaxOptions);
+        this.databaseDialect = metadata.databaseDialect;
+      }
+      if (cb) {
+        cb(null, this.databaseDialect);
+        return;
+      }
+      return this.databaseDialect || undefined;
+    } catch (err) {
+      cb!(err as grpc.ServiceError);
+      return;
     }
-    return this.databaseDialect || undefined;
   }
 
   /**
@@ -3210,6 +3228,124 @@ class Database extends common.GrpcServiceObject {
       }
     }
   }
+
+  /**
+   * Write a batch of mutations to Spanner.
+   *
+   * All mutations in a group are committed atomically. However, mutations across
+   * groups can be committed non-atomically in an unspecified order and thus, they
+   * must be independent of each other. Partial failure is possible, i.e., some groups
+   * may have been committed successfully, while some may have failed. The results of
+   * individual batches are streamed into the response as the batches are applied.
+   *
+   * batchWriteAtLeastOnce requests are not replay protected, meaning that each mutation group may
+   * be applied more than once. Replays of non-idempotent mutations may have undesirable
+   * effects. For example, replays of an insert mutation may produce an already exists
+   * error or if you use generated or commit timestamp-based keys, it may result in additional
+   * rows being added to the mutation's table. We recommend structuring your mutation groups to
+   * be idempotent to avoid this issue.
+   *
+   * @method Spanner#batchWriteAtLeastOnce
+   *
+   * @param {MutationGroup[]} [mutationGroups] The group of mutations to be applied.
+   * @param {BatchWriteOptions} [options] Options object for batch write request.
+   *
+   * @returns {ReadableStream} An object stream which emits
+   *   {@link protos.google.spanner.v1.BatchWriteResponse|BatchWriteResponse}
+   *  on 'data' event.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutationGroup = new MutationGroup();
+   * mutationGroup.insert('Singers', {
+   *  SingerId: '1',
+   *  FirstName: 'Marc',
+   *  LastName: 'Richards',
+   *  });
+   *
+   * database.batchWriteAtLeastOnce([mutationGroup])
+   *   .on('error', console.error)
+   *   .on('data', response => {
+   *        console.log('response: ', response);
+   *   })
+   *   .on('end', () => {
+   *        console.log('Request completed successfully');
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * database.batchWriteAtLeastOnce()
+   *   .on('data', response => {
+   *     this.end();
+   *   });
+   * ```
+   */
+  batchWriteAtLeastOnce(
+    mutationGroups: MutationGroup[],
+    options?: BatchWriteOptions
+  ): NodeJS.ReadableStream {
+    const proxyStream: Transform = through.obj();
+
+    this.pool_.getSession((err, session) => {
+      if (err) {
+        proxyStream.destroy(err);
+        return;
+      }
+      const gaxOpts = extend(true, {}, options?.gaxOptions);
+      const reqOpts = Object.assign(
+        {} as spannerClient.spanner.v1.BatchWriteRequest,
+        {
+          session: session!.formattedName_!,
+          mutationGroups: mutationGroups.map(mg => mg.proto()),
+          requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+        }
+      );
+      let dataReceived = false;
+      let dataStream = this.requestStream({
+        client: 'SpannerClient',
+        method: 'batchWrite',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      });
+      dataStream
+        .once('data', () => (dataReceived = true))
+        .once('error', err => {
+          if (
+            !dataReceived &&
+            isSessionNotFoundError(err as grpc.ServiceError)
+          ) {
+            // If there's a 'Session not found' error and we have not yet received
+            // any data, we can safely retry the writes on a new session.
+            // Register the error on the session so the pool can discard it.
+            if (session) {
+              session.lastError = err as grpc.ServiceError;
+            }
+            // Remove the current data stream from the end user stream.
+            dataStream.unpipe(proxyStream);
+            dataStream.end();
+            // Create a new stream and add it to the end user stream.
+            dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
+            dataStream.pipe(proxyStream);
+          } else {
+            proxyStream.destroy(err);
+          }
+        })
+        .once('end', () => this.pool_.release(session!))
+        .pipe(proxyStream);
+    });
+
+    return proxyStream as NodeJS.ReadableStream;
+  }
+
   /**
    * Create a Session object.
    *
@@ -3515,6 +3651,7 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
+    'batchWriteAtLeastOnce',
     'getRestoreInfo',
     'getState',
     'getDatabaseDialect',
@@ -3536,6 +3673,7 @@ callbackifyAll(Database, {
     'create',
     'batchCreateSessions',
     'batchTransaction',
+    'batchWriteAtLeastOnce',
     'close',
     'createBatchTransaction',
     'createSession',
@@ -3543,6 +3681,7 @@ callbackifyAll(Database, {
     'delete',
     'exists',
     'get',
+    'getDatabaseDialect',
     'getMetadata',
     'getSchema',
     'getSessions',
