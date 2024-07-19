@@ -211,6 +211,9 @@ export class DatabaseAdminClient {
       backupPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/instances/{instance}/backups/{backup}'
       ),
+      backupSchedulePathTemplate: new this._gaxModule.PathTemplate(
+        'projects/{project}/instances/{instance}/databases/{database}/backupSchedules/{schedule}'
+      ),
       cryptoKeyPathTemplate: new this._gaxModule.PathTemplate(
         'projects/{project}/locations/{location}/keyRings/{key_ring}/cryptoKeys/{crypto_key}'
       ),
@@ -253,6 +256,11 @@ export class DatabaseAdminClient {
         'pageToken',
         'nextPageToken',
         'databaseRoles'
+      ),
+      listBackupSchedules: new this._gaxModule.PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'backupSchedules'
       ),
     };
 
@@ -455,6 +463,11 @@ export class DatabaseAdminClient {
       'listDatabaseOperations',
       'listBackupOperations',
       'listDatabaseRoles',
+      'createBackupSchedule',
+      'getBackupSchedule',
+      'updateBackupSchedule',
+      'deleteBackupSchedule',
+      'listBackupSchedules',
     ];
     for (const methodName of databaseAdminStubMethods) {
       const callPromise = this.databaseAdminStub.then(
@@ -1417,6 +1430,400 @@ export class DatabaseAdminClient {
       });
     this.initialize();
     return this.innerApiCalls.deleteBackup(request, options, callback);
+  }
+  /**
+   * Creates a new backup schedule.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. The name of the database that this backup schedule applies to.
+   * @param {string} request.backupScheduleId
+   *   Required. The Id to use for the backup schedule. The `backup_schedule_id`
+   *   appended to `parent` forms the full backup schedule name of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/backupSchedules/<backup_schedule_id>`.
+   * @param {google.spanner.admin.database.v1.BackupSchedule} request.backupSchedule
+   *   Required. The backup schedule to create.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  createBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  createBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  createBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.ICreateBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.createBackupSchedule(request, options, callback);
+  }
+  /**
+   * Gets backup schedule for the input schedule name.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the schedule to retrieve.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/backupSchedules/<backup_schedule_id>`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  getBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  getBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  getBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.IGetBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.getBackupSchedule(request, options, callback);
+  }
+  /**
+   * Updates a backup schedule.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {google.spanner.admin.database.v1.BackupSchedule} request.backupSchedule
+   *   Required. The backup schedule to update. `backup_schedule.name`, and the
+   *   fields to be updated as specified by `update_mask` are required. Other
+   *   fields are ignored.
+   * @param {google.protobuf.FieldMask} request.updateMask
+   *   Required. A mask specifying which fields in the BackupSchedule resource
+   *   should be updated. This mask is relative to the BackupSchedule resource,
+   *   not to the request message. The field mask must always be
+   *   specified; this prevents any future fields from being erased
+   *   accidentally.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  updateBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  updateBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
+    callback: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  updateBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.spanner.admin.database.v1.IBackupSchedule,
+          | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule,
+      (
+        | protos.google.spanner.admin.database.v1.IUpdateBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        'backup_schedule.name': request.backupSchedule!.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.updateBackupSchedule(request, options, callback);
+  }
+  /**
+   * Deletes a backup schedule.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.name
+   *   Required. The name of the schedule to delete.
+   *   Values are of the form
+   *   `projects/<project>/instances/<instance>/databases/<database>/backupSchedules/<backup_schedule_id>`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   */
+  deleteBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      (
+        | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  >;
+  deleteBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  deleteBackupSchedule(
+    request: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
+    callback: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  deleteBackupSchedule(
+    request?: protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.protobuf.IEmpty,
+          | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.IEmpty,
+      | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.protobuf.IEmpty,
+      (
+        | protos.google.spanner.admin.database.v1.IDeleteBackupScheduleRequest
+        | undefined
+      ),
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        name: request.name ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.deleteBackupSchedule(request, options, callback);
   }
 
   /**
@@ -3932,6 +4339,211 @@ export class DatabaseAdminClient {
     ) as AsyncIterable<protos.google.spanner.admin.database.v1.IDatabaseRole>;
   }
   /**
+   * Lists all the backup schedules for the database.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. Database is the parent resource whose backup schedules should be
+   *   listed. Values are of the form
+   *   projects/<project>/instances/<instance>/databases/<database>
+   * @param {number} [request.pageSize]
+   *   Optional. Number of backup schedules to be returned in the response. If 0
+   *   or less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse|ListBackupSchedulesResponse}
+   *   to the same `parent`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule}.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed and will merge results from all the pages into this array.
+   *   Note that it can affect your quota.
+   *   We recommend using `listBackupSchedulesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listBackupSchedules(
+    request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule[],
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse,
+    ]
+  >;
+  listBackupSchedules(
+    request: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    options: CallOptions,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackupSchedule
+    >
+  ): void;
+  listBackupSchedules(
+    request: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    callback: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackupSchedule
+    >
+  ): void;
+  listBackupSchedules(
+    request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | PaginationCallback<
+          protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+          | protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse
+          | null
+          | undefined,
+          protos.google.spanner.admin.database.v1.IBackupSchedule
+        >,
+    callback?: PaginationCallback<
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+      | protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse
+      | null
+      | undefined,
+      protos.google.spanner.admin.database.v1.IBackupSchedule
+    >
+  ): Promise<
+    [
+      protos.google.spanner.admin.database.v1.IBackupSchedule[],
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest | null,
+      protos.google.spanner.admin.database.v1.IListBackupSchedulesResponse,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    this.initialize();
+    return this.innerApiCalls.listBackupSchedules(request, options, callback);
+  }
+
+  /**
+   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. Database is the parent resource whose backup schedules should be
+   *   listed. Values are of the form
+   *   projects/<project>/instances/<instance>/databases/<database>
+   * @param {number} [request.pageSize]
+   *   Optional. Number of backup schedules to be returned in the response. If 0
+   *   or less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse|ListBackupSchedulesResponse}
+   *   to the same `parent`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Stream}
+   *   An object stream which emits an object representing {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule} on 'data' event.
+   *   The client library will perform auto-pagination by default: it will call the API as many
+   *   times as needed. Note that it can affect your quota.
+   *   We recommend using `listBackupSchedulesAsync()`
+   *   method described below for async iteration which you can stop as needed.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listBackupSchedulesStream(
+    request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    options?: CallOptions
+  ): Transform {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings = this._defaults['listBackupSchedules'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listBackupSchedules.createStream(
+      this.innerApiCalls.listBackupSchedules as GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+  /**
+   * Equivalent to `listBackupSchedules`, but returns an iterable object.
+   *
+   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.parent
+   *   Required. Database is the parent resource whose backup schedules should be
+   *   listed. Values are of the form
+   *   projects/<project>/instances/<instance>/databases/<database>
+   * @param {number} [request.pageSize]
+   *   Optional. Number of backup schedules to be returned in the response. If 0
+   *   or less, defaults to the server's maximum allowed page size.
+   * @param {string} [request.pageToken]
+   *   Optional. If non-empty, `page_token` should contain a
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse.next_page_token|next_page_token}
+   *   from a previous
+   *   {@link protos.google.spanner.admin.database.v1.ListBackupSchedulesResponse|ListBackupSchedulesResponse}
+   *   to the same `parent`.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Object}
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+   *   When you iterate the returned iterable, each element will be an object representing
+   *   {@link protos.google.spanner.admin.database.v1.BackupSchedule|BackupSchedule}. The API will be called under the hood as needed, once per the page,
+   *   so you can stop the iteration when you don't need more results.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+   *   for more details and examples.
+   */
+  listBackupSchedulesAsync(
+    request?: protos.google.spanner.admin.database.v1.IListBackupSchedulesRequest,
+    options?: CallOptions
+  ): AsyncIterable<protos.google.spanner.admin.database.v1.IBackupSchedule> {
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams({
+        parent: request.parent ?? '',
+      });
+    const defaultCallSettings = this._defaults['listBackupSchedules'];
+    const callSettings = defaultCallSettings.merge(options);
+    this.initialize();
+    return this.descriptors.page.listBackupSchedules.asyncIterate(
+      this.innerApiCalls['listBackupSchedules'] as GaxCall,
+      request as {},
+      callSettings
+    ) as AsyncIterable<protos.google.spanner.admin.database.v1.IBackupSchedule>;
+  }
+  /**
    * Gets the latest state of a long-running operation.  Clients can use this
    * method to poll the operation result at intervals as recommended by the API
    * service.
@@ -4157,6 +4769,81 @@ export class DatabaseAdminClient {
    */
   matchBackupFromBackupName(backupName: string) {
     return this.pathTemplates.backupPathTemplate.match(backupName).backup;
+  }
+
+  /**
+   * Return a fully-qualified backupSchedule resource name string.
+   *
+   * @param {string} project
+   * @param {string} instance
+   * @param {string} database
+   * @param {string} schedule
+   * @returns {string} Resource name string.
+   */
+  backupSchedulePath(
+    project: string,
+    instance: string,
+    database: string,
+    schedule: string
+  ) {
+    return this.pathTemplates.backupSchedulePathTemplate.render({
+      project: project,
+      instance: instance,
+      database: database,
+      schedule: schedule,
+    });
+  }
+
+  /**
+   * Parse the project from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the project.
+   */
+  matchProjectFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).project;
+  }
+
+  /**
+   * Parse the instance from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the instance.
+   */
+  matchInstanceFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).instance;
+  }
+
+  /**
+   * Parse the database from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the database.
+   */
+  matchDatabaseFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).database;
+  }
+
+  /**
+   * Parse the schedule from BackupSchedule resource.
+   *
+   * @param {string} backupScheduleName
+   *   A fully-qualified path representing BackupSchedule resource.
+   * @returns {string} A string representing the schedule.
+   */
+  matchScheduleFromBackupScheduleName(backupScheduleName: string) {
+    return this.pathTemplates.backupSchedulePathTemplate.match(
+      backupScheduleName
+    ).schedule;
   }
 
   /**
