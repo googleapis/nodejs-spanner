@@ -4,6 +4,46 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.10.0](https://github.com/googleapis/nodejs-spanner/compare/v7.9.1...v7.10.0) (2024-07-19)
+
+
+### Features
+
+* Add field lock_hint in spanner.proto ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add field order_by in spanner.proto ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add QueryCancellationAction message in executor protos ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add support for change streams transaction exclusion option for Batch Write ([#2070](https://github.com/googleapis/nodejs-spanner/issues/2070)) ([2a9e443](https://github.com/googleapis/nodejs-spanner/commit/2a9e44328acda310db2d0d65d32ad82d77a9fcb0))
+* **spanner:** Add support for Cloud Spanner Scheduled Backups ([#2045](https://github.com/googleapis/nodejs-spanner/issues/2045)) ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Update Nodejs generator to send API versions in headers for GAPICs ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+
+
+### Bug Fixes
+
+* Callback in getDatabaseDialect ([#2078](https://github.com/googleapis/nodejs-spanner/issues/2078)) ([7e4a8e9](https://github.com/googleapis/nodejs-spanner/commit/7e4a8e9ad4f785b15b68aaa06b6480098d7995ba))
+* **deps:** Update dependency google-gax to v4.3.8 ([#2077](https://github.com/googleapis/nodejs-spanner/issues/2077)) ([e927880](https://github.com/googleapis/nodejs-spanner/commit/e927880ff786a2528a2bbb063a244af3c42ff69c))
+
+## [7.9.1](https://github.com/googleapis/nodejs-spanner/compare/v7.9.0...v7.9.1) (2024-06-26)
+
+
+### Bug Fixes
+
+* Retry with timeout ([#2071](https://github.com/googleapis/nodejs-spanner/issues/2071)) ([a943257](https://github.com/googleapis/nodejs-spanner/commit/a943257a0402b26fd80196057a9724fd28fc5c1b))
+
+## [7.9.0](https://github.com/googleapis/nodejs-spanner/compare/v7.8.0...v7.9.0) (2024-06-21)
+
+
+### Features
+
+* **spanner:** Add support for batchWrite ([#2054](https://github.com/googleapis/nodejs-spanner/issues/2054)) ([06aab6e](https://github.com/googleapis/nodejs-spanner/commit/06aab6e39bbce9e3786f1ac631c80e8909197e92))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency google-gax to v4.3.4 ([#2051](https://github.com/googleapis/nodejs-spanner/issues/2051)) ([80abf06](https://github.com/googleapis/nodejs-spanner/commit/80abf06ba8ef9497318ffc597b83fb63e4408f9c))
+* **deps:** Update dependency google-gax to v4.3.5 ([#2055](https://github.com/googleapis/nodejs-spanner/issues/2055)) ([702c9b0](https://github.com/googleapis/nodejs-spanner/commit/702c9b0f34e6cc34233c5aa52b97601b19f70980))
+* **deps:** Update dependency google-gax to v4.3.6 ([#2057](https://github.com/googleapis/nodejs-spanner/issues/2057)) ([74ebf1e](https://github.com/googleapis/nodejs-spanner/commit/74ebf1e45cddf614c180295f3a761a8f84c5cb32))
+* **deps:** Update dependency google-gax to v4.3.7 ([#2068](https://github.com/googleapis/nodejs-spanner/issues/2068)) ([28fec6c](https://github.com/googleapis/nodejs-spanner/commit/28fec6ca505d78d725efc123950be978e0c84ab7))
+
 ## [7.8.0](https://github.com/googleapis/nodejs-spanner/compare/v7.7.0...v7.8.0) (2024-05-24)
 
 
