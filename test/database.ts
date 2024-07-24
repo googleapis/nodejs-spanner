@@ -44,7 +44,7 @@ import {
   BatchWriteOptions,
   CommitCallback,
   CommitOptions,
-  Mutation,
+  MutationSet,
 } from '../src/transaction';
 import {error} from 'is';
 
@@ -783,8 +783,8 @@ describe('Database', () => {
   });
 
   describe('writeAtLeastOnce', () => {
-    const mutation = new Mutation();
-    mutation.insert('MyTable', {
+    const mutations = new MutationSet();
+    mutations.insert('MyTable', {
       Key: 'k3',
       Thing: 'xyz',
     });
@@ -813,16 +813,16 @@ describe('Database', () => {
         callback(fakeErr, null, null)
       );
 
-      database.writeAtLeastOnce(mutation, err => {
+      database.writeAtLeastOnce(mutations, err => {
         assert.deepStrictEqual(err, fakeErr);
         done();
       });
     });
 
     it('should return successful CommitResponse when passing an empty mutation', done => {
-      const fakeMutation = new Mutation();
+      const fakeMutations = new MutationSet();
       try {
-        database.writeAtLeastOnce(fakeMutation, (err, response) => {
+        database.writeAtLeastOnce(fakeMutations, (err, response) => {
           assert.ifError(err);
           assert.deepStrictEqual(
             response.commitTimestamp,
@@ -848,7 +848,7 @@ describe('Database', () => {
     });
 
     it('should return CommitResponse on successful write using Callback', done => {
-      database.writeAtLeastOnce(mutation, (err, res) => {
+      database.writeAtLeastOnce(mutations, (err, res) => {
         assert.deepStrictEqual(err, null);
         assert.deepStrictEqual(res, RESPONSE);
         done();
@@ -857,7 +857,7 @@ describe('Database', () => {
 
     it('should return CommitResponse on successful write using await', async () => {
       sinon.stub(database, 'writeAtLeastOnce').resolves([RESPONSE]);
-      const [response, err] = await database.writeAtLeastOnce(mutation, {});
+      const [response, err] = await database.writeAtLeastOnce(mutations, {});
       assert.deepStrictEqual(
         response.commitTimestamp,
         RESPONSE.commitTimestamp

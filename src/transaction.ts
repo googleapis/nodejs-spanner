@@ -2574,7 +2574,7 @@ function buildDeleteMutation(
  * }
  * ```
  */
-export class Mutation {
+export class MutationSet {
   /**
    * An array to store the mutations.
    */

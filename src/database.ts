@@ -65,7 +65,7 @@ import {
   CommitResponse,
   ExecuteSqlRequest,
   MutationGroup,
-  Mutation,
+  MutationSet,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -3350,11 +3350,12 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
-   * Apply Blind Write of the Mutations
+   * Write mutations using a single RPC invocation without replay protection.
    *
-   * writeAtLeastOnce(Blind Write) requests are not replay protected, meaning that it may apply mutations more
+   * writeAtLeastOnce writes mutations to Spanner using a single Commit RPC.
+   * These requests are not replay protected, meaning that it may apply mutations more
    * than once, if the mutations are not idempotent, this may lead to a failure being
-   * reported when the mutation was applied once. Replays of non-idempotent mutations may
+   * reported when the mutation was applied once. Replays non-idempotent mutations may
    * have undesirable effects. For example, replays of an insert mutation may produce an
    * already exists error. For this reason, most users of the library will prefer to use
    * {@link runTransaction} instead.
@@ -3363,9 +3364,9 @@ class Database extends common.GrpcServiceObject {
    * requires two RPCs (one of which may be performed in advance), and so this method may be
    * appropriate for latency sensitive and/or high throughput blind writing.
    *
-   * We recommend structuring your mutation groups to be idempotent to avoid this issue.
+   * We recommend structuring your mutation set to be idempotent to avoid this issue.
    *
-   * @param {Mutation} [mutation]  Mutations to be applied.
+   * @param {MutationSet} [mutations] Set of Mutations to be applied.
    * @param {CallOptions} [options] Options object for blind write request.
    * @param {CommitCallback} [callback] Callback function for blind write request.
    *
@@ -3378,34 +3379,33 @@ class Database extends common.GrpcServiceObject {
    *
    * const instance = spanner.instance('my-instance');
    * const database = instance.database('my-database');
-   * const mutation = new Mutation();
-   * mutation.insert('Singers', {
-   *  SingerId: '1',
-   *  FirstName: 'Marc',
-   *  LastName: 'Richards',
+   * const mutations = new MutationSet();
+   * mutations.upsert('Singers', {
+   *    SingerId: 1,
+   *    FirstName: 'Scarlet',
+   *    LastName: 'Terry',
    *  });
-   * mutation.update('Singers', {
-   *  SingerId: '1',
-   *  FirstName: 'John',
-   *  LastName: 'Richards',
+   * mutations.upsert('Singers', {
+   *    SingerId: 2,
+   *    FirstName: 'Marc',
    *  });
    *
    * try {
-   *  const [response, err] = await database.writeAtLeastOnce(mutation, {});
+   *  const [response, err] = await database.writeAtLeastOnce(mutations, {});
    *  console.log(response.commitTimestamp);
    * } catch(err) {
    *  console.log("Error: ", err);
    * }
    * ```
    */
-  writeAtLeastOnce(mutation: Mutation): Promise<CommitResponse>;
+  writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
   writeAtLeastOnce(
-    mutation: Mutation,
+    mutations: MutationSet,
     options: CallOptions
   ): Promise<CommitResponse>;
-  writeAtLeastOnce(mutation: Mutation, callback: CommitCallback): void;
+  writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
   writeAtLeastOnce(
-    mutation: Mutation,
+    mutations: MutationSet,
     optionsOrCallback?: CallOptions | CommitCallback,
     callback?: CommitCallback
   ): void | Promise<CommitResponse> {
@@ -3420,8 +3420,8 @@ class Database extends common.GrpcServiceObject {
     this.pool_.getSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
         cb
-          ? this.writeAtLeastOnce(mutation, cb)
-          : this.writeAtLeastOnce(mutation, options);
+          ? this.writeAtLeastOnce(mutations, cb)
+          : this.writeAtLeastOnce(mutations, options);
         return;
       }
       if (err) {
@@ -3429,7 +3429,7 @@ class Database extends common.GrpcServiceObject {
         return;
       }
       this._releaseOnEnd(session!, transaction!);
-      transaction?.setQueuedMutations(mutation.proto());
+      transaction?.setQueuedMutations(mutations.proto());
       return transaction?.commit(options, cb!);
     });
   }
