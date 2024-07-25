@@ -2542,7 +2542,7 @@ function buildDeleteMutation(
 }
 
 /**
- * Mutation represent a set of changes to be applied atomically to a cloud spanner
+ * MutationSet represent a set of changes to be applied atomically to a cloud spanner
  * database with a {@link Transaction}.
  * Mutations are used to insert, update, upsert(insert or update), replace, or
  * delete rows within tables.
