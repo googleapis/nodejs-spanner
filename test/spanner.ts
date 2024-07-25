@@ -3265,15 +3265,15 @@ describe('Spanner with mock server', () => {
       const database = newTestDatabase();
       const mutations = new MutationSet();
       mutations.upsert('Singers', {
-          SingerId: 1,
-          FirstName: 'Scarlet',
-          LastName: 'Terry',
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
       });
       mutations.upsert('Singers', {
         SingerId: 2,
         FirstName: 'Marc',
       });
-      const [response] = await database.writeAtLeastOnce(mutations, {});
+      await database.writeAtLeastOnce(mutations, {});
       await database.close();
 
       // Verify that we don't have a BeginTransaction request for the retry.
@@ -3298,7 +3298,9 @@ describe('Spanner with mock server', () => {
         return (val as v1.CommitRequest).singleUseTransaction?.readWrite;
       }) as v1.CommitRequest;
       assert.ok(request, 'CommitRequest found');
-      assert.deepStrictEqual(request.singleUseTransaction?.readWrite, { readLockMode: 'READ_LOCK_MODE_UNSPECIFIED' });
+      assert.deepStrictEqual(request.singleUseTransaction?.readWrite, {
+        readLockMode: 'READ_LOCK_MODE_UNSPECIFIED',
+      });
     });
 
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
