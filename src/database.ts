@@ -3388,6 +3388,7 @@ class Database extends common.GrpcServiceObject {
    * mutations.upsert('Singers', {
    *    SingerId: 2,
    *    FirstName: 'Marc',
+   *    LastName: 'Richards',
    *  });
    *
    * try {

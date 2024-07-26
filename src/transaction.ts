@@ -2542,7 +2542,7 @@ function buildDeleteMutation(
 }
 
 /**
- * MutationSet represent a set of changes to be applied atomically to a cloud spanner
+ * MutationSet represent a set of changes to be applied atomically to a Cloud Spanner
  * database with a {@link Transaction}.
  * Mutations are used to insert, update, upsert(insert or update), replace, or
  * delete rows within tables.
@@ -2561,12 +2561,12 @@ function buildDeleteMutation(
  * const instance = spanner.instance('my-instance');
  * const database = instance.database('my-database');
  *
- * const mutation = new Mutation();
- * mutation.insert('Singers', {SingerId: '123', FirstName: 'David'});
- * mutation.update('Singers', {SingerId: '123', FirstName: 'Marc'});
+ * const mutations = new MutationSet();
+ * mutations.insert('Singers', {SingerId: '123', FirstName: 'David'});
+ * mutations.update('Singers', {SingerId: '123', FirstName: 'Marc'});
  *
  * try {
- *  database.writeAtLeastOnce(mutation, (err, res) => {
+ *  database.writeAtLeastOnce(mutations, (err, res) => {
  *    console.log("RESPONSE: ", res);
  *  });
  * } catch(err) {
