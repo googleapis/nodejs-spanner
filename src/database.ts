@@ -3407,6 +3407,11 @@ class Database extends common.GrpcServiceObject {
   writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
   writeAtLeastOnce(
     mutations: MutationSet,
+    options: CallOptions,
+    callback: CommitCallback
+  ): void;
+  writeAtLeastOnce(
+    mutations: MutationSet,
     optionsOrCallback?: CallOptions | CommitCallback,
     callback?: CommitCallback
   ): void | Promise<CommitResponse> {
@@ -3420,9 +3425,7 @@ class Database extends common.GrpcServiceObject {
         : {};
     this.pool_.getSession((err, session?, transaction?) => {
       if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
-        cb
-          ? this.writeAtLeastOnce(mutations, cb)
-          : this.writeAtLeastOnce(mutations, options);
+        this.writeAtLeastOnce(mutations, options, cb!);
         return;
       }
       if (err) {
