@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.11.0](https://github.com/googleapis/nodejs-spanner/compare/v7.10.0...v7.11.0) (2024-07-29)
+
+
+### Features
+
+* Add support for blind writes ([#2065](https://github.com/googleapis/nodejs-spanner/issues/2065)) ([62fc0a4](https://github.com/googleapis/nodejs-spanner/commit/62fc0a47327017c115466b9e89e53dbd778579af))
+* **spanner:** Add samples for instance partitions ([#2083](https://github.com/googleapis/nodejs-spanner/issues/2083)) ([b91e284](https://github.com/googleapis/nodejs-spanner/commit/b91e2849056df9894e0590cb71e21c13319e6d70))
+
 ## [7.10.0](https://github.com/googleapis/nodejs-spanner/compare/v7.9.1...v7.10.0) (2024-07-19)
 
 
