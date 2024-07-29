@@ -25,6 +25,7 @@ import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 import {Session, Database, Spanner} from '../src';
+import {protos} from '../src';
 import * as bt from '../src/batch-transaction';
 import {PartialResultStream} from '../src/partial-result-stream';
 import {
@@ -144,12 +145,27 @@ describe('BatchTransaction', () => {
 
   describe('createQueryPartitions', () => {
     const GAX_OPTS = {a: 'b'};
+
+    const fakeDirectedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     const QUERY = {
       sql: 'SELECT * FROM Singers',
       gaxOptions: GAX_OPTS,
       params: {},
       types: {},
       dataBoostEnabled: true,
+      directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
     it('should make the correct request', () => {
@@ -157,6 +173,7 @@ describe('BatchTransaction', () => {
         params: {a: 'b'},
         paramTypes: {a: 'string'},
         dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
       };
 
       const expectedQuery = Object.assign({sql: QUERY.sql}, fakeParams);
@@ -301,12 +318,27 @@ describe('BatchTransaction', () => {
 
   describe('createReadPartitions', () => {
     const GAX_OPTS = {};
+
+    const fakeDirectedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            location: 'us-west1',
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_WRITE,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     const QUERY = {
       table: 'abc',
       keys: ['a', 'b'],
       ranges: [{}, {}],
       gaxOptions: GAX_OPTS,
       dataBoostEnabled: true,
+      directedReadOptions: fakeDirectedReadOptionsForRequest,
     };
 
     it('should make the correct request', () => {
@@ -315,6 +347,7 @@ describe('BatchTransaction', () => {
         table: QUERY.table,
         keySet: fakeKeySet,
         dataBoostEnabled: true,
+        directedReadOptions: fakeDirectedReadOptionsForRequest,
       };
 
       const stub = sandbox.stub(batchTransaction, 'createPartitions_');
@@ -338,6 +371,18 @@ describe('BatchTransaction', () => {
   });
 
   describe('execute', () => {
+    const directedReadOptionsForRequest = {
+      includeReplicas: {
+        replicaSelections: [
+          {
+            type: protos.google.spanner.v1.DirectedReadOptions.ReplicaSelection
+              .Type.READ_ONLY,
+          },
+        ],
+        autoFailoverDisabled: true,
+      },
+    };
+
     it('should make read requests for read partitions', () => {
       const partition = {table: 'abc'};
       const stub = sandbox.stub(batchTransaction, 'read');
@@ -359,8 +404,12 @@ describe('BatchTransaction', () => {
       assert.strictEqual(query, partition);
     });
 
-    it('should make read requests for read partitions with data boost enabled', () => {
-      const partition = {table: 'abc', dataBoostEnabled: true};
+    it('should make read requests for read partitions with request options', () => {
+      const partition = {
+        table: 'abc',
+        dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
+      };
       const stub = sandbox.stub(batchTransaction, 'read');
 
       batchTransaction.execute(partition, assert.ifError);
@@ -370,10 +419,11 @@ describe('BatchTransaction', () => {
       assert.strictEqual(options, partition);
     });
 
-    it('should make query requests for non-read partitions with data boost enabled', () => {
+    it('should make query requests for non-read partitions with request options', () => {
       const partition = {
         sql: 'SELECT * FROM Singers',
         dataBoostEnabled: true,
+        directedReadOptions: directedReadOptionsForRequest,
       };
       const stub = sandbox.stub(batchTransaction, 'run');
 

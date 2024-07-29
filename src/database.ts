@@ -60,7 +60,12 @@ import {
 } from './session-pool';
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
+  BatchWriteOptions,
+  CommitCallback,
+  CommitResponse,
   ExecuteSqlRequest,
+  MutationGroup,
+  MutationSet,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -117,7 +122,7 @@ type CreateBatchTransactionCallback = ResourceCallback<
 
 type CreateBatchTransactionResponse = [
   BatchTransaction,
-  google.spanner.v1.ITransaction | google.spanner.v1.ISession
+  google.spanner.v1.ITransaction | google.spanner.v1.ISession,
 ];
 type DatabaseResponse = [Database, r.Response];
 type DatabaseCallback = ResourceCallback<Database, r.Response>;
@@ -133,9 +138,17 @@ export interface SessionPoolConstructor {
   ): SessionPoolInterface;
 }
 
+export type GetDatabaseDialectCallback = NormalCallback<
+  EnumKey<typeof google.spanner.admin.database.v1.DatabaseDialect>
+>;
+
 export interface SetIamPolicyRequest {
   policy: Policy | null;
   updateMask?: FieldMask | null;
+}
+
+export interface RunPartitionedUpdateOptions extends ExecuteSqlRequest {
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export type UpdateSchemaCallback = ResourceCallback<
@@ -145,7 +158,7 @@ export type UpdateSchemaCallback = ResourceCallback<
 
 export type UpdateSchemaResponse = [
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  databaseAdmin.longrunning.IOperation,
 ];
 
 type PoolRequestCallback = RequestCallback<Session>;
@@ -166,7 +179,15 @@ type IDatabaseTranslatedEnum = Omit<
     typeof databaseAdmin.spanner.admin.database.v1.Database.State
   >,
   'restoreInfo'
-> & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
+> &
+  Omit<
+    TranslateEnumKeys<
+      databaseAdmin.spanner.admin.database.v1.IDatabase,
+      'databaseDialect',
+      typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+    >,
+    'restoreInfo'
+  > & {restoreInfo?: IRestoreInfoTranslatedEnum | null};
 
 /**
  * IRestoreInfo structure with restore source type enum translated to string form.
@@ -186,7 +207,7 @@ type GetSchemaCallback = RequestCallback<
 >;
 type GetSchemaResponse = [
   string[],
-  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse
+  databaseAdmin.spanner.admin.database.v1.IGetDatabaseDdlResponse,
 ];
 type GetIamPolicyResponse = IPolicy;
 type GetIamPolicyCallback = RequestCallback<IPolicy>;
@@ -210,7 +231,7 @@ type DatabaseCloseResponse = [google.protobuf.IEmpty];
 
 export type CreateSessionResponse = [
   Session,
-  spannerClient.spanner.v1.ISession
+  spannerClient.spanner.v1.ISession,
 ];
 
 export interface CreateSessionOptions {
@@ -224,6 +245,13 @@ export interface GetIamPolicyOptions {
   gaxOptions?: CallOptions;
 }
 
+/**
+ * @typedef {object} GetTransactionOptions
+ * * @property {boolean} [optimisticLock] The optimistic lock a
+ *     {@link Transaction} should use while running.
+ */
+export type GetTransactionOptions = Omit<RunTransactionOptions, 'timeout'>;
+
 export type CreateSessionCallback = ResourceCallback<
   Session,
   spannerClient.spanner.v1.ISession
@@ -235,7 +263,7 @@ export interface BatchCreateSessionsOptions extends CreateSessionOptions {
 
 export type BatchCreateSessionsResponse = [
   Session[],
-  spannerClient.spanner.v1.IBatchCreateSessionsResponse
+  spannerClient.spanner.v1.IBatchCreateSessionsResponse,
 ];
 
 export type BatchCreateSessionsCallback = ResourceCallback<
@@ -256,7 +284,7 @@ export type RestoreDatabaseCallback = LongRunningCallback<Database>;
 export type RestoreDatabaseResponse = [
   Database,
   GaxOperation,
-  databaseAdmin.longrunning.IOperation
+  databaseAdmin.longrunning.IOperation,
 ];
 
 export type GetRestoreInfoCallback = NormalCallback<IRestoreInfoTranslatedEnum>;
@@ -305,6 +333,9 @@ class Database extends common.GrpcServiceObject {
   resourceHeader_: {[k: string]: string};
   request: DatabaseRequest;
   databaseRole?: string | null;
+  databaseDialect?: EnumKey<
+    typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect
+  > | null;
   constructor(
     instance: Instance,
     name: string,
@@ -1470,6 +1501,77 @@ class Database extends common.GrpcServiceObject {
   }
 
   /**
+   * Retrieves the dialect of the database
+   *
+   * @see {@link #getMetadata}
+   *
+   * @method Database#getDatabaseDialect
+   *
+   * @param {object} [gaxOptions] Request configuration options,
+   *     See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions}
+   *     for more details.
+   * @param {GetDatabaseDialectCallback} [callback] Callback function.
+   * @returns {Promise<EnumKey<typeof, databaseAdmin.spanner.admin.database.v1.DatabaseDialect> | undefined>}
+   * When resolved, contains the database dialect of the database if the dialect is defined.
+   * @example
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const dialect = await database.getDatabaseDialect();
+   * const isGoogleSQL = (dialect === 'GOOGLE_STANDARD_SQL');
+   * const isPostgreSQL = (dialect === 'POSTGRESQL');
+   */
+
+  getDatabaseDialect(
+    options?: CallOptions
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  >;
+  getDatabaseDialect(callback: GetDatabaseDialectCallback): void;
+  getDatabaseDialect(
+    options: CallOptions,
+    callback: GetDatabaseDialectCallback
+  ): void;
+  async getDatabaseDialect(
+    optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
+    callback?: GetDatabaseDialectCallback
+  ): Promise<
+    | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
+    | undefined
+  > {
+    const gaxOptions =
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
+
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseDialectCallback)
+        : callback;
+
+    try {
+      if (
+        this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+        this.databaseDialect === null ||
+        this.databaseDialect === undefined
+      ) {
+        const [metadata] = await this.getMetadata(gaxOptions);
+        this.databaseDialect = metadata.databaseDialect;
+      }
+      if (cb) {
+        cb(null, this.databaseDialect);
+        return;
+      }
+      return this.databaseDialect || undefined;
+    } catch (err) {
+      cb!(err as grpc.ServiceError);
+      return;
+    }
+  }
+
+  /**
    * @typedef {array} GetSchemaResponse
    * @property {string[]} 0 An array of database DDL statements.
    * @property {object} 1 The full API response.
@@ -1989,16 +2091,39 @@ class Database extends common.GrpcServiceObject {
    * });
    * ```
    */
-  getTransaction(): Promise<[Transaction]>;
+  getTransaction(
+    optionsOrCallback?: GetTransactionOptions
+  ): Promise<[Transaction]>;
   getTransaction(callback: GetTransactionCallback): void;
   getTransaction(
+    optionsOrCallback?: GetTransactionOptions | GetTransactionCallback,
     callback?: GetTransactionCallback
   ): void | Promise<[Transaction]> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetTransactionCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as GetTransactionOptions)
+        : {};
     this.pool_.getSession((err, session, transaction) => {
+      if (options.requestOptions) {
+        transaction!.requestOptions = Object.assign(
+          transaction!.requestOptions || {},
+          options.requestOptions
+        );
+      }
+      if (options.optimisticLock) {
+        transaction!.useOptimisticLock();
+      }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
       if (!err) {
         this._releaseOnEnd(session!, transaction!);
       }
-      callback!(err as grpc.ServiceError | null, transaction);
+      cb!(err as grpc.ServiceError | null, transaction);
     });
   }
 
@@ -2614,13 +2739,15 @@ class Database extends common.GrpcServiceObject {
    * @param {RunUpdateCallback} [callback] Callback function.
    * @returns {Promise<RunUpdateResponse>}
    */
-  runPartitionedUpdate(query: string | ExecuteSqlRequest): Promise<[number]>;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions
+  ): Promise<[number]>;
+  runPartitionedUpdate(
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void;
   runPartitionedUpdate(
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<[number]> {
     this.pool_.getSession((err, session) => {
@@ -2635,11 +2762,14 @@ class Database extends common.GrpcServiceObject {
 
   _runPartitionedUpdate(
     session: Session,
-    query: string | ExecuteSqlRequest,
+    query: string | RunPartitionedUpdateOptions,
     callback?: RunUpdateCallback
   ): void | Promise<number> {
     const transaction = session.partitionedDml();
 
+    if (typeof query !== 'string' && query.excludeTxnFromChangeStreams) {
+      transaction.excludeTxnFromChangeStreams();
+    }
     transaction.begin(err => {
       if (err) {
         this.pool_.release(session!);
@@ -2962,6 +3092,9 @@ class Database extends common.GrpcServiceObject {
       if (options.optimisticLock) {
         transaction!.useOptimisticLock();
       }
+      if (options.excludeTxnFromChangeStreams) {
+        transaction!.excludeTxnFromChangeStreams();
+      }
 
       const release = this.pool_.release.bind(this.pool_, session!);
       const runner = new TransactionRunner(
@@ -3076,6 +3209,9 @@ class Database extends common.GrpcServiceObject {
         if (options.optimisticLock) {
           transaction.useOptimisticLock();
         }
+        if (options.excludeTxnFromChangeStreams) {
+          transaction.excludeTxnFromChangeStreams();
+        }
         const runner = new AsyncTransactionRunner<T>(
           session,
           transaction,
@@ -3095,6 +3231,213 @@ class Database extends common.GrpcServiceObject {
       }
     }
   }
+
+  /**
+   * Write a batch of mutations to Spanner.
+   *
+   * All mutations in a group are committed atomically. However, mutations across
+   * groups can be committed non-atomically in an unspecified order and thus, they
+   * must be independent of each other. Partial failure is possible, i.e., some groups
+   * may have been committed successfully, while some may have failed. The results of
+   * individual batches are streamed into the response as the batches are applied.
+   *
+   * batchWriteAtLeastOnce requests are not replay protected, meaning that each mutation group may
+   * be applied more than once. Replays of non-idempotent mutations may have undesirable
+   * effects. For example, replays of an insert mutation may produce an already exists
+   * error or if you use generated or commit timestamp-based keys, it may result in additional
+   * rows being added to the mutation's table. We recommend structuring your mutation groups to
+   * be idempotent to avoid this issue.
+   *
+   * @method Spanner#batchWriteAtLeastOnce
+   *
+   * @param {MutationGroup[]} [mutationGroups] The group of mutations to be applied.
+   * @param {BatchWriteOptions} [options] Options object for batch write request.
+   *
+   * @returns {ReadableStream} An object stream which emits
+   *   {@link protos.google.spanner.v1.BatchWriteResponse|BatchWriteResponse}
+   *  on 'data' event.
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutationGroup = new MutationGroup();
+   * mutationGroup.insert('Singers', {
+   *  SingerId: '1',
+   *  FirstName: 'Marc',
+   *  LastName: 'Richards',
+   *  });
+   *
+   * database.batchWriteAtLeastOnce([mutationGroup])
+   *   .on('error', console.error)
+   *   .on('data', response => {
+   *        console.log('response: ', response);
+   *   })
+   *   .on('end', () => {
+   *        console.log('Request completed successfully');
+   *   });
+   *
+   * //-
+   * // If you anticipate many results, you can end a stream early to prevent
+   * // unnecessary processing and API requests.
+   * //-
+   * database.batchWriteAtLeastOnce()
+   *   .on('data', response => {
+   *     this.end();
+   *   });
+   * ```
+   */
+  batchWriteAtLeastOnce(
+    mutationGroups: MutationGroup[],
+    options?: BatchWriteOptions
+  ): NodeJS.ReadableStream {
+    const proxyStream: Transform = through.obj();
+
+    this.pool_.getSession((err, session) => {
+      if (err) {
+        proxyStream.destroy(err);
+        return;
+      }
+      const gaxOpts = extend(true, {}, options?.gaxOptions);
+      const reqOpts = Object.assign(
+        {} as spannerClient.spanner.v1.BatchWriteRequest,
+        {
+          session: session!.formattedName_!,
+          mutationGroups: mutationGroups.map(mg => mg.proto()),
+          requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
+        }
+      );
+      let dataReceived = false;
+      let dataStream = this.requestStream({
+        client: 'SpannerClient',
+        method: 'batchWrite',
+        reqOpts,
+        gaxOpts,
+        headers: this.resourceHeader_,
+      });
+      dataStream
+        .once('data', () => (dataReceived = true))
+        .once('error', err => {
+          if (
+            !dataReceived &&
+            isSessionNotFoundError(err as grpc.ServiceError)
+          ) {
+            // If there's a 'Session not found' error and we have not yet received
+            // any data, we can safely retry the writes on a new session.
+            // Register the error on the session so the pool can discard it.
+            if (session) {
+              session.lastError = err as grpc.ServiceError;
+            }
+            // Remove the current data stream from the end user stream.
+            dataStream.unpipe(proxyStream);
+            dataStream.end();
+            // Create a new stream and add it to the end user stream.
+            dataStream = this.batchWriteAtLeastOnce(mutationGroups, options);
+            dataStream.pipe(proxyStream);
+          } else {
+            proxyStream.destroy(err);
+          }
+        })
+        .once('end', () => this.pool_.release(session!))
+        .pipe(proxyStream);
+    });
+
+    return proxyStream as NodeJS.ReadableStream;
+  }
+
+  /**
+   * Write mutations using a single RPC invocation without replay protection.
+   *
+   * writeAtLeastOnce writes mutations to Spanner using a single Commit RPC.
+   * These requests are not replay protected, meaning that it may apply mutations more
+   * than once, if the mutations are not idempotent, this may lead to a failure being
+   * reported when the mutation was applied once. Replays non-idempotent mutations may
+   * have undesirable effects. For example, replays of an insert mutation may produce an
+   * already exists error. For this reason, most users of the library will prefer to use
+   * {@link runTransaction} instead.
+   *
+   * However, {@link writeAtLeastOnce()} requires only a single RPC, whereas {@link runTransaction()}
+   * requires two RPCs (one of which may be performed in advance), and so this method may be
+   * appropriate for latency sensitive and/or high throughput blind writing.
+   *
+   * We recommend structuring your mutation set to be idempotent to avoid this issue.
+   *
+   * @param {MutationSet} [mutations] Set of Mutations to be applied.
+   * @param {CallOptions} [options] Options object for blind write request.
+   * @param {CommitCallback} [callback] Callback function for blind write request.
+   *
+   * @returns {Promise}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutations = new MutationSet();
+   * mutations.upsert('Singers', {
+   *    SingerId: 1,
+   *    FirstName: 'Scarlet',
+   *    LastName: 'Terry',
+   *  });
+   * mutations.upsert('Singers', {
+   *    SingerId: 2,
+   *    FirstName: 'Marc',
+   *    LastName: 'Richards',
+   *  });
+   *
+   * try {
+   *  const [response, err] = await database.writeAtLeastOnce(mutations, {});
+   *  console.log(response.commitTimestamp);
+   * } catch(err) {
+   *  console.log("Error: ", err);
+   * }
+   * ```
+   */
+  writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    options: CallOptions
+  ): Promise<CommitResponse>;
+  writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    options: CallOptions,
+    callback: CommitCallback
+  ): void;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    optionsOrCallback?: CallOptions | CommitCallback,
+    callback?: CommitCallback
+  ): void | Promise<CommitResponse> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as CommitCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as CallOptions)
+        : {};
+    this.pool_.getSession((err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+        this.writeAtLeastOnce(mutations, options, cb!);
+        return;
+      }
+      if (err) {
+        cb!(err as grpc.ServiceError);
+        return;
+      }
+      this._releaseOnEnd(session!, transaction!);
+      transaction?.setQueuedMutations(mutations.proto());
+      return transaction?.commit(options, cb!);
+    });
+  }
+
   /**
    * Create a Session object.
    *
@@ -3400,8 +3743,10 @@ class Database extends common.GrpcServiceObject {
 promisifyAll(Database, {
   exclude: [
     'batchTransaction',
+    'batchWriteAtLeastOnce',
     'getRestoreInfo',
     'getState',
+    'getDatabaseDialect',
     'getOperations',
     'runTransaction',
     'runTransactionAsync',
@@ -3420,6 +3765,8 @@ callbackifyAll(Database, {
     'create',
     'batchCreateSessions',
     'batchTransaction',
+    'batchWriteAtLeastOnce',
+    'writeAtLeastOnce',
     'close',
     'createBatchTransaction',
     'createSession',
@@ -3427,6 +3774,7 @@ callbackifyAll(Database, {
     'delete',
     'exists',
     'get',
+    'getDatabaseDialect',
     'getMetadata',
     'getSchema',
     'getSessions',

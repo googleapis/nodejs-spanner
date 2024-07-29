@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,26 +31,31 @@ function main(
   // const databaseId = 'my-database';
   // const projectId = 'my-project-id';
 
-  // Imports the Google Cloud Spanner client library
+  // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Instantiates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
 
-  async function pgCreateStoringIndex() {
-    // Gets a reference to a Cloud Spanner instance and database
-    const instance = spanner.instance(instanceId);
-    const database = instance.database(databaseId);
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
+  async function pgCreateStoringIndex() {
     const request = [
       'CREATE INDEX AlbumsByAlbumTitle ON Albums(AlbumTitle) INCLUDE(MarketingBudget)',
     ];
 
     // Creates a new index in the database
     try {
-      const [operation] = await database.updateSchema(request);
+      const [operation] = await databaseAdminClient.updateDatabaseDdl({
+        database: databaseAdminClient.databasePath(
+          projectId,
+          instanceId,
+          databaseId
+        ),
+        statements: request,
+      });
 
       console.log('Waiting for operation to complete...');
       await operation.promise();
@@ -59,8 +64,9 @@ function main(
     } catch (err) {
       console.error('ERROR:', err);
     } finally {
-      // Close the database when finished.
-      database.close();
+      // Close the spanner client when finished.
+      // The databaseAdminClient does not require explicit closure. The closure of the Spanner client will automatically close the databaseAdminClient.
+      spanner.close();
     }
   }
   pgCreateStoringIndex();

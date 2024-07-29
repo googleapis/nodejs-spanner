@@ -22,8 +22,8 @@ import mergeStream = require('merge-stream');
 import {common as p} from 'protobufjs';
 import {Readable, Transform} from 'stream';
 import * as streamEvents from 'stream-events';
-import {grpc} from 'google-gax';
-import {isRetryableInternalError} from './transaction-runner';
+import {grpc, CallOptions} from 'google-gax';
+import {DeadlineError, isRetryableInternalError} from './transaction-runner';
 
 import {codec, JSONOptions, Json, Field, Value} from './codec';
 import {google} from '../protos/protos';
@@ -50,11 +50,53 @@ interface RequestFunction {
  *     that it is not ready for any more data. Increase this value if you
  *     experience 'Stream is still not ready to receive data' errors as a
  *     result of a slow writer in your receiving stream.
+ * @property {object} [columnsMetadata] An object map that can be used to pass
+ * additional properties for each column type which can help in deserializing
+ * the data coming from backend. (Eg: We need to pass Proto Function and Enum
+ * map to deserialize proto messages and enums, respectively.)
  */
 export interface RowOptions {
   json?: boolean;
   jsonOptions?: JSONOptions;
   maxResumeRetries?: number;
+  /**
+   * An object where column names as keys and custom objects as corresponding
+   * values for deserialization. It's specifically useful for data types like
+   * protobuf where deserialization logic is on user-specific code. When provided,
+   * the custom object enables deserialization of backend-received column data.
+   * If not provided, data remains serialized as buffer for Proto Messages and
+   * integer for Proto Enums.
+   *
+   * @example
+   * To obtain Proto Messages and Proto Enums as JSON objects, you must supply
+   * additional metadata. This metadata should include the protobufjs-cli
+   * generated proto message function and enum object. It encompasses the essential
+   * logic for proper data deserialization.
+   *
+   * Eg: To read data from Proto Columns in json format using DQL, you should pass
+   * columnsMetadata where key is the name of the column and value is the protobufjs-cli
+   * generated proto message function and enum object.
+   *
+   *     const query = {
+   *       sql: `SELECT SingerId,
+   *                    FirstName,
+   *                    LastName,
+   *                    SingerInfo,
+   *                    SingerGenre,
+   *                    SingerInfoArray,
+   *                    SingerGenreArray
+   *             FROM Singers
+   *             WHERE SingerId = 6`,
+   *       columnsMetadata: {
+   *         SingerInfo: music.SingerInfo,
+   *         SingerInfoArray: music.SingerInfo,
+   *         SingerGenre: music.Genre,
+   *         SingerGenreArray: music.Genre,
+   *       },
+   *     };
+   */
+  columnsMetadata?: object;
+  gaxOptions?: CallOptions;
 }
 
 /**
@@ -244,8 +286,7 @@ export class PartialResultStream extends Transform implements ResultEvents {
     }
   }
 
-  _clearPendingValues() {
-    this._values = [];
+  _resetPendingValues() {
     if (this._pendingValueForResume) {
       this._pendingValue = this._pendingValueForResume;
     } else {
@@ -335,7 +376,15 @@ export class PartialResultStream extends Transform implements ResultEvents {
   private _createRow(values: Value[]): Row {
     const fields = values.map((value, index) => {
       const {name, type} = this._fields[index];
-      return {name, value: codec.decode(value, type as google.spanner.v1.Type)};
+      const columnMetadata = this._options.columnsMetadata?.[name];
+      return {
+        name,
+        value: codec.decode(
+          value,
+          type as google.spanner.v1.Type,
+          columnMetadata
+        ),
+      };
     });
 
     Object.defineProperty(fields, 'toJSON', {
@@ -443,6 +492,8 @@ export function partialResultStream(
   const maxQueued = 10;
   let lastResumeToken: ResumeToken;
   let lastRequestStream: Readable;
+  const startTime = Date.now();
+  const timeout = options?.gaxOptions?.timeout ?? Infinity;
 
   // mergeStream allows multiple streams to be connected into one. This is good;
   // if we need to retry a request and pipe more data to the user's stream.
@@ -484,13 +535,26 @@ export function partialResultStream(
     });
   };
   const makeRequest = (): void => {
-    partialRSStream._clearPendingValues();
+    if (is.defined(lastResumeToken) && lastResumeToken.length > 0) {
+      partialRSStream._resetPendingValues();
+    }
     lastRequestStream = requestFn(lastResumeToken);
     lastRequestStream.on('end', endListener);
     requestsStream.add(lastRequestStream);
   };
 
   const retry = (err: grpc.ServiceError): void => {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= timeout) {
+      // The timeout has reached so this will flush any rows the
+      // checkpoint stream has queued. After that, we will destroy the
+      // user's stream with the Deadline exceeded error.
+      setImmediate(() =>
+        batchAndSplitOnTokenStream.destroy(new DeadlineError(err))
+      );
+      return;
+    }
+
     if (
       !(
         err.code &&

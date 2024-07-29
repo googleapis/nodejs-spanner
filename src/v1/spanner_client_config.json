@@ -7,7 +7,8 @@
           "DEADLINE_EXCEEDED",
           "UNAVAILABLE"
         ],
-        "unavailable": [
+        "resource_exhausted_unavailable": [
+          "RESOURCE_EXHAUSTED",
           "UNAVAILABLE"
         ]
       },
@@ -34,32 +35,32 @@
       "methods": {
         "CreateSession": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "BatchCreateSessions": {
           "timeout_millis": 60000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "GetSession": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "ListSessions": {
           "timeout_millis": 3600000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "DeleteSession": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "ExecuteSql": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "ExecuteStreamingSql": {
@@ -69,12 +70,12 @@
         },
         "ExecuteBatchDml": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "Read": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "StreamingRead": {
@@ -84,28 +85,33 @@
         },
         "BeginTransaction": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "Commit": {
           "timeout_millis": 3600000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "Rollback": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "PartitionQuery": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
         },
         "PartitionRead": {
           "timeout_millis": 30000,
-          "retry_codes_name": "unavailable",
+          "retry_codes_name": "resource_exhausted_unavailable",
           "retry_params_name": "9442ca297df43f7314712e1a19d003838e738a45"
+        },
+        "BatchWrite": {
+          "timeout_millis": 3600000,
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
         }
       }
     }

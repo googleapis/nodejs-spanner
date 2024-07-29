@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 async function createInstanceWithProcessingUnits(instanceId, projectId) {
   // [START spanner_create_instance_with_processing_units]
+
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
@@ -31,27 +32,38 @@ async function createInstanceWithProcessingUnits(instanceId, projectId) {
     projectId: projectId,
   });
 
-  const instance = spanner.instance(instanceId);
+  const instanceAdminClient = spanner.getInstanceAdminClient();
 
   // Creates a new instance
   try {
-    console.log(`Creating instance ${instance.formattedName_}.`);
-    const [, operation] = await instance.create({
-      config: 'regional-us-central1',
-      processingUnits: 500,
-      displayName: 'This is a display name.',
-      labels: {
-        ['cloud_spanner_samples']: 'true',
+    console.log(
+      `Creating instance ${instanceAdminClient.instancePath(
+        projectId,
+        instanceId
+      )}.`
+    );
+    const [operation] = await instanceAdminClient.createInstance({
+      instanceId: instanceId,
+      instance: {
+        config: instanceAdminClient.instanceConfigPath(
+          projectId,
+          'regional-us-central1'
+        ),
+        displayName: 'Display name for the instance.',
+        processingUnits: 500,
+        labels: {
+          cloud_spanner_samples: 'true',
+          created: Math.round(Date.now() / 1000).toString(), // current time
+        },
       },
+      parent: instanceAdminClient.projectPath(projectId),
     });
 
-    console.log(`Waiting for operation on ${instance.id} to complete...`);
+    console.log(`Waiting for operation on ${instanceId} to complete...`);
     await operation.promise();
-
     console.log(`Created instance ${instanceId}.`);
-
-    const [metadata] = await instance.getMetadata({
-      fieldNames: ['processingUnits'],
+    const [metadata] = await instanceAdminClient.getInstance({
+      name: instanceAdminClient.instancePath(projectId, instanceId),
     });
     console.log(
       `Instance ${instanceId} has ${metadata.processingUnits} ` +

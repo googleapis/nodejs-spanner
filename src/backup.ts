@@ -46,7 +46,7 @@ export interface CreateBackupGaxOperation extends GaxOperation {
 export type CreateBackupResponse = [
   Backup,
   CreateBackupGaxOperation,
-  IOperation
+  IOperation,
 ];
 
 export interface CreateBackupOptions {

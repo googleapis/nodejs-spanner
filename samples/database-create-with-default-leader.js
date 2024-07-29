@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2024 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,23 +27,29 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
   // const projectId = 'my-project-id';
   // const instanceId = 'my-instance-id';
   // const databaseId = 'my-database-id';
-  // const defaultLeader = 'my-default-leader';
+  // const defaultLeader = 'my-default-leader'; example: 'asia-northeast1'
 
   // Imports the Google Cloud client library
   const {Spanner} = require('@google-cloud/spanner');
 
-  // Creates a client
+  // creates a client
   const spanner = new Spanner({
     projectId: projectId,
   });
-  // Gets a reference to a Cloud Spanner instance and a database. The database does not need to exist.
-  const instance = spanner.instance(instanceId);
-  const database = instance.database(databaseId);
+
+  // Gets a reference to a Cloud Spanner Database Admin Client object
+  const databaseAdminClient = spanner.getDatabaseAdminClient();
 
   async function createDatabaseWithDefaultLeader() {
     // Create a new database with an extra statement which will alter the
     // database after creation to set the default leader.
-    console.log(`Creating database ${database.formattedName_}.`);
+    console.log(
+      `Creating database ${databaseAdminClient.databasePath(
+        projectId,
+        instanceId,
+        databaseId
+      )}.`
+    );
     const createSingersTableStatement = `
       CREATE TABLE Singers (
         SingerId   INT64 NOT NULL,
@@ -64,15 +70,18 @@ function main(instanceId, databaseId, defaultLeader, projectId) {
     const setDefaultLeaderStatement = `
       ALTER DATABASE \`${databaseId}\`
       SET OPTIONS (default_leader = '${defaultLeader}')`;
-    const [, operation] = await database.create({
+
+    const [operation] = await databaseAdminClient.createDatabase({
+      createStatement: 'CREATE DATABASE `' + databaseId + '`',
       extraStatements: [
         createSingersTableStatement,
         createAlbumsStatement,
         setDefaultLeaderStatement,
       ],
+      parent: databaseAdminClient.instancePath(projectId, instanceId),
     });
 
-    console.log(`Waiting for creation of ${database.id} to complete...`);
+    console.log(`Waiting for creation of ${databaseId} to complete...`);
     await operation.promise();
     console.log(
       `Created database ${databaseId} with default leader ${defaultLeader}.`
