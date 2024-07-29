@@ -72,6 +72,7 @@ import {SessionPool} from './session-pool';
 import {Table} from './table';
 import {
   MutationGroup,
+  MutationSet,
   PartitionedDml,
   Snapshot,
   Transaction,
@@ -2024,6 +2025,15 @@ export {Transaction};
  * @type {Constructor}
  */
 export {MutationGroup};
+
+/**
+ * {@link MutationSet} class.
+ *
+ * @name Spanner.MutationSet
+ * @see MutationSet
+ * @type {Constructor}
+ */
+export {MutationSet};
 
 /**
  * @type {object}

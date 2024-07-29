@@ -4,6 +4,24 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.10.0](https://github.com/googleapis/nodejs-spanner/compare/v7.9.1...v7.10.0) (2024-07-19)
+
+
+### Features
+
+* Add field lock_hint in spanner.proto ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add field order_by in spanner.proto ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add QueryCancellationAction message in executor protos ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Add support for change streams transaction exclusion option for Batch Write ([#2070](https://github.com/googleapis/nodejs-spanner/issues/2070)) ([2a9e443](https://github.com/googleapis/nodejs-spanner/commit/2a9e44328acda310db2d0d65d32ad82d77a9fcb0))
+* **spanner:** Add support for Cloud Spanner Scheduled Backups ([#2045](https://github.com/googleapis/nodejs-spanner/issues/2045)) ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+* Update Nodejs generator to send API versions in headers for GAPICs ([47520e9](https://github.com/googleapis/nodejs-spanner/commit/47520e927b0fdcc60cb67378b8b49f44329f210b))
+
+
+### Bug Fixes
+
+* Callback in getDatabaseDialect ([#2078](https://github.com/googleapis/nodejs-spanner/issues/2078)) ([7e4a8e9](https://github.com/googleapis/nodejs-spanner/commit/7e4a8e9ad4f785b15b68aaa06b6480098d7995ba))
+* **deps:** Update dependency google-gax to v4.3.8 ([#2077](https://github.com/googleapis/nodejs-spanner/issues/2077)) ([e927880](https://github.com/googleapis/nodejs-spanner/commit/e927880ff786a2528a2bbb063a244af3c42ff69c))
+
 ## [7.9.1](https://github.com/googleapis/nodejs-spanner/compare/v7.9.0...v7.9.1) (2024-06-26)
 
 

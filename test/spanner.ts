@@ -20,6 +20,7 @@ import {grpc, Status, ServiceError} from 'google-gax';
 import {
   Database,
   Instance,
+  MutationSet,
   SessionPool,
   Snapshot,
   Spanner,
@@ -3258,6 +3259,46 @@ describe('Spanner with mock server', () => {
       }) as v1.CommitRequest;
       assert.ok(commitRequest, 'Commit was called');
       assert.strictEqual(commitRequest.mutations.length, 1);
+    });
+
+    it('should apply blind writes only once with mutations', async () => {
+      const database = newTestDatabase();
+      const mutations = new MutationSet();
+      mutations.upsert('Singers', {
+        SingerId: 1,
+        FirstName: 'Scarlet',
+        LastName: 'Terry',
+      });
+      mutations.upsert('Singers', {
+        SingerId: 2,
+        FirstName: 'Marc',
+      });
+      await database.writeAtLeastOnce(mutations, {});
+      await database.close();
+
+      // Verify that we don't have a BeginTransaction request for the transaction.
+      const beginTxnRequest = spannerMock.getRequests().find(val => {
+        return (val as v1.BeginTransactionRequest).options?.readWrite;
+      }) as v1.BeginTransactionRequest;
+      assert.deepStrictEqual(beginTxnRequest, undefined);
+
+      // Verify that we have a single Commit request, and that the Commit request
+      // contains only two mutations and uses a single-use read/write transaction.
+      assert.strictEqual(
+        1,
+        spannerMock.getRequests().filter(val => {
+          return (val as v1.CommitRequest).mutations;
+        }).length
+      );
+      const commitRequest = spannerMock.getRequests().find(val => {
+        const request = val as v1.CommitRequest;
+        return request.mutations || request.singleUseTransaction?.readWrite;
+      }) as v1.CommitRequest;
+      assert.ok(commitRequest, 'Commit was called');
+      assert.strictEqual(commitRequest.mutations.length, 2);
+      assert.deepStrictEqual(commitRequest.singleUseTransaction?.readWrite, {
+        readLockMode: 'READ_LOCK_MODE_UNSPECIFIED',
+      });
     });
 
     it('should apply blind writes only once with excludeTxnFromChangeStreams option', async () => {
