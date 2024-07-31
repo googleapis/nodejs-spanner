@@ -62,6 +62,7 @@ export interface TimestampBounds {
 export interface BatchWriteOptions {
   requestOptions?: Pick<IRequestOptions, 'priority' | 'transactionTag'>;
   gaxOptions?: CallOptions;
+  excludeTxnFromChangeStreams?: boolean;
 }
 
 export interface RequestOptions {
@@ -1854,6 +1855,17 @@ export class Transaction extends Dml {
   }
 
   /**
+   * This method updates the _queuedMutations property of the transaction.
+   *
+   * @public
+   *
+   * @param {spannerClient.spanner.v1.Mutation[]} [mutation]
+   */
+  setQueuedMutations(mutation: spannerClient.spanner.v1.Mutation[]): void {
+    this._queuedMutations = mutation;
+  }
+
+  /**
    * @typedef {object} CommitOptions
    * @property {google.spanner.v1.IRequestOptions} requestOptions The request options to include
    *     with the commit request.
@@ -2527,6 +2539,110 @@ function buildDeleteMutation(
     delete: {table, keySet},
   };
   return mutation as spannerClient.spanner.v1.Mutation;
+}
+
+/**
+ * MutationSet represent a set of changes to be applied atomically to a Cloud Spanner
+ * database with a {@link Transaction}.
+ * Mutations are used to insert, update, upsert(insert or update), replace, or
+ * delete rows within tables.
+ *
+ * Mutations are added to a {@link Transaction} and are not executed until the
+ * transaction is committed via {@link Transaction#commit}.
+ *
+ * If the transaction is rolled back or encounters an error, the mutations are
+ * discarded.
+ *
+ * @example
+ * ```
+ * const {Spanner, Mutation} = require('@google-cloud/spanner');
+ * const spanner = new Spanner();
+ *
+ * const instance = spanner.instance('my-instance');
+ * const database = instance.database('my-database');
+ *
+ * const mutations = new MutationSet();
+ * mutations.insert('Singers', {SingerId: '123', FirstName: 'David'});
+ * mutations.update('Singers', {SingerId: '123', FirstName: 'Marc'});
+ *
+ * try {
+ *  database.writeAtLeastOnce(mutations, (err, res) => {
+ *    console.log("RESPONSE: ", res);
+ *  });
+ * } catch(err) {
+ *  console.log("ERROR: ", err);
+ * }
+ * ```
+ */
+export class MutationSet {
+  /**
+   * An array to store the mutations.
+   */
+  private _queuedMutations: spannerClient.spanner.v1.Mutation[];
+
+  /**
+   * Creates a new Mutation object.
+   */
+  constructor() {
+    this._queuedMutations = [];
+  }
+
+  /**
+   * Adds an insert operation to the mutation set.
+   * @param {string} table. The name of the table to insert into.
+   * @param {object|object[]} rows. A single row object or an array of row objects to insert.
+   */
+  insert(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('insert', table, rows));
+  }
+
+  /**
+   * Adds an update operation to the mutation set.
+   * @param {string} table. The name of the table to update.
+   * @param {object|object[]} rows. A single row object or an array of row objects to update.
+   * Each row object must contain the primary key values to indentify the row to update.
+   */
+  update(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('update', table, rows));
+  }
+
+  /**
+   * Adds an upsert operation to the mutation set.
+   * An upsert will insert a new row if it does not exist or update an existing row if it does.
+   * @param {string} table. The name of the table to upsert.
+   * @param {object|object[]} rows. A single row object or an array of row objects to upsert.
+   */
+  upsert(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('insertOrUpdate', table, rows));
+  }
+
+  /**
+   * Adds a replace operation to the mutation set.
+   * A replace operation deletes the existing row (if it exists) and inserts the new row.
+   * @param {string} table. The name of the table to replace.
+   * @param {object|object[]} rows. A single row object or an array of row objects to replace.
+   */
+  replace(table: string, rows: object | object[]): void {
+    this._queuedMutations.push(buildMutation('replace', table, rows));
+  }
+
+  /**
+   * Adds a deleteRows operation to the mutation set.
+   * This operation deletes rows from the specified table based on their primary keys.
+   * @param {string} table. The name of the table to deleteRows from.
+   * @param {key[]} key. An array of key objects, each represeting the primary key of a row to delete.
+   */
+  deleteRows(table: string, keys: Key[]): void {
+    this._queuedMutations.push(buildDeleteMutation(table, keys));
+  }
+
+  /**
+   * Returns the internal representation of the queued mutations as a protobuf message.
+   * @returns {spannerClient.spanner.v1.Mutation[]}. The protobuf message representing the mutations.
+   */
+  proto(): spannerClient.spanner.v1.Mutation[] {
+    return this._queuedMutations;
+  }
 }
 
 /**

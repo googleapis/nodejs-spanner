@@ -40,7 +40,13 @@ import {protos} from '../src';
 import * as inst from '../src/instance';
 import RequestOptions = google.spanner.v1.RequestOptions;
 import EncryptionType = google.spanner.admin.database.v1.RestoreDatabaseEncryptionConfig.EncryptionType;
-import {BatchWriteOptions} from '../src/transaction';
+import {
+  BatchWriteOptions,
+  CommitCallback,
+  CommitOptions,
+  MutationSet,
+} from '../src/transaction';
+import {error} from 'is';
 
 let promisified = false;
 const fakePfy = extend({}, pfy, {
@@ -125,10 +131,12 @@ class FakeTable {
 class FakeTransaction extends EventEmitter {
   calledWith_: IArguments;
   _options!: google.spanner.v1.ITransactionOptions;
+  private _queuedMutations: google.spanner.v1.Mutation[];
   constructor(options) {
     super();
     this._options = options;
     this.calledWith_ = arguments;
+    this._queuedMutations = [];
   }
   begin() {}
   end() {}
@@ -136,6 +144,18 @@ class FakeTransaction extends EventEmitter {
     return through.obj();
   }
   runUpdate() {}
+  setQueuedMutations(mutation) {
+    this._queuedMutations = mutation;
+  }
+  commit(
+    options?: CommitOptions,
+    callback?: CommitCallback
+  ): void | Promise<google.spanner.v1.ICommitResponse> {
+    if (callback) {
+      callback(null, {commitTimestamp: {seconds: 1, nanos: 0}});
+    }
+    return Promise.resolve({commitTimestamp: {seconds: 1, nanos: 0}});
+  }
 }
 
 let fakeTransactionRunner: FakeTransactionRunner;
@@ -600,6 +620,7 @@ describe('Database', () => {
       requestOptions: {
         transactionTag: 'batch-write-tag',
       },
+      excludeTxnFromChangeStream: true,
       gaxOptions: {autoPaginate: false},
     } as BatchWriteOptions;
 
@@ -644,6 +665,7 @@ describe('Database', () => {
           session: fakeSession!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
 
@@ -757,6 +779,89 @@ describe('Database', () => {
 
       assert.strictEqual(releaseStub.callCount, 1);
       assert.strictEqual(releaseStub.firstCall.args[0], fakeSession);
+    });
+  });
+
+  describe('writeAtLeastOnce', () => {
+    const mutations = new MutationSet();
+    mutations.insert('MyTable', {
+      Key: 'k3',
+      Thing: 'xyz',
+    });
+
+    const SESSION = new FakeSession();
+    const RESPONSE = {commitTimestamp: {seconds: 1, nanos: 0}};
+    const TRANSACTION = new FakeTransaction(
+      {} as google.spanner.v1.TransactionOptions.ReadWrite
+    );
+
+    let pool: FakeSessionPool;
+
+    beforeEach(() => {
+      pool = database.pool_;
+      (sandbox.stub(pool, 'getSession') as sinon.SinonStub).callsFake(
+        callback => {
+          callback(null, SESSION, TRANSACTION);
+        }
+      );
+    });
+
+    it('should return any errors getting a session', done => {
+      const fakeErr = new Error('err');
+
+      (pool.getSession as sinon.SinonStub).callsFake(callback =>
+        callback(fakeErr, null, null)
+      );
+
+      database.writeAtLeastOnce(mutations, err => {
+        assert.deepStrictEqual(err, fakeErr);
+        done();
+      });
+    });
+
+    it('should return successful CommitResponse when passing an empty mutation', done => {
+      const fakeMutations = new MutationSet();
+      try {
+        database.writeAtLeastOnce(fakeMutations, (err, response) => {
+          assert.ifError(err);
+          assert.deepStrictEqual(
+            response.commitTimestamp,
+            RESPONSE.commitTimestamp
+          );
+        });
+        done();
+      } catch (error) {
+        assert(error instanceof Error);
+      }
+    });
+
+    it('should return an error when passing null mutation', done => {
+      const fakeError = new Error('err');
+      try {
+        database.writeAtLeastOnce(null, (err, res) => {});
+      } catch (err) {
+        (err as grpc.ServiceError).message.includes(
+          "Cannot read properties of null (reading 'proto')"
+        );
+        done();
+      }
+    });
+
+    it('should return CommitResponse on successful write using Callback', done => {
+      database.writeAtLeastOnce(mutations, (err, res) => {
+        assert.deepStrictEqual(err, null);
+        assert.deepStrictEqual(res, RESPONSE);
+        done();
+      });
+    });
+
+    it('should return CommitResponse on successful write using await', async () => {
+      sinon.stub(database, 'writeAtLeastOnce').resolves([RESPONSE]);
+      const [response, err] = await database.writeAtLeastOnce(mutations, {});
+      assert.deepStrictEqual(
+        response.commitTimestamp,
+        RESPONSE.commitTimestamp
+      );
     });
   });
 

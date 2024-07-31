@@ -57,6 +57,7 @@ and automatic, synchronous replication for high availability.
   * [Deletes a user-managed instance configuration.](#deletes-a-user-managed-instance-configuration.)
   * [Lists the instance configuration operations.](#lists-the-instance-configuration-operations.)
   * [Updates a user-managed instance configuration.](#updates-a-user-managed-instance-configuration.)
+  * [Creates a new instance partition](#creates-a-new-instance-partition)
   * [Creates a instance with autoscaling config.](#creates-a-instance-with-autoscaling-config.)
   * [Instance-with-processing-units](#instance-with-processing-units)
   * [Instance](#instance)
@@ -858,6 +859,23 @@ __Usage:__
 
 
 `node instance-config-update <INSTANCE_CONFIG_ID> <PROJECT_ID>`
+
+
+-----
+
+
+
+
+### Creates a new instance partition
+
+View the [source code](https://github.com/googleapis/nodejs-spanner/blob/main/samples/instance-partition-create.js).
+
+[![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/nodejs-spanner&page=editor&open_in_editor=samples/instance-partition-create.js,samples/README.md)
+
+__Usage:__
+
+
+`node instance-partition-create.js <INSTANCE_ID> <INSTANCE_PARTITION_ID> <PROJECT_ID>`
 
 
 -----

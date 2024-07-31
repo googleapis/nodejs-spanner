@@ -61,8 +61,11 @@ import {
 import {CreateTableCallback, CreateTableResponse, Table} from './table';
 import {
   BatchWriteOptions,
+  CommitCallback,
+  CommitResponse,
   ExecuteSqlRequest,
   MutationGroup,
+  MutationSet,
   RunCallback,
   RunResponse,
   RunUpdateCallback,
@@ -1533,23 +1536,39 @@ class Database extends common.GrpcServiceObject {
   ): void;
   async getDatabaseDialect(
     optionsOrCallback?: CallOptions | GetDatabaseDialectCallback,
-    cb?: GetDatabaseDialectCallback
+    callback?: GetDatabaseDialectCallback
   ): Promise<
     | EnumKey<typeof databaseAdmin.spanner.admin.database.v1.DatabaseDialect>
     | undefined
   > {
     const gaxOptions =
-      typeof optionsOrCallback === 'object' ? optionsOrCallback : {};
+      typeof optionsOrCallback === 'object'
+        ? (optionsOrCallback as CallOptions)
+        : {};
 
-    if (
-      this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
-      this.databaseDialect === null ||
-      this.databaseDialect === undefined
-    ) {
-      const [metadata] = await this.getMetadata(gaxOptions);
-      this.databaseDialect = metadata.databaseDialect;
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as GetDatabaseDialectCallback)
+        : callback;
+
+    try {
+      if (
+        this.databaseDialect === 'DATABASE_DIALECT_UNSPECIFIED' ||
+        this.databaseDialect === null ||
+        this.databaseDialect === undefined
+      ) {
+        const [metadata] = await this.getMetadata(gaxOptions);
+        this.databaseDialect = metadata.databaseDialect;
+      }
+      if (cb) {
+        cb(null, this.databaseDialect);
+        return;
+      }
+      return this.databaseDialect || undefined;
+    } catch (err) {
+      cb!(err as grpc.ServiceError);
+      return;
     }
-    return this.databaseDialect || undefined;
   }
 
   /**
@@ -3289,6 +3308,7 @@ class Database extends common.GrpcServiceObject {
           session: session!.formattedName_!,
           mutationGroups: mutationGroups.map(mg => mg.proto()),
           requestOptions: options?.requestOptions,
+          excludeTxnFromChangeStream: options?.excludeTxnFromChangeStreams,
         }
       );
       let dataReceived = false;
@@ -3327,6 +3347,95 @@ class Database extends common.GrpcServiceObject {
     });
 
     return proxyStream as NodeJS.ReadableStream;
+  }
+
+  /**
+   * Write mutations using a single RPC invocation without replay protection.
+   *
+   * writeAtLeastOnce writes mutations to Spanner using a single Commit RPC.
+   * These requests are not replay protected, meaning that it may apply mutations more
+   * than once, if the mutations are not idempotent, this may lead to a failure being
+   * reported when the mutation was applied once. Replays non-idempotent mutations may
+   * have undesirable effects. For example, replays of an insert mutation may produce an
+   * already exists error. For this reason, most users of the library will prefer to use
+   * {@link runTransaction} instead.
+   *
+   * However, {@link writeAtLeastOnce()} requires only a single RPC, whereas {@link runTransaction()}
+   * requires two RPCs (one of which may be performed in advance), and so this method may be
+   * appropriate for latency sensitive and/or high throughput blind writing.
+   *
+   * We recommend structuring your mutation set to be idempotent to avoid this issue.
+   *
+   * @param {MutationSet} [mutations] Set of Mutations to be applied.
+   * @param {CallOptions} [options] Options object for blind write request.
+   * @param {CommitCallback} [callback] Callback function for blind write request.
+   *
+   * @returns {Promise}
+   *
+   * @example
+   * ```
+   * const {Spanner} = require('@google-cloud/spanner');
+   * const spanner = new Spanner();
+   *
+   * const instance = spanner.instance('my-instance');
+   * const database = instance.database('my-database');
+   * const mutations = new MutationSet();
+   * mutations.upsert('Singers', {
+   *    SingerId: 1,
+   *    FirstName: 'Scarlet',
+   *    LastName: 'Terry',
+   *  });
+   * mutations.upsert('Singers', {
+   *    SingerId: 2,
+   *    FirstName: 'Marc',
+   *    LastName: 'Richards',
+   *  });
+   *
+   * try {
+   *  const [response, err] = await database.writeAtLeastOnce(mutations, {});
+   *  console.log(response.commitTimestamp);
+   * } catch(err) {
+   *  console.log("Error: ", err);
+   * }
+   * ```
+   */
+  writeAtLeastOnce(mutations: MutationSet): Promise<CommitResponse>;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    options: CallOptions
+  ): Promise<CommitResponse>;
+  writeAtLeastOnce(mutations: MutationSet, callback: CommitCallback): void;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    options: CallOptions,
+    callback: CommitCallback
+  ): void;
+  writeAtLeastOnce(
+    mutations: MutationSet,
+    optionsOrCallback?: CallOptions | CommitCallback,
+    callback?: CommitCallback
+  ): void | Promise<CommitResponse> {
+    const cb =
+      typeof optionsOrCallback === 'function'
+        ? (optionsOrCallback as CommitCallback)
+        : callback;
+    const options =
+      typeof optionsOrCallback === 'object' && optionsOrCallback
+        ? (optionsOrCallback as CallOptions)
+        : {};
+    this.pool_.getSession((err, session?, transaction?) => {
+      if (err && isSessionNotFoundError(err as grpc.ServiceError)) {
+        this.writeAtLeastOnce(mutations, options, cb!);
+        return;
+      }
+      if (err) {
+        cb!(err as grpc.ServiceError);
+        return;
+      }
+      this._releaseOnEnd(session!, transaction!);
+      transaction?.setQueuedMutations(mutations.proto());
+      return transaction?.commit(options, cb!);
+    });
   }
 
   /**
@@ -3657,6 +3766,7 @@ callbackifyAll(Database, {
     'batchCreateSessions',
     'batchTransaction',
     'batchWriteAtLeastOnce',
+    'writeAtLeastOnce',
     'close',
     'createBatchTransaction',
     'createSession',
@@ -3664,6 +3774,7 @@ callbackifyAll(Database, {
     'delete',
     'exists',
     'get',
+    'getDatabaseDialect',
     'getMetadata',
     'getSchema',
     'getSessions',
