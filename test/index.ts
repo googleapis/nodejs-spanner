@@ -204,6 +204,8 @@ describe('Spanner', () => {
       libVersion: require('../../package.json').version,
       scopes: [],
       grpc,
+      'grpc.keepalive_time_ms': 30000,
+      'grpc.keepalive_timeout_ms': 10000,
       'grpc.callInvocationTransformer':
         fakeGrpcGcp().gcpCallInvocationTransformer,
       'grpc.channelFactoryOverride': fakeGrpcGcp().gcpChannelFactoryOverride,
@@ -245,6 +247,24 @@ describe('Spanner', () => {
         scopes: expectedScopes,
       });
 
+      assert.deepStrictEqual(
+        getFake(spanner.auth).calledWith_[0],
+        expectedOptions
+      );
+    });
+
+    it('should override grpc settings', () => {
+      const keepaliveOptions = {
+        'grpc.keepalive_time_ms': 300,
+        'grpc.keepalive_timeout_ms': 100,
+      };
+      const options = extend({}, OPTIONS, keepaliveOptions);
+      const spanner = new Spanner(options);
+      const expectedOptions = Object.assign(
+        {},
+        EXPECTED_OPTIONS,
+        keepaliveOptions
+      );
       assert.deepStrictEqual(
         getFake(spanner.auth).calledWith_[0],
         expectedOptions
