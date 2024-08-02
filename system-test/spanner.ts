@@ -4027,23 +4027,21 @@ describe('Spanner', () => {
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
-      if (!IS_EMULATOR_ENABLED) {
-        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
-        const postgreSqlCreateTable = await postgreSqlTable.create(
-          `CREATE TABLE ${TABLE_NAME}
-              (
-                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
-                "Name"     VARCHAR(1024),
-                "Float"    DOUBLE PRECISION,
-                "Int"      BIGINT,
-                "Info"     BYTEA,
-                "Created"  TIMESTAMPTZ,
-                "HasGear"  BOOL
-              )`,
-          GAX_OPTIONS
-        );
-        await onPromiseOperationComplete(postgreSqlCreateTable);
-      }
+      // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
+      const postgreSqlCreateTable = await postgreSqlTable.create(
+        `CREATE TABLE ${TABLE_NAME}
+            (
+              "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+              "Name"     VARCHAR(1024),
+              "Float"    DOUBLE PRECISION,
+              "Int"      BIGINT,
+              "Info"     BYTEA,
+              "Created"  TIMESTAMPTZ,
+              "HasGear"  BOOL
+            )`,
+        GAX_OPTIONS
+      );
+      await onPromiseOperationComplete(postgreSqlCreateTable);
     });
 
     const nonExistentTable = (done, database) => {
@@ -4588,9 +4586,7 @@ describe('Spanner', () => {
 
       before(async () => {
         await googleSqlTable.insert(GOOGLE_SQL_INSERT_ROW);
-        if (!IS_EMULATOR_ENABLED) {
-          await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
-        }
+        await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
       });
 
       const queryCallbackMode = (done, database, query, EXPECTED_ROW) => {
@@ -6587,18 +6583,16 @@ describe('Spanner', () => {
           await onPromiseOperationComplete(googleSqlCreateTable);
           await googleSqlTable.insert(googleSqlExpectedRow);
 
-          if (!IS_EMULATOR_ENABLED) {
-            const postgreSqlCreateTable = await postgreSqlTable.create(
-              `CREATE TABLE ${TABLE_NAME} (
-                                            "Key" VARCHAR NOT NULL PRIMARY KEY,
-                                            "StringValue" VARCHAR,
-                                            "BytesValue" BYTEA
-               )`,
-              GAX_OPTIONS
-            );
-            await onPromiseOperationComplete(postgreSqlCreateTable);
-            await postgreSqlTable.insert(postgreSqlExpectedRow);
-          }
+          const postgreSqlCreateTable = await postgreSqlTable.create(
+            `CREATE TABLE ${TABLE_NAME} (
+                                          "Key" VARCHAR NOT NULL PRIMARY KEY,
+                                          "StringValue" VARCHAR,
+                                          "BytesValue" BYTEA
+              )`,
+            GAX_OPTIONS
+          );
+          await onPromiseOperationComplete(postgreSqlCreateTable);
+          await postgreSqlTable.insert(postgreSqlExpectedRow);
         });
 
         it('GOOGLE_STANDARD_SQL should read large datasets', done => {
@@ -6842,21 +6836,19 @@ describe('Spanner', () => {
         }
         await googleSqlTable.insert(data);
 
-        if (!IS_EMULATOR_ENABLED) {
-          const postgreSqlCreateTable = await postgreSqlTable.create(
-            `
-                CREATE TABLE ${TABLE_NAME} (
-                    "Key" VARCHAR NOT NULL PRIMARY KEY, 
-                    "StringValue" VARCHAR
-                )`,
-            GAX_OPTIONS
-          );
-          await onPromiseOperationComplete(postgreSqlCreateTable);
-          const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
-              CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
-          await onPromiseOperationComplete(postgreSqlCreateIndex);
-          await postgreSqlTable.insert(data);
-        }
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `
+              CREATE TABLE ${TABLE_NAME} (
+                  "Key" VARCHAR NOT NULL PRIMARY KEY, 
+                  "StringValue" VARCHAR
+              )`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(postgreSqlCreateTable);
+        const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
+            CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
+        await onPromiseOperationComplete(postgreSqlCreateIndex);
+        await postgreSqlTable.insert(data);
       });
 
       // all of these tests require testing with and without an index,
@@ -7422,12 +7414,10 @@ describe('Spanner', () => {
       );
       await insertRecords(googleSqlTable, googleSqlRecords);
 
-      if (!IS_EMULATOR_ENABLED) {
-        await onPromiseOperationComplete(
-          await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
-        );
-        await insertRecords(postgreSqlTable, postgreSqlRecords);
-      }
+      await onPromiseOperationComplete(
+        await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
+      );
+      await insertRecords(postgreSqlTable, postgreSqlRecords);
     });
 
     describe('snapshots', () => {
