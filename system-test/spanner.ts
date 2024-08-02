@@ -141,7 +141,6 @@ describe('Spanner', () => {
         gaxOptions: GAX_OPTIONS,
       });
       await googleSqlOperation1.promise();
-      RESOURCES_TO_CLEAN.push(DATABASE);
 
       const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
         databaseDialect: Spanner.POSTGRESQL,
@@ -159,7 +158,6 @@ describe('Spanner', () => {
       const [postgreSqlOperationUpdateDDL] =
         await pg_database.updateSchema(schema);
       await postgreSqlOperationUpdateDDL.promise();
-      RESOURCES_TO_CLEAN.push(PG_DATABASE);
     } else {
       // Reading proto descriptor file
       const protoDescriptor = fs
@@ -186,6 +184,7 @@ describe('Spanner', () => {
       await googleSqlOperation1.promise();
     }
     RESOURCES_TO_CLEAN.push(DATABASE);
+    RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
     const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
       schema: `
@@ -480,6 +479,35 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
       } else {
         // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
