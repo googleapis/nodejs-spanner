@@ -141,6 +141,25 @@ describe('Spanner', () => {
         gaxOptions: GAX_OPTIONS,
       });
       await googleSqlOperation1.promise();
+      RESOURCES_TO_CLEAN.push(DATABASE);
+
+      const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
+        databaseDialect: Spanner.POSTGRESQL,
+        gaxOptions: GAX_OPTIONS,
+      });
+      await postgreSqlOperation.promise();
+      const schema = [
+        `
+       CREATE TABLE ${TABLE_NAME} (
+         SingerId VARCHAR(1024) NOT NULL,
+         Name VARCHAR(1024),
+         PRIMARY KEY (SingerId)
+       );`,
+      ];
+      const [postgreSqlOperationUpdateDDL] =
+        await pg_database.updateSchema(schema);
+      await postgreSqlOperationUpdateDDL.promise();
+      RESOURCES_TO_CLEAN.push(PG_DATABASE);
     } else {
       // Reading proto descriptor file
       const protoDescriptor = fs
