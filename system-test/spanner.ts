@@ -141,7 +141,6 @@ describe('Spanner', () => {
         gaxOptions: GAX_OPTIONS,
       });
       await googleSqlOperation1.promise();
-      RESOURCES_TO_CLEAN.push(DATABASE);
 
       const [pg_database, postgreSqlOperation] = await PG_DATABASE.create({
         databaseDialect: Spanner.POSTGRESQL,
@@ -159,7 +158,6 @@ describe('Spanner', () => {
       const [postgreSqlOperationUpdateDDL] =
         await pg_database.updateSchema(schema);
       await postgreSqlOperationUpdateDDL.promise();
-      RESOURCES_TO_CLEAN.push(PG_DATABASE);
     } else {
       // Reading proto descriptor file
       const protoDescriptor = fs
@@ -186,6 +184,7 @@ describe('Spanner', () => {
       await googleSqlOperation1.promise();
     }
     RESOURCES_TO_CLEAN.push(DATABASE);
+    RESOURCES_TO_CLEAN.push(PG_DATABASE);
 
     const [, googleSqlOperation2] = await DATABASE_DROP_PROTECTION.create({
       schema: `
@@ -480,6 +479,35 @@ describe('Spanner', () => {
             `
         );
         await googleSqlOperationUpdateDDL.promise();
+        // TODO: add column Float32Value DOUBLE PRECISION and FLOAT32Array DOUBLE PRECISION[] while using float32 feature.
+        const [postgreSqlOperationUpdateDDL] = await PG_DATABASE.updateSchema(
+          `
+                CREATE TABLE ${TABLE_NAME}
+                (
+                  "Key"             VARCHAR NOT NULL PRIMARY KEY,
+                  "BytesValue"      BYTEA,
+                  "BoolValue"       BOOL,
+                  "FloatValue"      DOUBLE PRECISION,
+                  "IntValue"        BIGINT,
+                  "NumericValue"    NUMERIC,
+                  "StringValue"     VARCHAR,
+                  "TimestampValue"  TIMESTAMPTZ,
+                  "DateValue"       DATE,
+                  "JsonbValue"      JSONB,
+                  "BytesArray"      BYTEA[],
+                  "BoolArray"       BOOL[],
+                  "FloatArray"      DOUBLE PRECISION[],
+                  "IntArray"        BIGINT[],
+                  "NumericArray"    NUMERIC[],
+                  "StringArray"     VARCHAR[],
+                  "TimestampArray"  TIMESTAMPTZ[],
+                  "DateArray"       DATE[],
+                  "JsonbArray"      JSONB[],
+                  "CommitTimestamp" SPANNER.COMMIT_TIMESTAMP
+                );
+            `
+        );
+        await postgreSqlOperationUpdateDDL.promise();
       } else {
         // TODO: add column Float32Value FLOAT32 and FLOAT32Array Array<FLOAT32> while using float32 feature.
         const [googleSqlOperationUpdateDDL] = await DATABASE.updateSchema(
@@ -3999,23 +4027,21 @@ describe('Spanner', () => {
       );
       await onPromiseOperationComplete(googleSqlCreateTable);
 
-      if (!IS_EMULATOR_ENABLED) {
-        // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
-        const postgreSqlCreateTable = await postgreSqlTable.create(
-          `CREATE TABLE ${TABLE_NAME}
-              (
-                "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
-                "Name"     VARCHAR(1024),
-                "Float"    DOUBLE PRECISION,
-                "Int"      BIGINT,
-                "Info"     BYTEA,
-                "Created"  TIMESTAMPTZ,
-                "HasGear"  BOOL
-              )`,
-          GAX_OPTIONS
-        );
-        await onPromiseOperationComplete(postgreSqlCreateTable);
-      }
+      // TODO: Add column "Float32" DOUBLE PRECISION while using float32 feature.
+      const postgreSqlCreateTable = await postgreSqlTable.create(
+        `CREATE TABLE ${TABLE_NAME}
+            (
+              "SingerId" VARCHAR(1024) NOT NULL PRIMARY KEY,
+              "Name"     VARCHAR(1024),
+              "Float"    DOUBLE PRECISION,
+              "Int"      BIGINT,
+              "Info"     BYTEA,
+              "Created"  TIMESTAMPTZ,
+              "HasGear"  BOOL
+            )`,
+        GAX_OPTIONS
+      );
+      await onPromiseOperationComplete(postgreSqlCreateTable);
     });
 
     const nonExistentTable = (done, database) => {
@@ -4560,9 +4586,7 @@ describe('Spanner', () => {
 
       before(async () => {
         await googleSqlTable.insert(GOOGLE_SQL_INSERT_ROW);
-        if (!IS_EMULATOR_ENABLED) {
-          await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
-        }
+        await postgreSqlTable.insert(POSTGRESQL_INSERT_ROW);
       });
 
       const queryCallbackMode = (done, database, query, EXPECTED_ROW) => {
@@ -6559,18 +6583,16 @@ describe('Spanner', () => {
           await onPromiseOperationComplete(googleSqlCreateTable);
           await googleSqlTable.insert(googleSqlExpectedRow);
 
-          if (!IS_EMULATOR_ENABLED) {
-            const postgreSqlCreateTable = await postgreSqlTable.create(
-              `CREATE TABLE ${TABLE_NAME} (
-                                            "Key" VARCHAR NOT NULL PRIMARY KEY,
-                                            "StringValue" VARCHAR,
-                                            "BytesValue" BYTEA
-               )`,
-              GAX_OPTIONS
-            );
-            await onPromiseOperationComplete(postgreSqlCreateTable);
-            await postgreSqlTable.insert(postgreSqlExpectedRow);
-          }
+          const postgreSqlCreateTable = await postgreSqlTable.create(
+            `CREATE TABLE ${TABLE_NAME} (
+                                          "Key" VARCHAR NOT NULL PRIMARY KEY,
+                                          "StringValue" VARCHAR,
+                                          "BytesValue" BYTEA
+              )`,
+            GAX_OPTIONS
+          );
+          await onPromiseOperationComplete(postgreSqlCreateTable);
+          await postgreSqlTable.insert(postgreSqlExpectedRow);
         });
 
         it('GOOGLE_STANDARD_SQL should read large datasets', done => {
@@ -6814,21 +6836,19 @@ describe('Spanner', () => {
         }
         await googleSqlTable.insert(data);
 
-        if (!IS_EMULATOR_ENABLED) {
-          const postgreSqlCreateTable = await postgreSqlTable.create(
-            `
-                CREATE TABLE ${TABLE_NAME} (
-                    "Key" VARCHAR NOT NULL PRIMARY KEY, 
-                    "StringValue" VARCHAR
-                )`,
-            GAX_OPTIONS
-          );
-          await onPromiseOperationComplete(postgreSqlCreateTable);
-          const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
-              CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
-          await onPromiseOperationComplete(postgreSqlCreateIndex);
-          await postgreSqlTable.insert(data);
-        }
+        const postgreSqlCreateTable = await postgreSqlTable.create(
+          `
+              CREATE TABLE ${TABLE_NAME} (
+                  "Key" VARCHAR NOT NULL PRIMARY KEY, 
+                  "StringValue" VARCHAR
+              )`,
+          GAX_OPTIONS
+        );
+        await onPromiseOperationComplete(postgreSqlCreateTable);
+        const postgreSqlCreateIndex = await PG_DATABASE.updateSchema(`
+            CREATE INDEX ReadByValue ON ${TABLE_NAME}("StringValue")`);
+        await onPromiseOperationComplete(postgreSqlCreateIndex);
+        await postgreSqlTable.insert(data);
       });
 
       // all of these tests require testing with and without an index,
@@ -7394,12 +7414,10 @@ describe('Spanner', () => {
       );
       await insertRecords(googleSqlTable, googleSqlRecords);
 
-      if (!IS_EMULATOR_ENABLED) {
-        await onPromiseOperationComplete(
-          await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
-        );
-        await insertRecords(postgreSqlTable, postgreSqlRecords);
-      }
+      await onPromiseOperationComplete(
+        await postgreSqlTable.create(postgreSqlSchema, GAX_OPTIONS)
+      );
+      await insertRecords(postgreSqlTable, postgreSqlRecords);
     });
 
     describe('snapshots', () => {
@@ -7844,11 +7862,7 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              if (!IS_EMULATOR_ENABLED) {
-                transaction!.commit(postgresUpdateDmlDatabase);
-              } else {
-                transaction!.commit(done);
-              }
+              transaction!.commit(done);
             }
           );
         });
