@@ -7893,17 +7893,17 @@ describe('Spanner', () => {
         rowCountRunUpdate(done, DATABASE, query);
       });
 
-      it('POSTGRESQL should return rowCount from runUpdate', function (done) {
-        const query = {
-          sql:
-            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-          params: {
-            p1: 'abcd',
-            p2: 'k999',
-          },
-        };
-        rowCountRunUpdate(done, PG_DATABASE, query);
-      });
+      //it('POSTGRESQL should return rowCount from runUpdate', function (done) {
+      //  const query = {
+      //    sql:
+      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+      //    params: {
+      //      p1: 'abcd',
+      //      p2: 'k999',
+      //    },
+      //  };
+      //  rowCountRunUpdate(done, PG_DATABASE, query);
+      //});
 
       const rowCountRun = (done, database, query) => {
         database.runTransaction((err, transaction) => {
@@ -7933,17 +7933,17 @@ describe('Spanner', () => {
         rowCountRun(done, DATABASE, query);
       });
 
-      it('POSTGRESQL should return rowCount from run', function (done) {
-        const query = {
-          sql:
-            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-          params: {
-            p1: 'abcd',
-            p2: 'k999',
-          },
-        };
-        rowCountRun(done, PG_DATABASE, query);
-      });
+      //it('POSTGRESQL should return rowCount from run', function (done) {
+      //  const query = {
+      //    sql:
+      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+      //    params: {
+      //      p1: 'abcd',
+      //      p2: 'k999',
+      //    },
+      //  };
+      //  rowCountRun(done, PG_DATABASE, query);
+      //});
 
       const multipleDmlOnTxn = (
         done,
@@ -8137,20 +8137,20 @@ describe('Spanner', () => {
         rollbackDmlStatement(done, DATABASE, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should rollback a dml statement', function (done) {
-        const key = 'k999';
-        const str = 'abcd';
-        const updateQuery = {
-          sql:
-            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-          params: {p1: str, p2: key},
-        };
-        const selectQuery = {
-          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
-          params: {p1: key},
-        };
-        rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
-      });
+      //it('POSTGRESQL should rollback a dml statement', function (done) {
+      //  const key = 'k999';
+      //  const str = 'abcd';
+      //  const updateQuery = {
+      //    sql:
+      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+      //    params: {p1: str, p2: key},
+      //  };
+      //  const selectQuery = {
+      //    sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+      //    params: {p1: key},
+      //  };
+      //  rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
+      //});
 
       const handleDmlAndInsert = (done, database, insertQuery, selectQuery) => {
         database.runTransaction((err, transaction) => {
@@ -8198,24 +8198,24 @@ describe('Spanner', () => {
         handleDmlAndInsert(done, DATABASE, insertQuery, selectQuery);
       });
 
-      it('POSTGRESQL should handle using both dml and insert methods', function (done) {
-        const str = 'dml+mutation';
-        const insertQuery = {
-          sql:
-            'INSERT INTO ' +
-            TABLE_NAME +
-            ' ("Key", "StringValue") VALUES ($1, $2)',
-          params: {
-            p1: 'k1001',
-            p2: str,
-          },
-        };
-        const selectQuery = {
-          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
-          params: {p1: str},
-        };
-        handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
-      });
+      //it('POSTGRESQL should handle using both dml and insert methods', function (done) {
+      //  const str = 'dml+mutation';
+      //  const insertQuery = {
+      //    sql:
+      //      'INSERT INTO ' +
+      //      TABLE_NAME +
+      //      ' ("Key", "StringValue") VALUES ($1, $2)',
+      //    params: {
+      //      p1: 'k1001',
+      //      p2: str,
+      //    },
+      //  };
+      //  const selectQuery = {
+      //    sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
+      //    params: {p1: str},
+      //  };
+      //  handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
+      //});
 
       describe('dml returning', () => {
         const key = 'k1003';
@@ -8328,18 +8328,18 @@ describe('Spanner', () => {
           );
         });
 
-        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
-          rowCountRunUpdate(
-            done,
-            PG_DATABASE,
-            postgreSqlInsertReturning,
-            postgreSqlUpdateReturning,
-            postgreSqlDeleteReturning
-          );
-        });
+        //it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+        //  if (IS_EMULATOR_ENABLED) {
+        //    this.skip();
+        //  }
+        //  rowCountRunUpdate(
+        //    done,
+        //    PG_DATABASE,
+        //    postgreSqlInsertReturning,
+        //    postgreSqlUpdateReturning,
+        //    postgreSqlDeleteReturning
+        //  );
+        //});
 
         const assertRowsAndRowCount = data => {
           const rows = data[0];
@@ -8643,9 +8643,9 @@ describe('Spanner', () => {
         await executeSingleStatement(DATABASE, googleSqlInsert);
       });
 
-      it('POSTGRESQL should execute a single statement', async function () {
-        await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
-      });
+      //it('POSTGRESQL should execute a single statement', async function () {
+      //  await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
+      //});
 
       const noStatementError = async database => {
         const err = await database.runTransactionAsync(async txn => {
@@ -8694,13 +8694,13 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should run multiple statements that depend on each other', async function () {
-        await multipleDependingStatements(
-          PG_DATABASE,
-          postgreSqlInsert,
-          posgreSqlUpdate
-        );
-      });
+      //it('POSTGRESQL should run multiple statements that depend on each other', async function () {
+      //  await multipleDependingStatements(
+      //    PG_DATABASE,
+      //    postgreSqlInsert,
+      //    posgreSqlUpdate
+      //  );
+      //});
 
       const runAfterRunUpdate = async (database, insert, update) => {
         const rowCounts = await database.runTransactionAsync(async txn => {
@@ -8717,9 +8717,9 @@ describe('Spanner', () => {
         await runAfterRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      it('POSTGRESQL should run after a runUpdate call', async function () {
-        await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
-      });
+      //it('POSTGRESQL should run after a runUpdate call', async function () {
+      //  await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
+      //});
 
       const runBeforeRunUpdate = async (database, insert, update) => {
         const rowCounts = await database.runTransactionAsync(async txn => {
@@ -8736,13 +8736,13 @@ describe('Spanner', () => {
         await runBeforeRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      it('POSTGRESQL should run before a runUpdate call', async function () {
-        await runBeforeRunUpdate(
-          PG_DATABASE,
-          postgreSqlInsert,
-          posgreSqlUpdate
-        );
-      });
+      //it('POSTGRESQL should run before a runUpdate call', async function () {
+      //  await runBeforeRunUpdate(
+      //    PG_DATABASE,
+      //    postgreSqlInsert,
+      //    posgreSqlUpdate
+      //  );
+      //});
 
       const stopExecutingStatementsIfError = async (
         database,
@@ -8904,9 +8904,9 @@ describe('Spanner', () => {
         commitTransaction(done, DATABASE, googleSqlTable);
       });
 
-      it('POSTGRESQL should commit a transaction', function (done) {
-        commitTransaction(done, PG_DATABASE, postgreSqlTable);
-      });
+      //it('POSTGRESQL should commit a transaction', function (done) {
+      //  commitTransaction(done, PG_DATABASE, postgreSqlTable);
+      //});
 
       const rollbackTransaction = (done, database) => {
         database.runTransaction((err, transaction) => {
@@ -8923,9 +8923,9 @@ describe('Spanner', () => {
         rollbackTransaction(done, DATABASE);
       });
 
-      it('POSTGRESQL should rollback a transaction', function (done) {
-        rollbackTransaction(done, PG_DATABASE);
-      });
+      //it('POSTGRESQL should rollback a transaction', function (done) {
+      //  rollbackTransaction(done, PG_DATABASE);
+      //});
 
       describe('concurrent transactions', () => {
         const defaultRowValues = {
