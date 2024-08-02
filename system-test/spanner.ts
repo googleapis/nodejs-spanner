@@ -7862,11 +7862,7 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              if (!IS_EMULATOR_ENABLED) {
-                transaction!.commit(postgresUpdateDmlDatabase);
-              } else {
-                transaction!.commit(done);
-              }
+              transaction!.commit(done);
             }
           );
         });
