@@ -587,9 +587,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should allow differently-ordered rows}', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         differentlyOrderedRows(done, Spanner.POSTGRESQL);
       });
     });
@@ -699,9 +696,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write boolean values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         booleanInsert(done, Spanner.POSTGRESQL, true);
       });
 
@@ -710,9 +704,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null boolean values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         booleanInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -725,9 +716,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty boolean array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({BoolArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, []);
@@ -744,9 +732,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null boolean array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({BoolArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
@@ -767,9 +752,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write boolean array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({BoolArray: [true, false]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
@@ -795,9 +777,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write int64 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         int64Insert(done, Spanner.POSTGRESQL, Spanner.int(1234));
       });
 
@@ -806,9 +785,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null int64 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         int64Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -831,9 +807,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should throw for of bounds integers', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         int64OutOfBounds(done, Spanner.POSTGRESQL);
       });
 
@@ -854,9 +827,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should optionally wrap out of bounds integers', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         int64WrapOutOfBounds(done, Spanner.POSTGRESQL);
       });
 
@@ -869,9 +839,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty in64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({IntArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, []);
@@ -888,9 +855,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null int64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({IntArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, [null]);
@@ -909,9 +873,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write int64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [1, 2, 3];
 
         insert({IntArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -924,9 +885,6 @@ describe('Spanner', () => {
 
     describe('oids', () => {
       it('POSTGRESQL should read non-null pgOid values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         PG_DATABASE.run('SELECT 123::oid', (err, rows) => {
           assert.ifError(err);
           let queriedValue = rows[0][0].value;
@@ -939,9 +897,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should read null pgOid values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         PG_DATABASE.run('SELECT null::oid', (err, rows) => {
           assert.ifError(err);
           let queriedValue = rows[0][0].value;
@@ -978,9 +933,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write float32 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, 8.2);
       });
 
@@ -989,9 +941,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null float32 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1000,9 +949,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, Spanner.float32(8));
       });
 
@@ -1011,9 +957,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle Infinity', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, Infinity);
       });
 
@@ -1022,9 +965,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle -Infinity', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
@@ -1033,9 +973,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle NaN', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float32Insert(done, Spanner.POSTGRESQL, NaN);
       });
 
@@ -1048,9 +985,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty float32 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({Float32Array: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().Float32Array, []);
@@ -1071,9 +1005,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null float32 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({Float32Array: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
@@ -1098,9 +1029,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write float32 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [1.2, 2.3, 3.4];
 
         insert({Float32Array: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1128,9 +1056,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write float64 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, 8.2);
       });
 
@@ -1139,9 +1064,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null float64 values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1150,9 +1072,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, Spanner.float(8));
       });
 
@@ -1161,9 +1080,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle Infinity', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, Infinity);
       });
 
@@ -1172,9 +1088,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle -Infinity', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
@@ -1183,9 +1096,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle NaN', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         float64Insert(done, Spanner.POSTGRESQL, NaN);
       });
 
@@ -1198,9 +1108,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty float64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({FloatArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, []);
@@ -1221,9 +1128,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null float64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({FloatArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
@@ -1246,9 +1150,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write float64 array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [1.2, 2.3, 3.4];
 
         insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1277,9 +1178,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write numeric values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         numericInsert(
           done,
           Spanner.POSTGRESQL,
@@ -1292,16 +1190,10 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null numeric values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         numericInsert(done, Spanner.POSTGRESQL, null);
       });
 
       it('POSTGRESQL should bind NaN', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         numericInsert(done, Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
       });
 
@@ -1321,9 +1213,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should throw for out of bounds values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         numericInsertOutOfBounds(
           done,
           Spanner.POSTGRESQL,
@@ -1340,9 +1229,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty numeric array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({NumericArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, []);
@@ -1363,9 +1249,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null numeric array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({NumericArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
@@ -1392,9 +1275,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write numeric array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [
           Spanner.pgNumeric('-99999999999999999999999999999.999999999'),
           Spanner.pgNumeric('3.141592653'),
@@ -1423,9 +1303,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write string values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         stringInsert(done, Spanner.POSTGRESQL, 'abc');
       });
 
@@ -1434,9 +1311,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null string values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         stringInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1449,9 +1323,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty string array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({StringArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, []);
@@ -1472,9 +1343,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null string array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({StringArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, [null]);
@@ -1495,9 +1363,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write string array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert(
           {StringArray: ['abc', 'def']},
           Spanner.POSTGRESQL,
@@ -1524,9 +1389,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write bytes values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         bytesInsert(done, Spanner.POSTGRESQL, Buffer.from('abc'));
       });
 
@@ -1535,9 +1397,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null bytes values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         bytesInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1550,9 +1409,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty bytes array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({BytesArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, []);
@@ -1573,9 +1429,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null bytes array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({BytesArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
@@ -1598,9 +1451,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write bytes array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [Buffer.from('a'), Buffer.from('b')];
 
         insert({BytesArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1690,9 +1540,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write timestamp values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         timestampInsert(done, Spanner.POSTGRESQL);
       });
 
@@ -1709,9 +1556,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null timestamp values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         timestampInsertNull(done, Spanner.POSTGRESQL);
       });
 
@@ -1728,9 +1572,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty timestamp array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({TimestampArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, []);
@@ -1751,9 +1592,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null timestamp array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({TimestampArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
@@ -1776,9 +1614,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write timestamp array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
 
         insert({TimestampArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1806,9 +1641,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write date values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         dateInsert(done, Spanner.POSTGRESQL);
       });
 
@@ -1825,9 +1657,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null date values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         dateInsertNull(done, Spanner.POSTGRESQL);
       });
 
@@ -1840,9 +1669,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write empty date array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({DateArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, []);
@@ -1859,9 +1685,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write null date array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insert({DateArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, [null]);
@@ -1881,9 +1704,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should write date array values', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const values = [Spanner.date(), Spanner.date('3-3-1933')];
 
         insert({DateArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -2187,9 +2007,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept the commit timestamp placeholder', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         commitTimestamp(done, Spanner.POSTGRESQL);
       });
     });
@@ -2206,9 +2023,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should throw an error for incorrect value types', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       incorrectValueType(done, postgreSqlTable);
     });
   });
@@ -2514,9 +2328,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should auto create a database', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       autoCreateDatabase(done, 'pg-db');
     });
 
@@ -2542,9 +2353,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should have created the database', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       createDatabase(done, PG_DATABASE, 'POSTGRESQL');
     });
 
@@ -2646,9 +2454,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should create a table', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       const createTableStatement = `
         CREATE TABLE ${TABLE_NAME} (
           SingerId BIGINT NOT NULL,
@@ -4213,9 +4018,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should throw an error for non-existent tables', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       nonExistentTable(done, PG_DATABASE);
     });
 
@@ -4237,9 +4039,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should throw an error for non-existent columns', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       nonExistentColumn(done, postgreSqlTable);
     });
 
@@ -4288,9 +4087,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should read rows as a stream', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       readRowsStream(done, postgreSqlTable);
     });
 
@@ -4335,9 +4131,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should automatically convert to JSON', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       automaticallyConvertToJson(done, postgreSqlTable);
     });
 
@@ -4379,9 +4172,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should automatically convert to JSON with options', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       automaticallyConvertToJsonWithOptions(done, postgreSqlTable);
     });
 
@@ -4425,9 +4215,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should insert and delete a row', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       insertAndDeleteSingleRow(done, postgreSqlTable);
     });
 
@@ -4480,9 +4267,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should insert and delete multiple rows', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       insertAndDeleteMultipleRows(done, postgreSqlTable);
     });
 
@@ -4554,9 +4338,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should insert and delete multiple composite key rows', function () {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       const createTableStatement = `
           CREATE TABLE SingersComposite (
             "SingerId" BIGINT NOT NULL,
@@ -4620,9 +4401,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should should insert and query multiple rows', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       insertAndQueryMultipleRows(
         done,
         PG_DATABASE,
@@ -4672,9 +4450,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should insert then replace a row', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       insertThenReplaceRow(done, postgreSqlTable);
     });
 
@@ -4720,9 +4495,6 @@ describe('Spanner', () => {
     });
 
     it('POSTGRESQL should insert then replace a row', function (done) {
-      if (IS_EMULATOR_ENABLED) {
-        this.skip();
-      }
       insertThenUpdateRow(done, postgreSqlTable);
     });
 
@@ -4795,9 +4567,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should query in callback mode', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4829,9 +4598,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should query in promise mode', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4867,9 +4633,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should query in stream mode', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4970,9 +4733,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         PG_DATABASE.run('SELECT 1', done);
       });
 
@@ -5000,9 +4760,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should return metadata', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const [rows, , metadata] = await PG_DATABASE.run({
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -5034,9 +4791,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         invalidQueries(done, PG_DATABASE);
       });
 
@@ -5100,9 +4854,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5126,9 +4877,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5227,9 +4975,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5253,9 +4998,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5352,9 +5094,6 @@ describe('Spanner', () => {
           };
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5368,9 +5107,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5442,9 +5178,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value when param type float32 is used', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5458,9 +5191,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value when Spanner.float32 is used', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5484,9 +5214,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5593,9 +5320,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind Infinity', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5622,9 +5346,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind -Infinity', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5651,9 +5372,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind NaN', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5722,9 +5440,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5748,9 +5463,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5843,9 +5555,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind Infinity', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5866,9 +5575,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind -Infinity', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5889,9 +5595,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind NaN', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5947,9 +5650,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5973,9 +5673,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6070,9 +5767,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6096,9 +5790,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6194,9 +5885,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const timestamp = Spanner.timestamp();
             const query = {
               sql: 'SELECT $1',
@@ -6221,9 +5909,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6328,9 +6013,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should bind the value', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const date = Spanner.date();
             const query = {
               sql: 'SELECT $1',
@@ -6355,9 +6037,6 @@ describe('Spanner', () => {
           });
 
           it('POSTGRESQL should allow for null values', function (done) {
-            if (IS_EMULATOR_ENABLED) {
-              this.skip();
-            }
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6920,9 +6599,6 @@ describe('Spanner', () => {
         });
 
         it('POSTGRESQL should read large datasets', function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
           postgreSqlTable.read(
             {
               keys: [postgreSqlExpectedRow.Key],
@@ -6990,9 +6666,6 @@ describe('Spanner', () => {
         });
 
         it('POSTGRESQL should query large datasets', function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
           const query = {
             sql: 'SELECT * FROM ' + postgreSqlTable.name + ' WHERE "Key" = $1',
             params: {
@@ -7061,9 +6734,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should update a row', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         updateRow(done, postgreSqlTable);
       });
 
@@ -7090,9 +6760,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should update a row', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         insertRow(done, postgreSqlTable);
       });
     });
@@ -7370,9 +7037,6 @@ describe('Spanner', () => {
         });
 
         it(`POSTGRESQL ${test.test}`, function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
           postgreSqlTable.read(test.query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
@@ -7418,9 +7082,6 @@ describe('Spanner', () => {
         });
 
         it(`POSTGRESQL ${test.test}` + ' with an index', function (done) {
-          if (IS_EMULATOR_ENABLED) {
-            this.skip();
-          }
           readUsingIndex(done, test, postgreSqlTable);
         });
       });
@@ -7459,9 +7120,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should read over invalid table fails', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         readInvalidTable(done, PG_DATABASE);
       });
 
@@ -7482,9 +7140,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should read over invalid column fails', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         readInvalidColumn(done, postgreSqlTable);
       });
 
@@ -7752,9 +7407,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should run a read only transaction', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         readOnlyTransaction(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7787,9 +7439,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should read keys from a table', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         readKeysFromTable(
           done,
           PG_DATABASE,
@@ -7827,9 +7476,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept a read timestamp', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         acceptReadTimestamp(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7854,9 +7500,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept a min timestamp', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         acceptMinTimestamp(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7895,9 +7538,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept an exact staleness', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         acceptExactStaleness(
           done,
           PG_DATABASE,
@@ -7927,9 +7567,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should accept a max staleness', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         acceptMaxStaleness(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7985,9 +7622,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         strongReadWithConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -8051,9 +7685,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         exactReadWithConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -8112,9 +7743,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should read with staleness & concurrent updates', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         readWithStalenessAndConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -8233,9 +7861,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should return rowCount from runUpdate', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -8276,9 +7901,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should return rowCount from run', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -8356,9 +7978,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should exec multiple dml statements on the same txn', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const key = 'k1000';
         const str = 'abcd';
         const num = 11;
@@ -8429,9 +8048,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should show dml changes in query results', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8489,9 +8105,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should rollback a dml statement', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8553,9 +8166,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should handle using both dml and insert methods', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const str = 'dml+mutation';
         const insertQuery = {
           sql:
@@ -8860,9 +8470,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should execute a simple pdml statement', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -9004,9 +8611,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should execute a single statement', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
       });
 
@@ -9036,9 +8640,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should return an error when no statements are supplied', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await noStatementError(PG_DATABASE);
       });
 
@@ -9061,9 +8662,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should run multiple statements that depend on each other', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await multipleDependingStatements(
           PG_DATABASE,
           postgreSqlInsert,
@@ -9087,9 +8685,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should run after a runUpdate call', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
       });
 
@@ -9109,9 +8704,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should run before a runUpdate call', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await runBeforeRunUpdate(
           PG_DATABASE,
           postgreSqlInsert,
@@ -9156,9 +8748,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should stop executing statements if an error occurs', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await stopExecutingStatementsIfError(
           PG_DATABASE,
           postgreSqlInsert,
@@ -9198,9 +8787,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should ignore any additional statement errors', async function () {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         await ignoreAdditionalStatementErrors(
           PG_DATABASE,
           postgreSqlInsert,
@@ -9265,9 +8851,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should throw an error for mismatched columns', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         mismatchedColumnError(done, PG_DATABASE, postgreSqlTable);
       });
 
@@ -9289,9 +8872,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should commit a transaction', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         commitTransaction(done, PG_DATABASE, postgreSqlTable);
       });
 
@@ -9311,9 +8891,6 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should rollback a transaction', function (done) {
-        if (IS_EMULATOR_ENABLED) {
-          this.skip();
-        }
         rollbackTransaction(done, PG_DATABASE);
       });
 
