@@ -633,7 +633,7 @@ describe('Spanner', () => {
         differentlyOrderedRows(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should allow differently-ordered rows}', function (done) {
+      it('POSTGRESQL should allow differently-ordered rows}', done => {
         differentlyOrderedRows(done, Spanner.POSTGRESQL);
       });
     });
@@ -742,7 +742,7 @@ describe('Spanner', () => {
         booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, true);
       });
 
-      it('POSTGRESQL should write boolean values', function (done) {
+      it('POSTGRESQL should write boolean values', done => {
         booleanInsert(done, Spanner.POSTGRESQL, true);
       });
 
@@ -750,7 +750,7 @@ describe('Spanner', () => {
         booleanInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null boolean values', function (done) {
+      it('POSTGRESQL should write null boolean values', done => {
         booleanInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -762,7 +762,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty boolean array values', function (done) {
+      it('POSTGRESQL should write empty boolean array values', done => {
         insert({BoolArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, []);
@@ -778,7 +778,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write null boolean array values', function (done) {
+      it('POSTGRESQL should write null boolean array values', done => {
         insert({BoolArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [null]);
@@ -798,7 +798,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write boolean array values', function (done) {
+      it('POSTGRESQL should write boolean array values', done => {
         insert({BoolArray: [true, false]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BoolArray, [true, false]);
@@ -823,7 +823,7 @@ describe('Spanner', () => {
         int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.int(1234));
       });
 
-      it('POSTGRESQL should write int64 values', function (done) {
+      it('POSTGRESQL should write int64 values', done => {
         int64Insert(done, Spanner.POSTGRESQL, Spanner.int(1234));
       });
 
@@ -831,7 +831,7 @@ describe('Spanner', () => {
         int64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null int64 values', function (done) {
+      it('POSTGRESQL should write null int64 values', done => {
         int64Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -853,7 +853,7 @@ describe('Spanner', () => {
         int64OutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should throw for of bounds integers', function (done) {
+      it('POSTGRESQL should throw for of bounds integers', done => {
         int64OutOfBounds(done, Spanner.POSTGRESQL);
       });
 
@@ -873,7 +873,7 @@ describe('Spanner', () => {
         int64WrapOutOfBounds(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should optionally wrap out of bounds integers', function (done) {
+      it('POSTGRESQL should optionally wrap out of bounds integers', done => {
         int64WrapOutOfBounds(done, Spanner.POSTGRESQL);
       });
 
@@ -885,7 +885,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty in64 array values', function (done) {
+      it('POSTGRESQL should write empty in64 array values', done => {
         insert({IntArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, []);
@@ -901,7 +901,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write null int64 array values', function (done) {
+      it('POSTGRESQL should write null int64 array values', done => {
         insert({IntArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().IntArray, [null]);
@@ -919,7 +919,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write int64 array values', function (done) {
+      it('POSTGRESQL should write int64 array values', done => {
         const values = [1, 2, 3];
 
         insert({IntArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -931,7 +931,7 @@ describe('Spanner', () => {
     });
 
     describe('oids', () => {
-      it('POSTGRESQL should read non-null pgOid values', function (done) {
+      it('POSTGRESQL should read non-null pgOid values', done => {
         PG_DATABASE.run('SELECT 123::oid', (err, rows) => {
           assert.ifError(err);
           let queriedValue = rows[0][0].value;
@@ -943,7 +943,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should read null pgOid values', function (done) {
+      it('POSTGRESQL should read null pgOid values', done => {
         PG_DATABASE.run('SELECT null::oid', (err, rows) => {
           assert.ifError(err);
           let queriedValue = rows[0][0].value;
@@ -979,7 +979,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
-      it('POSTGRESQL should write float32 values', function (done) {
+      it('POSTGRESQL should write float32 values', done => {
         float32Insert(done, Spanner.POSTGRESQL, 8.2);
       });
 
@@ -987,7 +987,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null float32 values', function (done) {
+      it('POSTGRESQL should write null float32 values', done => {
         float32Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -995,7 +995,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float32(8));
       });
 
-      it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
+      it('POSTGRESQL should accept a Float object with an Int-like value', done => {
         float32Insert(done, Spanner.POSTGRESQL, Spanner.float32(8));
       });
 
@@ -1003,7 +1003,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
       });
 
-      it('POSTGRESQL should handle Infinity', function (done) {
+      it('POSTGRESQL should handle Infinity', done => {
         float32Insert(done, Spanner.POSTGRESQL, Infinity);
       });
 
@@ -1011,7 +1011,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
       });
 
-      it('POSTGRESQL should handle -Infinity', function (done) {
+      it('POSTGRESQL should handle -Infinity', done => {
         float32Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
@@ -1019,7 +1019,7 @@ describe('Spanner', () => {
         float32Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
-      it('POSTGRESQL should handle NaN', function (done) {
+      it('POSTGRESQL should handle NaN', done => {
         float32Insert(done, Spanner.POSTGRESQL, NaN);
       });
 
@@ -1031,7 +1031,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty float32 array values', function (done) {
+      it('POSTGRESQL should write empty float32 array values', done => {
         insert({Float32Array: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().Float32Array, []);
@@ -1051,7 +1051,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null float32 array values', function (done) {
+      it('POSTGRESQL should write null float32 array values', done => {
         insert({Float32Array: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().Float32Array, [null]);
@@ -1075,7 +1075,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write float32 array values', function (done) {
+      it('POSTGRESQL should write float32 array values', done => {
         const values = [1.2, 2.3, 3.4];
 
         insert({Float32Array: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1102,7 +1102,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, 8.2);
       });
 
-      it('POSTGRESQL should write float64 values', function (done) {
+      it('POSTGRESQL should write float64 values', done => {
         float64Insert(done, Spanner.POSTGRESQL, 8.2);
       });
 
@@ -1110,7 +1110,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null float64 values', function (done) {
+      it('POSTGRESQL should write null float64 values', done => {
         float64Insert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1118,7 +1118,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Spanner.float(8));
       });
 
-      it('POSTGRESQL should accept a Float object with an Int-like value', function (done) {
+      it('POSTGRESQL should accept a Float object with an Int-like value', done => {
         float64Insert(done, Spanner.POSTGRESQL, Spanner.float(8));
       });
 
@@ -1126,7 +1126,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, Infinity);
       });
 
-      it('POSTGRESQL should handle Infinity', function (done) {
+      it('POSTGRESQL should handle Infinity', done => {
         float64Insert(done, Spanner.POSTGRESQL, Infinity);
       });
 
@@ -1134,7 +1134,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, -Infinity);
       });
 
-      it('POSTGRESQL should handle -Infinity', function (done) {
+      it('POSTGRESQL should handle -Infinity', done => {
         float64Insert(done, Spanner.POSTGRESQL, -Infinity);
       });
 
@@ -1142,7 +1142,7 @@ describe('Spanner', () => {
         float64Insert(done, Spanner.GOOGLE_STANDARD_SQL, NaN);
       });
 
-      it('POSTGRESQL should handle NaN', function (done) {
+      it('POSTGRESQL should handle NaN', done => {
         float64Insert(done, Spanner.POSTGRESQL, NaN);
       });
 
@@ -1154,7 +1154,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty float64 array values', function (done) {
+      it('POSTGRESQL should write empty float64 array values', done => {
         insert({FloatArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, []);
@@ -1174,7 +1174,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null float64 array values', function (done) {
+      it('POSTGRESQL should write null float64 array values', done => {
         insert({FloatArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().FloatArray, [null]);
@@ -1196,7 +1196,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write float64 array values', function (done) {
+      it('POSTGRESQL should write float64 array values', done => {
         const values = [1.2, 2.3, 3.4];
 
         insert({FloatArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1224,7 +1224,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write numeric values', function (done) {
+      it('POSTGRESQL should write numeric values', done => {
         numericInsert(
           done,
           Spanner.POSTGRESQL,
@@ -1236,11 +1236,11 @@ describe('Spanner', () => {
         numericInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null numeric values', function (done) {
+      it('POSTGRESQL should write null numeric values', done => {
         numericInsert(done, Spanner.POSTGRESQL, null);
       });
 
-      it('POSTGRESQL should bind NaN', function (done) {
+      it('POSTGRESQL should bind NaN', done => {
         numericInsert(done, Spanner.POSTGRESQL, Spanner.pgNumeric('NaN'));
       });
 
@@ -1259,7 +1259,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should throw for out of bounds values', function (done) {
+      it('POSTGRESQL should throw for out of bounds values', done => {
         numericInsertOutOfBounds(
           done,
           Spanner.POSTGRESQL,
@@ -1275,7 +1275,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty numeric array values', function (done) {
+      it('POSTGRESQL should write empty numeric array values', done => {
         insert({NumericArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, []);
@@ -1295,7 +1295,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null numeric array values', function (done) {
+      it('POSTGRESQL should write null numeric array values', done => {
         insert({NumericArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().NumericArray, [null]);
@@ -1321,7 +1321,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write numeric array values', function (done) {
+      it('POSTGRESQL should write numeric array values', done => {
         const values = [
           Spanner.pgNumeric('-99999999999999999999999999999.999999999'),
           Spanner.pgNumeric('3.141592653'),
@@ -1349,7 +1349,7 @@ describe('Spanner', () => {
         stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, 'abc');
       });
 
-      it('POSTGRESQL should write string values', function (done) {
+      it('POSTGRESQL should write string values', done => {
         stringInsert(done, Spanner.POSTGRESQL, 'abc');
       });
 
@@ -1357,7 +1357,7 @@ describe('Spanner', () => {
         stringInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null string values', function (done) {
+      it('POSTGRESQL should write null string values', done => {
         stringInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1369,7 +1369,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty string array values', function (done) {
+      it('POSTGRESQL should write empty string array values', done => {
         insert({StringArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, []);
@@ -1389,7 +1389,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null string array values', function (done) {
+      it('POSTGRESQL should write null string array values', done => {
         insert({StringArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().StringArray, [null]);
@@ -1409,7 +1409,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write string array values', function (done) {
+      it('POSTGRESQL should write string array values', done => {
         insert(
           {StringArray: ['abc', 'def']},
           Spanner.POSTGRESQL,
@@ -1435,7 +1435,7 @@ describe('Spanner', () => {
         bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, Buffer.from('abc'));
       });
 
-      it('POSTGRESQL should write bytes values', function (done) {
+      it('POSTGRESQL should write bytes values', done => {
         bytesInsert(done, Spanner.POSTGRESQL, Buffer.from('abc'));
       });
 
@@ -1443,7 +1443,7 @@ describe('Spanner', () => {
         bytesInsert(done, Spanner.GOOGLE_STANDARD_SQL, null);
       });
 
-      it('POSTGRESQL should write null bytes values', function (done) {
+      it('POSTGRESQL should write null bytes values', done => {
         bytesInsert(done, Spanner.POSTGRESQL, null);
       });
 
@@ -1455,7 +1455,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty bytes array values', function (done) {
+      it('POSTGRESQL should write empty bytes array values', done => {
         insert({BytesArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, []);
@@ -1475,7 +1475,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null bytes array values', function (done) {
+      it('POSTGRESQL should write null bytes array values', done => {
         insert({BytesArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().BytesArray, [null]);
@@ -1497,7 +1497,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write bytes array values', function (done) {
+      it('POSTGRESQL should write bytes array values', done => {
         const values = [Buffer.from('a'), Buffer.from('b')];
 
         insert({BytesArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1586,7 +1586,7 @@ describe('Spanner', () => {
         timestampInsert(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write timestamp values', function (done) {
+      it('POSTGRESQL should write timestamp values', done => {
         timestampInsert(done, Spanner.POSTGRESQL);
       });
 
@@ -1602,7 +1602,7 @@ describe('Spanner', () => {
         timestampInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write null timestamp values', function (done) {
+      it('POSTGRESQL should write null timestamp values', done => {
         timestampInsertNull(done, Spanner.POSTGRESQL);
       });
 
@@ -1618,7 +1618,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write empty timestamp array values', function (done) {
+      it('POSTGRESQL should write empty timestamp array values', done => {
         insert({TimestampArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, []);
@@ -1638,7 +1638,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write null timestamp array values', function (done) {
+      it('POSTGRESQL should write null timestamp array values', done => {
         insert({TimestampArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().TimestampArray, [null]);
@@ -1660,7 +1660,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should write timestamp array values', function (done) {
+      it('POSTGRESQL should write timestamp array values', done => {
         const values = [Spanner.timestamp(), Spanner.timestamp('3-3-1933')];
 
         insert({TimestampArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -1687,7 +1687,7 @@ describe('Spanner', () => {
         dateInsert(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write date values', function (done) {
+      it('POSTGRESQL should write date values', done => {
         dateInsert(done, Spanner.POSTGRESQL);
       });
 
@@ -1703,7 +1703,7 @@ describe('Spanner', () => {
         dateInsertNull(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should write null date values', function (done) {
+      it('POSTGRESQL should write null date values', done => {
         dateInsertNull(done, Spanner.POSTGRESQL);
       });
 
@@ -1715,7 +1715,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write empty date array values', function (done) {
+      it('POSTGRESQL should write empty date array values', done => {
         insert({DateArray: []}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, []);
@@ -1731,7 +1731,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write null date array values', function (done) {
+      it('POSTGRESQL should write null date array values', done => {
         insert({DateArray: [null]}, Spanner.POSTGRESQL, (err, row) => {
           assert.ifError(err);
           assert.deepStrictEqual(row.toJSON().DateArray, [null]);
@@ -1750,7 +1750,7 @@ describe('Spanner', () => {
         });
       });
 
-      it('POSTGRESQL should write date array values', function (done) {
+      it('POSTGRESQL should write date array values', done => {
         const values = [Spanner.date(), Spanner.date('3-3-1933')];
 
         insert({DateArray: values}, Spanner.POSTGRESQL, (err, row) => {
@@ -2053,7 +2053,7 @@ describe('Spanner', () => {
         commitTimestamp(done, Spanner.GOOGLE_STANDARD_SQL);
       });
 
-      it('POSTGRESQL should accept the commit timestamp placeholder', function (done) {
+      it('POSTGRESQL should accept the commit timestamp placeholder', done => {
         commitTimestamp(done, Spanner.POSTGRESQL);
       });
     });
@@ -2069,7 +2069,7 @@ describe('Spanner', () => {
       incorrectValueType(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should throw an error for incorrect value types', function (done) {
+    it('POSTGRESQL should throw an error for incorrect value types', done => {
       incorrectValueType(done, postgreSqlTable);
     });
   });
@@ -2374,7 +2374,7 @@ describe('Spanner', () => {
       autoCreateDatabase(done, 'database');
     });
 
-    it('POSTGRESQL should auto create a database', function (done) {
+    it('POSTGRESQL should auto create a database', done => {
       autoCreateDatabase(done, 'pg-db');
     });
 
@@ -2399,7 +2399,7 @@ describe('Spanner', () => {
       createDatabase(done, DATABASE, 'GOOGLE_STANDARD_SQL');
     });
 
-    it('POSTGRESQL should have created the database', function (done) {
+    it('POSTGRESQL should have created the database', done => {
       createDatabase(done, PG_DATABASE, 'POSTGRESQL');
     });
 
@@ -2500,7 +2500,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should create a table', function (done) {
+    it('POSTGRESQL should create a table', done => {
       const createTableStatement = `
         CREATE TABLE ${TABLE_NAME} (
           SingerId BIGINT NOT NULL,
@@ -4062,7 +4062,7 @@ describe('Spanner', () => {
       nonExistentTable(done, DATABASE);
     });
 
-    it('POSTGRESQL should throw an error for non-existent tables', function (done) {
+    it('POSTGRESQL should throw an error for non-existent tables', done => {
       nonExistentTable(done, PG_DATABASE);
     });
 
@@ -4083,7 +4083,7 @@ describe('Spanner', () => {
       nonExistentColumn(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should throw an error for non-existent columns', function (done) {
+    it('POSTGRESQL should throw an error for non-existent columns', done => {
       nonExistentColumn(done, postgreSqlTable);
     });
 
@@ -4131,7 +4131,7 @@ describe('Spanner', () => {
       readRowsStream(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should read rows as a stream', function (done) {
+    it('POSTGRESQL should read rows as a stream', done => {
       readRowsStream(done, postgreSqlTable);
     });
 
@@ -4175,7 +4175,7 @@ describe('Spanner', () => {
       automaticallyConvertToJson(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should automatically convert to JSON', function (done) {
+    it('POSTGRESQL should automatically convert to JSON', done => {
       automaticallyConvertToJson(done, postgreSqlTable);
     });
 
@@ -4216,7 +4216,7 @@ describe('Spanner', () => {
       automaticallyConvertToJsonWithOptions(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should automatically convert to JSON with options', function (done) {
+    it('POSTGRESQL should automatically convert to JSON with options', done => {
       automaticallyConvertToJsonWithOptions(done, postgreSqlTable);
     });
 
@@ -4259,7 +4259,7 @@ describe('Spanner', () => {
       insertAndDeleteSingleRow(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should insert and delete a row', function (done) {
+    it('POSTGRESQL should insert and delete a row', done => {
       insertAndDeleteSingleRow(done, postgreSqlTable);
     });
 
@@ -4311,7 +4311,7 @@ describe('Spanner', () => {
       insertAndDeleteMultipleRows(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should insert and delete multiple rows', function (done) {
+    it('POSTGRESQL should insert and delete multiple rows', done => {
       insertAndDeleteMultipleRows(done, postgreSqlTable);
     });
 
@@ -4382,7 +4382,7 @@ describe('Spanner', () => {
       insertAndDeleteMultipleCompositeKeyRows(DATABASE, createTableStatement);
     });
 
-    it('POSTGRESQL should insert and delete multiple composite key rows', function () {
+    it('POSTGRESQL should insert and delete multiple composite key rows', () => {
       const createTableStatement = `
           CREATE TABLE SingersComposite (
             "SingerId" BIGINT NOT NULL,
@@ -4445,7 +4445,7 @@ describe('Spanner', () => {
       );
     });
 
-    it('POSTGRESQL should should insert and query multiple rows', function (done) {
+    it('POSTGRESQL should should insert and query multiple rows', done => {
       insertAndQueryMultipleRows(
         done,
         PG_DATABASE,
@@ -4494,7 +4494,7 @@ describe('Spanner', () => {
       insertThenReplaceRow(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should insert then replace a row', function (done) {
+    it('POSTGRESQL should insert then replace a row', done => {
       insertThenReplaceRow(done, postgreSqlTable);
     });
 
@@ -4539,7 +4539,7 @@ describe('Spanner', () => {
       insertThenUpdateRow(done, googleSqlTable);
     });
 
-    it('POSTGRESQL should insert then replace a row', function (done) {
+    it('POSTGRESQL should insert then replace a row', done => {
       insertThenUpdateRow(done, postgreSqlTable);
     });
 
@@ -4609,7 +4609,7 @@ describe('Spanner', () => {
         queryCallbackMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('POSTGRESQL should query in callback mode', function (done) {
+      it('POSTGRESQL should query in callback mode', done => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4640,7 +4640,7 @@ describe('Spanner', () => {
         queryPromiseMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('POSTGRESQL should query in promise mode', function (done) {
+      it('POSTGRESQL should query in promise mode', done => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4675,7 +4675,7 @@ describe('Spanner', () => {
         queryStreamMode(done, DATABASE, query, GOOGLE_SQL_EXPECTED_ROW);
       });
 
-      it('POSTGRESQL should query in stream mode', function (done) {
+      it('POSTGRESQL should query in stream mode', done => {
         const query = {
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4775,7 +4775,7 @@ describe('Spanner', () => {
         DATABASE.run('SELECT 1', done);
       });
 
-      it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
+      it('POSTGRESQL should allow "SELECT 1" queries', done => {
         PG_DATABASE.run('SELECT 1', done);
       });
 
@@ -4802,7 +4802,7 @@ describe('Spanner', () => {
         assert.strictEqual(metadata.rowType!.fields![9].name, 'HasGear');
       });
 
-      it('POSTGRESQL should return metadata', async function () {
+      it('POSTGRESQL should return metadata', async () => {
         const [rows, , metadata] = await PG_DATABASE.run({
           sql: `SELECT * FROM ${TABLE_NAME} WHERE "SingerId"=$1`,
           params: {p1: ID},
@@ -4833,7 +4833,7 @@ describe('Spanner', () => {
         invalidQueries(done, DATABASE);
       });
 
-      it('POSTGRESQL should allow "SELECT 1" queries', function (done) {
+      it('POSTGRESQL should allow "SELECT 1" queries', done => {
         invalidQueries(done, PG_DATABASE);
       });
 
@@ -4896,7 +4896,7 @@ describe('Spanner', () => {
             booleanQuery(done, DATABASE, query, true);
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -4919,7 +4919,7 @@ describe('Spanner', () => {
             booleanQuery(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5017,7 +5017,7 @@ describe('Spanner', () => {
             int64Query(done, DATABASE, query, '1234');
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5040,7 +5040,7 @@ describe('Spanner', () => {
             int64Query(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5136,7 +5136,7 @@ describe('Spanner', () => {
             });
           };
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5149,7 +5149,7 @@ describe('Spanner', () => {
             oidQuery(done, PG_DATABASE, query, '1234');
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5220,7 +5220,7 @@ describe('Spanner', () => {
             });
           });
 
-          it('POSTGRESQL should bind the value when param type float32 is used', function (done) {
+          it('POSTGRESQL should bind the value when param type float32 is used', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5233,7 +5233,7 @@ describe('Spanner', () => {
             float32Query(done, PG_DATABASE, query, 2.2);
           });
 
-          it('POSTGRESQL should bind the value when Spanner.float32 is used', function (done) {
+          it('POSTGRESQL should bind the value when Spanner.float32 is used', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5256,7 +5256,7 @@ describe('Spanner', () => {
             float32Query(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5362,7 +5362,7 @@ describe('Spanner', () => {
             float32Query(done, DATABASE, query, 'Infinity');
           });
 
-          it('POSTGRESQL should bind Infinity', function (done) {
+          it('POSTGRESQL should bind Infinity', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5388,7 +5388,7 @@ describe('Spanner', () => {
             float32Query(done, DATABASE, query, '-Infinity');
           });
 
-          it('POSTGRESQL should bind -Infinity', function (done) {
+          it('POSTGRESQL should bind -Infinity', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5414,7 +5414,7 @@ describe('Spanner', () => {
             float32Query(done, DATABASE, query, 'NaN');
           });
 
-          it('POSTGRESQL should bind NaN', function (done) {
+          it('POSTGRESQL should bind NaN', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5482,7 +5482,7 @@ describe('Spanner', () => {
             float64Query(done, DATABASE, query, 2.2);
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5505,7 +5505,7 @@ describe('Spanner', () => {
             float64Query(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5597,7 +5597,7 @@ describe('Spanner', () => {
             float64Query(done, DATABASE, query, 'Infinity');
           });
 
-          it('POSTGRESQL should bind Infinity', function (done) {
+          it('POSTGRESQL should bind Infinity', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5617,7 +5617,7 @@ describe('Spanner', () => {
             float64Query(done, DATABASE, query, '-Infinity');
           });
 
-          it('POSTGRESQL should bind -Infinity', function (done) {
+          it('POSTGRESQL should bind -Infinity', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5637,7 +5637,7 @@ describe('Spanner', () => {
             float64Query(done, DATABASE, query, 'NaN');
           });
 
-          it('POSTGRESQL should bind NaN', function (done) {
+          it('POSTGRESQL should bind NaN', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5692,7 +5692,7 @@ describe('Spanner', () => {
             stringQuery(done, DATABASE, query, 'abc');
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5715,7 +5715,7 @@ describe('Spanner', () => {
             stringQuery(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5809,7 +5809,7 @@ describe('Spanner', () => {
             bytesQuery(done, DATABASE, query, Buffer.from('abc'));
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5832,7 +5832,7 @@ describe('Spanner', () => {
             bytesQuery(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -5927,7 +5927,7 @@ describe('Spanner', () => {
             timestampQuery(done, DATABASE, query, timestamp);
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const timestamp = Spanner.timestamp();
             const query = {
               sql: 'SELECT $1',
@@ -5951,7 +5951,7 @@ describe('Spanner', () => {
             timestampQuery(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6055,7 +6055,7 @@ describe('Spanner', () => {
             dateQuery(done, DATABASE, query, date);
           });
 
-          it('POSTGRESQL should bind the value', function (done) {
+          it('POSTGRESQL should bind the value', done => {
             const date = Spanner.date();
             const query = {
               sql: 'SELECT $1',
@@ -6079,7 +6079,7 @@ describe('Spanner', () => {
             dateQuery(done, DATABASE, query, null);
           });
 
-          it('POSTGRESQL should allow for null values', function (done) {
+          it('POSTGRESQL should allow for null values', done => {
             const query = {
               sql: 'SELECT $1',
               params: {
@@ -6639,7 +6639,7 @@ describe('Spanner', () => {
           );
         });
 
-        it('POSTGRESQL should read large datasets', function (done) {
+        it('POSTGRESQL should read large datasets', done => {
           postgreSqlTable.read(
             {
               keys: [postgreSqlExpectedRow.Key],
@@ -6706,7 +6706,7 @@ describe('Spanner', () => {
           });
         });
 
-        it('POSTGRESQL should query large datasets', function (done) {
+        it('POSTGRESQL should query large datasets', done => {
           const query = {
             sql: 'SELECT * FROM ' + postgreSqlTable.name + ' WHERE "Key" = $1',
             params: {
@@ -6774,7 +6774,7 @@ describe('Spanner', () => {
         updateRow(done, googleSqlTable);
       });
 
-      it('POSTGRESQL should update a row', function (done) {
+      it('POSTGRESQL should update a row', done => {
         updateRow(done, postgreSqlTable);
       });
 
@@ -6800,7 +6800,7 @@ describe('Spanner', () => {
         insertRow(done, googleSqlTable);
       });
 
-      it('POSTGRESQL should update a row', function (done) {
+      it('POSTGRESQL should update a row', done => {
         insertRow(done, postgreSqlTable);
       });
     });
@@ -7075,7 +7075,7 @@ describe('Spanner', () => {
           });
         });
 
-        it(`POSTGRESQL ${test.test}`, function (done) {
+        it(`POSTGRESQL ${test.test}`, done => {
           postgreSqlTable.read(test.query as ReadRequest, (err, rows) => {
             test.assertions(err, rows);
             done();
@@ -7120,7 +7120,7 @@ describe('Spanner', () => {
           readUsingIndex(done, test, googleSqlTable);
         });
 
-        it(`POSTGRESQL ${test.test}` + ' with an index', function (done) {
+        it(`POSTGRESQL ${test.test}` + ' with an index', done => {
           readUsingIndex(done, test, postgreSqlTable);
         });
       });
@@ -7158,7 +7158,7 @@ describe('Spanner', () => {
         readInvalidTable(done, DATABASE);
       });
 
-      it('POSTGRESQL should read over invalid table fails', function (done) {
+      it('POSTGRESQL should read over invalid table fails', done => {
         readInvalidTable(done, PG_DATABASE);
       });
 
@@ -7178,7 +7178,7 @@ describe('Spanner', () => {
         readInvalidColumn(done, googleSqlTable);
       });
 
-      it('POSTGRESQL should read over invalid column fails', function (done) {
+      it('POSTGRESQL should read over invalid column fails', done => {
         readInvalidColumn(done, postgreSqlTable);
       });
 
@@ -7443,7 +7443,7 @@ describe('Spanner', () => {
         readOnlyTransaction(done, DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should run a read only transaction', function (done) {
+      it('POSTGRESQL should run a read only transaction', done => {
         readOnlyTransaction(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7475,7 +7475,7 @@ describe('Spanner', () => {
         readKeysFromTable(done, DATABASE, googleSqlTable, googleSqlRecords);
       });
 
-      it('POSTGRESQL should read keys from a table', function (done) {
+      it('POSTGRESQL should read keys from a table', done => {
         readKeysFromTable(
           done,
           PG_DATABASE,
@@ -7512,7 +7512,7 @@ describe('Spanner', () => {
         acceptReadTimestamp(done, DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a read timestamp', function (done) {
+      it('POSTGRESQL should accept a read timestamp', done => {
         acceptReadTimestamp(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7536,7 +7536,7 @@ describe('Spanner', () => {
         acceptMinTimestamp(done, DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a min timestamp', function (done) {
+      it('POSTGRESQL should accept a min timestamp', done => {
         acceptMinTimestamp(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7574,7 +7574,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should accept an exact staleness', function (done) {
+      it('POSTGRESQL should accept an exact staleness', done => {
         acceptExactStaleness(
           done,
           PG_DATABASE,
@@ -7603,7 +7603,7 @@ describe('Spanner', () => {
         acceptMaxStaleness(done, DATABASE, googleSqlRecords);
       });
 
-      it('POSTGRESQL should accept a max staleness', function (done) {
+      it('POSTGRESQL should accept a max staleness', done => {
         acceptMaxStaleness(done, PG_DATABASE, postgreSqlRecords);
       });
 
@@ -7658,7 +7658,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
+      it('POSTGRESQL should do a strong read with concurrent updates', done => {
         strongReadWithConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -7721,7 +7721,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should do a strong read with concurrent updates', function (done) {
+      it('POSTGRESQL should do a strong read with concurrent updates', done => {
         exactReadWithConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -7779,7 +7779,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should read with staleness & concurrent updates', function (done) {
+      it('POSTGRESQL should read with staleness & concurrent updates', done => {
         readWithStalenessAndConcurrentUpdates(
           done,
           PG_DATABASE,
@@ -7823,30 +7823,28 @@ describe('Spanner', () => {
     });
 
     describe('dml', () => {
-      before(done => {
-        const postgresUpdateDmlDatabase = () => {
-          PG_DATABASE.runTransaction((err, transaction) => {
-            assert.ifError(err);
+      before(async () => {
+        await PG_DATABASE.runTransaction((err, transaction) => {
+          assert.ifError(err);
 
-            transaction!.runUpdate(
-              {
-                sql:
-                  'INSERT INTO ' +
-                  TABLE_NAME +
-                  ' ("Key", "StringValue") VALUES($1, $2)',
-                params: {
-                  p1: 'k999',
-                  p2: 'abc',
-                },
+          transaction!.runUpdate(
+            {
+              sql:
+                'INSERT INTO ' +
+                TABLE_NAME +
+                ' ("Key", "StringValue") VALUES($1, $2)',
+              params: {
+                p1: 'k999',
+                p2: 'abc',
               },
-              err => {
-                assert.ifError(err);
-                transaction!.commit(done);
-              }
-            );
-          });
-        };
-        DATABASE.runTransaction((err, transaction) => {
+            },
+            err => {
+              assert.ifError(err);
+              transaction!.commit();
+            }
+          );
+        });
+        await DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
           transaction!.runUpdate(
@@ -7862,7 +7860,7 @@ describe('Spanner', () => {
             },
             err => {
               assert.ifError(err);
-              transaction!.commit(done);
+              transaction!.commit();
             }
           );
         });
@@ -7893,17 +7891,17 @@ describe('Spanner', () => {
         rowCountRunUpdate(done, DATABASE, query);
       });
 
-      //it('POSTGRESQL should return rowCount from runUpdate', function (done) {
-      //  const query = {
-      //    sql:
-      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-      //    params: {
-      //      p1: 'abcd',
-      //      p2: 'k999',
-      //    },
-      //  };
-      //  rowCountRunUpdate(done, PG_DATABASE, query);
-      //});
+      it('POSTGRESQL should return rowCount from runUpdate', done => {
+        const query = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {
+            p1: 'abcd',
+            p2: 'k999',
+          },
+        };
+        rowCountRunUpdate(done, PG_DATABASE, query);
+      });
 
       const rowCountRun = (done, database, query) => {
         database.runTransaction((err, transaction) => {
@@ -7933,17 +7931,17 @@ describe('Spanner', () => {
         rowCountRun(done, DATABASE, query);
       });
 
-      //it('POSTGRESQL should return rowCount from run', function (done) {
-      //  const query = {
-      //    sql:
-      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-      //    params: {
-      //      p1: 'abcd',
-      //      p2: 'k999',
-      //    },
-      //  };
-      //  rowCountRun(done, PG_DATABASE, query);
-      //});
+      it('POSTGRESQL should return rowCount from run', done => {
+        const query = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {
+            p1: 'abcd',
+            p2: 'k999',
+          },
+        };
+        rowCountRun(done, PG_DATABASE, query);
+      });
 
       const multipleDmlOnTxn = (
         done,
@@ -8010,7 +8008,7 @@ describe('Spanner', () => {
         multipleDmlOnTxn(done, DATABASE, insertQuery, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should exec multiple dml statements on the same txn', function (done) {
+      it('POSTGRESQL should exec multiple dml statements on the same txn', done => {
         const key = 'k1000';
         const str = 'abcd';
         const num = 11;
@@ -8080,7 +8078,7 @@ describe('Spanner', () => {
         dmlChangesInQueryResults(done, DATABASE, updateQuery, selectQuery);
       });
 
-      it('POSTGRESQL should show dml changes in query results', function (done) {
+      it('POSTGRESQL should show dml changes in query results', done => {
         const key = 'k999';
         const str = 'abcd';
         const updateQuery = {
@@ -8137,20 +8135,20 @@ describe('Spanner', () => {
         rollbackDmlStatement(done, DATABASE, updateQuery, selectQuery);
       });
 
-      //it('POSTGRESQL should rollback a dml statement', function (done) {
-      //  const key = 'k999';
-      //  const str = 'abcd';
-      //  const updateQuery = {
-      //    sql:
-      //      'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
-      //    params: {p1: str, p2: key},
-      //  };
-      //  const selectQuery = {
-      //    sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
-      //    params: {p1: key},
-      //  };
-      //  rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
-      //});
+      it('POSTGRESQL should rollback a dml statement', done => {
+        const key = 'k999';
+        const str = 'abcd';
+        const updateQuery = {
+          sql:
+            'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
+          params: {p1: str, p2: key},
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "Key" = $1',
+          params: {p1: key},
+        };
+        rollbackDmlStatement(done, PG_DATABASE, updateQuery, selectQuery);
+      });
 
       const handleDmlAndInsert = (done, database, insertQuery, selectQuery) => {
         database.runTransaction((err, transaction) => {
@@ -8198,24 +8196,24 @@ describe('Spanner', () => {
         handleDmlAndInsert(done, DATABASE, insertQuery, selectQuery);
       });
 
-      //it('POSTGRESQL should handle using both dml and insert methods', function (done) {
-      //  const str = 'dml+mutation';
-      //  const insertQuery = {
-      //    sql:
-      //      'INSERT INTO ' +
-      //      TABLE_NAME +
-      //      ' ("Key", "StringValue") VALUES ($1, $2)',
-      //    params: {
-      //      p1: 'k1001',
-      //      p2: str,
-      //    },
-      //  };
-      //  const selectQuery = {
-      //    sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
-      //    params: {p1: str},
-      //  };
-      //  handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
-      //});
+      it('POSTGRESQL should handle using both dml and insert methods', done => {
+        const str = 'dml+mutation';
+        const insertQuery = {
+          sql:
+            'INSERT INTO ' +
+            TABLE_NAME +
+            ' ("Key", "StringValue") VALUES ($1, $2)',
+          params: {
+            p1: 'k1001',
+            p2: str,
+          },
+        };
+        const selectQuery = {
+          sql: 'SELECT * FROM ' + TABLE_NAME + ' WHERE "StringValue" = $1',
+          params: {p1: str},
+        };
+        handleDmlAndInsert(done, PG_DATABASE, insertQuery, selectQuery);
+      });
 
       describe('dml returning', () => {
         const key = 'k1003';
@@ -8328,18 +8326,18 @@ describe('Spanner', () => {
           );
         });
 
-        //it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
-        //  if (IS_EMULATOR_ENABLED) {
-        //    this.skip();
-        //  }
-        //  rowCountRunUpdate(
-        //    done,
-        //    PG_DATABASE,
-        //    postgreSqlInsertReturning,
-        //    postgreSqlUpdateReturning,
-        //    postgreSqlDeleteReturning
-        //  );
-        //});
+        it('POSTGRESQL should return rowCount from runUpdate with dml returning', function (done) {
+          if (IS_EMULATOR_ENABLED) {
+            this.skip();
+          }
+          rowCountRunUpdate(
+            done,
+            PG_DATABASE,
+            postgreSqlInsertReturning,
+            postgreSqlUpdateReturning,
+            postgreSqlDeleteReturning
+          );
+        });
 
         const assertRowsAndRowCount = data => {
           const rows = data[0];
@@ -8503,6 +8501,9 @@ describe('Spanner', () => {
       });
 
       it('POSTGRESQL should execute a simple pdml statement', function (done) {
+        if (IS_EMULATOR_ENABLED) {
+          this.skip();
+        }
         const query = {
           sql:
             'UPDATE ' + TABLE_NAME + ' SET "StringValue" = $1 WHERE "Key" = $2',
@@ -8643,9 +8644,9 @@ describe('Spanner', () => {
         await executeSingleStatement(DATABASE, googleSqlInsert);
       });
 
-      //it('POSTGRESQL should execute a single statement', async function () {
-      //  await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
-      //});
+      it('POSTGRESQL should execute a single statement', async () => {
+        await executeSingleStatement(PG_DATABASE, postgreSqlInsert);
+      });
 
       const noStatementError = async database => {
         const err = await database.runTransactionAsync(async txn => {
@@ -8672,7 +8673,7 @@ describe('Spanner', () => {
         await noStatementError(DATABASE);
       });
 
-      it('POSTGRESQL should return an error when no statements are supplied', async function () {
+      it('POSTGRESQL should return an error when no statements are supplied', async () => {
         await noStatementError(PG_DATABASE);
       });
 
@@ -8694,13 +8695,13 @@ describe('Spanner', () => {
         );
       });
 
-      //it('POSTGRESQL should run multiple statements that depend on each other', async function () {
-      //  await multipleDependingStatements(
-      //    PG_DATABASE,
-      //    postgreSqlInsert,
-      //    posgreSqlUpdate
-      //  );
-      //});
+      it('POSTGRESQL should run multiple statements that depend on each other', async () => {
+        await multipleDependingStatements(
+          PG_DATABASE,
+          postgreSqlInsert,
+          posgreSqlUpdate
+        );
+      });
 
       const runAfterRunUpdate = async (database, insert, update) => {
         const rowCounts = await database.runTransactionAsync(async txn => {
@@ -8717,9 +8718,9 @@ describe('Spanner', () => {
         await runAfterRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      //it('POSTGRESQL should run after a runUpdate call', async function () {
-      //  await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
-      //});
+      it('POSTGRESQL should run after a runUpdate call', async () => {
+        await runAfterRunUpdate(PG_DATABASE, postgreSqlInsert, posgreSqlUpdate);
+      });
 
       const runBeforeRunUpdate = async (database, insert, update) => {
         const rowCounts = await database.runTransactionAsync(async txn => {
@@ -8736,13 +8737,13 @@ describe('Spanner', () => {
         await runBeforeRunUpdate(DATABASE, googleSqlInsert, googleSqlUpdate);
       });
 
-      //it('POSTGRESQL should run before a runUpdate call', async function () {
-      //  await runBeforeRunUpdate(
-      //    PG_DATABASE,
-      //    postgreSqlInsert,
-      //    posgreSqlUpdate
-      //  );
-      //});
+      it('POSTGRESQL should run before a runUpdate call', async () => {
+        await runBeforeRunUpdate(
+          PG_DATABASE,
+          postgreSqlInsert,
+          posgreSqlUpdate
+        );
+      });
 
       const stopExecutingStatementsIfError = async (
         database,
@@ -8780,7 +8781,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should stop executing statements if an error occurs', async function () {
+      it('POSTGRESQL should stop executing statements if an error occurs', async () => {
         await stopExecutingStatementsIfError(
           PG_DATABASE,
           postgreSqlInsert,
@@ -8819,7 +8820,7 @@ describe('Spanner', () => {
         );
       });
 
-      it('POSTGRESQL should ignore any additional statement errors', async function () {
+      it('POSTGRESQL should ignore any additional statement errors', async () => {
         await ignoreAdditionalStatementErrors(
           PG_DATABASE,
           postgreSqlInsert,
@@ -8883,7 +8884,7 @@ describe('Spanner', () => {
         }
       });
 
-      it('POSTGRESQL should throw an error for mismatched columns', function (done) {
+      it('POSTGRESQL should throw an error for mismatched columns', done => {
         mismatchedColumnError(done, PG_DATABASE, postgreSqlTable);
       });
 
@@ -8904,9 +8905,9 @@ describe('Spanner', () => {
         commitTransaction(done, DATABASE, googleSqlTable);
       });
 
-      //it('POSTGRESQL should commit a transaction', function (done) {
-      //  commitTransaction(done, PG_DATABASE, postgreSqlTable);
-      //});
+      it('POSTGRESQL should commit a transaction', done => {
+        commitTransaction(done, PG_DATABASE, postgreSqlTable);
+      });
 
       const rollbackTransaction = (done, database) => {
         database.runTransaction((err, transaction) => {
@@ -8923,9 +8924,9 @@ describe('Spanner', () => {
         rollbackTransaction(done, DATABASE);
       });
 
-      //it('POSTGRESQL should rollback a transaction', function (done) {
-      //  rollbackTransaction(done, PG_DATABASE);
-      //});
+      it('POSTGRESQL should rollback a transaction', done => {
+        rollbackTransaction(done, PG_DATABASE);
+      });
 
       describe('concurrent transactions', () => {
         const defaultRowValues = {
