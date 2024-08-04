@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/nodejs-spanner?activeTab=versions
 
+## [7.12.0](https://github.com/googleapis/nodejs-spanner/compare/v7.11.0...v7.12.0) (2024-08-02)
+
+
+### Features
+
+* Grpc keep alive settings ([#2086](https://github.com/googleapis/nodejs-spanner/issues/2086)) ([7712c35](https://github.com/googleapis/nodejs-spanner/commit/7712c35be21863015bb709f5f89d9ef0bb656024))
+
 ## [7.11.0](https://github.com/googleapis/nodejs-spanner/compare/v7.10.0...v7.11.0) (2024-07-29)
 
 
