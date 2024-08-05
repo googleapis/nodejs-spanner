@@ -30,6 +30,7 @@ import {grpc} from 'google-gax';
 import {CLOUD_RESOURCE_HEADER} from '../src/common';
 import {google} from '../protos/protos';
 import EncryptionType = google.spanner.admin.database.v1.CreateBackupEncryptionConfig.EncryptionType;
+import CopyBackupEncryptionType = google.spanner.admin.database.v1.CopyBackupEncryptionConfig.EncryptionType;
 
 let promisified = false;
 // let callbackified = false;
@@ -188,6 +189,37 @@ describe('Backup', () => {
       );
     });
 
+    it('should accept null expire time', done => {
+      const QUERY = {};
+      const ORIGINAL_QUERY = extend({}, QUERY);
+      const expectedReqOpts = extend({}, QUERY, {
+        parent: INSTANCE_NAME,
+        backupId: BACKUP_NAME,
+        backup: {
+          name: BACKUP_FORMATTED_NAME,
+          database: DATABASE_FORMATTED_NAME,
+        },
+      });
+
+      backup.request = config => {
+        assert.strictEqual(config.client, 'DatabaseAdminClient');
+        assert.strictEqual(config.method, 'createBackup');
+        assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+
+        assert.notStrictEqual(config.reqOpts, QUERY);
+        assert.deepStrictEqual(QUERY, ORIGINAL_QUERY);
+        assert.deepStrictEqual(config.headers, backup.resourceHeader_);
+        done();
+      };
+
+      backup.create(
+        {
+          databasePath: DATABASE_FORMATTED_NAME,
+        },
+        assert.ifError
+      );
+    });
+
     it('should accept gaxOptions and a callback', done => {
       const gaxOptions = {
         timeout: 1000,
@@ -289,6 +321,114 @@ describe('Backup', () => {
         },
         assert.ifError
       );
+    });
+
+    describe('copy', () => {
+      const INSTANCE_NAME = 'instance-name';
+      const SRC_BACKUP = 'src-backup';
+      const DST_BACKUP = 'dst-backup';
+
+      beforeEach(() => {
+        fakeCodec.encode = util.noop;
+        backup = new Backup(INSTANCE, DST_BACKUP, SRC_BACKUP);
+      });
+
+      it('should make the correct request', done => {
+        const timestamp = new google.protobuf.Timestamp();
+        timestamp.seconds = new Date(BACKUP_EXPIRE_TIME).getSeconds();
+
+        const expectedReqOpts = extend(
+          {},
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+            expireTime: timestamp,
+          }
+        );
+
+        backup.request = config => {
+          assert.strictEqual(config.client, 'DatabaseAdminClient');
+          assert.strictEqual(config.method, 'copyBackup');
+          assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+          assert.deepStrictEqual(config.headers, backup.resourceHeader_);
+          done();
+        };
+
+        backup.create(
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+            expireTime: timestamp,
+          },
+          assert.ifError
+        );
+      });
+
+      it('should accept an encryption config', done => {
+        const encryptionConfig = {
+          encryptionType: CopyBackupEncryptionType.CUSTOMER_MANAGED_ENCRYPTION,
+          kmsKeyName: 'some/key/path',
+        };
+
+        const expectedReqOpts = extend(
+          {},
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+            encryptionConfig: encryptionConfig,
+          }
+        );
+
+        backup.request = config => {
+          assert.strictEqual(config.client, 'DatabaseAdminClient');
+          assert.strictEqual(config.method, 'copyBackup');
+          assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+          assert.deepStrictEqual(config.headers, backup.resourceHeader_);
+          assert.strictEqual(config.reqOpts.encryptionConfig, encryptionConfig);
+          done();
+        };
+
+        backup.create(
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+            encryptionConfig: encryptionConfig,
+          },
+          assert.ifError
+        );
+      });
+
+      it('should accept null expire time', done => {
+        const expectedReqOpts = extend(
+          {},
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+          }
+        );
+
+        backup.request = config => {
+          assert.strictEqual(config.client, 'DatabaseAdminClient');
+          assert.strictEqual(config.method, 'copyBackup');
+          assert.deepStrictEqual(config.reqOpts, expectedReqOpts);
+          assert.deepStrictEqual(config.headers, backup.resourceHeader_);
+          done();
+        };
+
+        backup.create(
+          {
+            parent: INSTANCE_NAME,
+            backupId: DST_BACKUP,
+            sourceBackup: SRC_BACKUP,
+          },
+          assert.ifError
+        );
+      });
     });
 
     describe('error', () => {
