@@ -7853,7 +7853,8 @@ describe('Spanner', () => {
               },
             });
             await transaction!.commit();
-          });
+          }
+        );
 
         return Promise.all([psqlTransaction, gsqlTransaction]);
       });
