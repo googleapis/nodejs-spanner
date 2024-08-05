@@ -7844,6 +7844,7 @@ describe('Spanner', () => {
             }
           );
         });
+
         await DATABASE.runTransaction((err, transaction) => {
           assert.ifError(err);
 
