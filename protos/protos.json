@@ -1667,6 +1667,20 @@
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
                             },
+                            "freeableSizeBytes": {
+                              "type": "int64",
+                              "id": 15,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "exclusiveSizeBytes": {
+                              "type": "int64",
+                              "id": 16,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
                             "state": {
                               "type": "State",
                               "id": 6,
@@ -1725,6 +1739,20 @@
                               "rule": "repeated",
                               "type": "string",
                               "id": 14,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "incrementalBackupChainId": {
+                              "type": "string",
+                              "id": 17,
+                              "options": {
+                                "(google.api.field_behavior)": "OUTPUT_ONLY"
+                              }
+                            },
+                            "oldestVersionTime": {
+                              "type": "google.protobuf.Timestamp",
+                              "id": 18,
                               "options": {
                                 "(google.api.field_behavior)": "OUTPUT_ONLY"
                               }
@@ -2087,6 +2115,9 @@
                         "FullBackupSpec": {
                           "fields": {}
                         },
+                        "IncrementalBackupSpec": {
+                          "fields": {}
+                        },
                         "OperationProgress": {
                           "fields": {
                             "progressPercent": {
@@ -2189,7 +2220,8 @@
                           "oneofs": {
                             "backupTypeSpec": {
                               "oneof": [
-                                "fullBackupSpec"
+                                "fullBackupSpec",
+                                "incrementalBackupSpec"
                               ]
                             }
                           },
@@ -2225,6 +2257,10 @@
                             "fullBackupSpec": {
                               "type": "FullBackupSpec",
                               "id": 7
+                            },
+                            "incrementalBackupSpec": {
+                              "type": "IncrementalBackupSpec",
+                              "id": 8
                             },
                             "updateTime": {
                               "type": "google.protobuf.Timestamp",
