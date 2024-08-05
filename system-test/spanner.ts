@@ -7824,11 +7824,9 @@ describe('Spanner', () => {
 
     describe('dml', () => {
       before(async () => {
-        await PG_DATABASE.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.runUpdate(
-            {
+        const psqlTransaction = await PG_DATABASE.runTransactionAsync(
+          async transaction => {
+            await transaction!.runUpdate({
               sql:
                 'INSERT INTO ' +
                 TABLE_NAME +
@@ -7837,19 +7835,14 @@ describe('Spanner', () => {
                 p1: 'k999',
                 p2: 'abc',
               },
-            },
-            err => {
-              assert.ifError(err);
-              transaction!.commit();
-            }
-          );
-        });
+            });
+            await transaction!.commit();
+          }
+        );
 
-        await DATABASE.runTransaction((err, transaction) => {
-          assert.ifError(err);
-
-          transaction!.runUpdate(
-            {
+        const gsqlTransaction = DATABASE.runTransactionAsync(
+          async transaction => {
+            await transaction!.runUpdate({
               sql:
                 'INSERT INTO ' +
                 TABLE_NAME +
@@ -7858,13 +7851,11 @@ describe('Spanner', () => {
                 key: 'k999',
                 str: 'abc',
               },
-            },
-            err => {
-              assert.ifError(err);
-              transaction!.commit();
-            }
-          );
-        });
+            });
+            await transaction!.commit();
+          }
+
+        return Promise.all([psqlTransaction, gsqlTransaction]);
       });
 
       const rowCountRunUpdate = (done, database, query) => {
