@@ -1437,6 +1437,7 @@ export class Snapshot extends EventEmitter {
       this._waitingRequests.push(() => {
         makeRequest(resumeToken)
           .on('data', chunk => streamProxy.emit('data', chunk))
+          .on('error', err => streamProxy.emit('error', err))
           .on('end', () => streamProxy.emit('end'));
       });
 

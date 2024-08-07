@@ -3211,6 +3211,21 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
+    it('should catch exception error during invalid queries while using inline begin transaction', async () => {
+      const database = newTestDatabase();
+      try {
+        await database.runTransactionAsync(async tx => {
+          await tx!.run(selectSql);
+          await tx!.run(invalidSql);
+          await tx.commit();
+        });
+      } catch (err) {
+        (err as grpc.ServiceError).message.includes('Table FOO not found');
+      } finally {
+        await database.close();
+      }
+    });
+
     it('should apply blind writes only once', async () => {
       const database = newTestDatabase();
       let attempts = 0;
