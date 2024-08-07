@@ -3224,6 +3224,56 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    it('should catch an exception error even after retrying on aborted query', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+
+      try {
+        await database.runTransactionAsync(async tx => {
+          if (!attempts) {
+            spannerMock.abortTransaction(tx);
+          }
+          attempts++;
+    
+          try {
+            await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
+            await tx.commit();
+          } catch (err) {
+            assert(err, 'Expected an error to be thrown');
+            assert.match((err as Error).message, /10 ABORTED: Transaction aborted/);
+            throw err;
+          }
+        });
+      } catch (err) {
+        assert(err, 'Expected an error to be thrown after retrying');
+        assert.match((err as Error).message, /Table FOO not found/);
+      } finally {
+        await database.close();
+      }
+    });
+
+    it('should catch an exception error even after retry UNAVAILABLE from executeStreamingSql', async () => {
+      const database = newTestDatabase();
+      const err = {
+        message: 'Temporary unavailable',
+        code: grpc.status.UNAVAILABLE,
+        details: 'Transient error',
+      } as MockError;
+      spannerMock.setExecutionTime(
+        spannerMock.executeStreamingSql,
+        SimulatedExecutionTime.ofError(err)
+      );
+      await database.runTransactionAsync(async tx => {
+        try {
+          await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
+          await tx.commit();
+        } catch (err) {
+          assert(err, 'Expected an error to be thrown');
+          assert.match((err as Error).message, /Table FOO not found/);
+        }
+      });
+    });
+
     it('should apply blind writes only once', async () => {
       const database = newTestDatabase();
       let attempts = 0;
