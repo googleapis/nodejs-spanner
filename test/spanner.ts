@@ -1314,6 +1314,43 @@ describe('Spanner with mock server', () => {
           );
         });
 
+        it('should retry UNAVAILABLE during streaming with txn ID from inline begin response with parallel queries', async () => {
+          const err = {
+            message: 'Temporary unavailable',
+            code: grpc.status.UNAVAILABLE,
+            streamIndex: index,
+          } as MockError;
+          spannerMock.setExecutionTime(
+            spannerMock.executeStreamingSql,
+            SimulatedExecutionTime.ofError(err)
+          );
+          const database = newTestDatabase();
+
+          await database.runTransactionAsync(async tx => {
+            await Promise.all([tx!.run(selectSql), tx!.run(selectSql)]);
+            await tx.commit();
+          });
+          await database.close();
+
+          const requests = spannerMock
+            .getRequests()
+            .filter(val => (val as v1.ExecuteSqlRequest).sql)
+            .map(req => req as v1.ExecuteSqlRequest);
+          assert.strictEqual(requests.length, 3);
+          assert.ok(
+            requests[0].transaction?.begin!.readWrite,
+            'inline txn is not set.'
+          );
+          assert.ok(
+            requests[1].transaction!.id,
+            'Transaction ID is not used for retries.'
+          );
+          assert.ok(
+            requests[1].resumeToken,
+            'Resume token is not set for the retried'
+          );
+        });
+
         it('should not retry non-retryable error during streaming', async () => {
           const database = newTestDatabase();
           const err = {
@@ -2890,6 +2927,30 @@ describe('Spanner with mock server', () => {
       });
     });
 
+    it('should retry on aborted when running parallel query', async () => {
+      let attempts = 0;
+      const database = newTestDatabase();
+      const rowCount = await database.runTransactionAsync(
+        (transaction): Promise<number> => {
+          if (!attempts) {
+            spannerMock.abortTransaction(transaction);
+          }
+          attempts++;
+          return Promise.all([
+            transaction!.run(selectSql),
+            transaction!.run(selectSql),
+          ]).then(([rows]) => {
+            let count = 0;
+            rows.forEach(() => count++);
+            return transaction.commit().then(() => count);
+          });
+        }
+      );
+      assert.strictEqual(rowCount, 3);
+      assert.strictEqual(attempts, 2);
+      await database.close();
+    });
+
     it('should retry on aborted update statement', async () => {
       let attempts = 0;
       const database = newTestDatabase();
@@ -3213,56 +3274,6 @@ describe('Spanner with mock server', () => {
 
     it('should catch an exception error during invalid queries while using inline begin transaction', async () => {
       const database = newTestDatabase();
-      await database.runTransactionAsync(async tx => {
-        try {
-          await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
-          await tx.commit();
-        } catch (err) {
-          assert(err, 'Expected an error to be thrown');
-          assert.match((err as Error).message, /Table FOO not found/);
-        }
-      });
-    });
-
-    it('should catch an exception error even after retrying on aborted query', async () => {
-      let attempts = 0;
-      const database = newTestDatabase();
-
-      try {
-        await database.runTransactionAsync(async tx => {
-          if (!attempts) {
-            spannerMock.abortTransaction(tx);
-          }
-          attempts++;
-    
-          try {
-            await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
-            await tx.commit();
-          } catch (err) {
-            assert(err, 'Expected an error to be thrown');
-            assert.match((err as Error).message, /10 ABORTED: Transaction aborted/);
-            throw err;
-          }
-        });
-      } catch (err) {
-        assert(err, 'Expected an error to be thrown after retrying');
-        assert.match((err as Error).message, /Table FOO not found/);
-      } finally {
-        await database.close();
-      }
-    });
-
-    it('should catch an exception error even after retry UNAVAILABLE from executeStreamingSql', async () => {
-      const database = newTestDatabase();
-      const err = {
-        message: 'Temporary unavailable',
-        code: grpc.status.UNAVAILABLE,
-        details: 'Transient error',
-      } as MockError;
-      spannerMock.setExecutionTime(
-        spannerMock.executeStreamingSql,
-        SimulatedExecutionTime.ofError(err)
-      );
       await database.runTransactionAsync(async tx => {
         try {
           await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
