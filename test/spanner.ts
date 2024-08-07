@@ -3211,14 +3211,11 @@ describe('Spanner with mock server', () => {
       assert.ok(!beginTxnRequest, 'beginTransaction was called');
     });
 
-    it('should catch exception error during invalid queries while using inline begin transaction', async () => {
+    it('should catch an exception error during invalid queries while using inline begin transaction', async () => {
       const database = newTestDatabase();
       await database.runTransactionAsync(async tx => {
         try {
-          await Promise.all([
-            tx!.run(selectSql),
-            tx!.run(invalidSql),
-          ]);
+          await Promise.all([tx!.run(selectSql), tx!.run(invalidSql)]);
           await tx.commit();
         } catch (err) {
           assert(err, 'Expected an error to be thrown');
